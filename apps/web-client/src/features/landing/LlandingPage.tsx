@@ -2,10 +2,10 @@
 
 
 import { ProductCard } from '../../components/ProductCard.tsx';
-import products from '../../data/productos.json';
 import { SectionDivider } from '../../components/SectionDivider';
 import { WhatsAppButton } from '../../components/WhatsAppButtonProps';
-
+import  companyInfo  from '../../data/companyInfo.json';
+import products from '../../data/productos.json';
 
 import {Clock, Stethoscope,Mail, MapPin, Phone, Instagram, Facebook } from 'lucide-react';
 
@@ -261,11 +261,11 @@ export const Footer = ({ bgColor }: { bgColor: string }) => {
         />
 
         {/* =========================================
-            LADO IZQUIERDO: ADMINISTRACIÓN (Azul oscuro) 
+            LADO IZQUIERDO: ADMINISTRACIÓN (Verde ) 
             ========================================= */}
         <WhatsAppButton
           label="Administración"
-          phone="092 444 510"
+          phone={companyInfo.contact.adminPhone}
           bgColor="bg-vete-tertiary"
         />
 
@@ -279,7 +279,7 @@ export const Footer = ({ bgColor }: { bgColor: string }) => {
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4 pointer-events-auto">
 
           {/* Link: Facebook */}
-          <a href="https://facebook.com" target="_blank" rel="noreferrer"
+          <a href={companyInfo.socials.facebook} target="_blank" rel="noreferrer"
             className="p-3 bg-black/60 backdrop-blur-md rounded-full border border-white/10 hover:bg-vete-primary transition-all shadow-lg text-white hover:scale-110">
             <Facebook size={20} />
           </a>
@@ -294,7 +294,7 @@ export const Footer = ({ bgColor }: { bgColor: string }) => {
           </a>
 
           {/* Link: Instagram */}
-          <a href="https://instagram.com" target="_blank" rel="noreferrer"
+          <a href={companyInfo.socials.instagram} target="_blank" rel="noreferrer"
             className="p-3 bg-black/60 backdrop-blur-md rounded-full border border-white/10 hover:bg-vete-primary transition-all shadow-lg text-white hover:scale-110">
             <Instagram size={20} />
           </a>
@@ -307,7 +307,7 @@ export const Footer = ({ bgColor }: { bgColor: string }) => {
             ========================================= */}
         <WhatsAppButton
           label="Emergencia"
-          phone="099 111 222"
+          phone={companyInfo.contact.emergencyPhone}
           bgColor="bg-red-600/90"
           isReversed={true} // <--- Este parámetro activa el modo espejo
         />
@@ -325,10 +325,10 @@ export const Footer = ({ bgColor }: { bgColor: string }) => {
           <div className="space-y-4">
             <div className="flex items-center gap-2 font-black text-xl">
               <img src="/logo.png" className="w-10" alt="Logo" />
-              VETERINARIA BELTRAMELLI<span className="text-vete-primary">.</span>
+              {companyInfo.name}<span className="text-vete-primary">.</span>
             </div>
-            <p className="text-gray-400 text-sm">
-              Cuidado experto y calidez humana en cada etapa de su vida.
+            <p className="text-vete-primary text-sm">
+              Cuidamos<span className='text-vete-text-light'> a quienes</span> amas
             </p>
           </div>
 
@@ -394,8 +394,9 @@ const MapsSection = ({ bgColor }: { bgColor: string }) => {
               <div className="space-y-1">
                 <p className="font-bold text-vete-header text-lg">Horarios de Atención</p>
                 <div className="text-vete-text text-sm space-y-1 opacity-80 font-medium">
-                  <p>Lunes a Viernes: 08:00 – 20:00</p>
-                  <p>Sábados: 08:00 – 12:00</p>
+                  {/* Dias de la semana que abre */}
+                  <p>{companyInfo.location.schedule.weekdays}</p> 
+                  
                 </div>
               </div>
             </div>
@@ -427,7 +428,7 @@ const MapsSection = ({ bgColor }: { bgColor: string }) => {
           <iframe
             title="Ubicación Veterinaria Beltramelli"
             className="w-full h-full rounded-[2.5rem] shadow-inner grayscale-[10%] hover:grayscale-0 transition-all duration-700"
-            src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3405.8225168916!2d-57.906870999999995!3d-31.391457!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMzHCsDIzJzI5LjMiUyA1N8KwNTQnMjQuNyJX!5e0!3m2!1sen!2suy!4v1774287344710!5m2!1sen!2suy"
+            src={companyInfo.location.googleMapsUrl}
             style={{ border: 0 }}
             allowFullScreen={true}
             loading="lazy"
@@ -470,7 +471,7 @@ export default function LandingPage() {
 
         <MapsSection bgColor='bg-vete-dark' />
       </main>
-      <Footer bgColor='bg-vete-dark' />
+      <Footer bgColor='bg-vete-secondary' />
     </div>
   )
 };

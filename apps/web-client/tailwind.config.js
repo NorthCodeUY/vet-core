@@ -27,7 +27,6 @@ export default {
           dark:'#FDFDF1',        // Color fondo (Ahora es verde fuerte)
           soft: '#76a165ff', // Fondo tarjetas
           accent: '#914122',     // Marrón footer
-
           'text-light': '#000000' // La malloria de texto
         }     
       },

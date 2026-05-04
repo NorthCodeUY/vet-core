@@ -1,73 +1,89 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# VetCore - Sistema Integral Veterinaria Beltramelli
 
-Currently, two official plugins are available:
+## 🐾 Plataforma de Gestión Veterinaria y E-commerce desarrollada para la
+Veterinaria Beltramelli en Salto, Uruguay. Este proyecto utiliza una
+arquitectura de Monorepo diseñada para escalar desde una Landing Page hasta un
+ecosistema completo de gestión clínica y ventas.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Stack Tecnológico (Frameworks & Libs)
 
-## React Compiler
+El frontend está construido buscando el máximo rendimiento y mantenibilidad:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+  - **React 19 (Beta)**: Implementación de las últimas funcionalidades del core de
+    React.
+  - **Vite 8**: Herramienta de construcción (build tool) ultra rápida para el
+    desarrollo.
+  - **TypeScript**: Tipado estático para reducir errores en tiempo de ejecución y
+    mejorar el autocompletado.
+  - **Tailwind CSS v3.4**: Framework de utilidades CSS para un diseño responsivo y
+    "Pixel Perfect" basado en los bocetos de Figma.
+  - **Lucide React**: Set de iconos vectoriales consistentes y ligeros.
+  - **Lottie React**: Motor de animaciones basadas en JSON para una experiencia de
+    usuario (UX) dinámica sin sacrificar performance.
+  - **React Router DOM**: Gestión de navegación y rutas (ej: /revision para pruebas
+    de cliente).
 
-## Expanding the ESLint configuration
+## 📂 Estructura del Proyecto (Monorepo)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+El proyecto sigue una arquitectura Feature-Based, lo que permite separar la
+lógica de negocio por módulos independientes:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+```text 
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+/vet-core
+├── .github/workflows/      # Automatización de despliegue (GitHub Actions)
+├── apps/
+│   └── web-client/         # Proyecto principal en React (Frontend Clientes)
+│       ├── src/
+│       │   ├── assets/     # Recursos estáticos (Logos, SVGs de marca)
+│       │   ├── components/ # Componentes atómicos reutilizables (Botones, Cards)
+│       │   ├── data/       # Mock data (JSON para productos y servicios)
+│       │   ├── features/   # Módulos de lógica de negocio (Landing, Shop, etc.)
+│       │   ├── models/     # Definición de interfaces y tipos TypeScript
+│       │   └── layout/     # Contenedores globales (Navbar, Footer)
+│       └── Dockerfile      # Configuración de contenedor para desarrollo local
+├── services/               # [Próximamente] Backend con FastAPI
+├── archive/                # Versiones anteriores y respaldos de diseño
+├── docker-compose.yml       # Orquestador de servicios locales
+└── README.md
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🛠️ Infraestructura & DevOps
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+El proyecto está diseñado para ser agnóstico al entorno (Cloud o Local):
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+  - Dockerized: Todo el entorno de desarrollo corre sobre contenedores,
+    asegurando que todos los miembros del equipo tengan la misma versión de
+    Node.js y dependencias.
+  - CI/CD: Despliegue automático a través de GitHub Actions hacia el dominio
+    oficial.
+  - Ruteo Profesional: Uso de 404.html hack para soportar Single Page
+    Application (SPA) en servidores de archivos estáticos.
+
+## 📍 Contexto Local (Salto, Uruguay)
+
+La plataforma está optimizada para el mercado uruguayo:
+
+  - Moneda: Precios configurados en Pesos Uruguayos (UYU) con formato local.
+  - Logística: Integración de puntos de contacto directo vía WhatsApp para
+    emergencias 24hs en la ciudad de Salto.
+  - Diseño: Estética profesional médica adaptada a la identidad visual de la
+    Veterinaria Beltramelli.
+
+## 👨‍💻 Desarrollo
+
+Para levantar el proyecto en un entorno local de desarrollo:
+
+1.  Entrar a la carpeta del cliente: cd apps/web-client
+2.  Instalar dependencias: npm install
+3.  Iniciar servidor: npm run dev
+
+## 💡 Notas de Arquitectura
+
+Se utiliza un archivo products.json centralizado para la gestión del catálogo.
+Esta decisión facilita la migración futura hacia una base de datos real (FastAPI
+/ PostgreSQL), ya que los componentes solo dependen de la estructura del dato y
+no de su origen.
+
+Desarrollado por NorthCode. 🚀🐄

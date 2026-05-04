@@ -6,6 +6,7 @@ import { SectionDivider } from '../../components/SectionDivider';
 import { WhatsAppButton } from '../../components/WhatsAppButtonProps';
 import  companyInfo  from '../../data/companyInfo.json';
 import products from '../../data/productos.json';
+import {ShoppingCart} from 'lucide-react';
 
 import {Clock, Stethoscope,Mail, MapPin, Phone, Instagram, Facebook } from 'lucide-react';
 
@@ -38,9 +39,11 @@ const Header = ({ bgColor }: { bgColor: string }) => {
         <a href="#" className=" hover:text-vete-primary transition-colors">Tienda</a>
         <a href="#" className="hover:text-vete-primary transition-colors">Contacto</a>
 
+        {/* Icono carrito de compras */}
         <div className="bg-vete-primary p-2 rounded-full cursor-pointer hover:scale-110 transition-transform">
-          <img src="/images/branding/carrito.svg" className="w-5" alt="Carrito" />
+           <ShoppingCart size={16} className="text-white" />
         </div>
+       
       </nav>
     </header>
   )
@@ -308,7 +311,7 @@ export const Footer = ({ bgColor }: { bgColor: string }) => {
         <WhatsAppButton
           label="Emergencia"
           phone={companyInfo.contact.emergencyPhone}
-          bgColor="bg-red-600/90"
+          bgColor="bg-vete-error"
           isReversed={true} // <--- Este parámetro activa el modo espejo
         />
 

@@ -24,10 +24,12 @@ export default {
           primary: '#275D9E',    // Verde claro (Ahora es azul según tu hex)
           secondary: '#DBECD5',  // Color Secundario para mesclar 
           tertiary: '#1FAF38',   // Color Boton Whatsap Verde
-          dark:'#FDFDF1',        // Color fondo (Ahora es verde fuerte)
+          dark:'#FDFDF1',        // Color fondo Verde claro 
           soft: '#76a165ff', // Fondo tarjetas
           accent: '#914122',     // Marrón footer
-          'text-light': '#000000' // La malloria de texto
+          'text-light': '#000000', // La malloria de texto
+          error: 'rgb(220 38 38 / 0.9)',
+          'vete-card-white': '#FFFFFF', // Blanco puro para la tarjeta
         }     
       },
       // AQUÍ TRASLADAMOS FIGMA A TAILWIND (Debe estar DENTRO de extend):

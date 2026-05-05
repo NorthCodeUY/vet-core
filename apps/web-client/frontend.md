@@ -32,7 +32,7 @@ lógica de negocio por módulos independientes:
 
 
 ## Estructura de proyecto sugerida para web-client Resumida
- 
+
 ```text  
 
 /vet-core
@@ -130,5 +130,27 @@ Se utiliza un archivo products.json centralizado para la gestión del catálogo.
 Esta decisión facilita la migración futura hacia una base de datos real (FastAPI
 / PostgreSQL), ya que los componentes solo dependen de la estructura del dato y
 no de su origen.
+
+
+
+
+## 📋 Ciclo de Prueba Local (LAN) con Docker
+Para ver los cambios reflejados en tu celular, debés seguir este orden cada vez que modifiques el código:
+
+### Crear (o actualizar) la imagen
+Este comando lee el Dockerfile, instala las dependencias y compila tu React con los últimos cambios.
+
+```bash
+# Ejecutado dentro de apps/web-client
+# 1. Crea la imagen con la etiqueta vete-celu
+sudo docker build -t vete-celu .
+
+# 2. Detiene el contenedor de si esta en ejecucion 
+sudo docker stop vete-test
+
+# 3. Ejecuta el contenedor y expón el puerto 3000
+sudo docker run -it --rm -p 3000:80 --name vete-test vete-celu
+```
+
 
 Desarrollado por NorthCode. 🚀🐄

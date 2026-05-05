@@ -1,7 +1,7 @@
 // app/vet-core/apps/web-client/src/components/ServiceCard.tsx
 
 import { useState } from 'react';
-import { ChevronDown, Send } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 interface Props {
   title: string;

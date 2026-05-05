@@ -29,17 +29,21 @@ El frontend está construido buscando el máximo rendimiento y mantenibilidad:
 El proyecto sigue una arquitectura Feature-Based, lo que permite separar la
 lógica de negocio por módulos independientes:
 
-```text 
+
+
+## Estructura de proyecto sugerida para web-client Resumida
+ 
+```text  
 
 /vet-core
 ├── .github/workflows/      # Automatización de despliegue (GitHub Actions)
 ├── apps/
 │   └── web-client/         # Proyecto principal en React (Frontend Clientes)
 │       ├── src/
-│       │   ├── assets/     # Recursos estáticos (Logos, SVGs de marca)
-│       │   ├── components/ # Componentes atómicos reutilizables (Botones, Cards)
-│       │   ├── data/       # Mock data (JSON para productos y servicios)
-│       │   ├── features/   # Módulos de lógica de negocio (Landing, Shop, etc.)
+│       │   ├── assets/     # Recursos estáticos (Logos, SVGs, Animacion de web Produccion)
+│       │   ├── components/ # Componentes atómicos reutilizables (Botones, Cards, tarjetas)
+│       │   ├── data/       # Mock data (JSON para productos y Datos de la empresa)
+│       │   ├── features/   # Interfase Modulo Landing Page (Web Principal), Cartel Web en poruccion. 
 │       │   ├── models/     # Definición de interfaces y tipos TypeScript
 │       │   └── layout/     # Contenedores globales (Navbar, Footer)
 │       └── Dockerfile      # Configuración de contenedor para desarrollo local
@@ -48,6 +52,47 @@ lógica de negocio por módulos independientes:
 ├── docker-compose.yml       # Orquestador de servicios locales
 └── README.md
 ```
+### Estructura Diagramda directorio detallado
+
+```text
+/apps/web-client/src
+├── assets/          # Estilos globales, imágenes de Salto/Vete
+│   ├── animations/ 
+│   │    └── maintenance.json # <!> Creo que guarda la animacion que cargo al inicio para la pagina de mantenimiento
+│   ├── branding/ 
+│   │    ├── SeccionPrincipalFondo.svg # Fondo de seccion principal no se esta usando actualmente 
+│   │    ├── terminacionInferior.svg
+│   │    └── WhatSapp_Cuadrado.svg # Icono WhatSapp para botones Administracion / Emergencia footer
+├── components/      # UI Atoms/Molecules (Botones, Inputs reutilizables)
+│   │    ├── ProductsCard.tsx   # Tarjeta para mostrar productos en landig page
+│   │    ├── ServiceCard.tsx    # Tarjeta para mostrar servicios en landig page 
+│   │    ├── ServiceProps.tsx   # <!> Este creo que no va poreu lo unico ue hago es pasarle los datos lo que tendria que aserlo desde Landig page  diferente eso me hace reudio y 
+│   │    ├── WhatsAppButtonProps.tsx
+├── config/          # Variables de entorno, instancias de Axios/Fetch
+├── features/        # LÓGICA POR MÓDULO (E-commerce, Turnos, Perfil)
+│   ├── shop/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── services/
+│   │   └── ShopPage.tsx
+│   └── appointments/
+├── hooks/           # Custom hooks globales
+├── store/           # Manejo de estado (Zustand o Context)
+└── App.tsx
+```
+
+# <!> Agregar la etructura sujerida
+
+Estrucutra intera de Proyecto web-client
+components/: Botones, inputs y UI atómica reutilizable.
+features/: Lógica de negocio pesada (ej: features/ecommerce, features/appointments).
+layout/: Navbar, Footer y contenedores principales.
+hooks/: Lógica compartida de React.
+
+
+## <!> Version anteriro 4 mayo 2026
+
+
 
 ## 🛠️ Infraestructura & DevOps
 

@@ -1,10 +1,15 @@
 // apps/web-client/src/features/landing/LandingPage.tsx
 
 
+import { Tractor, Dog, ShieldCheck } from 'lucide-react';
+
+import { ServiceCard } from '../../components/ServiceCard.tsx';
 import { ProductCard } from '../../components/ProductCard.tsx';
+import { PlanCard } from '../../components/PlanCard.tsx';
 import { SectionDivider } from '../../components/SectionDivider';
 import { WhatsAppButton } from '../../components/WhatsAppButtonProps';
 import  companyInfo  from '../../data/companyInfo.json';
+
 import products from '../../data/productos.json';
 import {ShoppingCart} from 'lucide-react';
 
@@ -99,9 +104,7 @@ const HeroSection = ({ bgColor }: { bgColor: string }) => {
 
 
 
-
-// <!DMI> Seccion Productos donde estan las tarjetas de los productos  
-
+// <!DMI> Seccion Productos donde estan las tarjetas de los productos 
 const ProductsSection = ({ bgColor }: { bgColor: string }) => {
   return (
     <section className={`${bgColor} px-6 md:px-16 py-20  mt-10`}>
@@ -133,15 +136,6 @@ const ProductsSection = ({ bgColor }: { bgColor: string }) => {
 
           </div>
 
-          {/* 
-              Lógica de columnas:
-              grid-cols-1: Móvil (1 tarjeta)
-              sm:grid-cols-2: Tablet pequeña (2 tarjetas)
-              lg:grid-cols-3: Tablet grande / Monitor pequeño (3 tarjetas)
-              xl:grid-cols-4: Monitor normal (4 tarjetas)
-              2xl:grid-cols-5: Monitor grande (5 tarjetas)
-          */}
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-y-10 gap-x-4 md:gap-x-6 justify-items-center mx-auto">
             {cat.data.map(p => (
               <ProductCard
@@ -158,6 +152,113 @@ const ProductsSection = ({ bgColor }: { bgColor: string }) => {
     </section>
   );
 };
+
+
+//<!DMI>  Seccion donde muetro los servicios que proporciona la beterinaria 
+// Divididad por 3 secciones  
+// <> Animales produccion
+// <> Pequeños Animales
+// <> Equinos
+// resivo por parametro el color de fonde de el componente pra intercalarlo con el disenio de terminacion
+const ServicioSeccion = ({ bgColor }: { bgColor: string }) => {
+  const servicios = [
+    {
+      title: "Animales de producción",
+      description: "Atención clínica completa para tus mascotas, garantizando su salud y bienestar.",
+      items: ["Consultas Generales", "Cirugías", "Urgencias 24/7", "Trazabilidad"],
+      icon: <Tractor size={28} />
+    },
+    {
+      title: "Pequeños Animales",
+      description: "Soluciones integrales para la producción ganadera, enfocadas en la eficiencia.",
+      items: ["Trazabilidad", "Planes Sanitarios", "Seguimiento Predial", "Vacunaciones"],
+      icon: <Dog size={28} />
+    },
+    {
+      title: "Equinos",
+      description: "Medicina deportiva y atención especializada para caballos de alto rendimiento.",
+      items: ["Consultas Generales", "Cirugías", "Urgencias 24/7", "Fisioterapia"],
+      icon: <ShieldCheck size={28} />
+    }
+  ];
+
+  return (
+    <section className={`${bgColor} w-full py-20 px-6 flex flex-col items-center`}>
+      <div className="max-w-[1280px] w-full flex flex-col items-center gap-16">
+        
+        {/* Título Principal */}
+        <div className="text-center">
+          <h2 className="text-vete-h2 font-black text-vete-text-light italic uppercase tracking-tighter">
+            Programas de <span className="text-vete-primary">bienestar animal</span>
+          </h2>
+          <p className="mt-4 text-vete-body text-vete-text-light opacity-60">
+            Planes diseñados para asegurar la salud preventiva de tus animales.
+          </p>
+        </div>
+
+        {/* Grid de Tarjetas */}
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center">
+          {servicios.map((s, i) => (
+            <ServiceCard key={i} {...s} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+
+
+const ProgramsSection = () => {
+  const plans = [
+    {
+      title: "Salud Preventiva",
+      description: "Lo esencial para mantener a tu mascota sana y protegida mes a mes.",
+      benefits: ["Consultas ilimitadas", "Vacunación anual"],
+      borderColor: "#76a165", // vete-soft
+    },
+    {
+      title: "Protección",
+      description: "Cobertura ampliada para mayor tranquilidad ante imprevistos.",
+      benefits: ["Beneficios Preventiva", "20% dcto en cirugías"],
+      borderColor: "#275D9E", // vete-primary (Azul)
+      isFeatured: true
+    },
+    {
+      title: "Familia",
+      description: "Plan ideal para hogares con múltiples mascotas.",
+      benefits: ["Cobertura para 2+ mascotas", "Prioridad en urgencias"],
+      borderColor: "#914122", // vete-accent (Marrón)
+    },
+    {
+      title: "Senior",
+      description: "Cuidados especializados para los años dorados de tu compañero.",
+      benefits: ["Chequeo geriátrico anual", "Análisis clínicos incluidos"],
+      borderColor: "#1FAF38", // vete-tertiary (Verde)
+    }
+  ];
+
+  return (
+    <section className="w-full py-24 px-6 bg-vete-secondary flex flex-col items-center gap-16">
+      <div className="max-w-3xl text-center space-y-4">
+        {/* Usamos tu vete-h2 (36px) */}
+        <h2 className="text-vete-h2 font-black text-vete-accent tracking-tighter uppercase italic">
+          Programas de <span className="text-vete-primary">Bienestar Animal</span>
+        </h2>
+        <p className="text-vete-text-light text-vete-body font-medium opacity-80 max-w-xl mx-auto">
+          Planes diseñados para asegurar la salud preventiva de tus animales a lo largo de toda su vida.
+        </p>
+      </div>
+
+      <div className="w-full max-w-7xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center">
+        {plans.map((plan, index) => (
+          <PlanCard key={index} {...plan} />
+        ))}
+      </div>
+    </section>
+  );
+};
+
 
 
 // Componente auxiliar para evitar repetir código en Misión, Visión y Valores
@@ -452,28 +553,46 @@ export default function LandingPage() {
       <main>
         <HeroSection bgColor='bg-vete-secondary' />
 
-        {/* 2. EL DIVISOR MÁGICO */}
-        {/* El fondo del contenedor es negro, y la onda es verde oscuro */}
+        {/* separador V1*/}
         <SectionDivider
           topColor="bg-vete-dark"
           bottomColor="text-vete-secondary"
         />
+
         <ProductsSection bgColor='bg-vete-dark' />
 
+        {/* separador V2*/}
         <SectionDivider
           topColor="bg-vete-secondary"
           bottomColor="text-vete-dark"
         />
 
-        <AboutSection bgColor='bg-vete-secondary' />
+        {/* Seccion de programas de bienestar animal */}
+        <ServicioSeccion bgColor='bg-vete-secondary' />
 
+        {/* Seccion de programas de bienestar animal  <!>Anda per agregr ala clase para que qude igual debe estar eredando algo */}
+        <ProgramsSection /> 
+
+        {/* separador V1*/}
         <SectionDivider
           topColor="bg-vete-dark"
           bottomColor="text-vete-secondary"
         />
 
+        {/* Seccion de quienes somos */}
+        <AboutSection bgColor='bg-vete-dark' />
+
+        {/* separador V2*/}
+        <SectionDivider
+          topColor="bg-vete-secondary"
+          bottomColor="text-vete-dark"
+        />
+        
+        {/* Seccion de mapa */}
         <MapsSection bgColor='bg-vete-dark' />
       </main>
+
+      {/* Seccion inverior de la web Contacto etc*/}
       <Footer bgColor='bg-vete-secondary' />
     </div>
   )

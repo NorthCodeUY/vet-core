@@ -1,0 +1,50 @@
+[
+  {
+    "title": "Salud Preventiva",
+    "description": "Lo esencial para mantener a tu mascota sana y protegida mes a mes.",
+    "benefits": [
+      "Consultas Gratis",
+      "Recordatorio",
+      "Descuentos especiales"
+    ],
+    "borderColor": "vete-soft",
+    "mensajeWhatsApp": "¡Hola! 👋 Me interesa el Plan *Salud Preventiva* para mi mascota. Quiero empezar a cuidarla mejor, ¿me podrían pasar los costos y requisitos? ¡Gracias!"
+  },
+  {
+    "title": "Protección",
+    "description": "Cobertura ampliada para mayor tranquilidad ante imprevistos.",
+    "benefits": [
+      "Consultas Gratis",
+      "Chequeo anual",
+      "Descuentos especiales",
+      "Baño mensual"
+    ],
+    "borderColor": "vete-primary",
+    "isFeatured": true,
+    "mensajeWhatsApp": "¡Hola, qué tal! 👋 Vi en la web el Plan *Protección* y me pareció la opción más completa para estar tranquilo ante cualquier imprevisto. ¿Me podrían asesorar un poco más? Gracias."
+  },
+  {
+    "title": "Familia",
+    "description": "Plan ideal para hogares con múltiples mascotas.",
+    "benefits": [
+      "Consultas Gratis",
+      "Recordatorios",
+      "Descuentos especiales",
+      "1 Baño mensual por mascota"
+    ],
+    "borderColor": "vete-accent",
+    "mensajeWhatsApp": "¡Hola! 🐾 En casa tenemos varios integrantes y nos interesa el Plan *Familia*. ¿Cómo funciona la cobertura para más de 2 mascotas? ¡Desde ya muchas gracias!"
+  },
+  {
+    "title": "Senior",
+    "description": "Cuidados especializados para los años dorados de tu compañero.",
+    "benefits": [
+      "Consultas Gratis",
+      "Chequeo anual",
+      "Descuentos especiales",
+      "Seguimiento personalizado"
+    ],
+    "borderColor": "vete-tertiary",
+    "mensajeWhatsApp": "¡Hola! 👋 Mi compañero ya está en sus años dorados y me interesa mucho el Plan *Senior* para que tenga la mejor calidad de vida. ¿Me cuentan más sobre el chequeo geriátrico? Gracias."
+  }
+]

@@ -8,7 +8,8 @@ import { ProductCard } from '../../components/ProductCard.tsx';
 import { PlanCard } from '../../components/PlanCard.tsx';
 import { SectionDivider } from '../../components/SectionDivider';
 import { WhatsAppButton } from '../../components/WhatsAppButtonProps';
-import  companyInfo  from '../../data/companyInfo.json';
+import companyInfo  from '../../data/companyInfo.json';
+import promoData from '../../data/promociones.json';
 
 import products from '../../data/productos.json';
 import {ShoppingCart} from 'lucide-react';
@@ -210,39 +211,14 @@ const ServicioSeccion = ({ bgColor }: { bgColor: string }) => {
 
 
 const ProgramsSection = () => {
-  const plans = [
-    {
-      title: "Salud Preventiva",
-      description: "Lo esencial para mantener a tu mascota sana y protegida mes a mes.",
-      benefits: ["Consultas ilimitadas", "Vacunación anual"],
-      borderColor: "#76a165", // vete-soft
-    },
-    {
-      title: "Protección",
-      description: "Cobertura ampliada para mayor tranquilidad ante imprevistos.",
-      benefits: ["Beneficios Preventiva", "20% dcto en cirugías"],
-      borderColor: "#275D9E", // vete-primary (Azul)
-      isFeatured: true
-    },
-    {
-      title: "Familia",
-      description: "Plan ideal para hogares con múltiples mascotas.",
-      benefits: ["Cobertura para 2+ mascotas", "Prioridad en urgencias"],
-      borderColor: "#914122", // vete-accent (Marrón)
-    },
-    {
-      title: "Senior",
-      description: "Cuidados especializados para los años dorados de tu compañero.",
-      benefits: ["Chequeo geriátrico anual", "Análisis clínicos incluidos"],
-      borderColor: "#1FAF38", // vete-tertiary (Verde)
-    }
-  ];
+  const color1 = "vete-primary";
+  const color2 = "vete-soft"; // <!> vete-soft
 
   return (
     <section className="w-full py-24 px-6 bg-vete-secondary flex flex-col items-center gap-16">
       <div className="max-w-3xl text-center space-y-4">
         {/* Usamos tu vete-h2 (36px) */}
-        <h2 className="text-vete-h2 font-black text-vete-accent tracking-tighter uppercase italic">
+        <h2 className="text-vete-h2 font-black text-vete- tracking-tighter uppercase italic">
           Programas de <span className="text-vete-primary">Bienestar Animal</span>
         </h2>
         <p className="text-vete-text-light text-vete-body font-medium opacity-80 max-w-xl mx-auto">
@@ -250,10 +226,19 @@ const ProgramsSection = () => {
         </p>
       </div>
 
+      
+      {/* Contenedor de Tarjetas Planes o Promociones*/}
       <div className="w-full max-w-7xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center">
-        {plans.map((plan, index) => (
-          <PlanCard key={index} {...plan} />
+        
+        {/* Carga de datos de Tarjeta Planes o Promociones */}   
+        {promoData.map((plan, index) => (
+          <PlanCard 
+            key={index} 
+            {...plan} 
+            phoneWhattsApp={companyInfo.contact.adminPhone} // Inyectamos el teléfono de la empresa
+          />
         ))}
+
       </div>
     </section>
   );

@@ -19,17 +19,18 @@ export default {
           //\dark: '#1b4332', //Color Fonod
 
           // Por lo que se es para el menu cartel de la web
-          bg: '#000000', // <!> Esto croe que no va no se donde ase algo 
+          bg: 'rgb(var(--vete-bg) / <alpha-value>)', // <!> Esto croe que no va no se donde ase algo 
           // Colores para la web
-          primary: '#275D9E',    // Verde claro (Ahora es azul según tu hex)
-          secondary: '#DBECD5',  // Color Secundario para mesclar 
-          tertiary: '#1FAF38',   // Color Boton Whatsap Verde
-          dark:'#FDFDF1',        // Color fondo Verde claro 
-          soft: '#76a165ff', // Fondo tarjetas
-          accent: '#914122',     // Marrón footer
-          'text-light': '#000000', // La malloria de texto
-          error: 'rgb(220 38 38 / 0.9)',
-          'vete-card-white': '#FFFFFF', // Blanco puro para la tarjeta
+          primary: 'rgb(var(--vete-primary) / <alpha-value>)',    // Color Azul Esta en varios lados  
+          secondary: 'rgb(var(--vete-secondary) / <alpha-value>)',  // Color Secundario para mesclar 
+          tertiary: 'rgb(var(--vete-tertiary) / <alpha-value>)',   // Color Boton Whatsap Verde
+          dark:'rgb(var(--vete-dark) / <alpha-value>)',        // Color fondo Verde claro 
+
+          soft: 'rgb(var(--vete-soft) / <alpha-value>)', // Fondo tarjetas 'var(--vete-soft)'
+
+          'text-light': 'rgb(var(--vete-text-light) / <alpha-value>)', // La malloria de texto
+          error: 'rgb(var(--vete-error) / <alpha-value>)',
+          'vete-card-white': 'rgb(var(--vete-card-white) / <alpha-value>)', // Blanco puro para la tarjeta
         }     
       },
       // AQUÍ TRASLADAMOS FIGMA A TAILWIND (Debe estar DENTRO de extend):
@@ -48,3 +49,11 @@ export default {
   }, // <--- Cierra theme
   plugins: []
 } // <--- Cierra export default
+
+
+
+
+
+
+
+  

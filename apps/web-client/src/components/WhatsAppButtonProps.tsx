@@ -32,14 +32,6 @@ export const WhatsAppButton = ({ label, phone, bgColor, isReversed = false }: Wh
         href={`https://wa.me/598${cleanPhone}`} 
         target="_blank" 
         rel="noreferrer"
-        /* 
-           CAMBIOS EN LAS CLASES:
-           - w-10: Ancho de círculo en móvil.
-           - sm:w-40: Ancho estirado en pantallas mayores a 480px aprox (usaremos sm o un breakpoint personalizado).
-           - justify-center: Centra el icono cuando es un círculo.
-           - sm:justify-start: Alinea a la izquierda cuando hay texto.
-           - px-0 sm:px-3: Sin padding en móvil para que el círculo sea perfecto.
-        */
         className={`group relative flex items-center justify-center sm:justify-start px-0 sm:px-3 w-10 sm:w-40 h-10 ${bgColor} backdrop-blur-md rounded-full text-vete-secondary shadow-lg transition-all duration-300 border border-white/20 overflow-hidden hover:opacity-80 ${directionClass}`}
       >
         <WhatSapp_Icon 

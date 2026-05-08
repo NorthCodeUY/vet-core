@@ -8,7 +8,7 @@
       "Descuentos especiales"
     ],
     "borderColor": "vete-soft",
-    "mensajeWhatsApp": "¡Hola! 👋 Me interesa el Plan *Salud Preventiva* para mi mascota. Quiero empezar a cuidarla mejor, ¿me podrían pasar los costos y requisitos? ¡Gracias!"
+    "mensajeWhatsApp": "¡Hola! Me interesa el Plan *Salud Preventiva* para mi mascota. Quiero empezar a cuidarla mejor, ¿me podrían pasar los costos y requisitos? ¡Gracias!"
   },
   {
     "title": "Protección",
@@ -21,7 +21,7 @@
     ],
     "borderColor": "vete-primary",
     "isFeatured": true,
-    "mensajeWhatsApp": "¡Hola, qué tal! 👋 Vi en la web el Plan *Protección* y me pareció la opción más completa para estar tranquilo ante cualquier imprevisto. ¿Me podrían asesorar un poco más? Gracias."
+    "mensajeWhatsApp": "¡Hola, qué tal! Vi en la web el Plan *Protección* y me pareció la opción más completa para estar tranquilo ante cualquier imprevisto. ¿Me podrían asesorar un poco más? Gracias."
   },
   {
     "title": "Familia",
@@ -33,7 +33,7 @@
       "1 Baño mensual por mascota"
     ],
     "borderColor": "vete-soft",
-    "mensajeWhatsApp": "¡Hola! 🐾 En casa tenemos varios integrantes y nos interesa el Plan *Familia*. ¿Cómo funciona la cobertura para más de 2 mascotas? ¡Desde ya muchas gracias!"
+    "mensajeWhatsApp": "¡Hola! En casa tenemos varios integrantes y nos interesa el Plan *Familia*. ¿Cómo funciona la cobertura para más de 2 mascotas? ¡Desde ya muchas gracias!"
   },
   {
     "title": "Senior",
@@ -45,6 +45,6 @@
       "Seguimiento personalizado"
     ],
     "borderColor": "vete-soft",
-    "mensajeWhatsApp": "¡Hola! 👋 Mi compañero ya está en sus años dorados y me interesa mucho el Plan *Senior* para que tenga la mejor calidad de vida. ¿Me cuentan más sobre el chequeo geriátrico? Gracias."
+    "mensajeWhatsApp": "¡Hola! Mi compañero ya está en sus años dorados y me interesa mucho el Plan *Senior* para que tenga la mejor calidad de vida. ¿Me cuentan más sobre el chequeo geriátrico? Gracias."
   }
 ]

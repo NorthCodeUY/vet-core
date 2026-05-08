@@ -1,4 +1,5 @@
 import WhatSapp_Icon from '../assets/branding/WhatSapp_Cuadrado.svg?react';
+import { useState } from 'react'; // 1. Importamos useState
 
 /**
  * Componente de Botón WhatsApp Dinámico
@@ -24,12 +25,13 @@ const hoverClasses: Record<string, string> = {
 
 export const WhatsAppDynamicButton = ({ label = "Contacto", phone, message, colorToken }: WhatsAppProps) => {
   
-  // 1. Limpieza de datos para el link
+  // Limpieza de datos para el link
   const cleanPhone = phone.replace(/\s/g, ''); // Elimina los espacios en el número de teléfono
-  const dynamicColor = `rgb(var(--${colorToken}))`;
-  const hoverBg = hoverClasses[colorToken] || 'hover:bg-gray-500';
-
-  // 2. Función de envío
+  const dynamicColor = `rgb(var(--${colorToken}))`; // Obtiene el color dinámicamente desde el config
+  const hoverBg = hoverClasses[colorToken] || 'hover:bg-gray-500'; // Obtiene el color de hover dinámicamente desde el config
+  const [isHovered, setIsHovered] = useState(false); // Estado para manejar el hover
+  
+  // Función de envío
   const handleWhatsApp = (e: React.MouseEvent) => {
     e.stopPropagation(); // Evita que el clic afecte a componentes padres
     const url = `https://wa.me/598${cleanPhone}?text=${encodeURIComponent(message)}`;
@@ -39,6 +41,8 @@ export const WhatsAppDynamicButton = ({ label = "Contacto", phone, message, colo
   return (
     <button 
       onClick={handleWhatsApp}
+      onMouseEnter={() => setIsHovered(true)} // 3. Activamos hover
+      onMouseLeave={() => setIsHovered(false)} // 4. Desactivamos hover
       className={`
 
         /* Estructura y Animación */
@@ -48,14 +52,15 @@ export const WhatsAppDynamicButton = ({ label = "Contacto", phone, message, colo
         /* Borde y Grupo */
         border-2 group
         /* EFECTO HOVER */
-        hover:text-white ${hoverBg}  hover:shadow-lg active:scale-95
+        ${hoverBg} hover:shadow-lg active:scale-95
         /* Animación */
         duration-300  overflow-hidden
       `}
       style={{ 
         borderColor: dynamicColor,
-        color: dynamicColor,
-        hover:text-white
+        // <!> Sacar color: dynamicColor,
+        //LA CLAVE: Si está en hover, forzamos blanco, sino el dinámico
+        color: isHovered ? '#FFFFFF' : dynamicColor 
       }}
     >
       {/* Icono de WhatsApp - Cambia a blanco en hover gracias a fill-current */}
@@ -64,7 +69,7 @@ export const WhatsAppDynamicButton = ({ label = "Contacto", phone, message, colo
       />
 
       {/* CONTENEDOR DE TEXTOS: Efecto de intercambio */}
-      <div className="relative h-5 flex items-center justify-center">
+      <div className="relative h-5 flex items-center justify-center min-w-[120px]`">
         {/* Texto 1: El Label (Aparece por defecto) */}
         <span className="transition-all duration-300 opacity-100 group-hover:opacity-0 group-hover:-translate-y-2">
           {label}
@@ -72,7 +77,7 @@ export const WhatsAppDynamicButton = ({ label = "Contacto", phone, message, colo
         
         {/* Texto 2: El Número (Aparece en Hover) */}
         <span className="absolute transition-all duration-300 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 whitespace-nowrap">
-          {phone}
+          Enviar Mensaje
         </span>
       </div>
     </button>

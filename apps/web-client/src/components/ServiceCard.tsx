@@ -3,15 +3,29 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
+import {TractorIcon} from 'lucide-react';
+import PequenosAIcon from '../assets/branding/guella.svg?react';
+import EquinoIcon from '../assets/branding/caballo.svg?react';
+import { WhatsAppDynamicButton } from './WhatsAppDynamicButton.tsx';
+
+// EL MAPEADOR: Esto traduce el texto del JSON a un componente real
+const IconMap: Record<string, React.ReactNode> = {
+  produccion: <TractorIcon className="w-8 h-8 text-vete-primary" />,
+  pequeñosAnimales: <PequenosAIcon className="w-8 h-8 text-vete-primary" />,
+  Equino: <EquinoIcon className="w-8 h-8 text-vete-primary" />,
+};
+
 interface Props {
   title: string;
   description: string;
   items: string[];
-  icon: React.ReactNode;
+  iconKey: string; // Recibimos la clave del icono del JSON
+  message: string,
+  phone: string
 }
 
-export const ServiceCard = ({ title, description, items, icon }: Props) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+export const ServiceCard = ({ title, description, items, iconKey, message, phone }: Props) => {
+  const [isExpanded, setIsExpanded] = useState(false); // Estado para expandir y contraer la tarjeta
 
   // Solo mostramos los primeros 3 si no está expandido
   const visibleItems = isExpanded ? items : items.slice(0, 3);
@@ -30,7 +44,7 @@ export const ServiceCard = ({ title, description, items, icon }: Props) => {
         {/* Icono en contenedor cuadrado (como en Figma) */}
         <div className="w-14 h-14 bg-vete-secondary rounded-[10px] flex items-center justify-center mb-6 self-center">
           <div className="text-vete-primary italic font-black">
-            {icon}
+           {IconMap[iconKey] || <PequenosAIcon />} 
           </div>
         </div>
 
@@ -50,10 +64,12 @@ export const ServiceCard = ({ title, description, items, icon }: Props) => {
           ))}
         </ul>
 
-        {/* Botón Consultar (Estilo Figma outline) */}
-        <button className="w-full py-3 rounded-[10px] border border-stone-600 text-stone-600 font-bold hover:bg-stone-50 transition-colors mb-4">
-          Consultar
-        </button>
+        <WhatsAppDynamicButton 
+          label="Realizar Consultar"
+          phone={phone}
+          message={message}
+          colorToken="vete-primary"
+        />
 
         {/* Flecha de expansión */}
         {hasMore && (

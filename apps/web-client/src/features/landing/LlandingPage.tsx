@@ -1,15 +1,16 @@
 // apps/web-client/src/features/landing/LandingPage.tsx
 
 
-import { Tractor, Dog, ShieldCheck } from 'lucide-react';
 
 import { ServiceCard } from '../../components/ServiceCard.tsx';
 import { ProductCard } from '../../components/ProductCard.tsx';
 import { PlanCard } from '../../components/PlanCard.tsx';
 import { SectionDivider } from '../../components/SectionDivider';
 import { WhatsAppButton } from '../../components/WhatsAppButtonProps';
+// Datos de la aplicacion
 import companyInfo  from '../../data/companyInfo.json';
 import promoData from '../../data/promociones.json';
+import serviciosData from '../../data/servicios.json';
 
 import products from '../../data/productos.json';
 import {ShoppingCart} from 'lucide-react';
@@ -162,26 +163,7 @@ const ProductsSection = ({ bgColor }: { bgColor: string }) => {
 // <> Equinos
 // resivo por parametro el color de fonde de el componente pra intercalarlo con el disenio de terminacion
 const ServicioSeccion = ({ bgColor }: { bgColor: string }) => {
-  const servicios = [
-    {
-      title: "Animales de producción",
-      description: "Atención clínica completa para tus mascotas, garantizando su salud y bienestar.",
-      items: ["Consultas Generales", "Cirugías", "Urgencias 24/7", "Trazabilidad"],
-      icon: <Tractor size={28} />
-    },
-    {
-      title: "Pequeños Animales",
-      description: "Soluciones integrales para la producción ganadera, enfocadas en la eficiencia.",
-      items: ["Trazabilidad", "Planes Sanitarios", "Seguimiento Predial", "Vacunaciones"],
-      icon: <Dog size={28} />
-    },
-    {
-      title: "Equinos",
-      description: "Medicina deportiva y atención especializada para caballos de alto rendimiento.",
-      items: ["Consultas Generales", "Cirugías", "Urgencias 24/7", "Fisioterapia"],
-      icon: <ShieldCheck size={28} />
-    }
-  ];
+
 
   return (
     <section className={`${bgColor} w-full py-20 px-6 flex flex-col items-center`}>
@@ -199,11 +181,14 @@ const ServicioSeccion = ({ bgColor }: { bgColor: string }) => {
 
         {/* Grid de Tarjetas */}
         <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center">
-          {servicios.map((s, i) => (
-            <ServiceCard key={i} {...s} />
+          {serviciosData.map((s, i) => (
+            <ServiceCard 
+            key={i} 
+            {...s} 
+            phone={companyInfo.contact.adminPhone}/>
           ))}
         </div>
-      </div>
+      </div>``
     </section>
   );
 };
@@ -211,8 +196,6 @@ const ServicioSeccion = ({ bgColor }: { bgColor: string }) => {
 
 
 const ProgramsSection = () => {
-  const color1 = "vete-primary";
-  const color2 = "vete-soft"; // <!> vete-soft
 
   return (
     <section className="w-full py-24 px-6 bg-vete-secondary flex flex-col items-center gap-16">
@@ -226,7 +209,7 @@ const ProgramsSection = () => {
         </p>
       </div>
 
-      
+
       {/* Contenedor de Tarjetas Planes o Promociones*/}
       <div className="w-full max-w-7xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center">
         

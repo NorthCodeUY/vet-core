@@ -22,10 +22,10 @@ const hoverClasses: Record<string, string> = {
   'vete-accent': 'hover:bg-vete-accent',
 };
 
-export const WhatsAppDynamicButton = ({ label, phone, message, colorToken }: WhatsAppProps) => {
+export const WhatsAppDynamicButton = ({ label = "Contacto", phone, message, colorToken }: WhatsAppProps) => {
   
   // 1. Limpieza de datos para el link
-  const cleanPhone = phone.replace(/\s/g, '');
+  const cleanPhone = phone.replace(/\s/g, ''); // Elimina los espacios en el número de teléfono
   const dynamicColor = `rgb(var(--${colorToken}))`;
   const hoverBg = hoverClasses[colorToken] || 'hover:bg-gray-500';
 
@@ -48,13 +48,14 @@ export const WhatsAppDynamicButton = ({ label, phone, message, colorToken }: Wha
         /* Borde y Grupo */
         border-2 group
         /* EFECTO HOVER */
-        ${hoverBg} hover:text-white hover:shadow-lg active:scale-95
+        hover:text-white ${hoverBg}  hover:shadow-lg active:scale-95
         /* Animación */
         duration-300  overflow-hidden
       `}
       style={{ 
         borderColor: dynamicColor,
-        color: dynamicColor 
+        color: dynamicColor,
+        hover:text-white
       }}
     >
       {/* Icono de WhatsApp - Cambia a blanco en hover gracias a fill-current */}

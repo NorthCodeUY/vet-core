@@ -32,7 +32,7 @@
       "Descuentos especiales",
       "1 Baño mensual por mascota"
     ],
-    "borderColor": "vete-accent",
+    "borderColor": "vete-soft",
     "mensajeWhatsApp": "¡Hola! 🐾 En casa tenemos varios integrantes y nos interesa el Plan *Familia*. ¿Cómo funciona la cobertura para más de 2 mascotas? ¡Desde ya muchas gracias!"
   },
   {
@@ -44,7 +44,7 @@
       "Descuentos especiales",
       "Seguimiento personalizado"
     ],
-    "borderColor": "vete-tertiary",
+    "borderColor": "vete-soft",
     "mensajeWhatsApp": "¡Hola! 👋 Mi compañero ya está en sus años dorados y me interesa mucho el Plan *Senior* para que tenga la mejor calidad de vida. ¿Me cuentan más sobre el chequeo geriátrico? Gracias."
   }
 ]

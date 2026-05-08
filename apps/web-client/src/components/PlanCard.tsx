@@ -19,21 +19,6 @@ export const PlanCard = ({ title, description, benefits, borderColor, isFeatured
   
 const dynamicColor =  `rgb(var(--${borderColor}))`;
 
-const hoverBackgrounds: Record<string, string> = {
-    'vete-primary': 'hover:bg-vete-primary',
-    'vete-soft': 'hover:bg-vete-soft',
-    'vete-tertiary': 'hover:bg-vete-tertiary',
-    'vete-accent': 'hover:bg-vete-accent',
-  };
-
-// Obtenemos la clase de hover correspondiente al token
-const hoverBgClass = hoverBackgrounds[borderColor] || 'hover:bg-gray-500';
-
-// Funcion hacer clic 
-const handleWhatsApp = () => {
-  window.open(`https://wa.me/59892444510?text=Hola%20estoy%20interesado%20en%20el%20plan%20${title}`);
-};
-
   return (
     <div className={`flex flex-col p-8 bg-white rounded-2xl shadow-sm 
       border-t-8 transition-all hover:shadow-xl w-full 
@@ -44,13 +29,14 @@ const handleWhatsApp = () => {
         }
       w-full
       max-w-[320px]`}
-         
+         // Color de borde superior 
          style={{ borderTopColor: dynamicColor }}>
       
       <div className="mb-6">
         
         {/* Titulo del plan*/}
-        <h3 className={`text-2xl font-bold mb-2 italic text-${borderColor}`}>
+        <h3 className={`text-2xl font-bold mb-2 italic`}
+          style={{ color: dynamicColor }}> {/* Asigno el color que paso por parametro a el titulo */}
           {title}
         </h3>
         
@@ -65,9 +51,9 @@ const handleWhatsApp = () => {
         {benefits.map((benefit, index) => (
           <li key={index} className="flex items-start gap-3">
             <div className="mt-1 bg-vete-secondary/30 p-0.5 rounded-md">
-               <Check size={14} className="text-vete-primary" />
+               <Check size={14} style={{ color: dynamicColor }} />
             </div>
-            <span className="text-vete-text-light text-vete-body font-medium">
+            <span className={`text-vete-text-light text-vete-body font-medium`}>
               {benefit}
             </span>
           </li>
@@ -76,9 +62,9 @@ const handleWhatsApp = () => {
 
        <WhatsAppDynamicButton 
         label="Solicitar Plan"
-        phone={mensajeWhatsApp}
-        message={phoneWhattsApp}
-        colorToken="vete-primary"
+        phone={phoneWhattsApp}
+        message={mensajeWhatsApp}
+        colorToken={borderColor}
       />
 
     </div>

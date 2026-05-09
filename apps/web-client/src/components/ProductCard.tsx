@@ -1,8 +1,14 @@
-// src/components/ProductCard.tsx
+// apps/web-client/src/components/ProductCard.tsx
 
 import { ShoppingCart} from 'lucide-react';
 
-interface Props { title: string; desc: string; price: number; img: string; }
+interface Props { 
+  title: string; 
+  desc: string; 
+  price: number; 
+  img: string; 
+}
+
 /**
  * Componente de UI para representar una tarjeta de producto en el catálogo.
  * 

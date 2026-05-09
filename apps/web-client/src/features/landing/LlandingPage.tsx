@@ -4,15 +4,15 @@
 
 import { ServiceCard } from '../../components/ServiceCard.tsx';
 import { ProductCard } from '../../components/ProductCard.tsx';
-import { PlanCard } from '../../components/PlanCard.tsx';
+import { CategoryGroup } from '../../components/CategoryGroupCard.tsx';
 import { SectionDivider } from '../../components/SectionDivider';
 import { WhatsAppButton } from '../../components/WhatsAppButtonProps';
 // Datos de la aplicacion
 import companyInfo  from '../../data/companyInfo.json';
-import promoData from '../../data/promociones.json';
 import serviciosData from '../../data/servicios.json';
-
 import products from '../../data/productos.json';
+
+
 import {ShoppingCart} from 'lucide-react';
 
 import {Clock, Stethoscope,Mail, MapPin, Phone, Instagram, Facebook } from 'lucide-react';
@@ -195,38 +195,61 @@ const ServicioSeccion = ({ bgColor }: { bgColor: string }) => {
 
 
 
-const ProgramsSection = () => {
+
+const ProductsSection = ({ bgColor }: { bgColor: string }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Lógica de Búsqueda Global: Filtra en todo el JSON
+  const filteredResults = useMemo(() => {
+    if (!searchTerm) return null;
+    const all = [...products.racion, ...products.accesorios]; // Agrega medicamentos aquí
+    return all.filter(p => 
+      p.titulo.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      p.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm]);
 
   return (
-    <section className="w-full py-24 px-6 bg-vete-secondary flex flex-col items-center gap-16">
-      <div className="max-w-3xl text-center space-y-4">
-        {/* Usamos tu vete-h2 (36px) */}
-        <h2 className="text-vete-h2 font-black text-vete- tracking-tighter uppercase italic">
-          Programas de <span className="text-vete-primary">Bienestar Animal</span>
+    <section className={`${bgColor} px-6 md:px-16 py-20 mt-10`}>
+      <div className="max-w-[1400px] mx-auto">
+        <h2 className="text-4xl font-black mb-12 italic text-white uppercase tracking-tighter">
+          Lista de <span className="text-vete-primary">Productos</span>
         </h2>
-        <p className="text-vete-text-light text-vete-body font-medium opacity-80 max-w-xl mx-auto">
-          Planes diseñados para asegurar la salud preventiva de tus animales a lo largo de toda su vida.
-        </p>
-      </div>
 
-
-      {/* Contenedor de Tarjetas Planes o Promociones*/}
-      <div className="w-full max-w-7xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center">
-        
-        {/* Carga de datos de Tarjeta Planes o Promociones */}   
-        {promoData.map((plan, index) => (
-          <PlanCard 
-            key={index} 
-            {...plan} 
-            phoneWhattsApp={companyInfo.contact.adminPhone} // Inyectamos el teléfono de la empresa
+        {/* --- BUSCADOR --- */}
+        <div className="relative max-w-md mb-16 group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-vete-primary group-focus-within:scale-110 transition-transform" size={20} />
+          <input 
+            type="text"
+            placeholder="¿Qué estás buscando para tu mascota?"
+            className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/10 border-2 border-vete-primary/30 text-white placeholder:text-white/40 focus:outline-none focus:border-vete-primary focus:bg-white/20 transition-all shadow-xl"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
-        ))}
+        </div>
 
+        {/* --- RENDERIZADO CONDICIONAL --- */}
+        {searchTerm ? (
+          // Vista de Resultados
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <h3 className="text-2xl font-bold text-vete-primary mb-8 italic">Resultados para "{searchTerm}"</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 justify-items-center">
+              {filteredResults?.map(p => <ProductCard key={p.id} title={p.titulo} desc={p.descripcion} price={p.precio} img={p.imagen} />)}
+              {filteredResults?.length === 0 && <p className="text-white/50">No se encontraron productos.</p>}
+            </div>
+          </div>
+        ) : (
+          // Vista Normal por Categorías
+          <div className="space-y-20">
+            <CategoryGroup title="Ración" data={products.racion} />
+            <CategoryGroup title="Accesorios" data={products.accesorios} />
+            {/* Agregá Medicamentos aquí cuando el JSON esté listo */}
+          </div>
+        )}
       </div>
     </section>
   );
 };
-
 
 
 // Componente auxiliar para evitar repetir código en Misión, Visión y Valores

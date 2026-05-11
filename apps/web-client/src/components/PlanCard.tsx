@@ -3,7 +3,11 @@
 import { Check } from 'lucide-react';
 import { WhatsAppDynamicButton } from "./WhatsAppDynamicButton.tsx";
 
-interface PlanProps {
+
+// <!DMI> Tarjeta para represetear los palnes de la empresa 
+// <!> Esta tarjeta tiene que tener una logica integrada pqra que al apretar un mensaje mande un mensaje tipo lindo estoy interesado en el plan x dependindo el qeu diriegido al portal administratio  para qeu mejor 
+
+interface PlanCardProps {
   title: string;
   description: string;
   benefits: string[];
@@ -13,11 +17,9 @@ interface PlanProps {
   phoneWhattsApp: string;
 }
 
-// <!DMI> Tarjeta para represetear los palnes de la empresa 
-// <!> Esta tarjeta tiene que tener una logica integrada pqra que al apretar un mensaje mande un mensaje tipo lindo estoy interesado en el plan x dependindo el qeu diriegido al portal administratio  para qeu mejor 
-export const PlanCard = ({ title, description, benefits, borderColor, isFeatured = false, mensajeWhatsApp, phoneWhattsApp }: PlanProps) => {
+export const PlanCard = ({ title, description, benefits, borderColor, isFeatured = false, mensajeWhatsApp, phoneWhattsApp }: PlanCardProps) => {
   
-const dynamicColor =  `rgb(var(--${borderColor}))`;
+  const dynamicColor =  `rgb(var(--${borderColor}))`;
 
   return (
     <div className={`flex flex-col p-8 bg-white rounded-2xl shadow-sm 

@@ -15,9 +15,6 @@ export default {
       },           
       colors: {
         vete: {
-          // Paleta 2
-          //\dark: '#1b4332', //Color Fonod
-
           // Por lo que se es para el menu cartel de la web
           bg: 'rgb(var(--vete-bg) / <alpha-value>)', // <!> Esto croe que no va no se donde ase algo 
           // Colores para la web

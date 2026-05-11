@@ -9,7 +9,7 @@ interface CategoryGroupProps{
 }
 // Tarjeta para mostrar productos por categoria 
 
-const CategoryGroupCard = ({ title, data }: prop) => {
+export const CategoryGroupCard = ({ title, data }: CategoryGroupProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Lógica de visualización:
@@ -19,9 +19,12 @@ const CategoryGroupCard = ({ title, data }: prop) => {
 
   return (
     <div className="w-full">
+      {/* Contenedor del titulo*/}
       <div className="flex justify-between items-end mb-8 border-b border-vete-primary/30 pb-4">
+        {/* Titulo de la categoria*/}
         <h3 className="text-5xl font-black text-vete-primary leading-none uppercase italic">{title}</h3>
         
+        {/* Boton de expandir/ocultar*/}
         <button 
           onClick={() => setIsExpanded(!isExpanded)}
           className="text-vete-primary font-bold hover:underline flex items-center gap-2 transition-all"

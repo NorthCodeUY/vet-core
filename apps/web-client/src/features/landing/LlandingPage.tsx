@@ -1,20 +1,22 @@
 // apps/web-client/src/features/landing/LandingPage.tsx
 
-
+// <!> NO se para que sive esta en seccion Producto
+import { useState, useMemo } from 'react';// Importamos los Hooks de React
 
 import { ServiceCard } from '../../components/ServiceCard.tsx';
 import { ProductCard } from '../../components/ProductCard.tsx';
-import { CategoryGroup } from '../../components/CategoryGroupCard.tsx';
+import { PlanCard } from '../../components/PlanCard.tsx';
+import { CategoryGroupCard } from '../../components/CategoryGroupCard.tsx';
 import { SectionDivider } from '../../components/SectionDivider';
 import { WhatsAppButton } from '../../components/WhatsAppButtonProps';
+
 // Datos de la aplicacion
 import companyInfo  from '../../data/companyInfo.json';
 import serviciosData from '../../data/servicios.json';
-import products from '../../data/productos.json';
-
-
-import {ShoppingCart} from 'lucide-react';
-
+import productsData from '../../data/productos.json';
+import planData from '../../data/promociones.json';
+// Iconos de la aplicacion 
+import {Search ,ShoppingCart} from 'lucide-react';
 import {Clock, Stethoscope,Mail, MapPin, Phone, Instagram, Facebook } from 'lucide-react';
 
 
@@ -106,54 +108,7 @@ const HeroSection = ({ bgColor }: { bgColor: string }) => {
 
 
 
-// <!DMI> Seccion Productos donde estan las tarjetas de los productos 
-const ProductsSection = ({ bgColor }: { bgColor: string }) => {
-  return (
-    <section className={`${bgColor} px-6 md:px-16 py-20  mt-10`}>
-      {/* text-white */}
-      <h2 className="text-4xl font-black mb-12 italic">
-        Lista de <span className="text-vete-primary">Productos</span>
-      </h2>
 
-      {/* Categoría Genérica para todas */}
-      {[
-        { title: "Ración", data: products.racion },
-        { title: "Accesorios", data: products.accesorios },
-        { title: "Medicamentos", data: products.racion } // Ajustar a products.medicamentos cuando esté listo
-      ].map((cat, idx) => (
-        <div key={idx} className="mb-20">
-          <div className="flex justify-between items-end mb-8 border-b border-vete-primary/30 pb-4">
-            <h3 className="text-5xl font-black text-vete-primary leading-none">{cat.title}</h3>
-
-            {/* <!> Version anterior */}
-            {/*<button className="text-vete-primary font-bold hover:underline">Ver catálogo completo ➔</button>*/}
-
-            <button className="text-vete-primary font-bold hover:underline flex items-center gap-2">
-              {/* Oculto en móvil, visible a partir de tamaño 'sm' (640px) */}
-              <span className="hidden sm:inline">Ver catálogo completo</span>
-              <span>➔</span>
-            </button>
-
-
-
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-y-10 gap-x-4 md:gap-x-6 justify-items-center mx-auto">
-            {cat.data.map(p => (
-              <ProductCard
-                key={p.id}
-                title={p.titulo}
-                desc={p.descripcion}
-                price={p.precio}
-                img={p.imagen}
-              />
-            ))}
-          </div>
-        </div>
-      ))}
-    </section>
-  );
-};
 
 
 //<!DMI>  Seccion donde muetro los servicios que proporciona la beterinaria 
@@ -194,58 +149,145 @@ const ServicioSeccion = ({ bgColor }: { bgColor: string }) => {
 };
 
 
+const ProgramsSection = () => {
+
+  return (
+    <section className="w-full py-24 px-6 bg-vete-secondary flex flex-col items-center gap-16">
+      <div className="max-w-3xl text-center space-y-4">
+        {/* Usamos tu vete-h2 (36px) */}
+        <h2 className="text-vete-h2 font-black text-vete- tracking-tighter uppercase italic">
+          Programas de <span className="text-vete-primary">Bienestar Animal</span>
+        </h2>
+        <p className="text-vete-text-light text-vete-body font-medium opacity-80 max-w-xl mx-auto">
+          Planes diseñados para asegurar la salud preventiva de tus animales a lo largo de toda su vida.
+        </p>
+      </div>
+
+
+      {/* Contenedor de Tarjetas Planes o Promociones*/}
+      <div className="w-full max-w-7xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center">
+        
+        {/* Carga de datos de Tarjeta Planes o Promociones */}   
+        {planData.map((plan, index) => (
+          <PlanCard 
+            key={index} 
+            {...plan} 
+            phoneWhattsApp={companyInfo.contact.adminPhone} // Inyectamos el teléfono de la empresa
+          />
+        ))}
+
+      </div>
+    </section>
+  );
+};
 
 
 const ProductsSection = ({ bgColor }: { bgColor: string }) => {
-  const [searchTerm, setSearchTerm] = useState("");
+  // --- ESTADO ---
+  // Guardamos lo que el usuario escribe en la barrita de búsqueda.
+  // searchTerm: el texto actual. setSearchTerm: la función para cambiarlo.
+  const [searchTerm, setSearchTerm] = useState(""); // Estado que maneja el input de busqueda
 
-  // Lógica de Búsqueda Global: Filtra en todo el JSON
+  // --- LÓGICA DE FILTRADO (MEMOIZADA) ---
+  // useMemo hace que esta búsqueda SOLO se ejecute cuando cambia 'searchTerm'.
+  // Esto ahorra batería y memoria en el celular del cliente.
   const filteredResults = useMemo(() => {
+    // 1. Si no hay nada escrito (está vacío), devolvemos 'null' para indicar que no hay búsqueda activa.
     if (!searchTerm) return null;
-    const all = [...products.racion, ...products.accesorios]; // Agrega medicamentos aquí
+    
+    // 2. Unificamos todas las categorías en una sola "gran bolsa" para buscar en todo el local.
+    // Usamos el operador spread (...) para sacar los productos de sus listas y juntarlos.
+    const all = [...productsData.racion, ...productsData.accesorios];
+    
+    // 3. Filtramos: Devolvemos solo los productos cuyo título O descripción coincidan con la búsqueda.
+    
     return all.filter(p => 
-      p.titulo.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      p.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
+      p.titulo.toLowerCase().includes(searchTerm.toLowerCase()) || // .toLowerCase() convierte todo a minúsculas para que "perro" encuentre "Perro".
+      p.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) // .includes() busca si el texto existe dentro de la frase
     );
-  }, [searchTerm]);
+  }, [searchTerm]);// se define esta funcion cada vez que 'searchTerm' cambie
 
   return (
     <section className={`${bgColor} px-6 md:px-16 py-20 mt-10`}>
       <div className="max-w-[1400px] mx-auto">
-        <h2 className="text-4xl font-black mb-12 italic text-white uppercase tracking-tighter">
-          Lista de <span className="text-vete-primary">Productos</span>
-        </h2>
+        
+        {/* --- CONTENEDOR CABECERA DE PRODUCTOS --- */}
+        <div className="
+          /* --- Posición --- */
+          flex flex-col tablet-vete:flex-row      /* Vertical en móvil, horizontal en 858px */
+          tablet-vete:justify-between            /* Separa título de buscador en desktop */
+          items-center                           /* Centrado vertical perfecto */
+          gap-8                                  /* Distancia entre elementos */
+          mb-16                                  /* Margen inferior del bloque entero */
+        ">
 
-        {/* --- BUSCADOR --- */}
-        <div className="relative max-w-md mb-16 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-vete-primary group-focus-within:scale-110 transition-transform" size={20} />
-          <input 
-            type="text"
-            placeholder="¿Qué estás buscando para tu mascota?"
-            className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/10 border-2 border-vete-primary/30 text-white placeholder:text-white/40 focus:outline-none focus:border-vete-primary focus:bg-white/20 transition-all shadow-xl"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          {/* Titulo de la lista de productos */}    
+            <h2 className="
+              /* --- Texto --- */
+              text-4xl font-black italic text-vete-text-light 
+              uppercase tracking-tighter
+              /* --- Ajuste --- */
+              tablet-vete:mb-0   /* Quitamos margen para centrar con el buscador */
+            ">
+            Lista de <span className="text-vete-primary">Productos</span>
+          </h2>
+
+          {/* BUSCADOR */}
+          <div className="
+            /* --- Posición --- */
+            relative w-full max-w-md /* Ancho completo en móvil hasta 448px */
+            /* --- Decoración --- */
+            group
+          ">
+            <Search className="
+              /* --- Icono --- */
+              absolute left-4 top-1/2 -translate-y-1/2 text-vete-text-light 
+              group-focus-within:scale-110 transition-transform" 
+              size={20} 
+            />
+            <input 
+              type="text"
+              placeholder="¿Qué estás buscando?"
+              className="
+                /* --- Estructura --- */
+                w-full pl-12 pr-4 py-4 rounded-2xl 
+                /* --- Colores --- */
+                bg-white/10 border-2 border-vete-primary/30 text-vete-text-light 
+                /* --- Estados --- */
+                placeholder:text-vete-text-light/40 focus:outline-none focus:border-vete-primary 
+                focus:bg-white/20 transition-all shadow-xl"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)} // cada vez que el usuario escribe algo, actualiza el estado 'searchTerm'
+            />
+          </div>
         </div>
 
-        {/* --- RENDERIZADO CONDICIONAL --- */}
-        {searchTerm ? (
-          // Vista de Resultados
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h3 className="text-2xl font-bold text-vete-primary mb-8 italic">Resultados para "{searchTerm}"</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 justify-items-center">
-              {filteredResults?.map(p => <ProductCard key={p.id} title={p.titulo} desc={p.descripcion} price={p.precio} img={p.imagen} />)}
-              {filteredResults?.length === 0 && <p className="text-white/50">No se encontraron productos.</p>}
+        {/* contenedor del titulo */}
+        <div className=''>
+          {/* --- RENDERIZADO CONDICIONAL --- */}
+          {searchTerm ? ( // si hay algo en searchTerm muestra los resultados, si no, muestra el catalogo normal
+            // Vista de Resultados
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              {/* Titulo de los resultados*/}
+              <h3 className="text-2xl font-bold text-vete-primary mb-8 italic">Resultados para "{searchTerm}"</h3>
+              {/* Grid de resultados*/}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 justify-items-center">
+                {/* Itera sobre los resultados y muestra la tarjeta de producto*/}
+                {filteredResults?.map(p => <ProductCard key={p.id} title={p.titulo} desc={p.descripcion} price={p.precio} img={p.imagen} />)}
+                {/* Si no hay resultados muestra un mensaje*/}
+                {filteredResults?.length === 0 && <p className="text-white/50">No se encontraron productos.</p>}
+              </div>
             </div>
-          </div>
-        ) : (
-          // Vista Normal por Categorías
-          <div className="space-y-20">
-            <CategoryGroup title="Ración" data={products.racion} />
-            <CategoryGroup title="Accesorios" data={products.accesorios} />
-            {/* Agregá Medicamentos aquí cuando el JSON esté listo */}
-          </div>
-        )}
+          ) : (
+            // Vista Normal por Categorías
+            <div className="space-y-20">
+              <CategoryGroupCard title="Ración" data={productsData.racion} />
+              <CategoryGroupCard title="Accesorios" data={productsData.accesorios} />
+              {/* Agregá Medicamentos aquí cuando el JSON esté listo */}
+            </div>
+          )}
+        </div>
+
       </div>
     </section>
   );
@@ -580,7 +622,7 @@ export default function LandingPage() {
         />
         
         {/* Seccion de mapa */}
-        <MapsSection bgColor='bg-vete-dark' />
+        <MapsSection bgColor='bg-vete-secondary' />
       </main>
 
       {/* Seccion inverior de la web Contacto etc*/}

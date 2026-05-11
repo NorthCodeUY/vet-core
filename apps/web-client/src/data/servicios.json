@@ -9,14 +9,14 @@
   {
     "title": "Pequeños Animales",
     "description": "Atención clínica completa para tus mascotas, garantizando su salud y bienestar.",
-    "items": ["Trazabilidad", "Planes Sanitarios", "Seguimiento Predial", "Vacunaciones"],
+    "items": ["Consultas", "Cirugias", "Urgencias", "Vacunaciones"],
     "message": "¡Hola! 🐾 Quisiera consultar por la atención clínica para mi mascota (*Pequeños Animales*). ¿Tienen disponibilidad para una consulta?",
     "iconKey": "pequeñosAnimales"
   },
   {
     "title": "Equinos",
-    "description": "Medicina deportiva y atención especializada para caballos de alto rendimiento.",
-    "items": ["Consultas Generales", "Sanidad", "Análisis", "Cirugias"],
+    "description": "Medicina deportiva y atención clinica en general.",
+    "items": ["Certificación", "Sanidad", "Análisis", "Cirugias"],
     "message": "¡Hola! 🐎 Me interesa el servicio especializado para *Equinos*. Me gustaría saber más sobre la medicina deportiva. ¡Gracias!",
     "iconKey": "Equino"
   }

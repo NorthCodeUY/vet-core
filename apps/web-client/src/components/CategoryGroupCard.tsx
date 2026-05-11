@@ -1,7 +1,7 @@
 // apps/web-client/src/components/CategoryGroupCard.tsx 
 
 import { useState } from 'react';
-import { ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { ProductCard } from './ProductCard.tsx';
 interface CategoryGroupProps{
   title: string;
@@ -14,8 +14,8 @@ export const CategoryGroupCard = ({ title, data }: CategoryGroupProps) => {
 
   // Lógica de visualización:
   // Desktop: Siempre muestra 5.
-  // Móvil: Si no está expandido muestra 2, si está expandido muestra 5.
-  const mobileLimit = isExpanded ? 5 : 2;
+  // Móvil: Si no está expandido muestra 1, si está expandido muestra 5.
+  const mobileLimit = isExpanded ? 5 : 1;
 
   return (
     <div className="w-full">
@@ -29,9 +29,10 @@ export const CategoryGroupCard = ({ title, data }: CategoryGroupProps) => {
           onClick={() => setIsExpanded(!isExpanded)}
           className="text-vete-primary font-bold hover:underline flex items-center gap-2 transition-all"
         >
-          <span className="hidden sm:inline">{isExpanded ? 'Ver menos' : 'Ver catálogo completo'}</span>
-          {isExpanded ? <ChevronUp size={20} /> : <span className="sm:hidden">Ver todos</span>}
-          {!isExpanded && <span className="hidden sm:inline">➔</span>}
+          <span className="hidden sm:inline">{isExpanded ? 'Ver menos' : 'Ver mas'}</span>
+          {/* Determina si el item es  */}
+          {isExpanded && <ChevronUp size={20} />} 
+          { !isExpanded && <ChevronDown size={20}/>}
         </button>
       </div>
 

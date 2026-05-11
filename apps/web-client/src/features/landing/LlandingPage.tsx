@@ -127,10 +127,10 @@ const ServicioSeccion = ({ bgColor }: { bgColor: string }) => {
         {/* Título Principal */}
         <div className="text-center">
           <h2 className="text-vete-h2 font-black text-vete-text-light italic uppercase tracking-tighter">
-            Programas de <span className="text-vete-primary">bienestar animal</span>
+            Servicios con los que <span className="text-vete-primary">contamos</span>
           </h2>
           <p className="mt-4 text-vete-body text-vete-text-light opacity-60">
-            Planes diseñados para asegurar la salud preventiva de tus animales.
+            Planes diseñados para asegurar la salud preventiva de sus animales.
           </p>
         </div>
 

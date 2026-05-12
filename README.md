@@ -43,7 +43,7 @@ Este repositorio contiene el núcleo del sistema, diseñado como una solución *
 └── README.md                # Documentación técnica centralizada
 ``` 
 
-## 📊 [Documentacion Frontend Web Clientes](./apps/web-client/frontend.md)
+## 📊 [Documentacion Frontend Web Clientes](./apps/web-client/README.md)
 
 ## 📈 Filosofía de Desarrollo
 

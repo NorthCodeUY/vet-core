@@ -27,17 +27,30 @@ Este repositorio contiene el núcleo del sistema, diseñado como una solución *
 
 - **Frontend**: React.js + Tailwind CSS
 - **Backend**: FastAPI (Python)
-- **Mobile**: Flutter
+- **Mobile**: Flutter (Dart), Portales administrativos, clinica, logisticas 
 - **Infraestructura**: Docker, Nginx Proxy Manager, PostgreSQL.
 - **Comunicación**: WhatsApp Business API.
+
+
+## 📦 Estructura genera de proyecto
+
+```text
+/vet-core
+├── apps/                   # Frontend 
+│    web-client/            # React (E-commerce y Portal Clientes)
+├── api-backend/            # Backend FastAPI 
+├── docker-compose.yml       # Orquestador local <!> Falta desarollar 
+└── README.md                # Documentación técnica centralizada
+``` 
+
+## 📊 [Documentacion Frontend Web Clientes](./apps/web-client/frontend.md)
 
 ## 📈 Filosofía de Desarrollo
 
 En **NorthCode**, creemos en la **Transparencia Total**. Este proyecto se desarrolla bajo una arquitectura de código abierto y documentado, permitiendo la auditoría técnica y garantizando que el cliente sea dueño de su activo tecnológico.
 
-## 🛠 Instalación y Configuración (Devs)
 
-*(Aquí puedes agregar los pasos técnicos de `npm install`, `docker-compose up`, etc., a medida que los vayas creando)*
+
 
 ## 📝 Licencia
 
@@ -130,4 +143,64 @@ https://github.com/northcodeuy-debug/Proyecto-EstudioContable-
 ```
 
 
+## Modelo Entidad relacion 
 
+
+El modelo de datos está estructurado para manejar el historial de precios en el carrito y la gestión de productos.
+
+
+```mermaid
+erDiagram
+    %% Relaciones principales
+    CLIENTE ||--o{ PEDIDO : "realiza"
+    PEDIDO ||--|{ PEDIDO_DETALLE : "contiene"
+    PRODUCTO ||--o{ PEDIDO_DETALLE : "se vende en"
+    PRODUCTO ||--o{ SUBCATEGORIA : "aplica a"
+    PEDIDO ||--o{ PAGO : "genera"
+    SUBCATEGORIA ||--o{ PRODUCTO : "agrupa"
+
+    CLIENTE {
+        int id PK
+        string nombre
+        string whatsapp
+        string token
+    }
+
+    PRODUCTO {
+        int id PK
+        string nombre
+        string descripcion
+        float precio_actual
+        int stock
+        int categoria_id FK
+        string categoria_nombre "Ej: Medicamentos, Alimento, Accesorios"
+    }
+
+    SUBCATEGORIA {
+        int id PK
+        string nombre "Ej: Perro, Gato, Caballo, Oveja"
+    }
+
+    PEDIDO {
+        int id PK
+        int cliente_id FK
+        datetime fecha
+        string codigo_qr "Token de entrega"
+        datetime fecha_entrega
+        string estado "Ej: Armado, Entregado"
+    }
+
+    PEDIDO_DETALLE {
+        int pedido_id PK, FK
+        int producto_id PK, FK
+        int cantidad
+        float precio_unitario_venta "Precio capturado al momento"
+    }
+
+    PAGO {
+        int id PK
+        int pedido_id FK
+        datetime fecha
+        string detalle "Ej: Transferencia, Efectivo"
+    }
+```

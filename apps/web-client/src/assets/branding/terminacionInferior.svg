@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1276"
+   height="156"
+   viewBox="0 0 1276 156"
+   fill="none"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="terminacionInferior.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs8" />
+  <sodipodi:namedview
+     id="namedview6"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="1.1026646"
+     inkscape:cx="639.36034"
+     inkscape:cy="81.167022"
+     inkscape:window-width="1920"
+     inkscape:window-height="1011"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4" />
+  <path
+     d="M932.836 118.373C870.906 125.567 810.942 138.46 749.183 146.28C661.211 157.427 569.598 158.1 481.765 146.54C396.409 135.333 307.903 108 223.562 94.113C148.766 81.793 72.4041 72.5031 0 87.8961V0H1276V156C1166.59 130.097 1047.91 105.157 932.836 118.373Z"
+     fill="#000000"
+     id="path2" />
+</svg>

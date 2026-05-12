@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1276"
+   height="890"
+   viewBox="0 0 1276 890"
+   fill="none"
+   version="1.1"
+   id="svg23"
+   sodipodi:docname="SeccionPrincipal Fondo.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview25"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="0.25"
+     inkscape:cx="832"
+     inkscape:cy="14"
+     inkscape:window-width="1920"
+     inkscape:window-height="1011"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg23"
+     showguides="true">
+    <sodipodi:guide
+       position="0,890"
+       orientation="1,0"
+       id="guide401"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
+  <path
+     id="path4"
+     style="fill:#a8d5a2;stroke:none;stroke-opacity:1;fill-opacity:1"
+     d="M 932.836,852.373 C 870.906,859.567 810.942,872.46 749.183,880.28 661.211,891.427 569.598,892.1 481.765,880.54 396.409,869.333 307.903,842 223.562,828.113 148.766,815.793 72.40413,806.50314 0,821.89614 V 0 L 1276,2.0120727 V 890 C 1166.59,864.097 1047.91,839.157 932.836,852.373 Z"
+     sodipodi:nodetypes="ccccccccc"
+     inkscape:label="Frente" />
+  <path
+     d="M 787.9657,0 H 1276 L 1254.27,866.564 728.101,756.781 c -54.064,-11.28 -88.417,-64.182 -76.729,-118.16 l 40.82078,-188.51364 z"
+     fill="#4ba15d"
+     fill-opacity="0.2"
+     id="path2"
+     sodipodi:nodetypes="ccccccc"
+     style="fill:#4ba15d;opacity:0.2;fill-opacity:1;stroke:none;stroke-width:1;stroke-dasharray:none"
+     inkscape:label="Fondo" />
+  <defs
+     id="defs21">
+    <clipPath
+       id="clip0_570_1024">
+      <rect
+         width="1276"
+         height="890"
+         fill="white"
+         id="rect12" />
+    </clipPath>
+    <clipPath
+       id="clip1_570_1024">
+      <rect
+         width="1276"
+         height="110"
+         fill="white"
+         transform="matrix(-1 0 0 1 1276 810)"
+         id="rect15" />
+    </clipPath>
+    <clipPath
+       id="clip2_570_1024">
+      <rect
+         width="1280"
+         height="80"
+         fill="white"
+         transform="matrix(-1 0 0 -1 1276 890)"
+         id="rect18" />
+    </clipPath>
+  </defs>
+</svg>

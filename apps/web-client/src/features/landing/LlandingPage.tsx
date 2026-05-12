@@ -1,16 +1,31 @@
 // apps/web-client/src/features/landing/LandingPage.tsx
+
+// <!> NO se para que sive esta en seccion Producto
+import { useState, useMemo } from 'react';// Importamos los Hooks de React
+
+import { ServiceCard } from '../../components/ServiceCard.tsx';
 import { ProductCard } from '../../components/ProductCard.tsx';
-import products from '../../data/productos.json';
+import { PlanCard } from '../../components/PlanCard.tsx';
+import { CategoryGroupCard } from '../../components/CategoryGroupCard.tsx';
+import { SectionDivider } from '../../components/SectionDivider';
+import { WhatsAppButton } from '../../components/WhatsAppButtonProps';
 
-
-import { Mail, MapPin, Phone, Instagram, Facebook } from 'lucide-react';
+// Datos de la aplicacion
+import companyInfo  from '../../data/companyInfo.json';
+import serviciosData from '../../data/servicios.json';
+import productsData from '../../data/productos.json';
+import planData from '../../data/promociones.json';
+// Iconos de la aplicacion 
+import {Search ,ShoppingCart} from 'lucide-react';
+import {Clock, Stethoscope,Mail, MapPin, Phone, Instagram, Facebook } from 'lucide-react';
 
 
 // <!DMI> Header de la web
-const Header = () => {
+const Header = ({ bgColor }: { bgColor: string }) => {
   return (
     // Cambiamos px-16 por px-6 en móvil y md:px-16 en escritorio
-    <header className="px-6 md:px-16 py-8 flex justify-between items-center w-full max-w-full overflow-hidden">
+
+    <header className={`${bgColor} px-6 md:px-16 py-8 flex justify-between items-center w-full max-w-full overflow-hidden`}>
       <div className="flex items-center gap-2 font-black text-xl">
         <img src="/logo.png" className="w-10 shrink-0" alt="Logo" />
 
@@ -19,272 +34,265 @@ const Header = () => {
            md:inline: lo muestra como inline a partir de tablets/PC (768px)
         */}
 
-        <span className="hidden tablet-vete:inline whitespace-nowrap text-white">
+        {/* <!> Agregar el tamanio de figma por variable telwind.config.js  text-white*/}
+        <span className="hidden tablet-vete:inline whitespace-nowrap ">
           VETERINARIA BELTRAMELLI<span className="text-vete-primary">.</span>
         </span>
 
       </div>
 
-
-      <nav className="flex items-center gap-4 md:gap-8 font-semibold text-white">
+      {/* <!> Agregar el tamanio de figma por variable telwind.config.js  text-white */}
+      <nav className="flex items-center gap-4 md:gap-8 font-semibold ">
         {/* Ocultamos los links en móvil para que no se amontonen, o podrías usar un menú hamburguesa luego */}
         <a href="#" className=" hover:text-vete-primary transition-colors">Servicios</a>
         <a href="#" className=" hover:text-vete-primary transition-colors">Tienda</a>
         <a href="#" className="hover:text-vete-primary transition-colors">Contacto</a>
 
+        {/* Icono carrito de compras */}
         <div className="bg-vete-primary p-2 rounded-full cursor-pointer hover:scale-110 transition-transform">
-          <img src="/images/branding/carrito.svg" className="w-5" alt="Carrito" />
+           <ShoppingCart size={16} className="text-white" />
         </div>
+       
       </nav>
-
-
-
-
-
-
-      {/* 
-      
-      <nav className="flex items-center gap-8 font-semibold">
-        <a href="#" className="hover:text-vete-primary">Servicios</a>
-        <a href="#" className="hover:text-vete-primary">Tienda</a>
-        <a href="#" className="hover:text-vete-primary">Contacto</a>
-        <div className="bg-vete-primary p-2 rounded-full"><img src="/images/branding/carrito.svg" className="w-4" /></div>
-      </nav> 
-      
-      */}
     </header>
   )
 };
 
 // <!DMI> Seccion Principal de la web  Compuesto de 2 div uno con el texto y otro 
+// bgColor: string -> Color de fondo de la seccion
+
 // <!>  En la version desktop queda muy vasio queda todo al medio y no queda bien abria que plantear
 // agrandar la letar o algo y que la imagen el limite sea mas grande NO quea bien en resoluiones grandes 
 // Estaria bueno agregar animacion de 3 fotos para la version grande para que me jore el contenido 
-
-const HeroSection = () => {
+// 
+const HeroSection = ({ bgColor }: { bgColor: string }) => {
   return (
     /* 
       1. Agregamos un wrapper (div) o usamos la sección como contenedor.
       2. 'max-w-[1200px]' limita el crecimiento en pantallas ultra-anchas.
       3. 'mx-auto' centra todo el bloque horizontalmente.
     */
-    <section className="w-full bg-vete-dark"> 
-      <div className="max-w-[1200px] mx-auto px-6 md:px-16 py-12 flex flex-col md:flex-row items-center gap-10">
-        
+    <section className={`relative w-full ${bgColor}`}>
+      <div className=" max-w-[1200px] mx-auto px-6 md:px-16 py-12 flex flex-col md:flex-row items-center gap-10 relative z-10">
+
         {/* Lado del Texto: Limitamos el ancho para que no se estire de más */}
         <div className="w-full desktop-vete:w-1/2 text-center desktop-vete:text-left flex flex-col items-center desktop-vete:items-start">
           <h1 className="text-5xl md:text-7xl font-black leading-[1.1] mb-6 text-vete-primary">
-            <span className="whitespace-nowrap">Cuidamos a</span> <br />
-            <span className="text-white">quienes</span> amas
+            <span className="whitespace-nowrap">Cuidamos <span className='text-vete-text-light'>a</span></span> <br />
+            <span className="text-vete-text-light">quienes</span> amas
           </h1>
-        
-          <p className="text-lg opacity-90 max-w-md leading-relaxed text-white">
+
+          {/* text-lg  _ text-white*/}
+          <p className="text-vete-body opacity-90 max-w-md leading-relaxed ">
             Tu mascota merece la mejor atención médica en un ambiente cálido y
-            profesional. Contamos con especialistas comprometidos con el bienestar 
-            integral de tus compañeros, brindando cuidado, dedicación y confianza 
+            profesional. Contamos con especialistas comprometidos con el bienestar
+            integral de tus compañeros, brindando cuidado, dedicación y confianza
             en cada etapa de su vida.
           </p>
         </div>
 
         {/* Lado de la Imagen: Controlamos el tamaño máximo para que no sea 'gigante' */}
         <div className="hidden desktop-vete:flex w-full md:w-1/2 justify-center desktop-vete:justify-end relative">
-          <img 
+          <img
             src="/images/branding/HeroSection.png"
-            className="rounded-[3rem] shadow-2xl object-cover max-w-full h-auto lg:max-h-[1100px]" 
+            className="rounded-[3rem] shadow-2xl object-cover max-w-full h-auto lg:max-h-[1100px]"
             alt="Mascotas"
           />
         </div>
 
       </div>
+
     </section>
   )
 };
 
 
-// <!DMI> Seccion Principal de la web  Compuesto de 2 div uno con el texto y otro 
-
-// <!> Version anterior 13-04
-// <!> Reparar el problema es que la imagen y el texto a una resolucion alta quea a la derecha si arego el w-full en la imagen 
-// queda demasiado gigante y ademas la aliniacion los bordes tendria que crecer o adpatarse segun el tamanio de la pantall.
-// capas colocarle un tamanio mazimo 
-// con esta 1148 resolucion de ancho es se ve bien despues emisa a alinearse a la izquierda y se empese ver desaliniado 1148
-
-
-// const HeroSection = () => {
-//   return (
-
-//     <section className="px-6 md:px-16 py-12 flex flex-col md:flex-row items-center gap-10">
-      
-//       {/* El texto ahora es w-full en móvil y w-1/2 en desktop */}
-//       <div className="w-full desktop-vete:w-1/2 text-center desktop-vete:text-left flex flex-col items-center desktop-vete:items-start">
-//         {/*Titulo Princiapl de HeroSeccion*/}      
-      
-
-//         <h1 className="text-5xl md:text-7xl font-black leading-[1.1] mb-6 text-vete-primary">
-//           {/* El span asegura que estas dos palabras siempre viajen juntas */}
-//           <span className="whitespace-nowrap">Cuidamos a</span> <br />
-//           <span className="text-white">quienes</span> amas
-//         </h1>
-      
-      
-//         {/* <h1 className="text-5xl md:text-7xl font-black leading-[1.1] mb-6 text-vete-primary">
-//           Cuidamos a <br /><span className="text-white">quienes</span> amas
-//         </h1> */}
-      
-      
-//         <p className="text-lg opacity-90 max-w-md ">
-//           Tu mascota merece la mejor atención
-//           médica en un ambiente cálido y
-//           profesional. Contamos con especialistas
-//           comprometidos con el bienestar integral
-//           de tus compañeros, brindando cuidado,
-//           dedicación y confianza en cada etapa
-//           de su vida.
-//         </p>
-//       </div>
-
-      
-//       {/* La imagen tiene 'hidden' por defecto y 'md:block' para aparecer en tablets/PC */}
-      
-//       {/*w-full*/} 
-//         <div className="hidden desktop-vete:block md:w-1/2 relative">
-//           <img 
-//             src="/images/branding/HeroSection.png"
-          
-//             className="rounded-[3rem] shadow-2xl  object-cover" 
-//             alt="Mascotas"
-//           />
-//         </div>
-      
-//       {/*
-//       <div className="w-1/2 relative">
-//         <img src="/images/branding/HeroSection.png" className="rounded-[3rem] shadow-2xl" />
-//       </div>
-//       */}
-
-//     </section>
-//   )
-// };
 
 
 
 
+//<!DMI>  Seccion donde muetro los servicios que proporciona la beterinaria 
+// Divididad por 3 secciones  
+// <> Animales produccion
+// <> Pequeños Animales
+// <> Equinos
+// resivo por parametro el color de fonde de el componente pra intercalarlo con el disenio de terminacion
+const ServicioSeccion = ({ bgColor }: { bgColor: string }) => {
 
-// <!DMI> Seccion Productos donde estan las tarjetas de los productos  
 
-const ProductsSection = () => {
   return (
-    <section className="px-6 md:px-16 py-20 bg-white/5 mt-10">
-      <h2 className="text-4xl font-black mb-12 text-white italic">
-        Lista de <span className="text-vete-primary">Productos</span>
-      </h2>
-
-      {/* Categoría Genérica para todas */}
-      {[
-        { title: "Ración", data: products.racion },
-        { title: "Accesorios", data: products.accesorios },
-        { title: "Medicamentos", data: products.racion } // Ajustar a products.medicamentos cuando esté listo
-      ].map((cat, idx) => (
-        <div key={idx} className="mb-20">
-          <div className="flex justify-between items-end mb-8 border-b border-vete-primary/30 pb-4">
-            <h3 className="text-5xl font-black text-vete-primary leading-none">{cat.title}</h3>
-            <button className="text-vete-primary font-bold hover:underline">Ver catálogo completo ➔</button>
-          </div>
-
-          {/* 
-              Lógica de columnas:
-              grid-cols-1: Móvil (1 tarjeta)
-              sm:grid-cols-2: Tablet pequeña (2 tarjetas)
-              lg:grid-cols-3: Tablet grande / Monitor pequeño (3 tarjetas)
-              xl:grid-cols-4: Monitor normal (4 tarjetas)
-          */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-y-10 gap-x-6 justify-items-center">
-            {cat.data.map(p => (
-              <ProductCard
-                key={p.id}
-                title={p.titulo}
-                desc={p.descripcion}
-                price={p.precio}
-                img={p.imagen}
-              />
-            ))}
-          </div>
+    <section className={`${bgColor} w-full py-20 px-6 flex flex-col items-center`}>
+      <div className="max-w-[1280px] w-full flex flex-col items-center gap-16">
+        
+        {/* Título Principal */}
+        <div className="text-center">
+          <h2 className="text-vete-h2 font-black text-vete-text-light italic uppercase tracking-tighter">
+            Servicios con los que <span className="text-vete-primary">contamos</span>
+          </h2>
+          <p className="mt-4 text-vete-body text-vete-text-light opacity-60">
+            Planes diseñados para asegurar la salud preventiva de sus animales.
+          </p>
         </div>
-      ))}
+
+        {/* Grid de Tarjetas */}
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center">
+          {serviciosData.map((s, i) => (
+            <ServiceCard 
+            key={i} 
+            {...s} 
+            phone={companyInfo.contact.adminPhone}/>
+          ))}
+        </div>
+      </div>``
     </section>
   );
 };
 
-// Version de 13-4-26
 
-// const ProductsSection = () => {
-//   return (
-//     <section className="px-16 py-20 bg-white/5 mt-10">
-//       <h2 className="text-4xl font-extrabold mb-12 text-white italic">
-//         Lista de <span className="text-vete-primary">Productos</span>
-//       </h2>
+const ProgramsSection = () => {
 
-//       {/* Categoría Ración */}
-//       <div className="mb-20">
-//         <div className="flex justify-between items-end mb-8 border-b border-vete-primary/30 pb-4">
-//           <h3 className="text-5xl font-black text-vete-primary leading-none">Ración</h3>
-//           <button className="text-vete-primary font-bold hover:underline">Ver catálogo completo ➔</button>
-//         </div>
-//         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-//           {products.racion.map(p => (
-//             <ProductCard
-//               key={p.id}
-//               title={p.titulo}        // El JSON dice 'titulo', el componente espera 'title'
-//               desc={p.descripcion}    // 'descripcion' -> 'desc'
-//               price={p.precio}        // 'precio' -> 'price'
-//               img={p.imagen}          // 'imagen' -> 'img'
-//             />
-//           ))}
-//         </div>
-//       </div>
+  return (
+    <section className="w-full py-24 px-6 bg-vete-secondary flex flex-col items-center gap-16">
+      <div className="max-w-3xl text-center space-y-4">
+        {/* Usamos tu vete-h2 (36px) */}
+        <h2 className="text-vete-h2 font-black text-vete- tracking-tighter uppercase italic">
+          Programas de <span className="text-vete-primary">Bienestar Animal</span>
+        </h2>
+        <p className="text-vete-text-light text-vete-body font-medium opacity-80 max-w-xl mx-auto">
+          Planes diseñados para asegurar la salud preventiva de tus animales a lo largo de toda su vida.
+        </p>
+      </div>
 
-//       {/* Categoría Accesorios */}
-//       <div className="mb-12">
-//         <div className="flex justify-between items-end mb-6">
-//           <h3 className="text-4xl font-black text-vete-primary">Accesorios</h3>
-//           <button className="text-vete-primary font-bold flex items-center gap-2">Ver catálogo completo ➔</button>
-//         </div>
-//         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-//           {products.accesorios.map(p => (
-//             <ProductCard
-//               key={p.id}
-//               title={p.titulo}        // El JSON dice 'titulo', el componente espera 'title'
-//               desc={p.descripcion}    // 'descripcion' -> 'desc'
-//               price={p.precio}        // 'precio' -> 'price'
-//               img={p.imagen}          // 'imagen' -> 'img'
-//             />
-//           ))}
-//         </div>
-//       </div>
 
-//       {/* Categoría Medicamentos */}
-//       <div className="mb-12">
-//         <div className="flex justify-between items-end mb-6">
-//           <h3 className="text-4xl font-black text-vete-primary">Medicamentos</h3>
-//           <button className="text-vete-primary font-bold flex items-center gap-2">Ver catálogo completo ➔</button>
-//         </div>
-//         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-//           {products.racion.map(p => (
-//             <ProductCard
-//               key={p.id}
-//               title={p.titulo}        // El JSON dice 'titulo', el componente espera 'title'
-//               desc={p.descripcion}    // 'descripcion' -> 'desc'
-//               price={p.precio}        // 'precio' -> 'price'
-//               img={p.imagen}          // 'imagen' -> 'img'
-//             />
-//           ))}
+      {/* Contenedor de Tarjetas Planes o Promociones*/}
+      <div className="w-full max-w-7xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center">
+        
+        {/* Carga de datos de Tarjeta Planes o Promociones */}   
+        {planData.map((plan, index) => (
+          <PlanCard 
+            key={index} 
+            {...plan} 
+            phoneWhattsApp={companyInfo.contact.adminPhone} // Inyectamos el teléfono de la empresa
+          />
+        ))}
 
-//         </div>
-//       </div>
+      </div>
+    </section>
+  );
+};
 
-//     </section>
-//   )
-//}
+
+const ProductsSection = ({ bgColor }: { bgColor: string }) => {
+  // --- ESTADO ---
+  // Guardamos lo que el usuario escribe en la barrita de búsqueda.
+  // searchTerm: el texto actual. setSearchTerm: la función para cambiarlo.
+  const [searchTerm, setSearchTerm] = useState(""); // Estado que maneja el input de busqueda
+
+  // --- LÓGICA DE FILTRADO (MEMOIZADA) ---
+  // useMemo hace que esta búsqueda SOLO se ejecute cuando cambia 'searchTerm'.
+  // Esto ahorra batería y memoria en el celular del cliente.
+  const filteredResults = useMemo(() => {
+    // 1. Si no hay nada escrito (está vacío), devolvemos 'null' para indicar que no hay búsqueda activa.
+    if (!searchTerm) return null;
+    
+    // 2. Unificamos todas las categorías en una sola "gran bolsa" para buscar en todo el local.
+    // Usamos el operador spread (...) para sacar los productos de sus listas y juntarlos.
+    const all = [...productsData.racion, ...productsData.accesorios];
+    
+    // 3. Filtramos: Devolvemos solo los productos cuyo título O descripción coincidan con la búsqueda.
+    
+    return all.filter(p => 
+      p.titulo.toLowerCase().includes(searchTerm.toLowerCase()) || // .toLowerCase() convierte todo a minúsculas para que "perro" encuentre "Perro".
+      p.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) // .includes() busca si el texto existe dentro de la frase
+    );
+  }, [searchTerm]);// se define esta funcion cada vez que 'searchTerm' cambie
+
+  return (
+    <section className={`${bgColor} px-6 md:px-16 py-20 mt-10`}>
+      <div className="max-w-[1400px] mx-auto">
+        
+        {/* --- CONTENEDOR CABECERA DE PRODUCTOS --- */}
+        <div className="
+          /* --- Posición --- */
+          flex flex-col tablet-vete:flex-row      /* Vertical en móvil, horizontal en 858px */
+          tablet-vete:justify-between            /* Separa título de buscador en desktop */
+          items-center                           /* Centrado vertical perfecto */
+          gap-8                                  /* Distancia entre elementos */
+          mb-16                                  /* Margen inferior del bloque entero */
+        ">
+
+          {/* Titulo de la lista de productos */}    
+            <h2 className="
+              /* --- Texto --- */
+              text-4xl font-black italic text-vete-text-light 
+              uppercase tracking-tighter
+              /* --- Ajuste --- */
+              tablet-vete:mb-0   /* Quitamos margen para centrar con el buscador */
+            ">
+            Lista de <span className="text-vete-primary">Productos</span>
+          </h2>
+
+          {/* BUSCADOR */}
+          <div className="
+            /* --- Posición --- */
+            relative w-full max-w-md /* Ancho completo en móvil hasta 448px */
+            /* --- Decoración --- */
+            group
+          ">
+            <Search className="
+              /* --- Icono --- */
+              absolute left-4 top-1/2 -translate-y-1/2 text-vete-text-light 
+              group-focus-within:scale-110 transition-transform" 
+              size={20} 
+            />
+            <input 
+              type="text"
+              placeholder="¿Qué estás buscando?"
+              className="
+                /* --- Estructura --- */
+                w-full pl-12 pr-4 py-4 rounded-2xl 
+                /* --- Colores --- */
+                bg-white/10 border-2 border-vete-primary/30 text-vete-text-light 
+                /* --- Estados --- */
+                placeholder:text-vete-text-light/40 focus:outline-none focus:border-vete-primary 
+                focus:bg-white/20 transition-all shadow-xl"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)} // cada vez que el usuario escribe algo, actualiza el estado 'searchTerm'
+            />
+          </div>
+        </div>
+
+        {/* contenedor del titulo */}
+        <div className=''>
+          {/* --- RENDERIZADO CONDICIONAL --- */}
+          {searchTerm ? ( // si hay algo en searchTerm muestra los resultados, si no, muestra el catalogo normal
+            // Vista de Resultados
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              {/* Titulo de los resultados*/}
+              <h3 className="text-2xl font-bold text-vete-primary mb-8 italic">Resultados para "{searchTerm}"</h3>
+              {/* Grid de resultados*/}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 justify-items-center">
+                {/* Itera sobre los resultados y muestra la tarjeta de producto*/}
+                {filteredResults?.map(p => <ProductCard key={p.id} title={p.titulo} desc={p.descripcion} price={p.precio} img={p.imagen} />)}
+                {/* Si no hay resultados muestra un mensaje*/}
+                {filteredResults?.length === 0 && <p className="text-white/50">No se encontraron productos.</p>}
+              </div>
+            </div>
+          ) : (
+            // Vista Normal por Categorías
+            <div className="space-y-20">
+              <CategoryGroupCard title="Ración" data={productsData.racion} />
+              <CategoryGroupCard title="Accesorios" data={productsData.accesorios} />
+              {/* Agregá Medicamentos aquí cuando el JSON esté listo */}
+            </div>
+          )}
+        </div>
+
+      </div>
+    </section>
+  );
+};
+
 
 // Componente auxiliar para evitar repetir código en Misión, Visión y Valores
 const InfoSection = ({ title, children, image, reversed = false }: { title: string, children: React.ReactNode, image: string, reversed?: boolean }) => (
@@ -305,9 +313,9 @@ const InfoSection = ({ title, children, image, reversed = false }: { title: stri
   </section>
 );
 
-const AboutSection = () => {
+const AboutSection = ({ bgColor }: { bgColor: string }) => {
   return (
-    <div className="bg-white/5">
+    <div className={`${bgColor}`}>
       {/* Misión */}
       <InfoSection
         title="Misión"
@@ -346,7 +354,8 @@ const AboutSection = () => {
         title="Valores"
         image="/images/branding/Valores.png"
       >
-        <div className="space-y-4 text-white">
+        {/* text-white */}
+        <div className="space-y-4">
 
           <p><strong className="text-vete-primary">Compromiso con la vida: </strong>
             Cuidamos cada animal con responsabilidad, vocación y respeto, entendiendo
@@ -373,178 +382,90 @@ const AboutSection = () => {
   );
 };
 
-// const Footer = () => {
-//   return (
-//     <footer className="main-footer">
-//       <div className="footer-container">
-
-//         {/* Sección del Logo */}
-//         <div className="flex items-center gap-2 font-black text-xl">
-//             <img src="/logo.png" className="w-10" /> VETERINARIA BELTRAMELLI<span className="text-vete-primary">.</span>
-//         </div>
-
-//         {/* Sección de Iconos */}
-//         <div className="footer-icons">
-
-//         </div>
-//       </div>
-//     </footer>
-//   );
-
-
-// };
-
-
-
-
-
-
-
-
-// export const Footer = () => {
-//   return (
-//     <>
-//       {/* 1. IMAGEN DE FONDO (PASTO) 
-//           La ponemos 'fixed' para que siempre esté al fondo del navegador, 
-//           pero con un z-index bajo para que no tape el contenido. */}
-//       <div className="fixed bottom-0 left-0 w-full h-20 pointer-events-none z-0 opacity-40">
-//         <img
-//           src="/images/branding/NavPasto.png"
-//           alt="Nav Pasto"
-//           className="w-full h-full object-cover object-top"
-//         />
-
-//           {/* SECCIÓN C: Redes Sociales */}
-//           <div className="space-y-4">
-//             <h4 className="text-vete-primary font-bold uppercase tracking-widest text-sm">Seguinos</h4>
-//             <div className="flex gap-4">
-//               <a href="#" className="p-3 bg-white/5 rounded-full hover:bg-vete-primary transition-all group">
-//                 <Instagram size={24} className="group-hover:text-white" />
-//               </a>
-//               <a href="#" className="p-3 bg-white/5 rounded-full hover:bg-vete-primary transition-all group">
-//                 <Facebook size={24} className="group-hover:text-white" />
-//               </a>
-//               <a href="#" className="p-3 bg-white/5 rounded-full hover:bg-vete-primary transition-all group">
-//                 <MapPin size={24} className="group-hover:text-white" />
-//               </a>
-//             </div>
-//           </div>  
-
-
-//       </div>
-
-
-//       {/* 2. EL FOOTER REAL
-//           Usamos 'relative' y 'z-10' para que flote por encima del pasto.
-//           'backdrop-blur' hace que el pasto se vea suave por detrás. */}
-//       <footer className="relative z-10 bg-vete-dark/90 backdrop-blur-sm border-t border-white/10 px-6 md:px-16 py-12 mt-20">
-//         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
-
-//           {/* SECCIÓN A: Logo y Eslogan */}
-//           <div className="space-y-4">
-//             <div className="flex items-center gap-2 font-black text-xl text-white">
-//               <img src="/logo.png" className="w-10" alt="Logo" />
-//               VETERINARIA BELTRAMELLI<span className="text-vete-primary">.</span>
-//             </div>
-//             <p className="text-gray-400 text-sm max-w-xs">
-//               Comprometidos con la salud de tus animales de producción y el bienestar de tus mascotas en Salto.
-//             </p>
-//           </div>
-
-//           {/* SECCIÓN B: Contacto Rápido */}
-//           <div className="space-y-4">
-//             <h4 className="text-vete-primary font-bold uppercase tracking-widest text-sm">Contacto</h4>
-//             <ul className="space-y-3 text-gray-300">
-//               <li className="flex items-center gap-3 hover:text-white transition">
-//                 <Phone size={18} className="text-vete-primary" />
-//                 <span>092 444 510</span>
-//               </li>
-//               <li className="flex items-center gap-3 hover:text-white transition">
-//                 <Mail size={18} className="text-vete-primary" />
-//                 <span>contacto@vete-beltramelli.com</span>
-//               </li>
-//               <li className="flex items-center gap-3 hover:text-white transition">
-//                 <MapPin size={18} className="text-vete-primary" />
-//                 <span>Salto, Uruguay</span>
-//               </li>
-//             </ul>
-//           </div>
-
-//           {/* SECCIÓN C: Redes Sociales */}
-//           <div className="space-y-4">
-//             <h4 className="text-vete-primary font-bold uppercase tracking-widest text-sm">Seguinos</h4>
-//             <div className="flex gap-4">
-//               <a href="#" className="p-3 bg-white/5 rounded-full hover:bg-vete-primary transition-all group">
-//                 <Instagram size={24} className="group-hover:text-white" />
-//               </a>
-//               <a href="#" className="p-3 bg-white/5 rounded-full hover:bg-vete-primary transition-all group">
-//                 <Facebook size={24} className="group-hover:text-white" />
-//               </a>
-//               <a href="#" className="p-3 bg-white/5 rounded-full hover:bg-vete-primary transition-all group">
-//                 <MapPin size={24} className="group-hover:text-white" />
-//               </a>
-//             </div>
-//           </div>
-
-//         </div>
-
-//         {/* Créditos finales */}
-//         <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500 font-medium">
-//           <p>© 2024 Veterinaria Beltramelli - Todos los derechos reservados.</p>
-//           <p className="tracking-widest uppercase opacity-50">Infraestructura por NorthCode</p>
-//         </div>
-//       </footer>
-//     </>
-//   );
-// };
-
-
-
-export const Footer = () => {
+// <!DMI> Pie de la web en este tien la animaion de pato y ademas el pie debajo 
+// bgColor: string - Color de fondo del footer  
+export const Footer = ({ bgColor }: { bgColor: string }) => {
   return (
     <>
-      {/* 1. BARRA FLOTANTE DE PASTO + REDES SOCIALES
-          Esta barra siempre está al fondo mientras haces scroll.
-      */}
-      <div className="fixed bottom-0 left-0 w-full h-24 z-20 flex flex-col items-center justify-end pb-4">
-        {/* Imagen del pasto (Fondo de la barra flotante) */}
+      {/* 1. BARRA FLOTANTE DE PASTO + BOTONES */}
+      <div className={`fixed bottom-0 left-0 w-full h-24 z-20 flex items-end justify-between px-4 md:px-16 pb-4 pointer-events-none`}>
+
+        {/* Imagen del pasto */}
         <img
           src="/images/branding/NavPasto.png"
           alt="Nav Pasto"
           className="absolute bottom-0 left-0 w-full h-full object-cover object-top opacity-60 pointer-events-none z-0"
         />
 
-        {/* Iconos de Redes Sociales sobre el pasto flotante */}
-        <div className="relative z-30 flex gap-6 mb-2">
-          <a href="#" className="p-2 bg-vete-dark/50 backdrop-blur-md rounded-full border border-white/20 hover:bg-vete-primary transition-all shadow-lg group">
-            <Instagram size={20} className="text-white group-hover:scale-110" />
+        {/* =========================================
+            LADO IZQUIERDO: ADMINISTRACIÓN (Verde ) 
+            ========================================= */}
+        <WhatsAppButton
+          label="Administración"
+          phone={companyInfo.contact.adminPhone}
+          bgColor="bg-vete-tertiary"
+        />
+
+        {/* 
+          =============================================================================
+          BARRA CENTRAL: ACCESOS RÁPIDOS Y REDES
+          - Contenedor con Posicionamiento Absoluto (Centrado Horizontal)
+          - Efecto Backdrop Blur para legibilidad sobre el pasto animado
+          ============================================================================= 
+        */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4 pointer-events-auto">
+
+          {/* Link: Facebook */}
+          <a href={companyInfo.socials.facebook} target="_blank" rel="noreferrer"
+            className="p-3 bg-black/60 backdrop-blur-md rounded-full border border-white/10 hover:bg-vete-primary transition-all shadow-lg text-white hover:scale-110">
+            <Facebook size={20} />
           </a>
-          <a href="#" className="p-2 bg-vete-dark/50 backdrop-blur-md rounded-full border border-white/20 hover:bg-vete-primary transition-all shadow-lg group">
-            <Facebook size={20} className="text-white group-hover:scale-110" />
+
+          {/* 
+            ACCESO A MAPA / UBICACIÓN
+            Se incrementa el tamaño (size={26}) y se destaca visualmente.
+          */}
+          <a href="#mapa"
+            className="p-3 bg-black/60 backdrop-blur-md rounded-full border border-white/20 hover:bg-vete-primary transition-all shadow-xl text-white hover:scale-125 group">
+            <MapPin size={26} className="group-hover:text-white transition-colors" />
           </a>
+
+          {/* Link: Instagram */}
+          <a href={companyInfo.socials.instagram} target="_blank" rel="noreferrer"
+            className="p-3 bg-black/60 backdrop-blur-md rounded-full border border-white/10 hover:bg-vete-primary transition-all shadow-lg text-white hover:scale-110">
+            <Instagram size={20} />
+          </a>
+
         </div>
 
-        {/* <p className="relative z-30 text-[10px] text-white/40 font-bold uppercase tracking-widest pointer-events-none">
-          Salto, Uruguay
-        </p> */}
+        
+        {/* =========================================
+            LADO DERECHO: EMERGENCIA 24HS (Rojo) 
+            ========================================= */}
+        <WhatsAppButton
+          label="Emergencia"
+          phone={companyInfo.contact.emergencyPhone}
+          bgColor="bg-vete-error"
+          isReversed={true} // <--- Este parámetro activa el modo espejo
+        />
 
       </div>
-
 
       {/* 2. EL FOOTER REAL (El que aparece al final de la página)
           Tiene un z-index de 40 para "tapar" la barra flotante cuando llegas al final.
       */}
-      <footer className="relative z-40 bg-vete-dark border-t border-white/10 px-6 md:px-16 py-12 mt-40 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 text-white">
+      <footer className={`${bgColor} relative z-40 border-t border-white/10 px-6 md:px-16 py-12 mt-40 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]`}>
+        {/* text-white */}
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
 
           {/* SECCIÓN A: Logo */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 font-black text-xl">
               <img src="/logo.png" className="w-10" alt="Logo" />
-              VETERINARIA BELTRAMELLI<span className="text-vete-primary">.</span>
+              {companyInfo.name}<span className="text-vete-primary">.</span>
             </div>
-            <p className="text-gray-400 text-sm">
-              Cuidado experto y calidez humana en cada etapa de su vida.
+            <p className="text-vete-primary text-sm">
+              Cuidamos<span className='text-vete-text-light'> a quienes</span> amas
             </p>
           </div>
 
@@ -571,64 +492,69 @@ export const Footer = () => {
 
 
 
-
-// <!DMI> Seccion Mapas
-const MapsSection = () => {
+const MapsSection = ({ bgColor }: { bgColor: string }) => {
   return (
-    <section className="px-6 md:px-16 py-20 ">
-      {/* Contenedor Principal con fondo suavizado */}
+    <section className={`${bgColor} px-6 md:px-16 py-20`}>
       <div className="max-w-7xl mx-auto bg-vete-soft rounded-[3rem] p-8 md:p-16 flex flex-col lg:flex-row gap-12 items-center">
 
-        {/* LADO IZQUIERDO: Información de contacto */}
+        {/* LADO IZQUIERDO: Información */}
         <div className="w-full lg:w-1/2 space-y-8">
           <div className="space-y-4">
-            <h3 className="text-4xl font-black text-vete-header leading-tight">
-              ¿Dónde estamos?
-            </h3>
-            <p className="text-vete-text text-lg opacity-80 max-w-sm">
-              Te esperamos en Salto con la mejor atención para tu mascota.
+            <h3 className="text-vete-primary text-4xl font-black  text-vete-header leading-tight italic">
+              ¿<span className='text-vete-text-light'> Dónde estamos</span>?
+            </h3>   {/* <!> text-vete-text Creo que no ase nada sacar   */}
+            <p className=" text-lg opacity-90 leading-relaxed">
+              Te esperamos en Salto con una <span className="text-vete-header  font-bold text-xl">instalación de primera</span>, 
+              equipada con sala de cirugía canina de vanguardia y atención especializada.
             </p>
           </div>
 
           {/* Bloques de Información */}
-          <div className="space-y-6">
-            {/* Dirección */}
-            <div className="flex items-center gap-4">
-              <div className="bg-white/60 p-3 rounded-2xl shadow-sm text-vete-primary">
+          <div className="grid grid-cols-1 gap-6">
+            
+            {/* Ubicación Geográfica */}
+            <div className="flex items-start gap-4">
+              <div className="bg-white/60 p-3 rounded-2xl shadow-sm text-vete-primary shrink-0 mt-1">
                 <MapPin size={24} />
               </div>
               <div>
                 <p className="font-bold text-vete-header text-lg">Salto, Uruguay</p>
-                <p className="text-vete-text opacity-70">Calle 1 N° 5657</p>
+                <p className="text-vete-text opacity-70">Barrio Volcán, Salto Uruguay</p>
               </div>
             </div>
 
-            {/* Teléfono */}
-            <div className="flex items-center gap-4">
-              <div className="bg-white/60 p-3 rounded-2xl shadow-sm text-vete-primary">
-                <Phone size={24} />
+            {/* Horarios Detallados */}
+            <div className="flex items-start gap-4">
+              <div className="bg-white/60 p-3 rounded-2xl shadow-sm text-vete-primary shrink-0 mt-1">
+                <Clock size={24} />
+              </div>
+              <div className="space-y-1">
+                <p className="font-bold text-vete-header text-lg">Horarios de Atención</p>
+                <div className="text-vete-text text-sm space-y-1 opacity-80 font-medium">
+                  {/* Dias de la semana que abre */}
+                  <p>{companyInfo.location.schedule.weekdays}</p> 
+                  
+                </div>
+              </div>
+            </div>
+
+            {/* Emergencias 24h - Resaltado */}
+            <div className="flex items-center gap-4 bg-vete-header/5 p-4 rounded-3xl border border-vete-header/10">
+              <div className="bg-red-500 p-3 rounded-2xl shadow-sm text-white shrink-0 animate-pulse">
+                <Stethoscope size={24} />
               </div>
               <div>
-                <p className="font-bold text-vete-header text-lg">092 444 510</p>
-                <p className="text-vete-text opacity-70">Lunes a Sábado 09:00 - 19:00</p>
+                <p className="font-bold text-red-600 text-lg uppercase tracking-tight">Emergencias 24 Horas</p>
+                <p className="text-vete-text text-sm opacity-70">Disponibles en todo momento para tu mascota</p>
               </div>
             </div>
           </div>
 
-          {/* Redes Sociales */}
-          <div className="flex gap-4 pt-4">
-            <a href="#" className="bg-white/60 p-3 rounded-full text-vete-header hover:bg-vete-primary hover:text-white transition-all shadow-sm">
-              <Instagram size={24} />
-            </a>
-            <a href="#" className="bg-white/60 p-3 rounded-full text-vete-header hover:bg-vete-primary hover:text-white transition-all shadow-sm">
-              <Facebook size={24} />
-            </a>
-          </div>
+ 
         </div>
 
         {/* LADO DERECHO: Mapa */}
         <div className="w-full lg:w-1/2 relative h-[450px]">
-          {/* Badge Flotante sobre el mapa */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-vete-header/90 backdrop-blur-md px-6 py-3 rounded-2xl flex items-center gap-3 shadow-2xl border border-white/10">
             <div className="bg-vete-primary p-2 rounded-lg">
               <MapPin size={20} className="text-white" />
@@ -636,54 +562,71 @@ const MapsSection = () => {
             <span className="text-white font-bold whitespace-nowrap">Salto, Uruguay</span>
           </div>
 
-          {/* Iframe del Mapa */}
           <iframe
             title="Ubicación Veterinaria Beltramelli"
-            className="w-full h-full rounded-[2.5rem] shadow-inner grayscale-[20%] hover:grayscale-0 transition-all duration-700"
-            src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3405.8225168916!2d-57.906870999999995!3d-31.391457!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMzHCsDIzJzI5LjMiUyA1N8KwNTQnMjQuNyJX!5e0!3m2!1sen!2suy!4v1774287344710!5m2!1sen!2suy"
+            className="w-full h-full rounded-[2.5rem] shadow-inner grayscale-[10%] hover:grayscale-0 transition-all duration-700"
+            src={companyInfo.location.googleMapsUrl}
             style={{ border: 0 }}
             allowFullScreen={true}
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           ></iframe>
         </div>
-
       </div>
     </section>
   );
 };
 
 
-// Tiene un erro de cuador negro latearl al redimencionar 12-04-2026
-// export default function LandingPage() {
-//   return (
-//     <div className="bg-vete-dark min-h-screen font-sans text-white">
-
-//       <Header />
-//       <HeroSection />
-//       <ProductsSection />
-//       <AboutSection />
-//       <MapsSection />
-//       <Footer />
-
-//     </div>
-//   )
-// };
-
-
 export default function LandingPage() {
   return (
     /* Agregamos overflow-x-hidden para evitar la franja lateral */
-                   // bg-vete-dark min-h-screen font-sans text-white overflow-x-hidden w-full relative border-0 m-0 p-0 
-    <div className="bg-vete-dark min-h-screen font-sans text-white overflow-x-hidden w-full relative border-0 m-0 p-0">
-      <Header />
+    <div className="bg-vete-dark min-h-screen font-sans text-vete-text-light overflow-x-hidden w-full relative border-0 m-0 p-0">
+      <Header bgColor='bg-vete-secondary' />
       <main>
-        <HeroSection />
-        <ProductsSection />
-        <AboutSection />
-        <MapsSection />
+        <HeroSection bgColor='bg-vete-secondary' />
+
+        {/* separador V1*/}
+        <SectionDivider
+          topColor="bg-vete-dark"
+          bottomColor="text-vete-secondary"
+        />
+
+        <ProductsSection bgColor='bg-vete-dark' />
+
+        {/* separador V2*/}
+        <SectionDivider
+          topColor="bg-vete-secondary"
+          bottomColor="text-vete-dark"
+        />
+
+        {/* Seccion de programas de bienestar animal */}
+        <ServicioSeccion bgColor='bg-vete-secondary' />
+
+        {/* Seccion de programas de bienestar animal  <!>Anda per agregr ala clase para que qude igual debe estar eredando algo */}
+        <ProgramsSection /> 
+
+        {/* separador V1*/}
+        <SectionDivider
+          topColor="bg-vete-dark"
+          bottomColor="text-vete-secondary"
+        />
+
+        {/* Seccion de quienes somos */}
+        <AboutSection bgColor='bg-vete-dark' />
+
+        {/* separador V2*/}
+        <SectionDivider
+          topColor="bg-vete-secondary"
+          bottomColor="text-vete-dark"
+        />
+        
+        {/* Seccion de mapa */}
+        <MapsSection bgColor='bg-vete-secondary' />
       </main>
-      <Footer />
+
+      {/* Seccion inverior de la web Contacto etc*/}
+      <Footer bgColor='bg-vete-secondary' />
     </div>
   )
 };

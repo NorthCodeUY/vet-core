@@ -1,8 +1,14 @@
-// src/components/ProductCard.tsx
+// apps/web-client/src/components/ProductCard.tsx
 
-import { ShoppingCart, MessageCircle } from 'lucide-react';
+import { ShoppingCart} from 'lucide-react';
 
-interface Props { title: string; desc: string; price: number; img: string; }
+interface Props { 
+  title: string; 
+  desc: string; 
+  price: number; 
+  img: string; 
+}
+
 /**
  * Componente de UI para representar una tarjeta de producto en el catálogo.
  * 
@@ -14,35 +20,6 @@ interface Props { title: string; desc: string; price: number; img: string; }
  * @returns {JSX.Element} Una tarjeta con diseño responsivo, formateo de moneda local 
  * e iconos de acción para carrito y WhatsApp.
  */
-
-
-// <!> No queda bien se va el fondo y sigue tomando el ancho 
-
-// export const ProductCard = ({ title, desc, price, img }: Props) => (
-//   <div className="">
-//     {/* Imagen con altura fija para mantener proporciones */}
-//     <div className="w-full h-40 shrink-0">
-//       <img src={img} alt={title} className="rounded-2xl w-full h-full object-cover" />
-//     </div>
-    
-//     <h4 className="text-vete-primary font-bold text-lg mt-2 line-clamp-1">{title}</h4>
-//     <p className="text-vete-dark text-sm line-clamp-2 h-10">{desc}</p>
-    
-//     <div className="flex justify-between items-center mt-auto">
-//       <span className="text-vete-primary font-black text-xl">${price.toLocaleString('es-UY')}</span>
-//       <div className="flex gap-2">
-//         <MessageCircle className="text-green-500 fill-green-500 cursor-pointer hover:scale-110 transition" />
-//         <div className="bg-vete-primary p-2 rounded-full cursor-pointer hover:bg-vete-dark transition">
-//           <ShoppingCart size={16} className="text-white" />
-//         </div>
-//       </div>
-//     </div>
-//   </div>
-// );
-
-
-// Version 13-04-26
-
 export const ProductCard = ({ title, desc, price, img }: Props) => (                  
   <div className="bg-vete-soft/50 p-6 rounded-[2rem] flex flex-col gap-2 min-w-[280px]">
     {/* Imagen del producto */}
@@ -58,9 +35,7 @@ export const ProductCard = ({ title, desc, price, img }: Props) => (
       {/* Botones de accion */}
       <div className="flex gap-2">
           {/* Boton de whatsapp */}
-                {/* /images/branding/LogoWhtSapp.svg */}
           <img src="/images/branding/LogoWhtSapp.svg" alt="WhatsApp" className="w-8 h-8" />
-          {/* <MessageCircle className="text-green-500 fill-green-500 cursor-pointer" /> */}
         <div className="bg-vete-primary p-2 rounded-full cursor-pointer">
           {/* Boton de carrito */}
           <ShoppingCart size={16} className="text-white" />

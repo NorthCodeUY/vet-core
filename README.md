@@ -58,10 +58,14 @@ Desarrollado con ❤️ en Artigas/Salto, Uruguay por **NorthCode**.
 
 ### Estructura General del Proyecto
 
-```text
+
+
+## <!> Estructur de baken sugerido de proeycto comparando miproyecot contaduria barion 4 mayo
+
+``` text
 /veterinaria-salto
 ├── apps/
-│   ├── web-client/          # React (E-commerce y Portal Clientes)
+│    web-client/          # React (E-commerce y Portal Clientes)
 │   └── admin-app/           # Flutter (Gestión interna y Médica)
 ├── services/
 │   └── api-backend/         # FastAPI
@@ -73,32 +77,14 @@ Desarrollado con ❤️ en Artigas/Salto, Uruguay por **NorthCode**.
 └── README.md                # Documentación técnica centralizada
 ```
 
-## Estructura de proyecto sugerida para web-client
 
-```text
-/apps/web-client/src
-├── assets/          # Estilos globales, imágenes de Salto/Vete
-├── components/      # UI Atoms/Molecules (Botones, Inputs reutilizables)
-├── config/          # Variables de entorno, instancias de Axios/Fetch
-├── features/        # LÓGICA POR MÓDULO (E-commerce, Turnos, Perfil)
-│   ├── shop/
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── services/
-│   │   └── ShopPage.tsx
-│   └── appointments/
-├── hooks/           # Custom hooks globales
-├── store/           # Manejo de estado (Zustand o Context)
-└── App.tsx
-```
 
-# <!> Agregar la etructura sujerida
 
-Estrucutra intera de Proyecto web-client
-components/: Botones, inputs y UI atómica reutilizable.
-features/: Lógica de negocio pesada (ej: features/ecommerce, features/appointments).
-layout/: Navbar, Footer y contenedores principales.
-hooks/: Lógica compartida de React.
+
+Estructura de proyecto que se que funciona Cantaduria barone
+https://github.com/northcodeuy-debug/Proyecto-EstudioContable-
+
+
 
 
 
@@ -142,3 +128,6 @@ hooks/: Lógica compartida de React.
 ├── services/        # Lógica de negocio (Donde ocurre la "magia")
 └── main.py
 ```
+
+
+

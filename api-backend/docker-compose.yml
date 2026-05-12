@@ -1,1 +1,31 @@
-# docker-compose
+# /api-backend/docker-compose.yml
+services:
+  db:
+    image: postgres:15
+    container_name: vet_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+# NUEVO SERVICIO: Panel de control web
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: vet_pgadmin
+    restart: always
+    environment:
+      # Correo y clave para entrar al panel web (puedes poner lo que quieras)
+      PGADMIN_DEFAULT_EMAIL: ${DBADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${DBADMIN_PASSWORD}
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

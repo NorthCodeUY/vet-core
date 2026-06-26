@@ -43,7 +43,87 @@ Este repositorio contiene el núcleo del sistema, diseñado como una solución *
 └── README.md                # Documentación técnica centralizada
 ``` 
 
+
+## Modelo Entidad relacion 
+
+
+El modelo de datos está estructurado para manejar el historial de precios en el carrito y la gestión de productos.
+
+
+```mermaid
+erDiagram
+    %% Relaciones principales
+    CLIENTE ||--o{ PEDIDO : "realiza"
+    PEDIDO ||--|{ PEDIDO_DETALLE : "contiene"
+    PEDIDO_DETALLE ||--|| PRODUCTO : "tiene"
+    PRODUCTO ||--|| PRODUCTO_SUBCATEGORIA : "tiene"
+    PRODUCTO_SUBCATEGORIA ||--|| SUBCATEGORIA : "tiene"
+    PAGO ||--|| PEDIDO : "tiene"
+    
+
+    CLIENTE {
+        int cli_id PK " Generacion automatica a trav"
+        string cli_nombre "Nombre del cliente"
+        string cli_whatsapp "Numero de whatssapp del cliente"
+        string cli_token "Token de acceso"
+        string cli_direccion "Direccion del cliente"
+    }
+
+    PRODUCTO {
+        int prod_id PK "Generacion automatica a trav"
+        string prod_nombre "Nombre del producto"
+        string prod_descripcion "Descripcion del producto"
+        float prod_precio "Precio actual del producto"
+        int prod_stock "Stock del producto"
+        string prod_categoria_nombre "Ej: `Medicamentos`, `Alimento`, `Accesorios`, `Medicamentos Animales Pequenios`"
+    }
+
+    PRODUCTO_SUBCATEGORIA {
+        int producto_id PK, FK "Cliente que realiza el pedido"
+        int subc_id PK, FK "Subcategoria del producto"
+    }
+
+    SUBCATEGORIA {
+        int subc_id PK "Generacion Automaticamtente"
+        string subc_nombre UK "Ej: Perro, Gato, Caballo, Oveja"
+    }
+
+    PEDIDO {
+        int ped_id PK "Generacion Automaticamtente"
+        int ped_cli_id FK "ID del cliente que realiza el pedido"
+        datetime ped_fecha_emision "Fecha de emision del pedido"
+        string ped_codigo_qr "Token de entrega, La idea es que genere un codigo para poder acceder deasde afuera atraves de el watsap"
+        datetime ped_fecha_entrega "Fecha de entrega del pedido"
+        string ped_estado "Ej: Generado, Armado, Entregado"
+        string ped_direccion_entrega "Direccion de entrega del pedido"
+        float ped_total "Total del pedido"
+        boolean ped_pagado "Indica si el pedido fue pagado"
+    }
+
+    PEDIDO_DETALLE {
+        int pedido_id PK, FK "ID del pedido"
+        int producto_id PK, FK "ID del producto"
+        int pd_cantidad "Cantidad del producto"
+        float pd_precio_venta "Precio capturado al momento"
+    }
+
+    PAGO {
+        int pag_id PK "Generacion Automaticamtente"
+        int ped_id FK "ID del pedido"
+        datetime pag_fecha "Fecha de pago"
+        string pag_detalle "Ej: Transferencia, Efectivo"
+        float pag_monto "Monto del pago"
+    }
+```
+
+
 ## 📊 [Documentacion Frontend Web Clientes](./apps/web-client/README.md)
+
+## 📊 [Documentacion Backend](./api-backend/README.md)
+
+
+
+
 
 ## 📈 Filosofía de Desarrollo
 
@@ -69,138 +149,3 @@ Desarrollado con ❤️ en Artigas/Salto, Uruguay por **NorthCode**.
 > **Topics (Etiquetas):** Agregá etiquetas como `veterinary-software`, `react`, `fastapi`, `flutter`, `snig-uruguay`, `northcode`. Esto ayuda a que el repo se posicione mejor.
 
 
-### Estructura General del Proyecto
-
-
-
-## <!> Estructur de baken sugerido de proeycto comparando miproyecot contaduria barion 4 mayo
-
-``` text
-/veterinaria-salto
-├── apps/
-│    web-client/          # React (E-commerce y Portal Clientes)
-│   └── admin-app/           # Flutter (Gestión interna y Médica)
-├── services/
-│   └── api-backend/         # FastAPI
-├── shared/                  # Documentación, Assets globales, Prototipos Figma
-├── infra/
-│   ├── docker/              # Dockerfiles específicos y configs
-│   └── nginx/               # Configuración de proxy inverso
-├── docker-compose.yml       # Orquestador local
-└── README.md                # Documentación técnica centralizada
-```
-
-
-
-
-
-Estructura de proyecto que se que funciona Cantaduria barone
-https://github.com/northcodeuy-debug/Proyecto-EstudioContable-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Estructura de poryecto sujerida para backend
-
-```text
-/services/api-backend/app
-├── api/             # Endpoints (v1, v2)
-│   └── v1/
-│       ├── endpoints/
-│       └── api.py
-├── core/            # Configuración, Seguridad (JWT), Constantes
-├── db/              # Sesión de Base de Datos y Migraciones
-├── models/          # Modelos de base de datos (SQLAlchemy/SQLModel)
-├── schemas/         # Pydantic models (Validación de datos)
-├── services/        # Lógica de negocio (Donde ocurre la "magia")
-└── main.py
-```
-
-
-## Modelo Entidad relacion 
-
-
-El modelo de datos está estructurado para manejar el historial de precios en el carrito y la gestión de productos.
-
-
-```mermaid
-erDiagram
-    %% Relaciones principales
-    CLIENTE ||--o{ PEDIDO : "realiza"
-    PEDIDO ||--|{ PEDIDO_DETALLE : "contiene"
-    PRODUCTO ||--o{ PEDIDO_DETALLE : "se vende en"
-    PRODUCTO ||--o{ SUBCATEGORIA : "aplica a"
-    PEDIDO ||--o{ PAGO : "genera"
-    SUBCATEGORIA ||--o{ PRODUCTO : "agrupa"
-
-    CLIENTE {
-        int id PK
-        string nombre
-        string whatsapp
-        string token
-    }
-
-    PRODUCTO {
-        int id PK
-        string nombre
-        string descripcion
-        float precio_actual
-        int stock
-        int categoria_id FK
-        string categoria_nombre "Ej: Medicamentos, Alimento, Accesorios"
-    }
-
-    SUBCATEGORIA {
-        int id PK
-        string nombre "Ej: Perro, Gato, Caballo, Oveja"
-    }
-
-    PEDIDO {
-        int id PK
-        int cliente_id FK
-        datetime fecha
-        string codigo_qr "Token de entrega"
-        datetime fecha_entrega
-        string estado "Ej: Armado, Entregado"
-    }
-
-    PEDIDO_DETALLE {
-        int pedido_id PK, FK
-        int producto_id PK, FK
-        int cantidad
-        float precio_unitario_venta "Precio capturado al momento"
-    }
-
-    PAGO {
-        int id PK
-        int pedido_id FK
-        datetime fecha
-        string detalle "Ej: Transferencia, Efectivo"
-    }
-```

@@ -1,67 +1,20 @@
+# /api-backend/app/main.py
 
-// api-backend/app/main.py
+from .router import inventory # Importa el router
 
-import 'package:flutter/material.dart';
-import 'package:flutter_gestion_contable/services/api_service.dart';
-// Importa flutter_localizations para el soporte de idiomas (MaterialLocalizations)
-import 'package:flutter_localizations/flutter_localizations.dart'; 
+from fastapi import FastAPI # Importamos FastAPI de la libreria fastapi
+from .database import engine, Base # Importamos la base de datos y el motor de la base de datos
+from . import models  # Esto dispara el __init__.py de la carpeta models
 
-// Asegúrate de que estas rutas sean correctas para tu proyecto:
-import 'package:flutter_gestion_contable/screens/login/login_handler.dart';
-import 'package:flutter_gestion_contable/screens/main_website/main_handler.dart';
-import 'package:flutter_gestion_contable/core/theme/app_theme.dart';
-// <!> No se para que es ni idea 
-// Si estás usando Provider en tu aplicación, mantenlo.
+# Esto crea las tablas en Postgres al iniciar si no existen
+Base.metadata.create_all(bind=engine)
 
+app = FastAPI() # Creamos la aplicacion
+app.include_router(inventory.router, prefix="/api")
 
-// La función principal que arranca la aplicación de Flutter.
-void main() async {
-  // Asegura que los bindings de Flutter estén inicializados antes de cualquier operación asíncrona.
-  WidgetsFlutterBinding.ensureInitialized();
+# Get raiz 
+# Para verificaar que la api funciona 
+@app.get("/")
+def read_root():
+    return {"message": "Veterinaria Beltrameli API funcionando"}
 
-
-  final token = await ApiService().getToken(); // Obtiene el token almacenado (si existe).
-
-  // Inicia la aplicación, pasando un valor booleano que indica si hay un token.
-  runApp(MyApp(hasToken: token != null));
-}
-
-// MyApp es el widget raíz de la aplicación.
-class MyApp extends StatelessWidget {
-  // Variable para determinar la pantalla inicial.
-  final bool hasToken;
-  
-  const MyApp({super.key, required this.hasToken});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      // Título de la aplicación, visible en el selector de aplicaciones.
-      title: 'Estudio Contable',
-      // Aplica el tema de la aplicación para colores, fuentes, etc.
-      theme: AppTheme.lightTheme,
-
-      // *******************************************************************
-      // ******* AÑADIR ESTAS LÍNEAS PARA LA LOCALIZACIÓN ******************
-      // *******************************************************************
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate, // Necesario para soporte en iOS
-      ],
-      supportedLocales: const [
-        Locale('en', ''), // Soporte para inglés
-        Locale('es', ''), // Soporte para español
-      ],
-      // *******************************************************************
-      // *******************************************************************
-
-      // Define la pantalla inicial basándose en la existencia de un token.
-      // Si `hasToken` es verdadero, navega a la pantalla principal.
-      // Si es falso, muestra la pantalla de inicio de sesión.
-      home: hasToken ? const MainHandler() : const LoginHandler(),
-      // Desactiva el banner de "debug" en la esquina superior derecha.
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}

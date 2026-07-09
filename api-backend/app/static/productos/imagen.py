@@ -1,0 +1,1 @@
+# /api-backend/app/static/productos/imagen.py

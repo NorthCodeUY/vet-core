@@ -64,18 +64,16 @@ lógica de negocio por módulos independientes:
 │   │    ├── terminacionInferior.svg
 │   │    └── WhatSapp_Cuadrado.svg # Icono WhatSapp para botones Administracion / Emergencia footer
 ├── components/      # UI Atoms/Molecules (Botones, Inputs reutilizables)
+│   │    ├── CategoryGroupCard.tsx   # Tarjeta que agrupa productos por categoria
+│   │    ├── PlansCard.tsx  # Tarjeta que muestra los planes en landig page
 │   │    ├── ProductsCard.tsx   # Tarjeta para mostrar productos en landig page
-│   │    ├── ServiceCard.tsx    # Tarjeta para mostrar servicios en landig page 
-│   │    ├── ServiceProps.tsx   # <!> Este creo que no va poreu lo unico ue hago es pasarle los datos lo que tendria que aserlo desde Landig page  diferente eso me hace reudio y 
-│   │    ├── WhatsAppButtonProps.tsx
+│   │    ├── SectionDivider.tsx # Seccion dividora con animacion de ondulacion para cambiar el color de fondo 
+│   │    ├── ServiceCard.tsx    # Tarjeta para mostrar servicios en landig page  
+│   │    ├── WhatsAppButtonProps.tsx  # Boton de whatSapp para administracion y emergencia footer
+│   │    └── WhatsAppDynamicButton.tsx # Boton de whatSapp para madar mensaje lo uso para seccion servicios
+├── data/            # Archivos mock JSON para pruebas <!> Completar luego
 ├── config/          # Variables de entorno, instancias de Axios/Fetch
-├── features/        # LÓGICA POR MÓDULO (E-commerce, Turnos, Perfil)
-│   ├── shop/
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── services/
-│   │   └── ShopPage.tsx
-│   └── appointments/
+├── features/        # 
 ├── hooks/           # Custom hooks globales
 ├── store/           # Manejo de estado (Zustand o Context)
 └── App.tsx

@@ -1,7 +1,7 @@
 # api-backend/app/models/pago_model.py
 
 from sqlalchemy import Column, Integer, String, DateTime, Float, Boolean # Importación de tipos de datos de SQLAlchemy
-from ..database import Base # Importación de la clase base de SQLAlchemy
+from app.database import Base # Importación de la clase base de SQLAlchemy
 from sqlalchemy import ForeignKey # Importación de la clase ForeignKey de SQLAlchemy
 
 class PagoModel(Base): # Clase que representa la tabla "pago" en la base de datos

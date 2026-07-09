@@ -1,7 +1,7 @@
 # api-backend/app/models/pedido_detalle_model.py
 
 from sqlalchemy import Column, Integer, String, DateTime, Float, Boolean, ForeignKey
-from ..database import Base
+from app.database import Base
 from sqlalchemy.orm import relationship
 
 # Tabla que almacena los detalles de cada pedido

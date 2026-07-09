@@ -1,7 +1,7 @@
 # api-backend/app/models/subcategoria_model.py
 
 from sqlalchemy import Column, Integer, String # Importación de tipos de datos de SQLAlchemy
-from ..database import Base # Importación de la clase base de SQLAlchemy
+from app.database import Base # Importación de la clase base de SQLAlchemy
 
 class SubcategoriaModel(Base): # Clase que representa la tabla "subcategoria" en la base de datos
     """

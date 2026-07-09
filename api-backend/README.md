@@ -77,7 +77,7 @@ Definen la validación de datos para las API:
 # Routers
 Definen los endpoints de la API REST:
 
-- Cada router maneja un recurso específico (clientes, impuestos, etc.)
+- Cada router maneja un recurso específico (clientes, productos, pedidos, etc.)
 - auth.py : Endpoints para autenticación y gestión de sesiones
 
 

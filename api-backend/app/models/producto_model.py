@@ -2,7 +2,7 @@
 
 from sqlalchemy import Column, Integer, String, Float, ForeignKey # Importación de tipos de datos de SQLAlchemy
 from sqlalchemy.orm import relationship # Importación de la clase relationship de SQLAlchemy
-from ..database import Base # Importación de la clase base de SQLAlchemy
+from app.database import Base # Importación de la clase base de SQLAlchemy
 
 class ProductoModel(Base): # Clase que representa la tabla "producto" en la base de datos
     """
@@ -14,8 +14,6 @@ class ProductoModel(Base): # Clase que representa la tabla "producto" en la base
         prod_descripcion (str): Descripción del producto
         prod_precio (float): Precio actual del producto
         prod_stock (int): Stock actual del producto
-        prod_foto_url (str): URL de la foto del producto
-        prod_categoria (str): Categoría del producto
         cat_id (int): ID de la categoría que realiza el pedido
     """
     
@@ -25,8 +23,6 @@ class ProductoModel(Base): # Clase que representa la tabla "producto" en la base
     prod_descripcion = Column(String) # Columna "prod_descripcion" de tipo string
     prod_precio = Column(Float) # Columna "prod_precio_actual" de tipo float
     prod_stock = Column(Integer) # Columna "prod_stock" de tipo entero
-    prod_foto_url = Column(String) # <!> Esto no tengo ni idea de como hacerlo porque tengo que guardar varias fotos pero no se como hacerlo 
-    prod_categoria = Column(String) # <!> Esto es algo fijo Alimento, Accesorios, Medicametos, Medicamentos A pequienio. Puede aumentar pero lo dudo no se como deberia representarlo 
     cat_id = Column(Integer, ForeignKey("categoria.cat_id"), nullable=False) # ID de la categoría que realiza el pago
     
     # Relacion con la tabla 

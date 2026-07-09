@@ -1,7 +1,7 @@
 # api-backend/app/models/clietes_model.py
 
 from sqlalchemy import Column, Integer, String # Importación de tipos de datos de SQLAlchemy
-from ..database import Base # Importación de la clase base de SQLAlchemy
+from app.database import Base # Importación de la clase base de SQLAlchemy
 from sqlalchemy.orm import relationship # Importación de la clase relationship de SQLAlchemy
 
 class ClienteModel(Base): # Clase que representa la tabla "cliente" en la base de datos

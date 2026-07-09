@@ -3,7 +3,7 @@
 # Aca creo que va la relacion entre producto y subcategoria
 
 from sqlalchemy import Column, Integer, String # Importación de tipos de datos de SQLAlchemy
-from ..database import Base # Importación de la clase base de SQLAlchemy
+from app.database import Base # Importación de la clase base de SQLAlchemy
 from sqlalchemy import ForeignKey # Importación de la clase ForeignKey de SQLAlchemy
 from sqlalchemy.orm import relationship # Importación de la clase relationship de SQLAlchemy
 
@@ -23,3 +23,8 @@ class ProductoSubCategoriaModel(Base): # Clase que representa la tabla "producto
     # Relaciones
     rel_subcategoria = relationship("SubcategoriaModel") # Relacion con la tabla "subcategoria"
 
+    @property # Propiedad para obtener el nombre de la subcategoria
+    def subc_nombre(self): # Propiedad para obtener el nombre de la subcategoria
+        return self.rel_subcategoria.subc_nombre # Retorna el nombre de la subcategoria
+
+    

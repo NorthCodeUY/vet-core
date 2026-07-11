@@ -1,114 +1,243 @@
-// app/vet-core/apps/web-client/src/pages/landing/sessions/ProductsSession.tsx
+/* --- apps/web-client/src/pages/landing/sessions/ProductsSession.tsx --- */
 
-import { useState, useMemo } from 'react';
-import { Search } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Search, Loader2 } from 'lucide-react';
 import { CategoryGroupCard } from '../../../components/CategoryGroupCard.tsx';
 import { ProductCard } from '../../../components/ProductCard.tsx';
+import type { ApiCategory } from '../../../types/product_types';
 
-import productsData from '../../../data/productos.json';
-
+/**
+ * Sección de Productos conectada al Backend (FastAPI).
+ * Gestiona la carga de datos, el filtrado global y la visualización por categorías.
+ */
 export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
-  // --- ESTADO ---
-  // Guardamos lo que el usuario escribe en la barrita de búsqueda.
-  // searchTerm: el texto actual. setSearchTerm: la función para cambiarlo.
-  const [searchTerm, setSearchTerm] = useState(""); // Estado que maneja el input de busqueda
+  /* --- Estado de la Aplicación --- */
+  const [searchTerm, setSearchTerm] = useState(""); // Uso UseState porque voy a necesitar que se guarde el valor para filtras los productos y que se muestre en el input 
+  const [categories, setCategories] = useState<ApiCategory[]>([]); // UseState para guardar los datos del backend 
+  const [loading, setLoading] = useState(true); // Esto es para que carge y que no muestre error hasta que no tenga los datos 
 
-  // --- LÓGICA DE FILTRADO (MEMOIZADA) ---
-  // useMemo hace que esta búsqueda SOLO se ejecute cuando cambia 'searchTerm'.
-  // Esto ahorra batería y memoria en el celular del cliente.
-  const filteredResults = useMemo(() => {
-    // 1. Si no hay nada escrito (está vacío), devolvemos 'null' para indicar que no hay búsqueda activa.
+  /* --- Conexión con el Backend --- */
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        /* Uso de variables de entorno para la URL de la API */
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/productos`);
+        const data = await response.json();
+        setCategories(data);
+      } catch (error) {
+        console.error("Error cargando el catálogo de la vete:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  /* --- Lógica de Filtrado Global --- */ 
+  const filteredResults = useMemo(() => { // <!> Voy a nesesitar que me espliques este metodo porque no lo tengo claro 
     if (!searchTerm) return null;
 
-    // 2. Unificamos todas las categorías en una sola "gran bolsa" para buscar en todo el local.
-    // Usamos el operador spread (...) para sacar los productos de sus listas y juntarlos.
-    const all = [...productsData.racion, ...productsData.accesorios];
+    /* Aplanamos todas las categorías en una sola lista para la búsqueda global */
+    const allProducts = categories.flatMap(cat => cat.productos); // 
 
-    // 3. Filtramos: Devolvemos solo los productos cuyo título O descripción coincidan con la búsqueda.
-
-    return all.filter(p =>
-      p.titulo.toLowerCase().includes(searchTerm.toLowerCase()) || // .toLowerCase() convierte todo a minúsculas para que "perro" encuentre "Perro".
-      p.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) // .includes() busca si el texto existe dentro de la frase
+    return allProducts.filter(p =>
+      p.prod_nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.prod_descripcion.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [searchTerm]);// se define esta funcion cada vez que 'searchTerm' cambie
+  }, [searchTerm, categories]);
+
+  /* --- Renderizado de Estado de Carga --- */
+  if (loading) {
+    return (
+      <div className={`
+        /* --- Posición --- */
+        flex                         /* Contenedor flexible */
+        flex-col                     /* Alineación vertical */
+        items-center                 /* Centrado horizontal */
+        justify-center               /* Centrado vertical */
+        
+        /* --- Dimensiones --- */
+        py-40                        /* Espaciado vertical amplio */
+        gap-4                        /* Espacio entre icono y texto */
+      `}>
+        <Loader2 className="animate-spin text-vete-primary" size={48} />
+        <p className="text-vete-primary font-bold italic animate-pulse">
+          Cargando catálogo de Salto...
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <section className={`${bgColor} px-6 md:px-16 py-20 mt-10`}>
-      <div className="max-w-[1400px] mx-auto">
+    <section className={`
+      /* --- Posición --- */
+      relative                     /* Contexto para elementos internos */
+      
+      /* --- Dimensiones --- */
+      w-full                       /* Ancho total */
+      px-6                         /* Padding lateral móvil */
+      md:px-16                     /* Padding lateral desktop */
+      py-20                        /* Espaciado vertical de la sección */
+      mt-10                        /* Margen superior */
 
-        {/* --- CONTENEDOR CABECERA DE PRODUCTOS --- */}
-        <div className="
+      /* --- Colores --- */
+      ${bgColor}                   /* Fondo dinámico recibido por props */
+    `}>
+      <div className={`
+        /* --- Dimensiones --- */
+        max-w-[1400px]               /* Límite de ancho para pantallas ultra-wide */
+        mx-auto                      /* Centrado horizontal del bloque */
+      `}>
+
+        {/* Cabecera de la Sección y Buscador */}
+        <div className={`
           /* --- Posición --- */
-          flex flex-col tablet-vete:flex-row      /* Vertical en móvil, horizontal en 858px */
-          tablet-vete:justify-between            /* Separa título de buscador en desktop */
-          items-center                           /* Centrado vertical perfecto */
-          gap-8                                  /* Distancia entre elementos */
-          mb-16                                  /* Margen inferior del bloque entero */
-        ">
+          flex                         /* Contenedor flexible */
+          flex-col                     /* Columna en móviles */
+          tablet-vete:flex-row         /* Fila en breakpoint personalizado */
+          tablet-vete:justify-between  /* Separación de extremos */
+          items-center                 /* Centrado vertical */
+          gap-8                        /* Espacio entre título y buscador */
+          
+          /* --- Dimensiones --- */
+          mb-16                        /* Margen inferior del bloque */
+        `}>
 
-          {/* Titulo de la lista de productos */}
-          <h2 className="
-              /* --- Texto --- */
-              text-4xl font-black italic text-vete-text-light 
-              uppercase tracking-tighter
-              /* --- Ajuste --- */
-              tablet-vete:mb-0   /* Quitamos margen para centrar con el buscador */
-            ">
+          <h2 className={`
+            /* --- Texto --- */
+            text-4xl                     /* Tamaño de fuente grande */
+            font-black                   /* Peso de fuente máximo */
+            italic                       /* Estilo cursivo */
+            uppercase                    /* Mayúsculas institucionales */
+            tracking-tighter             /* Espaciado de letras apretado */
+
+            /* --- Colores --- */
+            text-vete-text-light         /* Color de texto claro */
+          `}>
             Lista de <span className="text-vete-primary">Productos</span>
           </h2>
 
-          {/* BUSCADOR */}
-          <div className="
+          {/* Contenedor del Buscador */}
+          <div className={`
             /* --- Posición --- */
-            relative w-full max-w-md /* Ancho completo en móvil hasta 448px */
-            /* --- Decoración --- */
-            group
-          ">
-            <Search className="
-              /* --- Icono --- */
-              absolute left-4 top-1/2 -translate-y-1/2 text-vete-text-light 
-              group-focus-within:scale-110 transition-transform"
-              size={20}
-            />
+            relative                     /* Para posicionar el icono de lupa */
+            w-full                       /* Ancho total en móvil */
+            max-w-md                     /* Límite de ancho en desktop */
+            
+            /* --- Animación --- */
+            group                        /* Grupo para efectos de foco */
+          `}>
+            <Search className={`
+              /* --- Posición --- */
+              absolute                     /* Posicionamiento sobre el input */
+              left-4                       /* Alineado a la izquierda */
+              top-1/2                      /* Centrado verticalmente */
+              -translate-y-1/2             /* Ajuste fino de centrado */
+
+              /* --- Colores --- */
+              text-vete-text-light/50      /* Color tenue por defecto */
+
+              /* --- Animación --- */
+              group-focus-within:text-vete-primary /* Cambia color al escribir */
+              transition-colors            /* Transición suave */
+            `} size={20} />
+            
             <input
               type="text"
               placeholder="¿Qué estás buscando?"
-              className="
-                /* --- Estructura --- */
-                w-full pl-12 pr-4 py-4 rounded-2xl 
+              className={`
+                /* --- Dimensiones --- */
+                w-full                       /* Ancho total */
+                pl-12                        /* Espacio para el icono */
+                pr-4                         /* Padding derecho */
+                py-4                         /* Padding vertical */
+                
                 /* --- Colores --- */
-                bg-white/10 border-2 border-vete-primary/30 text-vete-text-light 
-                /* --- Estados --- */
-                placeholder:text-vete-text-light/40 focus:outline-none focus:border-vete-primary 
-                focus:bg-white/20 transition-all shadow-xl"
+                bg-white/10                  /* Fondo traslúcido */
+                border-2                     /* Borde de 2px */
+                border-vete-primary/30       /* Color de borde marca */
+                text-vete-text-light         /* Color de texto */
+
+                /* --- Estilo --- */
+                rounded-2xl                  /* Bordes redondeados */
+                placeholder:text-vete-text-light/40 /* Color del placeholder */
+                
+                /* --- Animación --- */
+                focus:outline-none           /* Quita el borde por defecto */
+                focus:border-vete-primary    /* Resalta el borde al foco */
+                focus:bg-white/20            /* Aclara el fondo al foco */
+                transition-all               /* Transición para todos los estados */
+                shadow-xl                    /* Sombra para profundidad */
+              `}
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)} // cada vez que el usuario escribe algo, actualiza el estado 'searchTerm'
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
 
-        {/* contenedor del titulo */}
-        <div className=''>
-          {/* --- RENDERIZADO CONDICIONAL --- */}
-          {searchTerm ? ( // si hay algo en searchTerm muestra los resultados, si no, muestra el catalogo normal
-            // Vista de Resultados
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {/* Titulo de los resultados*/}
-              <h3 className="text-2xl font-bold text-vete-primary mb-8 italic">Resultados para "{searchTerm}"</h3>
-              {/* Grid de resultados*/}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 justify-items-center">
-                {/* Itera sobre los resultados y muestra la tarjeta de producto*/}
-                {filteredResults?.map(p => <ProductCard key={p.id} title={p.titulo} desc={p.descripcion} price={p.precio} img={p.imagen} />)}
-                {/* Si no hay resultados muestra un mensaje*/}
-                {filteredResults?.length === 0 && <p className="text-white/50">No se encontraron productos.</p>}
+        {/* Área de Visualización de Contenido  */} 
+        <div className="w-full">
+          {searchTerm ? (
+            /* Vista de Resultados de Búsqueda */
+            <div className={`
+              /* --- Animación --- */
+              animate-in                   /* Animación de entrada */
+              fade-in                      /* Desvanecimiento */
+              slide-in-from-bottom-4       /* Desplazamiento hacia arriba */
+              duration-500                 /* Duración de medio segundo */
+            `}>
+              <h3 className="text-2xl font-bold text-vete-primary mb-8 italic">
+                Resultados para "{searchTerm}"
+              </h3>
+              
+              <div className={`
+                /* --- Posición --- */
+                grid                         /* Sistema de grilla */
+                grid-cols-1                  /* 1 columna móvil */
+                sm:grid-cols-2               /* 2 columnas tablet */
+                lg:grid-cols-3               /* 3 columnas laptop */
+                xl:grid-cols-5               /* 5 columnas desktop */
+                gap-6                        /* Espacio entre tarjetas */
+                justify-items-center         /* Centrado horizontal */
+              `}>
+                {/* <!> Esto mirarlo despues no lo tengo muy claro */}
+                {filteredResults?.map(p => (
+                  
+                  <ProductCard 
+                    key={p.prod_id} 
+                    title={p.prod_nombre} 
+                    desc={p.prod_descripcion} 
+                    price={p.prod_precio} 
+                    img={`${import.meta.env.VITE_API_IMAGES}/${p.rel_imagen_url[0]?.img_url}`}
+                    subcategories={p.rel_subcategoria}
+                  />
+                ))}
+
+                {/* Si no tnego elemento de la busqueda muestra esto */}
+                {filteredResults?.length === 0 && (
+                  <p className="text-white/50 col-span-full py-10">
+                    No se encontraron productos que coincidan con su búsqueda.
+                  </p>
+                )}
               </div>
             </div>
           ) : (
-            // Vista Normal por Categorías
-            <div className="space-y-20">
-              <CategoryGroupCard title="Ración" data={productsData.racion} />
-              <CategoryGroupCard title="Accesorios" data={productsData.accesorios} />
-              {/* Agregá Medicamentos aquí cuando el JSON esté listo */}
+            /* Vista Normal Agrupada por Categorías */
+            <div className={`
+              /* --- Posición --- */
+              flex                         /* Contenedor flexible */
+              flex-col                     /* Dirección vertical */
+              
+              /* --- Dimensiones --- */
+              gap-20                       /* Espacio amplio entre categorías */
+            `}>
+              {categories.map((cat) => (
+                <CategoryGroupCard 
+                  key={cat.cat_id} 
+                  title={cat.cat_nombre} 
+                  data={cat.productos} 
+                />
+              ))}
             </div>
           )}
         </div>
@@ -117,4 +246,5 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
     </section>
   );
 };
+
 export default ProductsSession;

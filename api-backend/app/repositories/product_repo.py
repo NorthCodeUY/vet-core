@@ -50,6 +50,24 @@ def get_productos_agrupados(db: Session, limit_por_categoria: int = 5):
     return resultado
  
 
+def get_productos_filtrados(db: Session, search: str = None, cat_id: int = None):
+    # Añadimos .join(CategoriaModel) para poder filtrar por el nombre de la categoría
+    query = db.query(ProductoModel).join(CategoriaModel).options(
+        joinedload(ProductoModel.rel_imagen_url),
+        joinedload(ProductoModel.rel_subcategoria)
+    )
+    
+    if search:
+        search_filter = f"%{search}%"
+        query = query.filter(
+            or_(
+                ProductoModel.prod_nombre.ilike(search_filter),
+                ProductoModel.prod_descripcion.ilike(search_filter),
+                CategoriaModel.cat_nombre.ilike(search_filter) # Ahora funcionará por el join
+            )
+        )
+    # ... resto del código igual
+
 
 
 

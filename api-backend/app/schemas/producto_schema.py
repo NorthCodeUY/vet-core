@@ -1,6 +1,6 @@
 # api-backend/app/schemas/producto_schema.py
 from pandas._libs.tslibs.offsets import Nano
-from pydantic import BaseModel, Field # Importamos BaseModel de pydantic
+from pydantic import BaseModel, Field, field_validator # Importamos BaseModel de pydantic
 from typing import List, Optional # Importamos List y Optional de typing
 
 
@@ -12,6 +12,14 @@ class SubcategoriaSchema(BaseModel): # Clase que representa la tabla "subcategor
 class ImagenSchema(BaseModel): # Clase que representa la tabla "imagen" en la base de datos
     img_url: str # Nombre de la imagen
     img_principal: bool # Determina cual es la imagen principal
+        # Esto es una "validación" que transforma el dato al salir
+    @field_validator('img_url')
+    @classmethod
+    def assemble_image_url(cls, v: str) -> str:
+        # Aquí defines la base de tu servidor
+        BASE_URL = "/static/productos/" # <!> Supongo que esto en produccion cuando este en el contenedor docker tendria que cambiar 
+        return f"{BASE_URL}{v}"
+
     class Config: # Clase que representa la tabla "imagen" en la base de datos
         from_attributes = True # Permite que el modelo sea convertido a JSON
 

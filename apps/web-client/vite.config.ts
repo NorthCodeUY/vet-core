@@ -4,7 +4,15 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import svgr from 'vite-plugin-svgr' // Plugin para trabajar con SVG 
 
-export default defineConfig({
+export default defineConfig({ server: {
+  proxy: {
+      /* Reenvía peticiones de datos */
+      '/api': 'http://127.0.0.1:8000',
+      /* Reenvía peticiones de imágenes */
+      '/static': 'http://127.0.0.1:8000' 
+    }
+  },
+
   plugins: [  // plugins: [react()] // Asi estaba antes 
     react(),
     svgr({

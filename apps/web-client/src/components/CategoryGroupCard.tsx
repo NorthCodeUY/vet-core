@@ -6,8 +6,8 @@ import { ProductCard } from './ProductCard.tsx';
 
 interface CategoryGroupProps {
   title: string; // Nombre de la categoría
-  catId: string; // Agregamos el ID para poder pedir más datos 
-  data: any[];  //  Datos de los productos
+  catId: number; // Agregamos el ID para poder pedir más datos 
+  initialData: any[];  //  Datos de los productos
 }
 
 /**
@@ -21,10 +21,27 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
   const [hasLoadedFull, setHasLoadedFull] = useState(false); // Control para no pedir 2 veces
 
   /* Lógica de visualización responsiva */
-  const mobileLimit = isExpanded ? 5 : 1;
+  const mobileLimit = isExpanded ? 5 : 1; // <!> tENGO QUE USAR ESTO ME PARESE QUE ME QUE MAL COMO ESTABA ANTES ESTABA BIEN 2 1 ERA MAS RESPONSIVE 
   
   /* URL base para imágenes desde variables de entorno */
-  const IMAGES_BASE_URL = import.meta.env.VITE_API_IMAGES;
+  const IMAGES_BASE_URL = import.meta.env.VITE_API_IMAGES; // <!> Esto no se si va 
+    
+  const handleToggleExpand = async () => {
+    // Si vamos a expandir y no hemos cargado el resto, hacemos el fetch
+    if (!isExpanded && !hasLoadedFull) {
+      try {
+        const response = await fetch(`/api/productos?cat_id=${catId}`);
+        const fullData = await response.json();
+        setProducts(fullData);
+        setHasLoadedFull(true);
+      } catch (error) {
+        console.error("Error cargando más productos:", error);
+      }
+    }
+    setIsExpanded(!isExpanded);
+  };
+
+
 
   return (
     <div className={`
@@ -63,7 +80,7 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
         
         {/* Botón de expandir/ocultar */}
         <button 
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={handleToggleExpand} /* funcion que dispara la espandir y ocultar de los productos */
           className={`
             /* --- Posición --- */
             flex                         /* Contenedor flexible para icono y texto */
@@ -104,10 +121,10 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
         gap-y-10                     /* Espacio vertical entre filas */
         gap-x-6                      /* Espacio horizontal entre columnas */
       `}>
-        {data.map((p, index) => {
+        {products.map((p, index) => {
           /* Lógica de visibilidad basada en el índice y estado de expansión */
-          const isHiddenOnMobile = index >= mobileLimit;
-          const isHiddenOnDesktop = index >= 5;
+          const isHiddenOnMobile = index >= (isExpanded ? products.length : 1);
+          const isHiddenOnDesktop = !isExpanded && index >= 5;
 
           return (
             <div 

@@ -1,11 +1,25 @@
 # /api-backend/app/models/__init__.py
 
-from .clietes_model import ClienteModel # Importamos el modelo de cliente
-from .pedido_model import PedidoModel # Importamos el modelo de pedido
-from .pedido_detalle_model import PedidoDetalleModel # Importamos el modelo de detalle de pedido
-from .imagen_url_model import ImagenUrlModel # Importamos el modelo de imagen
-from .producto_model import ProductoModel # Importamos el modelo de producto
-from .categoria_model import CategoriaModel # Importamos el modelo de categoria
-from .pago_model import PagoModel # Importamos el modelo de pago
-from .producto_subcategoria_model import ProductoSubCategoriaModel # Importamos el modelo de producto subcategoria
-from .subcategoria_model import SubcategoriaModel # Importamos el modelo de subcategoria
+# ==============================================================================
+# INDICE DE MODELOS (ORQUESTADOR DE IMPORTACIONES)
+# ==============================================================================
+# El orden es CRÍTICO para que SQLAlchemy pueda resolver las relaciones.
+# Primero importamos las tablas "Padre" (sin dependencias de otras tablas)
+# y luego las tablas "Hijo" (que tienen Foreign Keys).
+
+# --- 1. ENTIDADES BASE (Sin Foreign Keys) ---
+from .user_model import UserModel             # Tabla 'usuarios' (Padre)
+from .categoria_model import CategoriaModel   # Tabla 'categoria' (Padre)
+from .subcategoria_model import SubcategoriaModel # Tabla 'subcategoria' (Padre)
+
+# --- 2. ENTIDADES DEPENDIENTES (Tienen Foreign Keys hacia las de arriba) ---
+from .funcionario_model import FuncionarioModel # Depende de UserModel
+from .cliente_model import ClienteModel         # Depende de UserModel
+from .producto_model import ProductoModel       # Depende de CategoriaModel
+from .imagen_url_model import ImagenUrlModel    # Depende de ProductoModel
+from .producto_subcategoria_model import ProductoSubCategoriaModel # Depende de Producto y Subcategoria
+
+# --- 3. ENTIDADES DE GESTIÓN (Pedidos y Pagos) ---
+from .pedido_model import PedidoModel           # Depende de Cliente
+from .pedido_detalle_model import PedidoDetalleModel # Depende de Pedido y Producto
+from .pago_model import PagoModel               # Depende de Pedido

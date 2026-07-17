@@ -32,6 +32,8 @@ class ProductoSchema(BaseModel): # Clase que representa la tabla "producto" en l
     prod_nombre: str # Nombre del producto
     prod_precio: float # Precio del producto
     prod_descripcion: Optional[str]= None # Descripción del producto
+    cat_id: int # ID de la categoria
+ 
     # Aquí vinculamos las relaciones
     imagenes: List[ImagenSchema] = Field(default_factory=list, alias="rel_imagen_url") # Relación con la tabla "imagen"    
     subcategoria: List[SubcategoriaSchema] = Field(default_factory=list, alias="rel_subcategoria") # Relación con la tabla "subcategoria"

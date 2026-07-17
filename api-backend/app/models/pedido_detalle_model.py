@@ -16,13 +16,29 @@ class PedidoDetalleModel(Base):
         pd_cantidad (int): Cantidad del producto
         pd_precio (float): Precio capturado al momento    
     """
-    
     __tablename__ = "pedido_detalle" # Tabla para almacenar los detalles de cada pedido
+
+    # ==========================================
+    # Columnas de la tabla "pedido_detalle"
+    # ==========================================
+    
     ped_id = Column(Integer, ForeignKey("pedido.ped_id"), primary_key=True, index=True) # ID del pedido que realiza el pedido
     prod_id = Column(Integer, ForeignKey("producto.prod_id"), primary_key=True, index=True) # ID del producto que realiza el pedido
     pd_cantidad = Column(Integer) # Cantidad del producto
     pd_precio = Column(Float) # Precio capturado al momento    
     
-    # Relaciones de tablas 
-    rel_producto = relationship("ProductoModel") # Relacion con la tabla producto
+    # ==========================================
+    # RELACIONES 
+    # ==========================================    
+
+    # Relacion con la tabla "pedido_detalle_model" 
+    rel_pedido = relationship(
+        "PedidoModel", 
+        back_populates="rel_pedido_detalle"
+        )
+
+    # Relaciones de tablas Producto 
+    rel_producto = relationship(
+        "ProductoModel"  # Nombre de la clase del modelo "ProductoModel"
+        ) 
    

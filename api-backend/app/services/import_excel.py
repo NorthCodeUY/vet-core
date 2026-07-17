@@ -9,6 +9,8 @@ from app.models.subcategoria_model import SubcategoriaModel
 from app.models.producto_subcategoria_model import ProductoSubCategoriaModel
 from app.models.imagen_url_model import ImagenUrlModel
 
+# <!> Comando para importar 
+# <!> ./venv/bin/python -m app.services.import_excel 
 def importar():
     db = SessionLocal()
     df = pd.read_csv('app/static/productos.csv') # Ajusta la ruta a tu archivo
@@ -48,7 +50,8 @@ def importar():
             img = ImagenUrlModel(
                 prod_id=nuevo_prod.prod_id, 
                 img_url=f"{row['imagen_url']}.png", 
-                img_principal=True)
+                img_principal=True,
+                img_tipo=ImagenUrlModel.TIPO_PRODUCTO)
             db.add(img)
             
         db.commit()

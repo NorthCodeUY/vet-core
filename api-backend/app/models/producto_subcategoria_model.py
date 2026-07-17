@@ -20,8 +20,11 @@ class ProductoSubCategoriaModel(Base): # Clase que representa la tabla "producto
     prod_id = Column(Integer, ForeignKey("producto.prod_id"), primary_key=True, index=True) # Columna "producto_id" de tipo entero, llave primaria e indexada, referencia a la tabla "producto"
     subc_id = Column(Integer, ForeignKey("subcategoria.subc_id"), primary_key=True, index=True) # Columna "subc_id" de tipo entero, llave primaria e indexada, referencia a la tabla "subcategoria"
 
-    # Relaciones
-    rel_subcategoria = relationship("SubcategoriaModel") # Relacion con la tabla "subcategoria"
+    # Relacion con tabal subcategoria
+    rel_subcategoria = relationship(
+        "SubcategoriaModel", # Nombre de la clase del modelo "SubcategoriaModel" 
+        # <!> Creo que este no va -  back_populates="rel_producto" # Nombre de la relacion con la tabla "producto_model"        
+    ) 
 
     @property # Propiedad para obtener el nombre de la subcategoria
     def subc_nombre(self): # Propiedad para obtener el nombre de la subcategoria

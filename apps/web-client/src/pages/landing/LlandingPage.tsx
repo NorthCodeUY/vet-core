@@ -12,50 +12,14 @@ import companyInfo from '../../data/companyInfo.json';
 import serviciosData from '../../data/servicios.json';
 import planData from '../../data/promociones.json';
 // Iconos de la aplicacion 
-import { ShoppingCart } from 'lucide-react';
+
 import { Clock, Stethoscope, Mail, MapPin, Phone, Instagram, Facebook } from 'lucide-react';
 
-
-
+// Secciones de la web
 import ProductsSession from './sessions/ProductsSession.tsx'; // Seccion de productos
+import HeaderSession from './sessions/HederSession.tsx'; // Seccion de productos
+import HeroSession from './sessions/HeroSession.tsx';
 
-// <!DMI> Header de la web
-const Header = ({ bgColor }: { bgColor: string }) => {
-  return (
-    // Cambiamos px-16 por px-6 en móvil y md:px-16 en escritorio
-
-    <header className={`${bgColor} px-6 md:px-16 py-8 flex justify-between items-center w-full max-w-full overflow-hidden`}>
-      <div className="flex items-center gap-2 font-black text-xl">
-        <img src="/logo.png" className="w-10 shrink-0" alt="Logo" />
-
-        {/* 
-           hidden: oculta el texto por defecto (móvil)
-           md:inline: lo muestra como inline a partir de tablets/PC (768px)
-        */}
-
-        {/* <!> Agregar el tamanio de figma por variable telwind.config.js  text-white*/}
-        <span className="hidden tablet-vete:inline whitespace-nowrap ">
-          VETERINARIA BELTRAMELLI<span className="text-vete-primary">.</span>
-        </span>
-
-      </div>
-
-      {/* <!> Agregar el tamanio de figma por variable telwind.config.js  text-white */}
-      <nav className="flex items-center gap-4 md:gap-8 font-semibold ">
-        {/* Ocultamos los links en móvil para que no se amontonen, o podrías usar un menú hamburguesa luego */}
-        <a href="#" className=" hover:text-vete-primary transition-colors">Servicios</a>
-        <a href="#" className=" hover:text-vete-primary transition-colors">Tienda</a>
-        <a href="#" className="hover:text-vete-primary transition-colors">Contacto</a>
-
-        {/* Icono carrito de compras */}
-        <div className="bg-vete-primary p-2 rounded-full cursor-pointer hover:scale-110 transition-transform">
-          <ShoppingCart size={16} className="text-white" />
-        </div>
-
-      </nav>
-    </header>
-  )
-};
 
 // <!DMI> Seccion Principal de la web  Compuesto de 2 div uno con el texto y otro 
 // bgColor: string -> Color de fondo de la seccion
@@ -467,14 +431,57 @@ const MapsSection = ({ bgColor }: { bgColor: string }) => {
   );
 };
 
+// Vercion Antigua funcional 16/07/2026  16:54 Sacar luego de terminar la otra 
+// // <!DMI> Header de la web
+// const Header = ({ bgColor }: { bgColor: string }) => {
+//   return (
+//     // Cambiamos px-16 por px-6 en móvil y md:px-16 en escritorio
+
+//     <header className={`${bgColor} px-6 md:px-16 py-8 flex justify-between items-center w-full max-w-full overflow-hidden`}>
+//       <div className="flex items-center gap-2 font-black text-xl">
+//         <img src="/logo.png" className="w-10 shrink-0" alt="Logo" />
+
+//         {/* 
+//            hidden: oculta el texto por defecto (móvil)
+//            md:inline: lo muestra como inline a partir de tablets/PC (768px)
+//         */}
+
+//         {/* <!> Agregar el tamanio de figma por variable telwind.config.js  text-white*/}
+//         <span className="hidden tablet-vete:inline whitespace-nowrap ">
+//           VETERINARIA BELTRAMELLI<span className="text-vete-primary">.</span>
+//         </span>
+
+//       </div>
+
+//       {/* <!> Agregar el tamanio de figma por variable telwind.config.js  text-white */}
+//       <nav className="flex items-center gap-4 md:gap-8 font-semibold ">
+//         {/* Ocultamos los links en móvil para que no se amontonen, o podrías usar un menú hamburguesa luego */}
+//         <a href="#" className=" hover:text-vete-primary transition-colors">Servicios</a>
+//         <a href="#" className=" hover:text-vete-primary transition-colors">Tienda</a>
+//         <a href="#" className="hover:text-vete-primary transition-colors">Contacto</a>
+
+//         {/* Icono carrito de compras */}
+//         <div className="bg-vete-primary p-2 rounded-full cursor-pointer hover:scale-110 transition-transform">
+//           <ShoppingCart size={16} className="text-white" />
+//         </div>
+
+//       </nav>
+//     </header>
+//   )
+// };
 
 export default function LandingPage() {
   return (
     /* Agregamos overflow-x-hidden para evitar la franja lateral */
     <div className="bg-vete-dark min-h-screen font-sans text-vete-text-light overflow-x-hidden w-full relative border-0 m-0 p-0">
-      <Header bgColor='bg-vete-secondary' />
+
+      {/* --- 1. Componente de Header --- */}
+      {/* <Header bgColor='bg-vete-secondary' /> */}
+      <HeaderSession bgColor='bg-vete-secondary' />
+
       <main>
-        <HeroSection bgColor='bg-vete-secondary' />
+        {/* <HeroSection bgColor='bg-vete-secondary' /> */}
+        <HeroSession bgColor='bg-vete-secondary' />
 
         {/* separador V1*/}
         <SectionDivider

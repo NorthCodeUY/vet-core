@@ -18,6 +18,10 @@ class ProductoModel(Base): # Clase que representa la tabla "producto" en la base
     """
     
     __tablename__ = "producto" # Nombre de la tabla en la base de datos
+    
+    # ==========================================
+    # Columnas de la tabla "producto"
+    # ==========================================  
     prod_id = Column(Integer, primary_key=True, index=True) # Columna "prod_id" de tipo entero, llave primaria e indexada
     prod_nombre = Column(String, nullable=False) # Columna "prod_nombre" de tipo string, no puede ser nula
     prod_descripcion = Column(String) # Columna "prod_descripcion" de tipo string
@@ -25,7 +29,25 @@ class ProductoModel(Base): # Clase que representa la tabla "producto" en la base
     prod_stock = Column(Integer) # Columna "prod_stock" de tipo entero
     cat_id = Column(Integer, ForeignKey("categoria.cat_id"), nullable=False) # ID de la categoría que realiza el pago
     
-    # Relacion con la tabla 
-    rel_imagen_url = relationship("ImagenUrlModel") 
-    rel_subcategoria = relationship("ProductoSubCategoriaModel") 
-    rel_categoria = relationship("CategoriaModel")
+    # ==========================================
+    # Relaciones con otras tablas
+    # ==========================================  
+
+    # Relacion con la tabla imagen_url 
+    # donde guardo la ruta a las imagenes 
+    rel_imagen_url = relationship(
+        "ImagenUrlModel" # Nombre de la clase del modelo "ImagenUrlModel"
+        # <!> no VA , back_populates="rel_producto" # Nombre de la relacion con la tabla "producto_model"      
+    ) 
+    
+    # Relacion tabla subcategoria
+    rel_subcategoria = relationship(
+        "ProductoSubCategoriaModel" # Nombre de la clase del modelo "ProductoSubCategoriaModel"
+        # <!> No va porque de 1 a muchos back_populates="rel_producto" # Nombre de la relacion con la tabla "producto_model"     
+    ) 
+    
+    # Relacion con la categoria
+    rel_categoria = relationship(
+        "CategoriaModel" # Nombre de la clase del modelo "CategoriaModel" 
+        # <!> No va porque de 1 a muchos back_populates="rel_producto" # Nombre de la relacion con la tabla "producto_model"
+    )

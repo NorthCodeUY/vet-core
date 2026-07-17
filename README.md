@@ -49,6 +49,7 @@ Este repositorio contiene el núcleo del sistema, diseñado como una solución *
 
 El modelo de datos está estructurado para manejar el historial de precios en el carrito y la gestión de productos.
 
+<!> Esto tengo que repararlo segun el nuevo modelo 
 
 ```mermaid
 erDiagram

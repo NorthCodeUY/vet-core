@@ -21,7 +21,7 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
     const fetchProducts = async () => {
       try {
         /* Uso de variables de entorno para la URL de la API */
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/productos`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/productos/agrupados`);
         const data = await response.json();
         setCategories(data);
       } catch (error) {
@@ -233,9 +233,10 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
             `}>
               {categories.map((cat) => (
                 <CategoryGroupCard 
-                  key={cat.cat_id} 
+                  key={cat.cat_id}
                   title={cat.cat_nombre} 
-                  data={cat.productos} 
+                  catId={cat.cat_id} 
+                  initialData={cat.productos} 
                 />
               ))}
             </div>

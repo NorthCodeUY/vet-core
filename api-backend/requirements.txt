@@ -1,12 +1,27 @@
-# /api-backend/requirements.txt
+# ==============================================================================
+# VET-CORE BACKEND - REQUIREMENTS
+# ==============================================================================
 
-fastapi
-uvicorn[standard]
-sqlalchemy
-psycopg2-binary
-pydantic
-pydantic-settings
-alembic
+# --- Framework Web Principal ---
+fastapi                     # Framework para construir la API
+uvicorn[standard]           # Servidor ASGI de alta velocidad para ejecutar FastAPI
 
-pandas
-openpyxl
+# --- Base de Datos y Persistencia ---
+sqlalchemy                  # ORM para interactuar con PostgreSQL
+psycopg2-binary             # Driver necesario para que Python hable con PostgreSQL
+alembic                     # Herramienta para gestionar migraciones de la base de datos
+
+# --- Validación y Configuración --- 
+pydantic                    # Validación de datos y esquemas (Schemas)
+pydantic-settings           # Manejo de variables de entorno (.env)
+
+# --- Autenticación y Seguridad --- <!> con estos tengo que empesar a trabajr haora deberia menejarlo 
+passlib[bcrypt]             # Hashing seguro de contraseñas (bcrypt)
+python-jose[cryptography]   # Creación y verificación de tokens JWT
+
+# --- Procesamiento de Datos (Importación Excel) ---
+pandas                      # Manipulación y análisis de datos de tu planilla
+openpyxl                    # Motor necesario para leer archivos .xlsx
+
+# --- Utilidades ---
+python-dotenv               # Carga automática de variables de entorno

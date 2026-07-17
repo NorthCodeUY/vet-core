@@ -4,17 +4,28 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MaintenancePage from './pages/maintenance/MaintenancePage';
 import LandingPage from './pages/landing/LlandingPage';
 
+import { PedidoProvider } from './context/pedido_context.tsx'; // Importa el proveedor
+
+
 function App() {
   // Mientras construimos la web real, devolvemos solo el cartel
   return (
     <BrowserRouter>
-      <Routes>
-        {/* La raíz muestra el cartel de construcción */}
-        <Route path="/" element={<MaintenancePage />} />
+      <PedidoProvider>
 
-        {/* URL secreta para que la clienta revise los avances */}
-        <Route path="/revision" element={<LandingPage />} />
-      </Routes>
+        <Routes>
+          {/* La raíz muestra el cartel de construcción */}
+          <Route path="/" element={<MaintenancePage />} />
+
+          {/* URL secreta para que la clienta revise los avances */}
+          <Route path="/revision" element={
+            <PedidoProvider>
+              <LandingPage />
+            </PedidoProvider>
+          } />
+        </Routes>
+
+      </PedidoProvider>
     </BrowserRouter>
   );
 }

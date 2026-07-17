@@ -13,6 +13,9 @@ import serviciosData from '../../data/servicios.json';
 import planData from '../../data/promociones.json';
 // Iconos de la aplicacion 
 
+// <!> Esto creo que no va aca 
+// import { PedidoProvider } from '../../context/pedido_context.tsx'; // Importa el proveedor
+
 import { Clock, Stethoscope, Mail, MapPin, Phone, Instagram, Facebook } from 'lucide-react';
 
 // Secciones de la web

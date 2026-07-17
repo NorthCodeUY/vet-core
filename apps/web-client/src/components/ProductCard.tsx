@@ -3,19 +3,39 @@
 import { ShoppingCart } from 'lucide-react';
 import { SUBCATEGORY_ICONS } from '../utils/categoryHelpers';
 
+import { usePedidoStore } from '../context/pedido_context'; 
+import type { ApiProduct } from '../types/product_types';
+
+//interface Props { 
+//  title: string; 
+//  desc: string; 
+//  price: number; 
+//  img: string;
+//  subcategories?: { subc_nombre: string }[]; 
+//}
+
+
 interface Props { 
-  title: string; 
-  desc: string; 
-  price: number; 
-  img: string;
-  subcategories?: { subc_nombre: string }[]; 
+  producto:ApiProduct
 }
 
 /**
  * Componente de UI para representar una tarjeta de producto en el catálogo.
  * Formateado para máxima legibilidad y soporte de subcategorías.
  */
-export const ProductCard = ({ title, desc, price, img, subcategories }: Props) => (                  
+//export const ProductCard = ({ title, desc, price, img, subcategories }: Props) => (                  
+  export const ProductCard = ({ producto }: Props) => (
+  /* --- Fachada: Extraemos lo que necesitamos --- */
+  const { 
+    pedido, // 🔍 Esto nos da la lista de productos agregados (array)
+    addToPedido // ➕ Esta función agrega pedidos
+  } = usePedidoStore();
+
+  /* --- Lógica: Buscamos si este producto ya está en el pedido --- */
+  const lineaActual = pedido.find(item => item.producto.prod_id === product.prod_id);
+  const cantidad = lineaActual?.cantidad || 0;
+  const estaComprado = cantidad > 0;
+
   <div className={`
     /* --- Posición --- */
     flex                         /* Contenedor flexible */
@@ -151,6 +171,13 @@ export const ProductCard = ({ title, desc, price, img, subcategories }: Props) =
           hover:bg-vete-primary/80   /* Oscurece un poco al hover */
           transition-colors          /* Transición de color */
         `}>
+          {/*  <!> Aca en este boton deberia conectarse a  PedidoContext
+          y agregarlo a mi carrito tambien me gustaria que figurara esta tarjeta la cantidad que compor
+          y ademas qeu la tarjeta tubiera otro color de fonodo para que la encutre rapido 
+          Yo creo que en ningun momento le pase a este componente el objeto pedido que lo cotiene caps deba pasarle el objeto pedido 
+          o algo por el estilo no se que se puede hace manteniendo la estructura que venios trabjando 
+          
+          */}
           <ShoppingCart size={16} className="text-white" />
         </div>
       </div>

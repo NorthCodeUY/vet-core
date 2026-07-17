@@ -2,25 +2,33 @@
 
 import React from 'react';
 import { Plus, Minus, Trash2 } from 'lucide-react';
-import { useCart } from '../../context/CartContext';
-import { CartItem } from '../../types/pedido_types';
 
-interface CartItemRowProps {
-  item: CartItem;
+import { usePedidoStore } from '../../context/pedido_context'; 
+import type { PedidoItem } from '../../types/pedido_types';
+
+
+interface PedidoItemRowProps {
+  item: PedidoItem;
 }
 
 /**
  * Representa una "Línea de Pedido" dentro del Drawer del carrito.
  * Implementa controles de cantidad y visualización de subtotal por producto.
  */
-export const CartItemRow = ({ item }: CartItemRowProps) => {
-  const { addToCart, removeFromCart } = useCart();
+export const PedidoItemRow = ({ item }: PedidoItemRowProps) => {
+  
+
+  const { 
+    addToPedido, // <!> Esto me parece totalmente al reves si esto es para agregar items al pedido 
+    removeFromPedido // Accion para remover productos del pedido 
+  } = usePedidoStore();
+
 
   /* Cálculo del subtotal de esta línea específica */
   const subtotal = item.producto.prod_precio * item.cantidad;
 
   return (
-    <div key className= {`
+    <div  className= {`
       /* --- Posición --- */
       flex                         /* Contenedor flexible horizontal */
       items-center                 /* Centrado vertical de elementos */
@@ -57,17 +65,8 @@ export const CartItemRow = ({ item }: CartItemRowProps) => {
           alt={item.producto.prod_nombre}
           className="w-full h-full object-cover"
         />
-      </div>    
-  
-    </div>
-  );
-};
+      </div> 
 
-
-
-
-
-   
 
       {/* Información del Producto */}
       <div className={`
@@ -83,7 +82,7 @@ export const CartItemRow = ({ item }: CartItemRowProps) => {
           font-bold                    /* Negrita */
           text-slate-800               /* Color oscuro */
           truncate                     /* Corta con puntos suspensivos si no entra */
-        `}`}>
+        `}>
           {item.producto.prod_nombre}
         </h4>
         <div className="flex items-center gap-2 mt-1">
@@ -100,13 +99,13 @@ export const CartItemRow = ({ item }: CartItemRowProps) => {
         flex-col                     /* Alineación vertical */
         items-end                    /* Alineado a la derecha */
         gap-2                        /* Espacio entre precio y botones */
-      `}`}>
+      `}>
         <span className={`
           /* --- Texto --- */
           text-sm                      /* Tamaño pequeño */
           font-black                   /* Peso máximo */
           text-emerald-900             /* Color verde institucional */
-        `}`}>
+        `}>
           ${subtotal.toLocaleString('es-UY')}
         </span>
 
@@ -123,9 +122,12 @@ export const CartItemRow = ({ item }: CartItemRowProps) => {
           rounded-lg                   /* Bordes suavizados */
           border                       /* Borde sutil */
           border-slate-100             /* Color de borde */
-        `}`}>
+        `}>
+
+          {/* Boton Para quitar el producto del Carrito */}
+
           <button 
-            onClick={() => removeFromCart(item.producto.prod_id)}
+            onClick={() => removeFromPedido(item.producto.prod_id)}
             className={`
               /* --- Dimensiones --- */
               p-1.5                        /* Espaciado del icono */
@@ -143,8 +145,9 @@ export const CartItemRow = ({ item }: CartItemRowProps) => {
             {item.cantidad}
           </span>
 
+          {/* Boton Para agregar el producto al Carrito <!> Esto no tiene mucho sentido para mi no tendria que aber un boton alta en los item de carrito */}
           <button 
-            onClick={() => addToCart(item.producto)}
+            onClick={() => addToPedido(item.producto)}
             className={`
               /* --- Dimensiones --- */
               p-1.5                        /* Espaciado */
@@ -159,3 +162,14 @@ export const CartItemRow = ({ item }: CartItemRowProps) => {
           </button>
         </div>
       </div>
+
+  
+    </div>
+  );
+};
+
+
+
+
+
+   

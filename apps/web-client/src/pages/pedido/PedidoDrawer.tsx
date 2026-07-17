@@ -1,46 +1,48 @@
 /* --- apps/web-client/src/pages/pedido/PedidoDrawer.tsx --- */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { X, ShoppingBag, MapPin, Send, Package } from 'lucide-react';
 import { usePedidoStore } from '../../context/pedido_context';
-import { CartItemRow } from './PedidoItemRow'; // Este lo crearemos a continuación
+import { PedidoItemRow } from './PedidoItemRow'; // Este lo crearemos a continuación
 
-interface CartDrawerProps {
+interface PedidoDrawerProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
-  const { cart, total, itemCount } = usePedidoStore();
-  const [address, setAddress] = useState("");
+/**
+ * Drawer que muestra el carrito de compras
+ * @param isOpen - Estado del drawer
+ * @param onClose - Función para cerrar el drawer
+ * @returns 
+ */
+export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
+  // Usamos el store de pedido
+  //<!> Esta sintacis trae los valores de pedidoContext segun lo que enteido 
+  const { 
+    pedido,  // Todo el estado
+    total, // Total del pedido
+    itemCount, // Cantidad de Productos <!> Esto capas este mal en el Pedido_context probar y repara 
+    getWhatsAppUrl // URL de WhatsAppv  <!> Lo voy a dejar pero no lo voy a usar 
+  } = usePedidoStore();
+  
+  //<!> Esto no lo tengo claro 
+  const [
+    address, // Dirreccion a la que se envia el pedido 
+    setAddress // Función para establecer la dirección
+  ] = useState("");
 
-  /* Función para generar el link de WhatsApp con el pedido formateado */
+  // <!> Esto supongo que es una funcion flecha en en algun momento lo paso a algun componente
+
   const handleConfirmOrder = () => {
     if (!address) return alert("Por favor, ingresa una dirección de entrega.");
+    if (pedido.length === 0) return alert("El pedido está vacío.");
     
-    let message = `🐾 *PEDIDO - VETERINARIA BELTRAMELLI* 🐾\n\n`;
-    message += `📍 *Entrega:* ${address}\n`;
-    message += `----------------------------------\n`;
-    // <!> Depuse veo esto solo quiero ver como se ve lo que si 
-    // <!> Para mi esto tendria que ir en una clase tipo fachada no se 
-    // un lugar que guarde una unica instancia en memoria por aplicacion
-    // poruqe tiene sentido que se guarde una sola instancia por web 
-    // ya que un usuario ccomra en la aplicacion que esta usando tambien las compras 
-    // tendrian que estar asi asi cuadno doy la horden de compra lo manda al bakend 
-    // yo usaba un patron de disenio con construcctror para poder realizar esto no me acurdo
-    // como se llamaba el patron de disenio pero si me lo mensionas lo busco y veo como adpatarlo 
-    
-    
-    // cart.forEach(item => {
-    //   message += `✅ ${item.cantidad}x ${item.producto.prod_nombre} - $${item.producto.prod_precio * item.cantidad}\n`;
-    // });
-    
-    message += `----------------------------------\n`;
-    message += `💰 *TOTAL:* $${total}\n\n`;
-    message += `_Enviado desde la Web de Salto_`;
-
-    window.open(`https://wa.me/59892444510?text=${encodeURIComponent(message)}`, '_blank');
+    /* Usamos la lógica centralizada en la Fachada */
+    const url = getWhatsAppUrl(address);
+    window.open(url, '_blank');
   };
+
 
   return (
     <>
@@ -128,17 +130,22 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
           /* --- Colores --- */
           bg-slate-50                  /* Fondo gris muy tenue */
         `}>
-          {cart.length === 0 ? (
+          {pedido.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-4">
               <Package size={64} className="opacity-20" />
               <p className="font-bold italic">Tu carrito está vacío</p>
             </div>
           ) : (
             <div className="flex flex-col gap-4">
-              {/* <!> Despues le meto a esto solo quiero ver como se ve  */}
-              {/* {cart.map((item) => (
-                <CartItemRow key={item.producto.prod_id} item={item} />
-              ))} */}
+              
+
+
+              {/* Carga la lista de Itme Pedido */}
+
+               {pedido.map((item) => (
+                <PedidoItemRow key={item.producto.prod_id} item={item} />
+              ))}
+              
             </div>
           )}
         </div>

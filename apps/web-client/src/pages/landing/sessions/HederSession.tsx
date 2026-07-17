@@ -2,19 +2,30 @@
 
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, User, ChevronDown } from "lucide-react";
+import { usePedidoStore } from '../../../context/pedido_context';
+import { PedidoDrawer } from '../../pedido/PedidoDrawer';
+
 
 /**
  * Header evolucionado para Veterinaria Beltramelli.
  * Implementa: Sticky behavior, Carrito con contador/total y Perfil de usuario.
  */
 export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
-  const [isScrolled, setIsScrolled] = useState(false); // 
+  const [isScrolled, setIsScrolled] = useState(false); 
 
-  /* Datos de ejemplo (Luego vendrán de tu Context/Store) */
-  const cartCount = 3; // <!> Creo que es la cantidad total de ventas Si es eso tendria que ir el otro lado no en el formulaior Cuando tnga la estructura ehca de la logica tengo que ver donde la pongo 
-  const cartTotal = 1250;// <!> Esto lo mismo de arribba 
-  //<!> Esto tambien tendria que ir en algun lugar de la logica no en el formulario no teine sentido que 2 personas esten logueadas en la misma aplicacion 
-  const user = { isLoggedIn: true, name: "Ary" }; // <!> Esto tengo que crearlo creo que en types algo tipo usuario_types.ts
+  // Componente para el menu desplegable <!> no lo tengo calro 
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  /* --- Sustituye tus constantes por el Hook de la Fachada --- */
+  const { 
+    total, // Total de la compra
+    itemCount // Cantidad de productos
+  } = usePedidoStore(); 
+
+  /* --- Para el usuario, lo ideal es usar un Contexto de Auth --- */
+  // const { user, isAuthenticated } = useAuth(); 
+  // const user = { isLoggedIn: true, name: "Ary" }; // Mantenlo así hasta que hagamos el AuthContext
+
   
 
   /* Detecta el scroll para aplicar el efecto de transparencia/blur */
@@ -24,6 +35,28 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const newLocal = `
+              /* --- Posición --- */
+              absolute                     /* Flota sobre el icono */
+              -top-1                       /* Ajuste superior */
+              -right-1                     /* Ajuste derecho */
+              
+              /* --- Dimensiones --- */
+              w-5 h-5                      /* Tamaño del círculo */
+              flex items-center justify-center
+              
+              /* --- Colores --- */
+              bg-red-500                   /* Color de alerta */
+              text-white                   /* Texto blanco */
+              border-2                     /* Borde de separación */
+              border-white                 /* Color del borde */
+              
+              /* --- Texto --- */
+              text-[10px] font-black       /* Fuente mínima y gruesa */
+              
+              /* --- Estilo --- */
+              rounded-full                 /* Círculo perfecto */
+            `;
   return (
     <>
     <header className= {` 
@@ -100,17 +133,28 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
         md:gap-8                     /* Espacio extendido en desktop */
       `}>
         
-            {/* Links Principales */}
+            {/* Links Principales <!> Esto depues tendria ue navegar por por la web a las diferentes secciones del LandingPage */} 
             <div className="hidden md:flex items-center gap-6 font-bold text-sm">
             <a href="#" className="hover:text-vete-primary transition-colors">Servicios</a>
             <a href="#" className="hover:text-vete-primary transition-colors">Tienda</a>
             <a href="#" className="hover:text-vete-primary transition-colors">Contacto</a>
             </div>
+            {/*  <!> Esto despues lo miro esparanavegar a landing pague y al precionar que me vallaa dode tiene que ir en la landig pague pero no lo tengo claro 
+                    y me gustaria ver lo de carrito primero 
+
+            <div className="hidden md:flex items-center gap-6 font-bold text-sm">
+              <a href="#servicios" className="hover:text-vete-primary transition-colors">Servicios</a>
+              <a href="#tienda" className="hover:text-vete-primary transition-colors">Tienda</a>
+              <a href="#contacto" className="hover:text-vete-primary transition-colors">Contacto</a>
+            </div>
+            */}
         
         </nav>
 
         {/* Carrito con Contador y Total */}
-        <div className={`
+        <div 
+          onClick={() => setIsCartOpen(true)}
+          className={`
           /* --- Posición --- */
           flex                         /* Alineación horizontal */
           items-center                 /* Centrado vertical */
@@ -123,10 +167,12 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
           {/* Visualización de Gasto */}
           <div className="flex flex-col items-end leading-none">
             <span className="text-[10px] uppercase opacity-60 font-bold">Total</span>
-            <span className="text-vete-primary font-black text-lg">${cartTotal}</span>
+            <span className="text-vete-primary font-black text-lg">${total.toFixed(2)}</span>
           </div>
 
-          {/* Icono con Badge */}
+          {/* Icono con Badge <!> Esto supongo que engloba todo lo correspondiente a carrito
+          me tustaria que al acer clic me desplegue aca el menu PedidoDreawer.tsx
+          */}
           <div className={`
             /* --- Posición --- */
             relative                     /* Base para el badge absoluto */
@@ -145,32 +191,11 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
             transition-transform         /* Suavidad */
           `}>
 
-
+            {/* <!> Aca me gustaria que el carrito me mostrar la cantidad de articulos total*/}
             <ShoppingCart size={18} />
             {/* Badge Numérico */}
-            <span className={`
-              /* --- Posición --- */
-              absolute                     /* Flota sobre el icono */
-              -top-1                       /* Ajuste superior */
-              -right-1                     /* Ajuste derecho */
-              
-              /* --- Dimensiones --- */
-              w-5 h-5                      /* Tamaño del círculo */
-              flex items-center justify-center
-              
-              /* --- Colores --- */
-              bg-red-500                   /* Color de alerta */
-              text-white                   /* Texto blanco */
-              border-2                     /* Borde de separación */
-              border-white                 /* Color del borde */
-              
-              /* --- Texto --- */
-              text-[10px] font-black       /* Fuente mínima y gruesa */
-              
-              /* --- Estilo --- */
-              rounded-full                 /* Círculo perfecto */
-            `}>
-              {cartCount}
+            <span className={newLocal}>
+              {itemCount}
             </span>
 
 
@@ -179,6 +204,11 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
 
 
     </header>
+      {/* Menu desplegable del carrito */}
+      <PedidoDrawer 
+        isOpen={isCartOpen} 
+        onClose={() => setIsCartOpen(false)} 
+      />
   </>
   );
 

@@ -3,12 +3,14 @@ import type { ApiProduct } from './product_types';
 
 /**
  * Representa una "Línea de Pedido" (PedidoDetalle).
- * En Java sería tu clase asociativa.
+ * @param producto - El producto agregado al pedido.
+ * @param cantidad - La cantidad del producto agregado al pedido.
+ * @param precio_unitario_capturado - El precio unitario capturado del producto agregado al pedido.
  */
-export interface LineaPedidoItem {
+export interface PedidoItem {
   producto: ApiProduct;
   cantidad: number;
-  precio_unitario_capturado: number; // Precio al momento de agregar al carrito
+  precio_unitario_capturado: number;
 }
 
 /**

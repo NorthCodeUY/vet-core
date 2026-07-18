@@ -5,9 +5,9 @@
  * @prop img_url - URL de la imagen
  * @prop img_principal - Indica si es la imagen principal 
  */
-export interface ApiImage {
+export interface ApiImageProducto {
+  img_id: number;
   img_url: string;
-  img_principal: boolean;
 }
 
 /**
@@ -23,9 +23,11 @@ export interface ApiProduct {
   prod_id: number;
   prod_nombre: string;
   prod_precio: number;
-  prod_descripcion: string;
-  rel_imagen_url: ApiImage[];
-  rel_subcategoria: { subc_nombre: string }[];
+  prod_descripcion: string; 
+  imagen_principal: ApiImageProducto;
+  imagenes_secundarias: ApiImageProducto[];
+  imagen_primaria_url: ApiImageProducto;
+  subcategoria: { subc_nombre: string }[];
 }
 
 /**
@@ -33,7 +35,7 @@ export interface ApiProduct {
  * @prop cat_id - ID de la categoría
  * @prop cat_nombre - Nombre de la categoría
  * @prop productos - Array de productos
- */
+ */ 
 export interface ApiCategory {
   cat_id: number;
   cat_nombre: string;

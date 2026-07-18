@@ -2,6 +2,162 @@
 
 import { ShoppingCart } from 'lucide-react';
 import { SUBCATEGORY_ICONS } from '../utils/categoryHelpers';
+import { usePedidoStore } from '../context/pedido_context'; // <!> Importamos la fachada
+import type { ApiProduct } from '../types/product_types';
+
+/* 
+   Modificamos la interfaz para que reciba el objeto producto completo, 
+   esto facilita pasarlo a la función addToPedido.
+*/
+interface Props { 
+  product: ApiProduct; 
+}
+
+export const ProductCard = ({ product }: Props) => {
+  /* --- Fachada: Extraemos lo que necesitamos --- */
+  const { pedido, addToPedido } = usePedidoStore();
+
+  /* --- Lógica: Buscamos si este producto ya está en el pedido --- */
+  const lineaActual = pedido.find(item => item.producto.prod_id === product.prod_id);
+  const cantidad = lineaActual?.cantidad || 0;
+  const estaComprado = cantidad > 0;
+
+  return (
+    <div className={`
+      /* --- Posición --- */
+      flex                         /* Contenedor flexible */
+      flex-col                     /* Alineación vertical */
+      gap-2                        /* Espacio entre hijos */
+      relative                     /* Necesario para el badge de cantidad */
+      
+      /* --- Dimensiones --- */
+      h-full                       /* Altura total */ 
+      min-w-[280px]                /* Ancho mínimo */
+      p-6                          /* Padding interno */
+
+      /* --- Colores --- */
+      /* <!> Cambio dinámico: si está comprado, usamos un verde tenue de la marca */
+      ${estaComprado ? 'bg-vete-primary/15' : 'bg-vete-soft/50'} 
+      
+      /* --- Estilo --- */
+      rounded-[2rem]               /* Bordes Figma */
+      border-2                     /* Borde para resaltar la selección */
+      ${estaComprado ? 'border-vete-primary' : 'border-transparent'}
+      transition-all               /* Animación suave de colores */
+      duration-300
+    `}>
+      
+      {/* Badge de Cantidad (Solo visible si cantidad > 0) */}
+      {estaComprado && (
+        <div className={`
+          /* --- Posición --- */
+          absolute                     /* Flota sobre la tarjeta */
+          -top-2                       /* Sale un poco hacia arriba */
+          -right-2                     /* Sale un poco hacia la derecha */
+          z-20                         /* Por encima de todo */
+          
+          /* --- Dimensiones --- */
+          w-10 h-10                    /* Tamaño del círculo */
+          flex items-center justify-center
+          
+          /* --- Colores --- */
+          bg-vete-primary              /* Fondo verde marca */
+          text-white                   /* Texto blanco */
+          
+          /* --- Estilo --- */
+          rounded-full                 /* Círculo perfecto */
+          font-black                   /* Texto muy grueso */
+          shadow-lg                    /* Sombra para dar profundidad */
+          animate-in zoom-in           /* Animación de entrada */
+        `}`}>
+          {cantidad}
+        </div>
+      )}
+
+      {/* Imagen del producto */}
+      <img 
+        src={product.rel_imagen_url[0]?.img_url} 
+        alt={product.prod_nombre} 
+        className="w-full h-48 object-cover rounded-2xl" 
+      />
+
+      {/* Subcategorías */}
+      <div className="flex gap-2 mt-2">
+        {product.rel_subcategoria?.map((sub, idx) => (
+          <div key={idx} className="p-1.5 bg-vete-primary/10 text-vete-primary rounded-lg">
+            {SUBCATEGORY_ICONS[sub.subc_nombre] || null}
+          </div>
+        ))}
+      </div>
+
+      {/* Textos */}
+      <h4 className="text-vete-primary font-bold text-lg mt-1">{product.prod_nombre}</h4>
+      <p className="text-vete-text-light text-sm line-clamp-2">{product.prod_descripcion}</p>
+
+      {/* Footer: Precio y Botones */}
+      <div className="flex justify-between items-center mt-auto pt-4 w-full">
+        <span className="text-vete-primary font-black text-xl">
+          ${product.prod_precio.toLocaleString('es-UY')}
+        </span>
+
+        <div className="flex gap-2 items-center">
+          <img src="/images/branding/LogoWhtSapp.svg" alt="WhatsApp" className="w-8 h-8 cursor-pointer hover:scale-110 transition-transform" />
+
+          <div 
+            /* <!> Acción: Al hacer clic, se agrega a la Fachada */
+            onClick={() => addToPedido(product)}
+            className={`
+              /* --- Posición --- */
+              p-2                        /* Espaciado interno */
+              cursor-pointer             /* Mano */
+              
+              /* --- Colores --- */
+              bg-vete-primary            /* Fondo verde */
+              text-white                 /* Icono blanco */
+              
+              /* --- Estilo --- */
+              rounded-full               /* Circular */
+              
+              /* --- Animación --- */
+              hover:bg-vete-primary/80   /* Oscurece al hover */
+              active:scale-90            /* Efecto de presión */
+              transition-all
+            `}
+          >
+            <ShoppingCart size={16} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --- apps/web-client/src/components/ProductCard.tsx --- */
+
+import { ShoppingCart } from 'lucide-react';
+import { SUBCATEGORY_ICONS } from '../utils/categoryHelpers';
 
 import { usePedidoStore } from '../context/pedido_context'; 
 import type { ApiProduct } from '../types/product_types';
@@ -173,3 +329,8 @@ interface Props {
     </div>
   </div>
 );
+
+
+
+
+

@@ -3,6 +3,9 @@
 import { Dog, Cat, Leaf, Fish } from 'lucide-react';
 
 /**
+ * <!> Esto es nesesario que este aca creo que deberia estar en la tarjeta
+ * <!> no creo usarla en otro lado no se 
+ * 
  * Este objeto mapea el texto del backend con un componente de icono.
  * Si el backend devuelve "Perro", aquí sabemos que debemos pintar el icono <Dog />
  */

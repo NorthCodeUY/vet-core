@@ -4,7 +4,7 @@ import { ShoppingCart } from 'lucide-react';
 import { SUBCATEGORY_ICONS } from '../utils/categoryHelpers';
 
 import { usePedidoStore } from '../context/pedido_context'; 
-import type { ApiProduct } from '../types/product_types';
+import type { ApiProduct, ApiImageProducto } from '../types/product_types';
 
 //interface Props { 
 //  title: string; 
@@ -24,7 +24,9 @@ interface Props {
  * Formateado para máxima legibilidad y soporte de subcategorías.
  */
 //export const ProductCard = ({ title, desc, price, img, subcategories }: Props) => (                  
-  export const ProductCard = ({ producto }: Props) => (
+  
+
+export function ProductCard({ producto }: Props) {
   /* --- Fachada: Extraemos lo que necesitamos --- */
   const { 
     pedido, // 🔍 Esto nos da la lista de productos agregados (array)
@@ -32,7 +34,7 @@ interface Props {
   } = usePedidoStore();
 
   /* --- Lógica: Buscamos si este producto ya está en el pedido --- */
-  const lineaActual = pedido.find(item => item.producto.prod_id === product.prod_id);
+  const lineaActual = pedido.find(item => item.producto.prod_id === producto.prod_id);
   const cantidad = lineaActual?.cantidad || 0;
   const estaComprado = cantidad > 0;
 
@@ -56,8 +58,8 @@ interface Props {
     
     {/* Imagen del producto */}
     <img 
-      src={img} 
-      alt={title} 
+      src={producto.imagen_primaria_url.img_url} 
+      alt={"Imagen no encontrada"} 
       className={`
         /* --- Dimensiones --- */
         w-full                   /* Ocupa todo el ancho disponible */
@@ -76,7 +78,8 @@ interface Props {
       gap-2                      /* Espacio entre badges */
       mt-2                       /* Margen superior */
     `}>
-      {subcategories?.map((sub, idx) => (
+      {/* Subcategoria Especies que aparesen en la tarjeta */} 
+      {producto.subcategoria?.map((sub, idx) => (
         <div key={idx} title={sub.subc_nombre} className={`
           /* --- Posición --- */
           flex items-center justify-center
@@ -103,7 +106,7 @@ interface Props {
       /* --- Dimensiones --- */
       mt-1                       /* Margen superior mínimo */
     `}>
-      {title}
+      {producto.prod_nombre}
     </h4>
 
     {/* Descripcion del producto */}
@@ -113,7 +116,7 @@ interface Props {
       text-sm                    /* Tamaño de fuente pequeño */
       line-clamp-2               /* Corta el texto a 2 líneas máximo */
     `}>
-      {desc}
+      {producto.prod_descripcion}
     </p>
 
     {/* Precio y botones de accion */}
@@ -137,12 +140,16 @@ interface Props {
         font-black                 /* Peso de fuente máximo */
         text-xl                    /* Tamaño de fuente extra grande */
       `}>
-        ${price.toLocaleString('es-UY')}
+        ${producto.prod_precio.toLocaleString('es-UY')}
       </span>
 
       {/* Botones de accion */}
       <div className="flex gap-2 items-center">
-        {/* Boton de whatsapp */}
+        {/* Boton de whatsapp <!> Aca tengo que agregar algo para que 
+        me mande a un mensaje de watsa pero que me genere un link
+        para que cea este producot algo como desde el selular del clite
+        mande algo como estoy interesado en este producot algo asi al celular
+        de la beterinaria que ya tenog en los datos globales */}
         <img 
           src="/images/branding/LogoWhtSapp.svg" 
           alt="WhatsApp" 
@@ -156,7 +163,9 @@ interface Props {
           `} 
         />
 
-        <div className={`
+        <div 
+          onClick={() => {addToPedido(producto)}}
+          className={`
           /* --- Posición --- */
           p-2                        /* Espaciado interno */
           cursor-pointer             /* Cursor de mano */
@@ -171,16 +180,11 @@ interface Props {
           hover:bg-vete-primary/80   /* Oscurece un poco al hover */
           transition-colors          /* Transición de color */
         `}>
-          {/*  <!> Aca en este boton deberia conectarse a  PedidoContext
-          y agregarlo a mi carrito tambien me gustaria que figurara esta tarjeta la cantidad que compor
-          y ademas qeu la tarjeta tubiera otro color de fonodo para que la encutre rapido 
-          Yo creo que en ningun momento le pase a este componente el objeto pedido que lo cotiene caps deba pasarle el objeto pedido 
-          o algo por el estilo no se que se puede hace manteniendo la estructura que venios trabjando 
-          
-          */}
-          <ShoppingCart size={16} className="text-white" />
+          {/* <!> Tengo que ver como hago para que aparezca 
+          el numero del producto y poder modificar la cantidad */}
+           <ShoppingCart size={16} className="text-white" />
         </div>
       </div>
     </div>
   </div>
-);
+}

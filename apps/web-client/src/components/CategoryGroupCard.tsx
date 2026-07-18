@@ -7,7 +7,7 @@ import { ProductCard } from './ProductCard.tsx';
 interface CategoryGroupProps {
   title: string; // Nombre de la categoría
   catId: number; // Agregamos el ID para poder pedir más datos 
-  initialData: any[];  //  Datos de los productos
+  initialData: any[];  //<!>  Datos de los productos <!> Esto esta mal tenda que ser ProductoType
 }
 
 /**
@@ -22,10 +22,10 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
 
   /* Lógica de visualización responsiva */
   const mobileLimit = isExpanded ? 5 : 1; // <!> tENGO QUE USAR ESTO ME PARESE QUE ME QUE MAL COMO ESTABA ANTES ESTABA BIEN 2 1 ERA MAS RESPONSIVE 
-  
+
   /* URL base para imágenes desde variables de entorno */
   const IMAGES_BASE_URL = import.meta.env.VITE_API_IMAGES; // <!> Esto no se si va 
-    
+
   const handleToggleExpand = async () => {
     // Si vamos a expandir y no hemos cargado el resto, hacemos el fetch
     if (!isExpanded && !hasLoadedFull) {
@@ -77,9 +77,9 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
         `}>
           {title}
         </h3>
-        
+
         {/* Botón de expandir/ocultar */}
-        <button 
+        <button
           onClick={handleToggleExpand} /* funcion que dispara la espandir y ocultar de los productos */
           className={`
             /* --- Posición --- */
@@ -97,7 +97,7 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
             hover:underline              /* Subraya al pasar el mouse */
             transition-all               /* Transición suave para cambios */
           `}
-          
+
         >
           <span className="hidden sm:inline">
             {isExpanded ? 'Ver menos' : 'Ver más'}
@@ -127,8 +127,8 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
           const isHiddenOnDesktop = !isExpanded && index >= 5;
 
           return (
-            <div 
-              key={p.prod_id} 
+            <div
+              key={p.prod_id}
               className={`
                 /* --- Posición --- */
                 ${isHiddenOnMobile ? 'hidden' : 'flex'} 
@@ -140,16 +140,20 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
                 duration-300                 /* Duración de 300ms */
               `}
             >
-              <ProductCard 
-                title={p.prod_nombre} 
-                desc={p.prod_descripcion} 
-                price={p.prod_precio} 
-                /* Construcción dinámica de la URL de imagen */
+
+              <ProductCard producto={p} />
+
+              {/* <ProductCard 
+                title={p.prod_nombre}
+                desc={p.prod_descripcion}
+                price={p.prod_precio}
+                /* Construcción dinámica de la URL de imagen 
                 //img={`${IMAGES_BASE_URL}/${p.rel_imagen_url[0]?.img_url}`} <!> sacar
                 img={p.rel_imagen_url[0]?.img_url}
-                /* Inyección de subcategorías para los iconos de mascotas */
+                /* Inyección de subcategorías para los iconos de mascotas 
                 subcategories={p.rel_subcategoria}
               />
+              */}
             </div>
           );
         })}

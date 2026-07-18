@@ -42,7 +42,7 @@ Este repositorio contiene el núcleo del sistema, diseñado como una solución *
 ├── docker-compose.yml       # Orquestador local <!> Falta desarollar 
 └── README.md                # Documentación técnica centralizada
 ``` 
-
+## <!> Tengoque terminar de docuemtar la parte de como levantar los entorno 
 
 ## Modelo Entidad relacion 
 

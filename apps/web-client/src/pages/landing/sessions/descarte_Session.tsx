@@ -40,7 +40,37 @@
 
 
 
-
+/* --- Lógica de transformación de datos --- */
+const mapApiToProduct = (backendProducts: any[]): ApiProduct[] => {
+  return backendProducts.map(p => ({
+    
+    
+    /* Esto es una forma mas corta de hacerlo */
+    mainImage = p.rel_imagen_url?.find( // Encuentra la imagen principal 
+      (ipmg: any) => img.img_principal) 
+                      || p.rel_imagen_url?.[0] 
+                      || { img_url: '/images/placeholder.png', img_id: 0 };     
+    
+    prod_id: p.prod_id,
+    prod_nombre: p.prod_nombre,
+    prod_precio: p.prod_precio,
+    prod_descripcion: p.prod_descripcion,
+    
+    /* Buscamos la imagen que tenga img_principal: true */
+    imagen_principal_url: p.rel_imagen_url.find((img: any) => img.img_principal) || p.rel_imagen_url[0],
+    
+    /* Filtramos las que no son principales */
+    imagenes_secundarias_url: p.rel_imagen_url.filter((img: any) => !img.img_principal),
+    
+    /* Mapeamos las subcategorías */
+    subcategoria: p.rel_subcategoria.map((sub: any) => ({ subc_nombre: sub.subc_nombre }))
+  
+  
+  
+  
+  
+  }));
+};
 
 
 
@@ -59,15 +89,32 @@
 
 
 
+// Version 18 / 07 / 2026 no funciona
+
+/* --- Lógica de transformación de datos --- */
+const mapApiToProduct = (backendProducts: any[]): ApiProduct[] => {
+  return backendProducts.map(p => ({
+    prod_id: p.prod_id,
+    prod_nombre: p.prod_nombre,
+    prod_precio: p.prod_precio,
+    prod_descripcion: p.prod_descripcion,
+    
+    /* Buscamos la imagen que tenga img_principal: true */
+    imagen_principal_url: p.rel_imagen_url.find((img: any) => img.img_principal) || p.rel_imagen_url[0],
+    
+    /* Filtramos las que no son principales */
+    imagenes_secundarias_url: p.rel_imagen_url.filter((img: any) => !img.img_principal),
+    
+    /* Mapeamos las subcategorías */
+    subcategoria: p.rel_subcategoria.map((sub: any) => ({ subc_nombre: sub.subc_nombre }))
+  }));
+};
 
 
 
 
 
-
-
-
-
+// ))/////
 
 
 

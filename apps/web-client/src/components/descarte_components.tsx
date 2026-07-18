@@ -137,7 +137,36 @@ export const ProductCard = ({ product }: Props) => {
 
 
 
-
+{/* Imagen del Producto con Fallback Estético */}
+      <img 
+        /* 
+           Lógica de visualización:
+           1. Intenta cargar la URL del backend.
+           2. Si es null o undefined, carga la imagen local de "No disponible".
+        */
+        src={producto.imagen_principal_url?.img_url || '/images/branding/no-image-placeholder.png'} 
+        
+        /* Alt dinámico para accesibilidad */
+        alt={producto.imagen_principal_url ? producto.prod_nombre : "Producto sin imagen disponible"} 
+        
+        className={`
+          /* --- Dimensiones --- */
+          w-full                       /* Ocupa todo el ancho de la tarjeta */
+          h-48                         /* Altura fija para mantener la cuadrícula alineada */
+          
+          /* --- Estilo --- */
+          object-cover                 /* Evita que la imagen se estire o deforme */
+          rounded-2xl                  /* Bordes redondeados suaves */
+          
+          /* --- Colores --- */
+          bg-slate-100                 /* Fondo gris muy claro mientras carga */
+          
+          /* --- Animación --- */
+          hover:scale-105              /* Efecto de zoom sutil al pasar el mouse */
+          transition-transform         /* Suaviza la animación de escala */
+          duration-500                 /* Velocidad de la transición */
+        `} 
+      />
 
 
 

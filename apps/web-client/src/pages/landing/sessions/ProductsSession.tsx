@@ -8,25 +8,82 @@ import type { ApiCategory } from '../../../types/product_types';
 import type { ApiProduct } from '../../../types/product_types';
 
 
-/* --- Lógica de transformación de datos --- */
-const mapApiToProduct = (backendProducts: any[]): ApiProduct[] => {
-  return backendProducts.map(p => ({
-    prod_id: p.prod_id,
-    prod_nombre: p.prod_nombre,
-    prod_precio: p.prod_precio,
-    prod_descripcion: p.prod_descripcion,
-    
-    /* Buscamos la imagen que tenga img_principal: true */
-    imagen_principal: p.rel_imagen_url.find((img: any) => img.img_principal) || p.rel_imagen_url[0],
-    
-    /* Filtramos las que no son principales */
-    imagenes_secundarias: p.rel_imagen_url.filter((img: any) => !img.img_principal),
-    
-    /* Mapeamos las subcategorías */
-    subcategoria: p.rel_subcategoria.map((sub: any) => ({ subc_nombre: sub.subc_nombre }))
-  }));
-};
+// Array de emeplo que voy a esplorar 
+// [
+//     {
+//         "cat_nombre": "Accesorios",
+//         "cat_id": 1,
+//         "productos": [
+//             {
+//                 "prod_id": 1,
+//                 "prod_nombre": "Durapets Bandeja",
+//                 "prod_precio": 308.0,
+//                 "prod_descripcion": "Kit Bandeja, pala y plato",
+//                 "cat_id": 1,
+//                 "rel_imagen_url": [
+//                     {
+//                         "img_url": "/static/productos/3.png",
+//                         "img_principal": true
+//                     }
+//                 ],
+//                 "rel_subcategoria": [
+//                     {
+//                         "subc_nombre": "Gato"
+//                     }
+//                 ]
+//             },
+//             {
+//                 "prod_id": 2,
+//                 "prod_nombre": "Baño cerrado ",
+//                 "prod_precio": 690.0,
+//                 "prod_descripcion": "Baño cerrado (56x40x40cm) +pala",
+//                 "cat_id": 1,
+//                 "rel_imagen_url": [
+//                     {
+//                         "img_url": "/static/productos/2.png",
+//                         "img_principal": true
+//                     }
+//                 ],
+//                 "rel_subcategoria": [
+//                     {
+//                         "subc_nombre": "Gato"
+//                     }
+//                 ]
+//             },
 
+
+
+const mapApiToProduct = (nombreCategoria: string, idCategoria: number, backendProducts: any[]): ApiProduct[] => {
+  return backendProducts.map(p => { // Recorro el array de productos y transformo cada uno 
+    
+    /* 1. Calculamos la imagen principal primero (y corregimos el typo de ipmg -> img) */
+    const mainImage = p.rel_imagen_url?.find( // Busca la imagen principal
+                        (img: any) => img.img_principal) // Si la eimagen es principal 
+                                        || p.rel_imagen_url?.[0] // Si no hay imagen principal toma la primera imagen 
+                                        || { img_url: '/images/placeholder.png', img_id: 0 }; // Si no hay ninguna imagen toma la imagen por defecto 
+    
+    /* 2. Ahora sí, retornamos el objeto estructurado limpiamente */
+    return {
+      prod_id: p.prod_id,
+      prod_nombre: p.prod_nombre,
+      prod_precio: p.prod_precio,
+      prod_descripcion: p.prod_descripcion,
+      cat_nombre: nombreCategoria, // Agregamos el nombre de la categoría
+      cat_id: idCategoria, // Agregamos el ID de la categoría
+      /* Usamos la constante que calculamos arriba. ¡Ya no necesitas repetir el .find()! */
+      imagen_principal_url: mainImage,
+      
+      /* Filtramos las que no son principales (agregamos ?. por si las moscas si viene null) */
+      imagenes_secundarias_url: p.rel_imagen_url?.filter ((img: any) => // Recorro el array de imagenes y filtro las que no son principales 
+                                                                !img.img_principal) // Si no es la imagen principal la agrego al array de imagenes secundarias 
+                                                                || [], // Si no hay ninguna imagen secundaria la devuelvo como un array vacio 
+      
+      /* Mapeamos las subcategorías de forma segura */
+      subcategoria: p.rel_subcategoria?.map((sub: any) => ({ subc_nombre: sub.subc_nombre })) || []
+    };
+
+  });
+};
 
 /**
  * Sección de Productos conectada al Backend (FastAPI).
@@ -70,7 +127,7 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
         const transformedData: ApiCategory[] = data.map((cat: any) => ({
           cat_id: cat.cat_id,
           cat_nombre: cat.cat_nombre,
-          productos: mapApiToProduct(cat.productos) // Usamos la función de arriba
+          productos: mapApiToProduct(cat.cat_nombre , cat.cat_id , cat.productos) // Usamos la función de arriba
         }));
 
         setCategories(transformedData);

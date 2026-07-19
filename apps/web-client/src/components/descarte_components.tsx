@@ -1,3 +1,5 @@
+<<<<<<< HEAD
+=======
 /* --- apps/web-client/src/components/ProductCard.tsx --- */
 
 import { ShoppingCart } from 'lucide-react';
@@ -363,3 +365,4 @@ interface Props {
 
 
 
+>>>>>>> origin/Ary-18-jul

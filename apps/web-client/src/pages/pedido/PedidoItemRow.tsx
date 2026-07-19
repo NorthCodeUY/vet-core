@@ -6,7 +6,10 @@ import { Plus, Minus, Trash2 } from 'lucide-react';
 import { usePedidoStore } from '../../context/pedido_context'; 
 import type { PedidoItem } from '../../types/pedido_types';
 
-
+/**
+ * Interfaz que define las props del componente PedidoItemRow
+ * @param item - Objeto de tipo PedidoItem que representa un producto en el carrito
+ */
 interface PedidoItemRowProps {
   item: PedidoItem;
 }
@@ -61,9 +64,21 @@ export const PedidoItemRow = ({ item }: PedidoItemRowProps) => {
         bg-slate-50                  /* Fondo de respaldo */
       `}>
         <img 
-          src={item.producto.rel_imagen_url[0]?.img_url} 
-          alt={item.producto.prod_nombre}
-          className="w-full h-full object-cover"
+
+        /* 
+           Lógica de visualización:
+           1. Intenta cargar la URL del backend.
+           2. Si es null o undefined, carga la imagen local de "No disponible".
+        */
+        src={item.producto.imagen_principal_url?.img_url || '/images/producto_no_disponible.png'} 
+        // Alt para accesibilidad
+        alt={item.producto.imagen_principal_url ? item.producto.prod_nombre : "Imagen no encontrada"}           
+          className={`
+            /* --- Dimensiones --- */
+            w-full                       /* Ocupa todo el ancho disponible */
+            h-full                       /* Ocupa toda la altura disponible */
+            object-cover                 /* Ajusta la imagen para cubrir todo el contenedor sin distorsionarse */
+          `}
         />
       </div> 
 

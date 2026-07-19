@@ -35,7 +35,7 @@ export function ProductCard({ producto }: Props) {
 
   /* --- Lógica: Buscamos si este producto ya está en el pedido --- <!> Revisar despues */
   const lineaActual = pedido.find(item => item.producto.prod_id === producto.prod_id);
-  const cantidad = lineaActual?.cantidad || 0;
+  const cantidad = lineaActual?.cantidad || 0; // <!> Esto reo que no va 
   //const estaComprado = cantidad > 0;
 
   return (
@@ -66,14 +66,9 @@ export function ProductCard({ producto }: Props) {
         */
         src={producto.imagen_principal_url?.img_url || '/images/producto_no_disponible.png'} 
         // Alt para accesibilidad
-<<<<<<< HEAD
         alt={producto.imagen_principal_url ? producto.prod_nombre : "Imagen no encontrada"} 
         className={`
 
-=======
-        alt={producto.imagen_principal_url ? producto.prod_nombre : "Imagen no encontrada"} // <!> alt={"Imagen no encontrada"} 
-        className={`
->>>>>>> origin/Ary-18-jul
           /* --- Dimensiones --- */
           w-full                   /* Ocupa todo el ancho disponible */
           h-48                     /* Altura fija de 12rem */

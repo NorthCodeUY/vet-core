@@ -66,9 +66,14 @@ export function ProductCard({ producto }: Props) {
         */
         src={producto.imagen_principal_url?.img_url || '/images/producto_no_disponible.png'} 
         // Alt para accesibilidad
+<<<<<<< HEAD
         alt={producto.imagen_principal_url ? producto.prod_nombre : "Imagen no encontrada"} 
         className={`
 
+=======
+        alt={producto.imagen_principal_url ? producto.prod_nombre : "Imagen no encontrada"} // <!> alt={"Imagen no encontrada"} 
+        className={`
+>>>>>>> origin/Ary-18-jul
           /* --- Dimensiones --- */
           w-full                   /* Ocupa todo el ancho disponible */
           h-48                     /* Altura fija de 12rem */

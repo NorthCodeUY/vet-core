@@ -1,6 +1,5 @@
 /* --- apps/web-client/src/pages/landing/sessions/ProductsSession.tsx --- */
 
-import { useState, useMemo, useEffect } from 'react';
 import { Search, Loader2 } from 'lucide-react';
 import { CategoryGroupCard } from '../../../components/CategoryGroupCard.tsx';
 import { ProductCard } from '../../../components/ProductCard.tsx';

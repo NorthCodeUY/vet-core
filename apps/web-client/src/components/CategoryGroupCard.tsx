@@ -1,8 +1,13 @@
 /* --- apps/web-client/src/components/CategoryGroupCard.tsx --- */
 
-import { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import { ProductCard } from './ProductCard.tsx';
+
+import { ChevronDown, ChevronUp, ShoppingCart } from 'lucide-react';
+import { ProductCard } from './ProductCard.tsx'
+import { usePedidoStore } from '../context/pedido_context';
+import { useCategoryProducts } from '../hooks/useProducts';
+
+
+
 
 interface CategoryGroupProps {
   title: string; // Nombre de la categoría
@@ -16,32 +21,25 @@ interface CategoryGroupProps {
  * siguiendo el estándar estricto de legibilidad de Tailwind.
  */
 export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupProps) => {
-  const [isExpanded, setIsExpanded] = useState(false); // Estado para expandir y contraer la lista de productos 
-  const [products, setProducts] = useState(initialData); // Estado local para los productos
-  const [hasLoadedFull, setHasLoadedFull] = useState(false); // Control para no pedir 2 veces
+  /* --- Fachada de Lógica (Hook) --- */
+  const { 
+    products, 
+    isExpanded, 
+    toggleExpand 
+  } = useCategoryProducts(catId, initialData, title);
 
   /* Lógica de visualización responsiva */
   const mobileLimit = isExpanded ? 5 : 1; // <!> tENGO QUE USAR ESTO ME PARESE QUE ME QUE MAL COMO ESTABA ANTES ESTABA BIEN 2 1 ERA MAS RESPONSIVE 
 
-  /* URL base para imágenes desde variables de entorno */
-  const IMAGES_BASE_URL = import.meta.env.VITE_API_IMAGES; // <!> Esto no se si va 
+  
+  /* --- Fachada de Pedidos (Para el contador del título) --- */
+  const { pedido } = usePedidoStore();
+  
+ //<!> Esto no lo tengo claro como usarlo 
+  const cantidadComprada = pedido // Me da el total de cantidad de productos de esta categoria que estan en el pedido 
+    .filter(item => item.producto.cat_id === catId) // Me quedo con los productos de esta categoria
+    .reduce((acc, item) => acc + item.cantidad, 0); // Me quedo con la cantidad de productos 
 
-  // <!> El problema esta aca como yo tranforme ProductoCard para que resiva 
-  // <!> ProductoType se esta rompiendo y espera un formato que no es correcto 
-  const handleToggleExpand = async () => {
-    // Si vamos a expandir y no hemos cargado el resto, hacemos el fetch
-    if (!isExpanded && !hasLoadedFull) {
-      try {
-        const response = await fetch(`/api/productos?cat_id=${catId}`);
-        const fullData = await response.json();
-        setProducts(fullData);
-        setHasLoadedFull(true);
-      } catch (error) {
-        console.error("Error cargando más productos:", error);
-      }
-    }
-    setIsExpanded(!isExpanded);
-  };
 
 
 
@@ -82,7 +80,7 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
 
         {/* Botón de expandir/ocultar */}
         <button
-          onClick={handleToggleExpand} /* funcion que dispara la espandir y ocultar de los productos */
+          onClick={toggleExpand} /* funcion que dispara la espandir y ocultar de los productos */
           className={`
             /* --- Posición --- */
             flex                         /* Contenedor flexible para icono y texto */

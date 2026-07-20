@@ -4,158 +4,41 @@ import { useState, useMemo, useEffect } from 'react';
 import { Search, Loader2 } from 'lucide-react';
 import { CategoryGroupCard } from '../../../components/CategoryGroupCard.tsx';
 import { ProductCard } from '../../../components/ProductCard.tsx';
-import type { ApiCategory } from '../../../types/product_types';
-import type { ApiProduct } from '../../../types/product_types';
 
-
-// Array de emeplo que voy a esplorar 
-// [
-//     {
-//         "cat_nombre": "Accesorios",
-//         "cat_id": 1,
-//         "productos": [
-//             {
-//                 "prod_id": 1,
-//                 "prod_nombre": "Durapets Bandeja",
-//                 "prod_precio": 308.0,
-//                 "prod_descripcion": "Kit Bandeja, pala y plato",
-//                 "cat_id": 1,
-//                 "rel_imagen_url": [
-//                     {
-//                         "img_url": "/static/productos/3.png",
-//                         "img_principal": true
-//                     }
-//                 ],
-//                 "rel_subcategoria": [
-//                     {
-//                         "subc_nombre": "Gato"
-//                     }
-//                 ]
-//             },
-//             {
-//                 "prod_id": 2,
-//                 "prod_nombre": "Baño cerrado ",
-//                 "prod_precio": 690.0,
-//                 "prod_descripcion": "Baño cerrado (56x40x40cm) +pala",
-//                 "cat_id": 1,
-//                 "rel_imagen_url": [
-//                     {
-//                         "img_url": "/static/productos/2.png",
-//                         "img_principal": true
-//                     }
-//                 ],
-//                 "rel_subcategoria": [
-//                     {
-//                         "subc_nombre": "Gato"
-//                     }
-//                 ]
-//             },
+import { useProducts } from '../../../hooks/useProducts.ts';
 
 
 
-const mapApiToProduct = (nombreCategoria: string, idCategoria: number, backendProducts: any[]): ApiProduct[] => {
-  return backendProducts.map(p => { // Recorro el array de productos y transformo cada uno 
-    
-    /* 1. Calculamos la imagen principal primero (y corregimos el typo de ipmg -> img) */
-    const mainImage = p.rel_imagen_url?.find( // Busca la imagen principal
-                        (img: any) => img.img_principal) // Si la eimagen es principal 
-                                        || p.rel_imagen_url?.[0] // Si no hay imagen principal toma la primera imagen 
-                                        || { img_url: '/images/placeholder.png', img_id: 0 }; // Si no hay ninguna imagen toma la imagen por defecto 
-    
-    /* 2. Ahora sí, retornamos el objeto estructurado limpiamente */
-    return {
-      prod_id: p.prod_id,
-      prod_nombre: p.prod_nombre,
-      prod_precio: p.prod_precio,
-      prod_descripcion: p.prod_descripcion,
-      cat_nombre: nombreCategoria, // Agregamos el nombre de la categoría
-      cat_id: idCategoria, // Agregamos el ID de la categoría
-      /* Usamos la constante que calculamos arriba. ¡Ya no necesitas repetir el .find()! */
-      imagen_principal_url: mainImage,
-      
-      /* Filtramos las que no son principales (agregamos ?. por si las moscas si viene null) */
-      imagenes_secundarias_url: p.rel_imagen_url?.filter ((img: any) => // Recorro el array de imagenes y filtro las que no son principales 
-                                                                !img.img_principal) // Si no es la imagen principal la agrego al array de imagenes secundarias 
-                                                                || [], // Si no hay ninguna imagen secundaria la devuelvo como un array vacio 
-      
-      /* Mapeamos las subcategorías de forma segura */
-      subcategoria: p.rel_subcategoria?.map((sub: any) => ({ subc_nombre: sub.subc_nombre })) || []
-    };
 
-  });
-};
+
 
 /**
  * Sección de Productos conectada al Backend (FastAPI).
  * Gestiona la carga de datos, el filtrado global y la visualización por categorías.
  */
 export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
-  /* --- Estado de la Aplicación --- */
-  const [searchTerm, setSearchTerm] = useState(""); // Uso UseState porque voy a necesitar que se guarde el valor para filtras los productos y que se muestre en el input 
-  const [categories, setCategories] = useState<ApiCategory[]>([]); // UseState para guardar los datos del backend 
-  const [loading, setLoading] = useState(true); // Esto es para que carge y que no muestre error hasta que no tenga los datos 
+    const { 
+      searchTerm, // Guardara lo que escriba el usuario y esto me ayudara a filtrar los resultados  
+      setSearchTerm, // Me va a permitir modificar el searchTerm
+      categories, // Todas las categorias
+      loading, // Estado de carga 
+      filteredResults // Resultados filtrados 
+    } = useProducts();
+
   
   
-  // Versio 17/07/2026 18:40
+  
+  
+      
+ 
 
-  // /* --- Conexión con el Backend --- */
-  // useEffect(() => {
-  //   const fetchProducts = async () => {
-  //     try {
-  //       /* Uso de variables de entorno para la URL de la API */
-  //       const response = await fetch(`${import.meta.env.VITE_API_URL}/productos/agrupados`);
-  //       const data = await response.json();
-  //       setCategories(data);
-  //     } catch (error) {
-  //       console.error("Error cargando el catálogo de la vete:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchProducts();
-  // }, []);
 
-    /* --- Conexión con el Backend --- */
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/productos/agrupados`);
-        const data = await response.json();
-
-        /* --- TRANSFORMACIÓN --- */
-        /* Convertimos cada categoría y sus productos al formato de nuestras Interfaces */
-        const transformedData: ApiCategory[] = data.map((cat: any) => ({
-          cat_id: cat.cat_id,
-          cat_nombre: cat.cat_nombre,
-          productos: mapApiToProduct(cat.cat_nombre , cat.cat_id , cat.productos) // Usamos la función de arriba
-        }));
-
-        setCategories(transformedData);
-      } catch (error) {
-        console.error("Error cargando el catálogo:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
-
-  /* --- Lógica de Filtrado Global --- */ 
-  const filteredResults = useMemo(() => { // <!> Voy a nesesitar que me espliques este metodo porque no lo tengo claro 
-    if (!searchTerm) return null;
-
-    /* Aplanamos todas las categorías en una sola lista para la búsqueda global */
-    const allProducts = categories.flatMap(cat => cat.productos); // 
-
-    return allProducts.filter(p =>
-      p.prod_nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.prod_descripcion.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm, categories]);
 
   /* --- Renderizado de Estado de Carga --- */
   if (loading) {
     return (
+
+      // Cartel de carga mientras no hay datos
       <div className={`
         /* --- Posición --- */
         flex                         /* Contenedor flexible */
@@ -165,9 +48,13 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
         
         /* --- Dimensiones --- */
         py-40                        /* Espaciado vertical amplio */
-        gap-4                        /* Espacio entre icono y texto */
+        gap-4                        /*  Espacio entre icono y texto */
       `}>
+        
+        {/* Icono de carga */}
         <Loader2 className="animate-spin text-vete-primary" size={48} />
+
+        {/* Mensaje de carga datos */}
         <p className="text-vete-primary font-bold italic animate-pulse">
           Cargando catálogo de Salto...
         </p>
@@ -309,15 +196,6 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
               `}>
                 {/* Tarjetas para mostrar productos filtrados por buscador */}
                 {filteredResults?.map(p => (
-                  // <!> Version antigua borrar  
-                  // <ProductCard 
-                  //   key={p.prod_id} 
-                  //   title={p.prod_nombre} 
-                  //   desc={p.prod_descripcion} 
-                  //   price={p.prod_precio} 
-                  //   img={`${import.meta.env.VITE_API_IMAGES}/${p.rel_imagen_url[0]?.img_url}`}
-                  //   subcategories={p.rel_subcategoria}
-                  // />
 
                   <ProductCard producto={p} />
 

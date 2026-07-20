@@ -1,368 +1,170 @@
-<<<<<<< HEAD
-=======
-/* --- apps/web-client/src/components/ProductCard.tsx --- */
+http://127.0.0.1:8000/api/productos/agrupados
+"cat_nombre": "Accesorios",
+        "cat_id": 1,
+        "productos": [
+            {
+                "prod_id": 1,
+                "prod_nombre": "Durapets Bandeja",
+                "prod_precio": 308.0,
+                "prod_descripcion": "Kit Bandeja, pala y plato",
+                "cat_id": 1,
+                "rel_imagen_url": [
+                    {
+                        "img_url": "/static/productos/3.png",
+                        "img_principal": true
+                    }
+                ],
+                "rel_subcategoria": [
+                    {
+                        "subc_nombre": "Gato"
+                    }
+                ]
+            },
+            {
+                "prod_id": 2,
+                "prod_nombre": "Baño cerrado ",
+                "prod_precio": 690.0,
+                "prod_descripcion": "Baño cerrado (56x40x40cm) +pala",
+                "cat_id": 1,
+                "rel_imagen_url": [
+                    {
+                        "img_url": "/static/productos/2.png",
+                        "img_principal": true
+                    }
+                ],
 
-import { ShoppingCart } from 'lucide-react';
-import { SUBCATEGORY_ICONS } from '../utils/categoryHelpers';
-import { usePedidoStore } from '../context/pedido_context'; // <!> Importamos la fachada
-import type { ApiProduct } from '../types/product_types';
+http://127.0.0.1:8000/api/productos?cat_id=1
+[
+    {
+        "prod_id": 1,
+        "prod_nombre": "Durapets Bandeja",
+        "prod_precio": 308.0,
+        "prod_descripcion": "Kit Bandeja, pala y plato",
+        "cat_id": 1,
+        "rel_imagen_url": [
+            {
+                "img_url": "/static/productos/3.png",
+                "img_principal": true
+            }
+        ],
+        "rel_subcategoria": [
+            {
+                "subc_nombre": "Gato"
+            }
+        ]
+    },
+    {
+        "prod_id": 2,
+        "prod_nombre": "Baño cerrado ",
+        "prod_precio": 690.0,
+        "prod_descripcion": "Baño cerrado (56x40x40cm) +pala",
+        "cat_id": 1,
+        "rel_imagen_url": [
+            {
+                "img_url": "/static/productos/2.png",
+                "img_principal": true
+            }
+        ],
+        "rel_subcategoria": [
+            {
+                "subc_nombre": "Gato"
+            }
+        ]
+    },
+    {
+        "prod_id": 3,
+        "prod_nombre": "Antideslizante",
+        "prod_precio": 81.0,
+        "prod_descripcion": "Medias antideslizantes ",
+        "cat_id": 1,
+        "rel_imagen_url": [
+            {
+                "img_url": "/static/productos/3.png",
+                "img_principal": true
+            }
+        ],
+        "rel_subcategoria": [
+            {
+                "subc_nombre": "Perro"
+            }
+        ]
+    },
 
-/* 
-   Modificamos la interfaz para que reciba el objeto producto completo, 
-   esto facilita pasarlo a la función addToPedido.
-*/
-interface Props { 
-  product: ApiProduct; 
-}
 
-export const ProductCard = ({ product }: Props) => {
-  /* --- Fachada: Extraemos lo que necesitamos --- */
-  const { pedido, addToPedido } = usePedidoStore();
+/* --- apps/web-client/src/components/CategoryGroupCard.tsx --- */
 
-  /* --- Lógica: Buscamos si este producto ya está en el pedido --- */
-  const lineaActual = pedido.find(item => item.producto.prod_id === product.prod_id);
-  const cantidad = lineaActual?.cantidad || 0;
-  const estaComprado = cantidad > 0;
+import { mapApiToProduct } from '../pages/landing/sessions/ProductsSession'; // <!> Importar el mapeador
+
+export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [products, setProducts] = useState(initialData);
+  const [hasLoadedFull, setHasLoadedFull] = useState(false);
+
+  /* 
+     <!> MEJORA RESPONSIVE: 
+     Si no está expandido, mostramos 2 en móvil y 5 en desktop.
+  */
+  const displayLimit = isExpanded ? products.length : 2; 
+
+  const handleToggleExpand = async () => {
+    if (!isExpanded && !hasLoadedFull) {
+      try {
+        const response = await fetch(`/api/productos?cat_id=${catId}`);
+        const rawData = await response.json();
+
+        /* 
+           <!> SOLUCIÓN AL ERROR DE IMAGEN:
+           Transformamos los datos crudos del backend al formato ApiProduct 
+           antes de guardarlos en el estado.
+        */
+        const transformedProducts = mapApiToProduct(title, catId, rawData);
+        
+        setProducts(transformedProducts);
+        setHasLoadedFull(true);
+      } catch (error) {
+        console.error("Error cargando más productos:", error);
+      }
+    }
+    setIsExpanded(!isExpanded);
+  };
 
   return (
-    <div className={`
-      /* --- Posición --- */
-      flex                         /* Contenedor flexible */
-      flex-col                     /* Alineación vertical */
-      gap-2                        /* Espacio entre hijos */
-      relative                     /* Necesario para el badge de cantidad */
-      
-      /* --- Dimensiones --- */
-      h-full                       /* Altura total */ 
-      min-w-[280px]                /* Ancho mínimo */
-      p-6                          /* Padding interno */
+    <div className="w-full">
+      {/* ... (Header de categoría igual) ... */}
 
-      /* --- Colores --- */
-      /* <!> Cambio dinámico: si está comprado, usamos un verde tenue de la marca */
-      ${estaComprado ? 'bg-vete-primary/15' : 'bg-vete-soft/50'} 
-      
-      /* --- Estilo --- */
-      rounded-[2rem]               /* Bordes Figma */
-      border-2                     /* Borde para resaltar la selección */
-      ${estaComprado ? 'border-vete-primary' : 'border-transparent'}
-      transition-all               /* Animación suave de colores */
-      duration-300
-    `}>
-      
-      {/* Badge de Cantidad (Solo visible si cantidad > 0) */}
-      {estaComprado && (
-        <div className={`
-          /* --- Posición --- */
-          absolute                     /* Flota sobre la tarjeta */
-          -top-2                       /* Sale un poco hacia arriba */
-          -right-2                     /* Sale un poco hacia la derecha */
-          z-20                         /* Por encima de todo */
-          
-          /* --- Dimensiones --- */
-          w-10 h-10                    /* Tamaño del círculo */
-          flex items-center justify-center
-          
-          /* --- Colores --- */
-          bg-vete-primary              /* Fondo verde marca */
-          text-white                   /* Texto blanco */
-          
-          /* --- Estilo --- */
-          rounded-full                 /* Círculo perfecto */
-          font-black                   /* Texto muy grueso */
-          shadow-lg                    /* Sombra para dar profundidad */
-          animate-in zoom-in           /* Animación de entrada */
-        `}`}>
-          {cantidad}
-        </div>
-      )}
+      <div className={`
+        /* --- Posición --- */
+        grid
+        grid-cols-1                  /* 1 col en móvil muy pequeño */
+        xs:grid-cols-2               /* 2 cols en móvil (Tu pedido de 2 1) */
+        lg:grid-cols-3
+        xl:grid-cols-5
+        gap-6
+        justify-items-center
+      `}`}>
+        {products.map((p, index) => {
+          /* 
+             Lógica de visibilidad: 
+             En móvil usamos displayLimit (2). 
+             En desktop (xl) mostramos 5 si no está expandido.
+          */
+          const isHiddenOnMobile = index >= displayLimit;
+          const isHiddenOnDesktop = !isExpanded && index >= 5;
 
-      {/* Imagen del producto */}
-      <img 
-        src={product.rel_imagen_url[0]?.img_url} 
-        alt={product.prod_nombre} 
-        className="w-full h-48 object-cover rounded-2xl" 
-      />
-
-      {/* Subcategorías */}
-      <div className="flex gap-2 mt-2">
-        {product.rel_subcategoria?.map((sub, idx) => (
-          <div key={idx} className="p-1.5 bg-vete-primary/10 text-vete-primary rounded-lg">
-            {SUBCATEGORY_ICONS[sub.subc_nombre] || null}
-          </div>
-        ))}
-      </div>
-
-      {/* Textos */}
-      <h4 className="text-vete-primary font-bold text-lg mt-1">{product.prod_nombre}</h4>
-      <p className="text-vete-text-light text-sm line-clamp-2">{product.prod_descripcion}</p>
-
-      {/* Footer: Precio y Botones */}
-      <div className="flex justify-between items-center mt-auto pt-4 w-full">
-        <span className="text-vete-primary font-black text-xl">
-          ${product.prod_precio.toLocaleString('es-UY')}
-        </span>
-
-        <div className="flex gap-2 items-center">
-          <img src="/images/branding/LogoWhtSapp.svg" alt="WhatsApp" className="w-8 h-8 cursor-pointer hover:scale-110 transition-transform" />
-
-          <div 
-            /* <!> Acción: Al hacer clic, se agrega a la Fachada */
-            onClick={() => addToPedido(product)}
-            className={`
-              /* --- Posición --- */
-              p-2                        /* Espaciado interno */
-              cursor-pointer             /* Mano */
-              
-              /* --- Colores --- */
-              bg-vete-primary            /* Fondo verde */
-              text-white                 /* Icono blanco */
-              
-              /* --- Estilo --- */
-              rounded-full               /* Circular */
-              
-              /* --- Animación --- */
-              hover:bg-vete-primary/80   /* Oscurece al hover */
-              active:scale-90            /* Efecto de presión */
-              transition-all
-            `}
-          >
-            <ShoppingCart size={16} />
-          </div>
-        </div>
+          return (
+            <div
+              key={p.prod_id}
+              className={`
+                ${isHiddenOnMobile ? 'hidden' : 'flex'} 
+                ${isHiddenOnDesktop ? 'xl:hidden' : 'xl:flex'}
+                animate-in fade-in duration-300
+              `}
+            >
+              <ProductCard producto={p} />
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 };
-
-
-
-
-
-
-{/* Imagen del Producto con Fallback Estético */}
-      <img 
-        /* 
-           Lógica de visualización:
-           1. Intenta cargar la URL del backend.
-           2. Si es null o undefined, carga la imagen local de "No disponible".
-        */
-        src={producto.imagen_principal_url?.img_url || '/images/branding/no-image-placeholder.png'} 
-        
-        /* Alt dinámico para accesibilidad */
-        alt={producto.imagen_principal_url ? producto.prod_nombre : "Producto sin imagen disponible"} 
-        
-        className={`
-          /* --- Dimensiones --- */
-          w-full                       /* Ocupa todo el ancho de la tarjeta */
-          h-48                         /* Altura fija para mantener la cuadrícula alineada */
-          
-          /* --- Estilo --- */
-          object-cover                 /* Evita que la imagen se estire o deforme */
-          rounded-2xl                  /* Bordes redondeados suaves */
-          
-          /* --- Colores --- */
-          bg-slate-100                 /* Fondo gris muy claro mientras carga */
-          
-          /* --- Animación --- */
-          hover:scale-105              /* Efecto de zoom sutil al pasar el mouse */
-          transition-transform         /* Suaviza la animación de escala */
-          duration-500                 /* Velocidad de la transición */
-        `} 
-      />
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* --- apps/web-client/src/components/ProductCard.tsx --- */
-
-import { ShoppingCart } from 'lucide-react';
-import { SUBCATEGORY_ICONS } from '../utils/categoryHelpers';
-
-import { usePedidoStore } from '../context/pedido_context'; 
-import type { ApiProduct } from '../types/product_types';
-
-//interface Props { 
-//  title: string; 
-//  desc: string; 
-//  price: number; 
-//  img: string;
-//  subcategories?: { subc_nombre: string }[]; 
-//}
-
-
-interface Props { 
-  producto:ApiProduct
-}
-
-/**
- * Componente de UI para representar una tarjeta de producto en el catálogo.
- * Formateado para máxima legibilidad y soporte de subcategorías.
- */
-//export const ProductCard = ({ title, desc, price, img, subcategories }: Props) => (                  
-  export const ProductCard = ({ producto }: Props) => (
-  <div className={`
-    /* --- Posición --- */
-    flex                         /* Contenedor flexible */
-    flex-col                     /* Alineación vertical de elementos */
-    gap-2                        /* Espacio entre hijos de 0.5rem */
-    
-    /* --- Dimensiones --- */
-    h-full                       /* Altura total */ 
-    min-w-[280px]                /* Ancho mínimo para consistencia */
-    p-6                          /* Padding interno de 1.5rem */
-
-    /* --- Colores --- */
-    bg-vete-soft/50              /* Fondo suave con transparencia */
-    
-    /* --- Estilo --- */
-    rounded-[2rem]               /* Bordes muy redondeados según diseño Figma */
-  `}>
-    
-    {/* Imagen del producto */}
-    <img 
-      src={img} 
-      alt={title} 
-      className={`
-        /* --- Dimensiones --- */
-        w-full                   /* Ocupa todo el ancho disponible */
-        h-48                     /* Altura fija de 12rem */
-        
-        /* --- Estilo --- */
-        object-cover             /* Asegura que la imagen no se deforme */
-        rounded-2xl              /* Bordes redondeados para la imagen */
-      `} 
-    />
-
-    {/* Sección de Subcategorías (Iconos de Perro, Gato, etc.) */}
-    <div className={`
-      /* --- Posición --- */
-      flex                       /* Alineación horizontal de iconos */
-      gap-2                      /* Espacio entre badges */
-      mt-2                       /* Margen superior */
-    `}>
-      {subcategories?.map((sub, idx) => (
-        <div key={idx} title={sub.subc_nombre} className={`
-          /* --- Posición --- */
-          flex items-center justify-center
-          /* --- Dimensiones --- */
-          p-1.5                      /* Espaciado interno del icono */
-          /* --- Colores --- */
-          bg-vete-primary/10         /* Fondo verde muy tenue */
-          text-vete-primary          /* Color del icono verde marca */
-          /* --- Estilo --- */
-          rounded-lg                 /* Bordes suavizados */
-        `}>
-          {/* Renderiza el icono desde el helper según el nombre del backend */}
-          {SUBCATEGORY_ICONS[sub.subc_nombre] || null}
-        </div>
-      ))}
-    </div>
-
-    {/* Titulo del producto */}
-    <h4 className={`
-      /* --- Texto --- */
-      text-vete-primary          /* Color verde principal */
-      font-bold                  /* Peso de fuente negrita */
-      text-lg                    /* Tamaño de fuente grande */
-      /* --- Dimensiones --- */
-      mt-1                       /* Margen superior mínimo */
-    `}>
-      {title}
-    </h4>
-
-    {/* Descripcion del producto */}
-    <p className={`
-      /* --- Texto --- */
-      text-vete-text-light        /* Color oscuro para legibilidad */
-      text-sm                    /* Tamaño de fuente pequeño */
-      line-clamp-2               /* Corta el texto a 2 líneas máximo */
-    `}>
-      {desc}
-    </p>
-
-    {/* Precio y botones de accion */}
-    <div className={`
-      /* --- Posición --- */
-      flex
-      justify-between
-      items-center
-      mt-auto                      /* Empuja este bloque al fondo del contenedor */
-      pt-4                         /* Agrega un padding superior para separar del texto */
-
-      /* --- Dimensiones --- */
-      w-full                       /* Asegura que ocupe todo el ancho */      
-
-    `}>
-      
-      {/* Precio del producto con formato Uruguay */}
-      <span className={`
-        /* --- Texto --- */
-        text-vete-primary          /* Color verde principal */
-        font-black                 /* Peso de fuente máximo */
-        text-xl                    /* Tamaño de fuente extra grande */
-      `}>
-        ${price.toLocaleString('es-UY')}
-      </span>
-
-      {/* Botones de accion */}
-      <div className="flex gap-2 items-center">
-        {/* Boton de whatsapp */}
-        <img 
-          src="/images/branding/LogoWhtSapp.svg" 
-          alt="WhatsApp" 
-          className={`
-            /* --- Dimensiones --- */
-            w-8 h-8                  /* Tamaño fijo de 2rem */
-            /* --- Animación --- */
-            hover:scale-110          /* Crece levemente al pasar el mouse */
-            transition-transform     /* Transición suave */
-            cursor-pointer           /* Cursor de mano */
-          `} 
-        />
-
-        <div className={`
-          /* --- Posición --- */
-          p-2                        /* Espaciado interno */
-          cursor-pointer             /* Cursor de mano */
-          
-          /* --- Colores --- */
-          bg-vete-primary            /* Fondo verde principal */
-          
-          /* --- Estilo --- */
-          rounded-full               /* Forma circular */
-          
-          /* --- Animación --- */
-          hover:bg-vete-primary/80   /* Oscurece un poco al hover */
-          transition-colors          /* Transición de color */
-        `}>
-          {/*  <!> Aca en este boton deberia conectarse a  PedidoContext
-          y agregarlo a mi carrito tambien me gustaria que figurara esta tarjeta la cantidad que compor
-          y ademas qeu la tarjeta tubiera otro color de fonodo para que la encutre rapido 
-          Yo creo que en ningun momento le pase a este componente el objeto pedido que lo cotiene caps deba pasarle el objeto pedido 
-          o algo por el estilo no se que se puede hace manteniendo la estructura que venios trabjando 
-          
-          */}
-          <ShoppingCart size={16} className="text-white" />
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-
-
-
-
->>>>>>> origin/Ary-18-jul

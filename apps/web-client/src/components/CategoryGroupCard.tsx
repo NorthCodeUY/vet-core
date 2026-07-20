@@ -7,7 +7,7 @@ import { ProductCard } from './ProductCard.tsx';
 interface CategoryGroupProps {
   title: string; // Nombre de la categoría
   catId: number; // Agregamos el ID para poder pedir más datos 
-  initialData: any[];  //<!>  Datos de los productos <!> Esto esta mal tenda que ser ProductoType
+  initialData: any[]; //<!> Esto supongo que es una coleccion de ProductoType ApiProducto
 }
 
 /**
@@ -26,6 +26,8 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
   /* URL base para imágenes desde variables de entorno */
   const IMAGES_BASE_URL = import.meta.env.VITE_API_IMAGES; // <!> Esto no se si va 
 
+  // <!> El problema esta aca como yo tranforme ProductoCard para que resiva 
+  // <!> ProductoType se esta rompiendo y espera un formato que no es correcto 
   const handleToggleExpand = async () => {
     // Si vamos a expandir y no hemos cargado el resto, hacemos el fetch
     if (!isExpanded && !hasLoadedFull) {
@@ -142,18 +144,6 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
             >
 
               <ProductCard producto={p} />
-
-              {/* <ProductCard 
-                title={p.prod_nombre}
-                desc={p.prod_descripcion}
-                price={p.prod_precio}
-                /* Construcción dinámica de la URL de imagen 
-                //img={`${IMAGES_BASE_URL}/${p.rel_imagen_url[0]?.img_url}`} <!> sacar
-                img={p.rel_imagen_url[0]?.img_url}
-                /* Inyección de subcategorías para los iconos de mascotas 
-                subcategories={p.rel_subcategoria}
-              />
-              */}
             </div>
           );
         })}

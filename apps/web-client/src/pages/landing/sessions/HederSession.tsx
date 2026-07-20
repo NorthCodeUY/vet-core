@@ -1,7 +1,8 @@
 /* --- apps/web-client/src/pages/landing/sessions/HeaderSession.tsx --- */
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, User, ChevronDown } from "lucide-react";
+
+import { ShoppingCart } from "lucide-react";
 import { usePedidoStore } from '../../../context/pedido_context';
 import { PedidoDrawer } from '../../pedido/PedidoDrawer';
 

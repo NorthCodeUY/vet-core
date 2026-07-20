@@ -1,6 +1,6 @@
 /* --- apps/web-client/src/pages/landing/sessions/HeroSession.tsx --- */
 
-import React from 'react';
+
 
 /**
  * Sección Principal (Hero) de la web.

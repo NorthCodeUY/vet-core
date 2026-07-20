@@ -1,3 +1,14 @@
-descarte.*
+# api-backend/.Dockerignore
+
+
+
 .venv
 __pycache__
+
+# --- ARCHIVOS DE DESCARTE / BASURA ---
+# Esta regla ignora cualquier archivo o carpeta que contenga 
+# la palabra "descarte" en cualquier parte de su nombre o ruta.
+*descarte*
+**/*descarte*
+temp/
+tmp/

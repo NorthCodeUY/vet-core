@@ -63,20 +63,57 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
         border-b                     /* Agrega borde en la parte inferior */
         border-vete-primary/30       /* Color verde marca con transparencia */
       `}>
-        {/* Título de la categoría */}
-        <h3 className={`
-          /* --- Texto --- */
-          text-5xl                     /* Tamaño de fuente extra grande */
-          font-black                   /* Peso de fuente máximo (900) */
-          leading-none                 /* Altura de línea mínima */
-          uppercase                    /* Transforma texto a mayúsculas */
-          italic                       /* Estilo de letra cursiva */
 
-          /* --- Colores --- */
-          text-vete-primary            /* Color verde principal de la marca */
-        `}>
-          {title}
-        </h3>
+        <div className="flex items-center gap-4">
+          
+          {/* Título de la categoría */}
+          <h3 className={`
+            /* --- Texto --- */
+            text-5xl                     /* Tamaño de fuente extra grande */
+            font-black                   /* Peso de fuente máximo (900) */
+            leading-none                 /* Altura de línea mínima */
+            uppercase                    /* Transforma texto a mayúsculas */
+            italic                       /* Estilo de letra cursiva */
+
+            /* --- Colores --- */
+            text-vete-primary            /* Color verde principal de la marca */
+          `}>
+            {title}
+          </h3>
+          
+          {/* Badge de Carrito */}
+          {cantidadComprada > 0 && (
+            <div className={`
+              /* --- Posición --- */
+              flex                         /* Contenedor flexible */
+              items-center                 /* Centrado vertical */
+              gap-2                        /* Espacio entre icono y texto */
+              
+              /* --- Dimensiones --- */
+              px-4                         /* Padding horizontal */
+              py-2                         /* Padding vertical */
+              
+              /* --- Colores --- */
+              bg-vete-primary              /* Fondo verde */
+              text-white                   /* Texto blanco */
+              rounded-full                 /* Forma redondeada */
+              shadow-lg                    /* Sombra pronunciada */
+              
+              /* --- Animación --- */
+              animate-in                   /* Animación de entrada */
+              zoom-in                      /* Efecto de zoom */
+            `}>
+              <ShoppingCart size={18} />
+              <span className={`
+              /* --- Texto --- */
+              font-bold                    /* Peso de fuente negrita */
+              text-sm                      /* Tamaño de fuente pequeño */
+              `}>
+                {cantidadComprada}
+              </span>
+            </div>
+          )}
+        </div>
 
         {/* Botón de expandir/ocultar */}
         <button

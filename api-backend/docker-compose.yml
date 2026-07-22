@@ -12,20 +12,44 @@ services:
       - "${DB_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - northcode-net  
+# # NUEVO SERVICIO: Panel de control web <!> NO lo uso y en produccion uso otra cosa 
+#   pgadmin:
+#     image: dpage/pgadmin4
+#     container_name: vet_pgadmin
+#     restart: always
+#     environment:
+#       # Correo y clave para entrar al panel web (puedes poner lo que quieras)
+#       PGADMIN_DEFAULT_EMAIL: ${DBADMIN_EMAIL}
+#       PGADMIN_DEFAULT_PASSWORD: ${DBADMIN_PASSWORD}
+#     ports:
+#       - "5050:80"
+#     depends_on:
+#       - db
 
-# NUEVO SERVICIO: Panel de control web
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: vet_pgadmin
-    restart: always
-    environment:
-      # Correo y clave para entrar al panel web (puedes poner lo que quieras)
-      PGADMIN_DEFAULT_EMAIL: ${DBADMIN_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${DBADMIN_PASSWORD}
-    ports:
-      - "5050:80"
-    depends_on:
-      - db
+
+  backend:
+    build: . # Construye la imagen desde el Dockerfile en el directorio actual (./)
+    container_name: vet_core_backend # Nombre del contenedor
+    restart: always # Reinicia el contenedor si se cae
+    ports: # Mapeo de puertos
+      - "8000:8000" # El puerto 8000 de tu máquina se conecta al 8000 del contenedor
+    environment: # Variables de entorno
+      # FastAPI leerá esto a través de pydantic-settings
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+    depends_on: # Dependencia de servicios
+      - db # Espera a que el servicio 'db' esté listo antes de iniciar
+    volumes: # Volúmenes
+      - ./app:/app/app # Sincroniza tu código local con el contenedor
+      - ./static:/app/app/static # Sincroniza tus imágenes (muy importante)
+    networks:
+      - northcode-net  
+
+# Declaramos la red como externa para que Docker no la cree, sino que use la que ya creaste
+networks:
+  northcode-net:
+    external: true 
 
 volumes:
   postgres_data:

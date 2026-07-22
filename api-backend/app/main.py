@@ -27,15 +27,13 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 # --- CONFIGURACIÓN DE CORS ---
 # Esto le dice a FastAPI que acepte peticiones desde tu puerto de React
-app.add_middleware(
+app.add_middleware( # <!> Ver el Tema de seguridad en mi bakend cuando lo suba a produccion 
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"], # URL de tu frontend
+    allow_origins=["*"], # URL de tu frontend
     allow_credentials=True,
     allow_methods=["*"], # Permite GET, POST, etc.
     allow_headers=["*"], # Permite todos los headers
 )
-
-
 
 
 # Get raiz 

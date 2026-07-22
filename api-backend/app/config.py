@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     db_host: str
     db_port: str
     db_name: str
-    
+    # <!>  Esto de abajo no lo tengo claro com funciona 
     base_url: str
     allowed_origins: str
 

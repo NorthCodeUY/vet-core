@@ -1,32 +1,22 @@
 # /api-backend/docker-compose.yml
+
+# Levanta Backend FastAPI y PostgreSQL y PGAdmin 
+
 services:
   db:
-    image: postgres:15
-    container_name: vet_db
-    restart: always
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    ports:
-      - "${DB_PORT}:5432"
-    volumes:
+    image: postgres:15 # Contenedor de PostgreSQL
+    container_name: vet_db # Nombre del contenedor
+    restart: always # Reinicia el contenedor si se cae
+    environment: # Variables de entorno
+      POSTGRES_USER: ${DB_USER} # Usuario de la base de datos
+      POSTGRES_PASSWORD: ${DB_PASSWORD} # Contraseña de la base de datos
+      POSTGRES_DB: ${DB_NAME} # Nombre de la base de datos
+    ports: # Mapeo de puertos
+      - "${DB_PORT}:5432" # El puerto 5432 de tu máquina se conecta al 5432 del contenedor
+    volumes: # Volúmenes
       - postgres_data:/var/lib/postgresql/data
     networks:
       - northcode-net  
-# # NUEVO SERVICIO: Panel de control web <!> NO lo uso y en produccion uso otra cosa 
-#   pgadmin:
-#     image: dpage/pgadmin4
-#     container_name: vet_pgadmin
-#     restart: always
-#     environment:
-#       # Correo y clave para entrar al panel web (puedes poner lo que quieras)
-#       PGADMIN_DEFAULT_EMAIL: ${DBADMIN_EMAIL}
-#       PGADMIN_DEFAULT_PASSWORD: ${DBADMIN_PASSWORD}
-#     ports:
-#       - "5050:80"
-#     depends_on:
-#       - db
 
 
   backend:
@@ -50,6 +40,7 @@ services:
 networks:
   northcode-net:
     external: true 
-
+    
+# Volúmenes se usa para guardar la informacion en el host 
 volumes:
-  postgres_data:
+  postgres_data: # Persistencia de la base de datos

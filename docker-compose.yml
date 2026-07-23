@@ -1,23 +1,11 @@
-version: '3.8'
-services:
-  db:
-    image: postgres:15-alpine
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    env_file: .env
+# Este archivo importa las configuraciones de las subcarpetas
+include:
+  # Levanta Backend FastAPI y PostgreSQL Puerto 8000, 5432 y PGAdmin 5050 
+  - ./apps/api-backend/docker-compose.yml
+  # Levanta Frontend React Puerto 80 
+  - ./apps/web-client/docker-compose.yml
 
-  backend:
-    build: ./services/api-backend
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./services/api-backend:/app
-    depends_on:
-      - db
-
-  web-client:
-    build: ./apps/web-client
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./apps/web-client:/app
+# Aquí solo definís la red común para que se hablen entre ellos
+networks:
+  northcode-network:
+    driver: bridge

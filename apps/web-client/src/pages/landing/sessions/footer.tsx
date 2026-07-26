@@ -1,25 +1,89 @@
 import { WhatsAppButton } from '../../../components/WhatsAppButtonProps.tsx';
 import companyInfo from '../../../data/companyInfo.json';
 import { MapPin, Facebook, Instagram, Phone, Mail } from 'lucide-react';
+import { useMemo } from 'react';
 
-// Componente principal del pie de página.
-// bgColor: color de fondo que recibe el footer desde el componente padre.
+interface ContactItem {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  href?: string;
+  isExternal?: boolean;
+}
+
+interface ScheduleItem {
+  day: string;
+  hours: string;
+}
+
 const Footer = ({ bgColor }: { bgColor: string }) => {
+  const currentYear = new Date().getFullYear();
+
+  const safeContactInfo = useMemo(() => ({
+    phone: companyInfo.contact.adminPhone || 'No disponible',
+    email: companyInfo.contact.email || 'No disponible',
+    city: companyInfo.location.city || '',
+    country: companyInfo.location.country || '',
+    mapsUrl: companyInfo.location.googleMapsUrl || '#',
+  }), []);
+
+  const safeSchedule: ScheduleItem[] = useMemo(() => [
+    {
+      day: 'Lunes a Sábados',
+      hours: companyInfo.location.schedule.weekdays || '08:00 – 20:00'
+    },
+    {
+      day: 'Domingos',
+      hours: 'Cerrado'
+    }
+  ], []);
+
+  const safeSocials = useMemo(() => ({
+    facebook: companyInfo.socials.facebook || '#',
+    instagram: companyInfo.socials.instagram || '#',
+    tiktok: companyInfo.socials.tiktok || '#',
+  }), []);
+
+  const isOpen = useMemo(() => {
+    const now = new Date();
+    const hours = now.getHours();
+    const day = now.getDay();
+    if (day === 0) return false;
+    return hours >= 8 && hours < 20;
+  }, []);
+
+  const contactItems: ContactItem[] = [
+    {
+      icon: <Phone size={16} className="text-vete-primary/70 transition-colors" strokeWidth={2.5} />,
+      label: 'Teléfono',
+      value: safeContactInfo.phone,
+      href: `tel:${safeContactInfo.phone.replace(/\s+/g, '')}`,
+    },
+    {
+      icon: <Mail size={16} className="text-vete-primary/70 transition-colors" strokeWidth={2.5} />,
+      label: 'Email',
+      value: safeContactInfo.email,
+      href: `mailto:${safeContactInfo.email}`,
+    },
+    {
+      icon: <MapPin size={16} className="text-vete-primary/70 transition-colors" strokeWidth={2.5} />,
+      label: 'Ubicación',
+      value: `${safeContactInfo.city}, ${safeContactInfo.country}`,
+      href: safeContactInfo.mapsUrl,
+      isExternal: true,
+    },
+  ];
+
   return (
     <>
       {/* 1. BARRA FLOTANTE DE PASTO + ACCESOS RÁPIDOS */}
-      {/* Esta barra queda fija en la parte inferior de la pantalla y contiene los accesos principales. */}
       <div className="fixed bottom-0 left-0 w-full h-24 z-20 flex items-end justify-between px-4 md:px-16 pb-4 pointer-events-none">
-
-        {/* Imagen de fondo de pasto que ocupa toda la barra flotante. */}
         <img
           src="/images/branding/NavPasto.png"
           alt="Nav Pasto"
           className="absolute bottom-0 left-0 w-full h-full object-cover object-top opacity-40 pointer-events-none z-0"
         />
 
-        {/* LADO IZQUIERDO: BOTÓN DE ADMINISTRACIÓN */}
-        {/* WhatsAppButton crea un acceso directo para contactar con administración. */}
         <div className="pointer-events-auto transition-all duration-300 hover:-translate-y-1 hover:scale-102 z-30">
           <WhatsAppButton
             label="Administración"
@@ -28,48 +92,47 @@ const Footer = ({ bgColor }: { bgColor: string }) => {
           />
         </div>
 
-        {/* BARRA CENTRAL: REDES SOCIALES Y UBICACIÓN */}
-        {/* Los botones se posicionan en el centro de la pantalla mediante left-1/2 y -translate-x-1/2. */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-5 pointer-events-auto">
+        {/* BARRA CENTRAL: ACCESOS RÁPIDOS Y REDES */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4 pointer-events-auto">
 
           {/* Link: Facebook */}
-          {/* Abre el perfil de Facebook guardado en companyInfo. */}
-          <a
-            href={companyInfo.socials.facebook}
-            target="_blank"
+          <a 
+            href={safeSocials.facebook} 
+            target="_blank" 
             rel="noreferrer"
-            className="p-3 bg-white/95 dark:bg-neutral-900/95 text-neutral-700 dark:text-neutral-200 rounded-full border border-neutral-200/50 dark:border-neutral-800 shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:bg-vete-primary hover:text-white hover:border-vete-primary hover:shadow-[0_8px_20px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 ease-out"
+            className="p-3 bg-black/60 backdrop-blur-md rounded-full border border-white/10 hover:bg-vete-primary transition-all shadow-lg text-white hover:scale-110"
             title="Facebook"
+            aria-label="Síguenos en Facebook"
           >
-            <Facebook size={18} />
+            <Facebook size={20} />
           </a>
 
-          {/* ACCESO A MAPA */}
-          {/* Lleva al usuario a la sección de ubicación identificada con el id #mapa. */}
-          <a
-            href="#mapa"
-            className="p-3.5 bg-vete-primary text-white rounded-full border border-vete-primary/10 shadow-[0_6px_16px_rgba(0,0,0,0.1)] hover:bg-vete-primary/90 hover:shadow-[0_10px_24px_rgba(var(--vete-primary-rgb),0.2)] hover:-translate-y-1.5 active:scale-95 transition-all duration-300 ease-out group"
-            title="Ver Ubicación"
+          {/* ACCESO A MAPA / UBICACIÓN */}
+          <a 
+            href={safeContactInfo.mapsUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="p-3 bg-black/60 backdrop-blur-md rounded-full border border-white/20 hover:bg-vete-primary transition-all shadow-xl text-white hover:scale-125 group"
+            title="Ver ubicación en Google Maps"
+            aria-label="Google Maps"
           >
-            <MapPin size={22} className="group-hover:scale-105 transition-transform duration-300" />
+            <MapPin size={26} className="group-hover:text-white transition-colors" />
           </a>
 
           {/* Link: Instagram */}
-          {/* Abre el perfil de Instagram guardado en companyInfo. */}
-          <a
-            href={companyInfo.socials.instagram}
-            target="_blank"
+          <a 
+            href={safeSocials.instagram} 
+            target="_blank" 
             rel="noreferrer"
-            className="p-3 bg-white/95 dark:bg-neutral-900/95 text-neutral-700 dark:text-neutral-200 rounded-full border border-neutral-200/50 dark:border-neutral-800 shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:bg-vete-primary hover:text-white hover:border-vete-primary hover:shadow-[0_8px_20px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 ease-out"
+            className="p-3 bg-black/60 backdrop-blur-md rounded-full border border-white/10 hover:bg-vete-primary transition-all shadow-lg text-white hover:scale-110"
             title="Instagram"
+            aria-label="Síguenos en Instagram"
           >
-            <Instagram size={18} />
+            <Instagram size={20} />
           </a>
 
         </div>
 
-        {/* LADO DERECHO: BOTÓN DE EMERGENCIA 24HS */}
-        {/* Utiliza el número de emergencias y activa el diseño invertido del botón. */}
         <div className="pointer-events-auto transition-all duration-300 hover:-translate-y-1 hover:scale-102 z-30">
           <WhatsAppButton
             label="Emergencia"
@@ -78,176 +141,162 @@ const Footer = ({ bgColor }: { bgColor: string }) => {
             isReversed={true}
           />
         </div>
-
       </div>
 
-      {/* 2. FOOTER PRINCIPAL */}
-      {/* Es la sección inferior permanente de la página con la información de la veterinaria. */}
-      <footer className={`${bgColor} relative z-40 px-6 md:px-16 lg:px-24 py-12 mt-40 shadow-[0_-10px_35px_rgba(0,0,0,0.02)]`}>
+      {/* 2. FOOTER COMPACTO Y PROFESIONAL */}
+      <footer className={`${bgColor} relative z-40 px-6 md:px-16 lg:px-24 py-8 mt-40 shadow-[0_-4px_12px_rgba(0,0,0,0.02)]`}>
         
-        {/* Línea decorativa superior que separa visualmente el footer del contenido anterior. */}
-        <div className="absolute top-0 left-0 w-full h-[3px] pointer-events-none z-50 bg-gradient-to-r from-vete-primary/0 via-vete-primary to-vete-primary/0" />
-
-        {/* Contenedor principal que limita el ancho del contenido. */}
+        {/* Línea decorativa superior sutil */}
+        <div className="absolute top-0 left-0 w-full h-px pointer-events-none z-50 bg-gradient-to-r from-vete-primary/0 via-vete-primary/15 to-vete-primary/0" />
+        
         <div className="max-w-7xl mx-auto">
+          
+          {/* GRID PRINCIPAL - COMPACTO */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6 pb-6">
 
-          {/* Divide el footer en tres columnas en pantallas medianas y grandes. */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-start pb-10">
-
-            {/* SECCIÓN A: IDENTIDAD */}
-            {/* Muestra el logo, nombre de la veterinaria y su eslogan. */}
-            <div className="flex flex-col items-center justify-start text-center">
-              
-              {/* Logo principal de la veterinaria. */}
+            {/* SECCIÓN 1: LOGO + IDENTIDAD */}
+            <div className="flex flex-col items-center md:items-start gap-2">
               <img
                 src="/logo.png"
-                className="w-24 h-24 object-contain hover:scale-105 transition-transform duration-500 cursor-pointer select-none"
-                alt="Veterinaria Logo"
+                className="w-16 h-16 object-contain hover:scale-105 transition-transform duration-400 cursor-pointer filter drop-shadow-sm"
+                alt={`${companyInfo.name} Logo`}
               />
-
-              {/* Nombre de la empresa obtenido desde companyInfo. */}
-              <h3 className="mt-3 font-bold text-xl text-vete-text-dark tracking-tight leading-tight">
-                {companyInfo.name}
-              </h3>
-
-              {/* Eslogan principal de la veterinaria. */}
-              <p className="mt-1.5 text-vete-primary text-xs font-semibold tracking-[0.12em] select-none">
-                Cuidamos
-                <span className="text-vete-text-light font-normal"> a quienes</span> amas
-              </p>
-
-            </div>
-
-            {/* SECCIÓN B: INFORMACIÓN DE CONTACTO */}
-            {/* Contiene teléfono, correo electrónico y ubicación de la veterinaria. */}
-            <div className="space-y-4">
-
-              {/* Título de la sección de contacto. */}
-              <h4 className="text-vete-text-dark font-bold text-xs uppercase tracking-widest select-none">
-                Contacto Directo
-              </h4>
-
-              <ul className="space-y-3.5 text-sm">
-
-                {/* TELÉFONO */}
-                {/* Crea un enlace que permite iniciar una llamada desde el dispositivo. */}
-                <li>
-                  <a 
-                    href={`tel:${companyInfo.contact.adminPhone.replace(/\s+/g, '')}`}
-                    className="group flex items-center gap-3 text-vete-text-light hover:text-vete-primary transition-all duration-300 py-0.5 hover:translate-x-1"
-                  >
-                    <Phone size={16} className="text-vete-primary shrink-0 group-hover:scale-110 transition-transform" />
-                    <span className="font-semibold group-hover:underline decoration-vete-primary/30 underline-offset-4">
-                      092 444 510
-                    </span>
-                  </a>
-                </li>
-
-                {/* CORREO ELECTRÓNICO */}
-                {/* Abre el programa de correo del usuario mediante el protocolo mailto. */}
-                <li>
-                  <a 
-                    href="mailto:contacto@vete.com" 
-                    className="group flex items-center gap-3 text-vete-text-light hover:text-vete-primary transition-all duration-300 py-0.5 hover:translate-x-1"
-                  >
-                    <Mail size={16} className="text-vete-primary shrink-0 group-hover:scale-110 transition-transform" />
-                    <span className="font-semibold group-hover:underline decoration-vete-primary/30 underline-offset-4">
-                      contacto@vete.com
-                    </span>
-                  </a>
-                </li>
-
-                {/* UBICACIÓN */}
-                {/* Muestra la ciudad donde se encuentra la veterinaria. */}
-                <li className="flex items-center gap-3 text-vete-text-light select-none">
-                  <MapPin size={16} className="text-vete-primary shrink-0" />
-                  <span className="font-semibold">Salto, Uruguay</span>
-                </li>
-
-              </ul>
-            </div>
-
-            {/* SECCIÓN C: GUARDIA + PRESENTACIÓN */}
-            {/* Informa de forma compacta que el servicio de guardia está activo y disponible. */}
-            <div className="flex flex-col items-center justify-start">
-
-              {/* INDICADOR COMPACTO DE GUARDIA */}
-              {/* Muestra visualmente que la guardia está activa y disponible las 24 horas. */}
-              <div className="relative flex items-center gap-3 rounded-xl border border-vete-primary/15 bg-white/60 px-4 py-3 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-vete-primary/30 hover:shadow-md">
-
-                {/* Indicador visual animado del estado activo. */}
-                <span className="relative flex h-2.5 w-2.5 shrink-0">
-                  <span className="absolute inset-0 animate-ping rounded-full bg-emerald-400 opacity-50"></span>
-                  <span className="relative h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-                </span>
-
-                {/* Información del servicio de guardia. */}
-                <div className="flex flex-col text-left">
-
-                  {/* Indica que el servicio de guardia está activo. */}
-                  <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-600">
-                    Guardia activa
-                  </span>
-
-                  {/* Indica que se atienden emergencias durante las 24 horas. */}
-                  <span className="mt-0.5 text-xs font-medium text-vete-text-light">
-                    Emergencias · 24 HS
-                  </span>
-
-                </div>
-
-                {/* Separador visual entre la información y el estado. */}
-                <span className="ml-2 h-6 w-px bg-vete-primary/15"></span>
-
-                {/* Estado actual de disponibilidad del servicio. */}
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-vete-primary">
-                  Disponible
-                </span>
-
-              </div>
-
-              {/* DESCRIPCIÓN */}
-              {/* Texto breve que resume la identidad y el compromiso de la veterinaria. */}
-              <div className="mt-6 max-w-sm self-center border-l-2 border-vete-primary/20 pl-4 text-left">
-                <p className="text-sm leading-relaxed text-vete-text-light">
-                  Clínica veterinaria comprometida con la excelencia médica y el cuidado integral de su mascota en Salto, Uruguay.
+              
+              <div className="text-center md:text-left">
+                <h3 className="font-bold text-base text-vete-text-light leading-tight">
+                  {companyInfo.name}
+                </h3>
+                <p className="mt-0.5 text-vete-primary text-[11px] font-semibold tracking-[0.08em]">
+                  Cuidamos
+                  <span className="text-vete-text-light font-normal"> a quienes amas</span>
                 </p>
               </div>
+            </div>
 
+            {/* SECCIÓN 2: CONTACTO */}
+            <div className="flex flex-col gap-3">
+              <h4 className="text-xs font-bold text-vete-primary/80 uppercase tracking-widest">Contacto</h4>
+
+              <div className="space-y-2.5">
+                {contactItems.map((item, idx) => (
+                  <a
+                    key={idx}
+                    href={item.href || '#'}
+                    target={item.isExternal ? '_blank' : undefined}
+                    rel={item.isExternal ? 'noreferrer' : undefined}
+                    className="group flex items-start gap-2.5 text-xs text-vete-text-light hover:text-vete-primary transition-colors duration-300"
+                    aria-label={item.label}
+                  >
+                    <div className="mt-0.5 group-hover:scale-110 transition-transform duration-300">{item.icon}</div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[9px] font-semibold text-vete-primary/60 uppercase tracking-wider">
+                        {item.label}
+                      </span>
+                      <span className="font-medium group-hover:underline decoration-vete-primary/30 underline-offset-2">
+                        {item.value}
+                      </span>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* SECCIÓN 3: HORARIOS */}
+            <div className="flex flex-col gap-3">
+              <h4 className="text-xs font-bold text-vete-primary/80 uppercase tracking-widest">Horarios</h4>
+
+              <div className="space-y-2">
+                {safeSchedule.map((item, idx) => (
+                  <div key={idx} className="flex flex-col gap-0.5">
+                    <span className="text-[9px] font-semibold text-vete-primary/60 uppercase tracking-wider">
+                      {item.day}
+                    </span>
+                    <span className="text-xs font-medium text-vete-text-light">
+                      {item.hours}
+                    </span>
+                  </div>
+                ))}
+
+                {/* Status */}
+                <div className="mt-2 pt-2 border-t border-vete-primary/10 flex items-center gap-1.5">
+                  <span className={`relative flex h-1.5 w-1.5 shrink-0 ${isOpen ? 'animate-pulse' : ''}`}>
+                    <span className={`absolute inset-0 rounded-full opacity-75 ${isOpen ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`}></span>
+                    <span className={`relative h-1.5 w-1.5 rounded-full ${isOpen ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
+                  </span>
+                  <span className="text-xs font-semibold text-vete-text-light">
+                    {isOpen ? 'Abierto' : 'Cerrado'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* SECCIÓN 4: REDES SOCIALES */}
+            <div className="flex flex-col gap-3">
+              <h4 className="text-xs font-bold text-vete-primary/80 uppercase tracking-widest">Síguenos</h4>
+
+              <div className="flex items-center gap-2.5">
+                {/* Facebook */}
+                <a
+                  href={safeSocials.facebook}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group p-2 bg-white/80 border border-neutral-200/50 rounded-lg shadow-sm hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] hover:shadow-[0_4px_12px_rgba(24,119,242,0.2)] transition-all duration-300 overflow-hidden"
+                  title="Facebook"
+                  aria-label="Seguir en Facebook"
+                >
+                  <Facebook size={14} className="text-vete-primary group-hover:text-white group-hover:scale-110 transition-all duration-300" strokeWidth={2.5} />
+                </a>
+
+                {/* Instagram */}
+                <a
+                  href={safeSocials.instagram}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group p-2 bg-white/80 border border-neutral-200/50 rounded-lg shadow-sm hover:bg-gradient-to-br hover:from-[#5B51D8] hover:via-[#E1306C] hover:to-[#F77737] hover:text-white hover:border-transparent hover:shadow-[0_4px_12px_rgba(224,50,130,0.2)] transition-all duration-300 overflow-hidden"
+                  title="Instagram"
+                  aria-label="Seguir en Instagram"
+                >
+                  <Instagram size={14} className="text-vete-primary group-hover:text-white group-hover:scale-110 transition-all duration-300" strokeWidth={2.5} />
+                </a>
+
+                {/* TikTok */}
+                <a
+                  href={safeSocials.tiktok}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group p-2 bg-white/80 border border-neutral-200/50 rounded-lg shadow-sm hover:bg-black hover:text-white hover:border-black hover:shadow-[0_4px_12px_rgba(0,0,0,0.2)] transition-all duration-300 overflow-hidden"
+                  title="TikTok"
+                  aria-label="Seguir en TikTok"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="w-3.5 h-3.5 text-vete-primary group-hover:text-white group-hover:scale-110 transition-all duration-300"
+                  >
+                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.1 1.82 2.9 2.9 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-.54-.05z" />
+                  </svg>
+                </a>
+              </div>
             </div>
 
           </div>
 
-          {/* BARRA INFERIOR DE CRÉDITOS */}
-          {/* Muestra derechos de autor, enlaces legales y el nombre del equipo desarrollador. */}
-          <div className="pt-8 border-t border-neutral-200/50 dark:border-neutral-800/50 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-vete-text-light/60 font-medium">
+          {/* SEPARATOR */}
+          <div className="h-px bg-gradient-to-r from-vete-primary/0 via-vete-primary/10 to-vete-primary/0 my-6" />
 
-            {/* Copyright dinámico: el año se actualiza automáticamente. */}
-            <span>© {new Date().getFullYear()} {companyInfo.name}. Todos los derechos reservados.</span>
-
-            {/* Enlaces legales y crédito de desarrollo. */}
-            <div className="flex items-center gap-4">
-
-              {/* Enlace a los términos de servicio. */}
-              <a href="#terminos" className="hover:text-vete-primary transition-colors">
-                Términos de Servicio
-              </a>
-
-              <span>•</span>
-
-              {/* Enlace a la política de privacidad. */}
-              <a href="#privacidad" className="hover:text-vete-primary transition-colors">
-                Política de Privacidad
-              </a>
-
-              <span>•</span>
-
-              {/* Crédito del equipo o empresa que desarrolló el sitio. */}
-              <span>
-                Desarrollado por <span className="text-vete-text-dark font-semibold">NorthCode Infrastructure</span>
-              </span>
-
-            </div>
+          {/* BOTTOM BAR - CRÉDITOS COMPACTO */}
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-2 text-xs text-vete-text-light/60 font-medium">
+            <span>© {currentYear} {companyInfo.name}. Todos los derechos reservados.</span>
+            <span className="hidden sm:block text-vete-primary/20">•</span>
+            <a
+              href="https://northcode-uy.com/"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-vete-primary transition-colors duration-300"
+              aria-label="Desarrollado por NorthCode"
+            >
+              Desarrollado por <strong>NorthCode</strong>
+            </a>
           </div>
 
         </div>

@@ -1,18 +1,8 @@
 import { WhatsAppButton } from '../../../components/WhatsAppButtonProps.tsx';
-import companyInfo from '../../../data/companyInfo.json';
 import { MapPin, Facebook, Instagram, Phone, Mail } from 'lucide-react';
-import { useMemo, useCallback } from 'react';
+import { useMemo } from 'react';
 
-/**
- * Tipo literal para las plataformas de redes sociales
- * Asegura que solo se pasen valores válidos ('facebook', 'instagram', 'tiktok')
- * Mejora la seguridad del código y evita errores en tiempo de ejecución
- */
-type SocialPlatform = 'facebook' | 'instagram' | 'tiktok';
-
-/**
- * Interfaz para los elementos de contacto del footer
- */
+/** Tipos de datos */
 interface ContactItem {
   icon: React.ReactNode;
   label: string;
@@ -21,211 +11,138 @@ interface ContactItem {
   isExternal?: boolean;
 }
 
-/**
- * Interfaz para los elementos del horario
- */
 interface ScheduleItem {
-  day: string;
+  label: string;
   hours: string;
 }
 
-/**
- * Interfaz para la información segura del contacto
- * Garantiza que todos los campos obligatorios estén presentes
- */
-interface SafeContactInfo {
-  phone: string;
-  email: string;
-  city: string;
-  country: string;
-  mapsUrl: string;
+interface CompanyInfo {
+  name: string;
+  location: {
+    address: string;
+    city: string;
+    country: string;
+    googleMapsUrl: string;
+    schedule: {
+      weekdays: { label: string; start: number; end: number };
+      saturdays: { label: string; start: number; end: number };
+      sundays: { label: string; start: number; end: number; isClosed: boolean };
+    };
+  };
+  contact: {
+    adminPhone: string;
+    emergencyPhone: string;
+    email: string;
+  };
+  socials: {
+    instagram: string;
+    facebook: string;
+    tiktok: string;
+  };
 }
 
-/**
- * Interfaz para las redes sociales validadas
- * Todas las URLs son obligatorias y validadas
- */
-interface SafeSocials {
-  facebook: string;
-  instagram: string;
-  tiktok: string;
-}
-
-/**
- * Props del componente Footer
- * 
- * @property {string} bgColor - Clase Tailwind para el color de fondo del footer
- */
 interface FooterProps {
   bgColor: string;
+  companyInfo: CompanyInfo;
 }
 
 /**
- * Extrae las horas (inicio y cierre) de un string de horario
- * 
- * Formato soportado: "Lunes a Sábados: 08:00 – 20:00"
- * Retorna un objeto con openHour y closeHour como números
- * 
- * @param {string} scheduleString - String con el horario a parsear
- * @returns {Object | null} - { openHour: number, closeHour: number } o null si no coincide
+ * Calcula si el negocio está abierto en base al horario dinámico del backend
+ * @param schedule - Configuración de horarios desde companyInfo
+ * @returns boolean - true si está abierto, false si está cerrado
  */
-const parseScheduleTime = (scheduleString: string): { openHour: number; closeHour: number } | null => {
-  const timeMatch = scheduleString.match(/(\d{2}):(\d{2})\s*–\s*(\d{2}):(\d{2})/);
-  if (!timeMatch) return null;
-
-  const [, openHourStr, , closeHourStr] = timeMatch;
-  return {
-    openHour: Number(openHourStr),
-    closeHour: Number(closeHourStr),
-  };
-};
-
-/**
- * Hook personalizado que calcula el estado de operación (abierto/cerrado)
- * basado en el horario dinámico desde los datos de la empresa.
- * 
- * Evita inconsistencias entre frontend y backend extrayendo las horas
- * directamente de la configuración en lugar de valores hardcodeados.
- * 
- * Lógica:
- * - Los domingos (day === 0) siempre está cerrado
- * - De lunes a sábado, valida si la hora actual está dentro del rango horario
- * 
- * @param {string} scheduleString - String del horario desde companyInfo.location.schedule.weekdays
- * @returns {boolean} - true si está abierto, false si está cerrado
- */
-const useIsOpen = (scheduleString: string): boolean => {
+const useIsOpen = (schedule: CompanyInfo['location']['schedule']): boolean => {
   return useMemo(() => {
     const now = new Date();
-    const currentHour = now.getHours();
-    const dayOfWeek = now.getDay();
+    const day = now.getDay();
+    const hours = now.getHours();
 
-    // Domingos: siempre cerrado (day === 0)
-    if (dayOfWeek === 0) return false;
+    // Domingo = cerrado
+    if (day === 0) return schedule.sundays.isClosed ? false : true;
 
-    // Parsea el horario dinámicamente desde el string del backend
-    const times = parseScheduleTime(scheduleString);
-    if (!times) return false;
+    // Sábado
+    if (day === 6) {
+      return hours >= schedule.saturdays.start && hours < schedule.saturdays.end;
+    }
 
-    const { openHour, closeHour } = times;
-    return currentHour >= openHour && currentHour < closeHour;
-  }, [scheduleString]);
+    // Lunes a Viernes
+    return hours >= schedule.weekdays.start && hours < schedule.weekdays.end;
+  }, [schedule]);
 };
 
 /**
- * Hook personalizado que prepara información segura del contacto
- * Proporciona valores por defecto si la información no está disponible.
- * 
- * Valida que todos los campos requeridos existan antes de ser utilizados
- * en el renderizado del componente.
- * 
- * Dependencias: actualiza cuando companyInfo cambia (props/context futuro)
- * 
- * @returns {SafeContactInfo} - Objeto con información de contacto validada
+ * Valida y sanitiza datos de contacto
+ * @param contact - Datos de contacto del companyInfo
+ * @param location - Datos de ubicación del companyInfo
+ * @returns Objeto con datos validados y fallbacks
  */
-const useSafeContactInfo = (): SafeContactInfo => {
+const useSafeContactInfo = (
+  contact: CompanyInfo['contact'],
+  location: CompanyInfo['location']
+) => {
   return useMemo(() => ({
-    phone: companyInfo.contact.adminPhone || 'No disponible',
-    email: companyInfo.contact.email || 'No disponible',
-    city: companyInfo.location.city || '',
-    country: companyInfo.location.country || '',
-    mapsUrl: companyInfo.location.googleMapsUrl || '#',
-  }), []);
+    phone: contact.adminPhone || 'No disponible',
+    email: contact.email || 'No disponible',
+    city: location.city || '',
+    country: location.country || '',
+    mapsUrl: location.googleMapsUrl || '#',
+  }), [contact, location]);
 };
 
 /**
- * Hook personalizado que prepara redes sociales validadas
- * Proporciona valores por defecto si las redes no están disponibles.
- * 
- * Garantiza que todas las URLs sean válidas antes de usarlas
- * en enlaces externos.
- * 
- * Dependencias: actualiza cuando companyInfo cambia (props/context futuro)
- * 
- * @returns {SafeSocials} - Objeto con URLs de redes sociales validadas
+ * Valida redes sociales
+ * @param socials - Redes sociales del companyInfo
+ * @returns Objeto con URLs validadas
  */
-const useSafeSocials = (): SafeSocials => {
+const useSafeSocials = (socials: CompanyInfo['socials']) => {
   return useMemo(() => ({
-    facebook: companyInfo.socials.facebook || '#',
-    instagram: companyInfo.socials.instagram || '#',
-    tiktok: companyInfo.socials.tiktok || '#',
-  }), []);
+    facebook: socials.facebook || '#',
+    instagram: socials.instagram || '#',
+    tiktok: socials.tiktok || '#',
+  }), [socials]);
 };
 
 /**
- * Hook personalizado que prepara el horario para mostrar en el footer
- * Obtiene dinámicamente desde los datos de la empresa para evitar hardcoding.
- * 
- * Lógica:
- * - Extrae las etiquetas de días desde el string del horario (ej: "Lunes a Sábados")
- * - Los domingos se asumen como "Domingos: Cerrado"
- * - Todo se obtiene dinámicamente del backend
- * 
- * Dependencias: actualiza cuando schedule cambia
- * 
- * @returns {ScheduleItem[]} - Array con días y horarios a mostrar
+ * Construye el array de horarios dinámicamente desde el backend
+ * @param schedule - Configuración de horarios
+ * @returns Array con los horarios formateados
  */
-const useSafeSchedule = (): ScheduleItem[] => {
-  return useMemo(() => {
-    const weekdaysSchedule = companyInfo.location.schedule.weekdays || '08:00 – 20:00';
-    
-    // Extrae el rango de días del string (ej: "Lunes a Sábados" de "Lunes a Sábados: 08:00 – 20:00")
-    const daysMatch = weekdaysSchedule.match(/^([^:]+):\s*/);
-    const weekdaysLabel = daysMatch ? daysMatch[1] : 'Lunes a Sábados';
-    
-    return [
-      {
-        day: weekdaysLabel,
-        hours: weekdaysSchedule.split(':').slice(1).join(':').trim(),
-      },
-      {
-        day: 'Domingos',
-        hours: 'Cerrado',
-      },
-    ];
-  }, []);
+const useFormattedSchedule = (
+  schedule: CompanyInfo['location']['schedule']
+): ScheduleItem[] => {
+  return useMemo(() => [
+    {
+      label: schedule.weekdays.label,
+      hours: `${schedule.weekdays.start}:00 – ${schedule.weekdays.end}:00`,
+    },
+    {
+      label: schedule.sundays.label,
+      hours: schedule.sundays.isClosed ? 'Cerrado' : `${schedule.sundays.start}:00 – ${schedule.sundays.end}:00`,
+    },
+  ], [schedule]);
 };
 
 /**
- * Componente Footer
- * 
- * Renderiza un footer compacto y profesional con:
- * - Información de contacto (teléfono, email, ubicación)
- * - Horarios dinámicos desde la configuración de la empresa
- * - Estado de operación en tiempo real (abierto/cerrado)
- * - Redes sociales
- * - Barra flotante de accesos rápidos (WhatsApp, Maps, redes)
- * 
- * Arquitectura:
- * - Desacoplamiento: prepara para recibir companyInfo como prop (actualmente global)
- * - Tipado estricto: cero 'any', interfaces para todo
- * - Optimización: useMemo y useCallback para evitar recálculos
- * - Documentación: JSDoc en funciones y hooks
- * - Datos dinámicos: horarios y textos vienen del backend
- * 
- * @param {FooterProps} props - { bgColor: string }
- * @returns {JSX.Element} - Elemento del footer
+ * Footer profesional con datos dinámicos desde backend
+ * @component
+ * @param {FooterProps} props - Props del componente
+ * @returns {JSX.Element} Footer renderizado
  */
-const Footer = ({ bgColor }: FooterProps) => {
-  // Año actual para el copyright
+const Footer = ({ bgColor, companyInfo }: FooterProps) => {
   const currentYear = new Date().getFullYear();
 
-  // Información de contacto segura con validación
-  const safeContactInfo = useSafeContactInfo();
-
-  // Redes sociales seguras con validación
-  const safeSocials = useSafeSocials();
-
-  // Horario seguro desde la configuración dinámico de la empresa
-  const safeSchedule = useSafeSchedule();
-
-  // Estado de operación dinámico basado en el horario del backend
-  const isOpen = useIsOpen(companyInfo.location.schedule.weekdays);
+  // Hooks personalizados para datos validados
+  const safeContactInfo = useSafeContactInfo(
+    companyInfo.contact,
+    companyInfo.location
+  );
+  const safeSocials = useSafeSocials(companyInfo.socials);
+  const formattedSchedule = useFormattedSchedule(companyInfo.location.schedule);
+  const isOpen = useIsOpen(companyInfo.location.schedule);
 
   /**
-   * Array de items de contacto con íconos
-   * Se construye dentro del componente para tener acceso a safeContactInfo
-   * Memorizado para evitar recálculos innecesarios
+   * Array de items de contacto reutilizable
+   * Evita código repetido y facilita mantenimiento
    */
   const contactItems: ContactItem[] = useMemo(() => [
     {
@@ -249,20 +166,6 @@ const Footer = ({ bgColor }: FooterProps) => {
     },
   ], [safeContactInfo]);
 
-  /**
-   * Manejador de click para íconos de redes sociales
-   * Permite futura implementación de analytics o tracking.
-   * 
-   * Utiliza type SocialPlatform para garantizar que solo se pasen
-   * valores válidos de plataformas soportadas (facebook, instagram, tiktok).
-   * 
-   * @param {SocialPlatform} platform - Nombre de la red social clickeada
-   */
-  const handleSocialClick = useCallback((platform: SocialPlatform) => {
-    // Aquí se puede agregar lógica de tracking o analytics
-    console.debug(`Click en red social: ${platform}`);
-  }, []);
-
   return (
     <>
       {/* 1. BARRA FLOTANTE DE PASTO + ACCESOS RÁPIDOS */}
@@ -273,11 +176,11 @@ const Footer = ({ bgColor }: FooterProps) => {
           className="absolute bottom-0 left-0 w-full h-full object-cover object-top opacity-40 pointer-events-none z-0"
         />
 
-        {/* Botón WhatsApp de Administración */}
+        {/* Botón Administración */}
         <div className="pointer-events-auto transition-all duration-300 hover:-translate-y-1 hover:scale-102 z-30">
           <WhatsAppButton
             label="Administración"
-            phone={safeContactInfo.phone}
+            phone={companyInfo.contact.adminPhone}
             bgColor="bg-vete-tertiary"
           />
         </div>
@@ -290,10 +193,9 @@ const Footer = ({ bgColor }: FooterProps) => {
             href={safeSocials.facebook} 
             target="_blank" 
             rel="noreferrer"
-            onClick={() => handleSocialClick('facebook')}
             className="p-3 bg-black/60 backdrop-blur-md rounded-full border border-white/10 hover:bg-vete-primary transition-all shadow-lg text-white hover:scale-110"
-            title="Facebook"
-            aria-label="Síguenos en Facebook"
+            title="Síguenos en Facebook"
+            aria-label="Facebook - Veterinaria Beltramelli"
           >
             <Facebook size={20} />
           </a>
@@ -305,7 +207,7 @@ const Footer = ({ bgColor }: FooterProps) => {
             rel="noreferrer"
             className="p-3 bg-black/60 backdrop-blur-md rounded-full border border-white/20 hover:bg-vete-primary transition-all shadow-xl text-white hover:scale-125 group"
             title="Ver ubicación en Google Maps"
-            aria-label="Google Maps"
+            aria-label="Google Maps - Ubicación"
           >
             <MapPin size={26} className="group-hover:text-white transition-colors" />
           </a>
@@ -315,17 +217,16 @@ const Footer = ({ bgColor }: FooterProps) => {
             href={safeSocials.instagram} 
             target="_blank" 
             rel="noreferrer"
-            onClick={() => handleSocialClick('instagram')}
             className="p-3 bg-black/60 backdrop-blur-md rounded-full border border-white/10 hover:bg-vete-primary transition-all shadow-lg text-white hover:scale-110"
-            title="Instagram"
-            aria-label="Síguenos en Instagram"
+            title="Síguenos en Instagram"
+            aria-label="Instagram - Veterinaria Beltramelli"
           >
             <Instagram size={20} />
           </a>
 
         </div>
 
-        {/* Botón WhatsApp de Emergencia */}
+        {/* Botón Emergencia */}
         <div className="pointer-events-auto transition-all duration-300 hover:-translate-y-1 hover:scale-102 z-30">
           <WhatsAppButton
             label="Emergencia"
@@ -339,7 +240,7 @@ const Footer = ({ bgColor }: FooterProps) => {
       {/* 2. FOOTER COMPACTO Y PROFESIONAL */}
       <footer className={`${bgColor} relative z-40 px-6 md:px-16 lg:px-24 py-8 mt-40 shadow-[0_-4px_12px_rgba(0,0,0,0.02)]`}>
         
-        {/* Línea decorativa superior sutil */}
+        {/* Línea decorativa superior */}
         <div className="absolute top-0 left-0 w-full h-px pointer-events-none z-50 bg-gradient-to-r from-vete-primary/0 via-vete-primary/15 to-vete-primary/0" />
         
         <div className="max-w-7xl mx-auto">
@@ -352,7 +253,7 @@ const Footer = ({ bgColor }: FooterProps) => {
               <img
                 src="/logo.png"
                 className="w-16 h-16 object-contain hover:scale-105 transition-transform duration-400 cursor-pointer filter drop-shadow-sm"
-                alt={`${companyInfo.name} Logo`}
+                alt={`${companyInfo.name} - Logo`}
               />
               
               <div className="text-center md:text-left">
@@ -368,7 +269,9 @@ const Footer = ({ bgColor }: FooterProps) => {
 
             {/* SECCIÓN 2: CONTACTO */}
             <div className="flex flex-col gap-3">
-              <h4 className="text-xs font-bold text-vete-primary/80 uppercase tracking-widest">Contacto</h4>
+              <h4 className="text-xs font-bold text-vete-primary/80 uppercase tracking-widest">
+                Contacto
+              </h4>
 
               <div className="space-y-2.5">
                 {contactItems.map((item, idx) => (
@@ -380,7 +283,9 @@ const Footer = ({ bgColor }: FooterProps) => {
                     className="group flex items-start gap-2.5 text-xs text-vete-text-light hover:text-vete-primary transition-colors duration-300"
                     aria-label={item.label}
                   >
-                    <div className="mt-0.5 group-hover:scale-110 transition-transform duration-300">{item.icon}</div>
+                    <div className="mt-0.5 group-hover:scale-110 transition-transform duration-300">
+                      {item.icon}
+                    </div>
                     <div className="flex flex-col gap-0.5">
                       <span className="text-[9px] font-semibold text-vete-primary/60 uppercase tracking-wider">
                         {item.label}
@@ -396,13 +301,15 @@ const Footer = ({ bgColor }: FooterProps) => {
 
             {/* SECCIÓN 3: HORARIOS */}
             <div className="flex flex-col gap-3">
-              <h4 className="text-xs font-bold text-vete-primary/80 uppercase tracking-widest">Horarios</h4>
+              <h4 className="text-xs font-bold text-vete-primary/80 uppercase tracking-widest">
+                Horarios
+              </h4>
 
               <div className="space-y-2">
-                {safeSchedule.map((item, idx) => (
+                {formattedSchedule.map((item, idx) => (
                   <div key={idx} className="flex flex-col gap-0.5">
                     <span className="text-[9px] font-semibold text-vete-primary/60 uppercase tracking-wider">
-                      {item.day}
+                      {item.label}
                     </span>
                     <span className="text-xs font-medium text-vete-text-light">
                       {item.hours}
@@ -410,7 +317,7 @@ const Footer = ({ bgColor }: FooterProps) => {
                   </div>
                 ))}
 
-                {/* Status de operación dinámico basado en el horario del backend */}
+                {/* Status - Dinámico basado en horario */}
                 <div className="mt-2 pt-2 border-t border-vete-primary/10 flex items-center gap-1.5">
                   <span className={`relative flex h-1.5 w-1.5 shrink-0 ${isOpen ? 'animate-pulse' : ''}`}>
                     <span className={`absolute inset-0 rounded-full opacity-75 ${isOpen ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`}></span>
@@ -425,7 +332,9 @@ const Footer = ({ bgColor }: FooterProps) => {
 
             {/* SECCIÓN 4: REDES SOCIALES */}
             <div className="flex flex-col gap-3">
-              <h4 className="text-xs font-bold text-vete-primary/80 uppercase tracking-widest">Síguenos</h4>
+              <h4 className="text-xs font-bold text-vete-primary/80 uppercase tracking-widest">
+                Síguenos
+              </h4>
 
               <div className="flex items-center gap-2.5">
                 {/* Facebook */}
@@ -433,10 +342,9 @@ const Footer = ({ bgColor }: FooterProps) => {
                   href={safeSocials.facebook}
                   target="_blank"
                   rel="noreferrer"
-                  onClick={() => handleSocialClick('facebook')}
                   className="group p-2 bg-white/80 border border-neutral-200/50 rounded-lg shadow-sm hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] hover:shadow-[0_4px_12px_rgba(24,119,242,0.2)] transition-all duration-300 overflow-hidden"
-                  title="Facebook"
-                  aria-label="Seguir en Facebook"
+                  title="Síguenos en Facebook"
+                  aria-label="Facebook"
                 >
                   <Facebook size={14} className="text-vete-primary group-hover:text-white group-hover:scale-110 transition-all duration-300" strokeWidth={2.5} />
                 </a>
@@ -446,10 +354,9 @@ const Footer = ({ bgColor }: FooterProps) => {
                   href={safeSocials.instagram}
                   target="_blank"
                   rel="noreferrer"
-                  onClick={() => handleSocialClick('instagram')}
                   className="group p-2 bg-white/80 border border-neutral-200/50 rounded-lg shadow-sm hover:bg-gradient-to-br hover:from-[#5B51D8] hover:via-[#E1306C] hover:to-[#F77737] hover:text-white hover:border-transparent hover:shadow-[0_4px_12px_rgba(224,50,130,0.2)] transition-all duration-300 overflow-hidden"
-                  title="Instagram"
-                  aria-label="Seguir en Instagram"
+                  title="Síguenos en Instagram"
+                  aria-label="Instagram"
                 >
                   <Instagram size={14} className="text-vete-primary group-hover:text-white group-hover:scale-110 transition-all duration-300" strokeWidth={2.5} />
                 </a>
@@ -459,10 +366,9 @@ const Footer = ({ bgColor }: FooterProps) => {
                   href={safeSocials.tiktok}
                   target="_blank"
                   rel="noreferrer"
-                  onClick={() => handleSocialClick('tiktok')}
                   className="group p-2 bg-white/80 border border-neutral-200/50 rounded-lg shadow-sm hover:bg-black hover:text-white hover:border-black hover:shadow-[0_4px_12px_rgba(0,0,0,0.2)] transition-all duration-300 overflow-hidden"
-                  title="TikTok"
-                  aria-label="Seguir en TikTok"
+                  title="Síguenos en TikTok"
+                  aria-label="TikTok"
                 >
                   <svg
                     viewBox="0 0 24 24"

@@ -6,13 +6,6 @@ import { SUBCATEGORY_ICONS } from '../utils/categoryHelpers';
 import { usePedidoStore } from '../context/pedido_context'; 
 import type { ApiProduct, ApiImageProducto } from '../types/product_types';
 
-//interface Props { 
-//  title: string; 
-//  desc: string; 
-//  price: number; 
-//  img: string;
-//  subcategories?: { subc_nombre: string }[]; 
-//}
 
 
 interface Props { 
@@ -35,7 +28,7 @@ export function ProductCard({ producto }: Props) {
 
   /* --- Lógica: Buscamos si este producto ya está en el pedido --- <!> Revisar despues */
   const lineaActual = pedido.find(item => item.producto.prod_id === producto.prod_id);
-  const cantidad = lineaActual?.cantidad || 0; // <!> Esto reo que no va 
+  const cantidad = lineaActual?.cantidad || 0; // <!> Creo que esto lo voy a usar cuando aga que la tarjetas con la cantidad comprada 
   //const estaComprado = cantidad > 0;
 
   return (

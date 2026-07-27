@@ -24,7 +24,7 @@ from fastapi import UploadFile, File
 from app.schemas.user_schema import UserRegisterSchema, LoginRequestSchema
 
 
-router = APIRouter(prefix="/auth", tags=["Autenticación"]) # <!> para qeu sirve si lo saca me da un error sintactico 
+router = APIRouter(prefix="/auth", tags=["Autenticación"])  # Sirve para agrupar todas las rutas de ese archivo bajo una misma categoría
 
 
 @router.post("/register/cliente", 

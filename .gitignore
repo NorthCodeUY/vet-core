@@ -1,33 +1,60 @@
-# Logs
-logs
+# ==========================================
+# VETERINARIA BELTRAMELLI - GITIGNORE GLOBAL
+# ==========================================
+
+# --- ARCHIVOS DE DESCARTE / BASURA ---
+# Esta regla ignora cualquier archivo o carpeta que contenga 
+# la palabra "descarte" en cualquier parte de su nombre o ruta.
+*descarte*
+**/*descarte*
+temp/
+tmp/
+
+# --- ENTORNOS LOCALES (SEGURIDAD) ---
+# Nunca subir credenciales o llaves de API
+.env
+.env.local
+.env.*.local
+*.env
+!env.template
+
+# --- DEPENDENCIAS ---
+# No subimos librerías, se instalan con npm install o pip install
+node_modules/
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# --- COMPILACIÓN / PRODUCCIÓN ---
+# Archivos generados automáticamente al construir la app
+dist/
+dist-ssr/
+build/
+*.egg-info/
+
+# --- LOGS Y DEBUGGING ---
+# Registros de errores y eventos
 *.log
+logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
-# Dependencies
-node_modules
-
-# Build
-dist
-dist-ssr
-
-# Local env
-*.local
-.env
-
-# Misc
-descarte.*
-
-# Editor directories and files
+# --- EDITORES Y SISTEMA OPERATIVO ---
+# Configuraciones personales de VS Code, IntelliJ o Windows/Mac
 .vscode/*
 !.vscode/extensions.json
-.idea
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+Thumbs.db
+
+# --- BASE DE DATOS LOCAL ---
+# Si usas volúmenes de Docker para persistencia local
+pgdata/
+docker_postgres_data/

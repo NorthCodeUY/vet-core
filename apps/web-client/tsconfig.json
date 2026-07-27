@@ -1,3 +1,25 @@
+// apps/web-client/tsconfig.json
+
+
+
+// {
+//   "compilerOptions": {
+//     "target": "ES2022",       // O al menos "ES2020" <!> y porque eliminaste eso si vos lo pediste a creo que lo ponias en el otro archvio eso es correcto para sabe no mas 
+//     "module": "ESNext",       // Esto es fundamental 
+//     "moduleResolution": "node",
+//     "lib": ["DOM", "DOM.Iterable", "ESNext"],    
+//     // <!> Creo que esto me lo recomendaste vos o otro mentor no me acuerdo para poder levantar el entrono en los contenedores de docker 
+//     // para subirlo a produccion si mal no recuerdo si queres paseme este aarchivo como deberia quedar teniendo en cuetna qye lo que yo busco es crear un entrno que 
+//     // desde produccion pueda levantarlo con los conentedores aca en etorno de desarollo oviamte cmabiando las variables de entrono peor modificando lo minimo posible
+  
+//     "noUnusedLocals": false,
+//     "noUnusedParameters": false,
+//     "noEmitOnError": false
+//   }
+// }
+
+
+
 {
   "files": [],
   "references": [

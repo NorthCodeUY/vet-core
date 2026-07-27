@@ -1,31 +1,51 @@
 # /api-backend/docker-compose.yml
+
+# Levanta Backend FastAPI y PostgreSQL y PGAdmin 
+
 services:
-  db:
-    image: postgres:15
-    container_name: vet_db
-    restart: always
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    ports:
-      - "${DB_PORT}:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+  db-vet_bel:
+    image: postgres:15 # Contenedor de PostgreSQL
+    container_name: vet_db_bel # Nombre del contenedor
+    restart: always # Reinicia el contenedor si se cae
+    environment: # Variables de entorno
+      POSTGRES_USER: ${DB_USER} # Usuario de la base de datos
+      POSTGRES_PASSWORD: ${DB_PASSWORD} # Contraseña de la base de datos
+      POSTGRES_DB: ${DB_NAME} # Nombre de la base de datos
+    ports: # Mapeo de puertos
+      - "${DB_PORT}:5432" # El puerto 5432 de tu máquina se conecta al 5432 del contenedor
+    volumes: # Volúmenes
+      - postgres_data_vet_bel:/var/lib/postgresql/data
+    networks:
+      - northcode-net  
 
-# NUEVO SERVICIO: Panel de control web
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: vet_pgadmin
-    restart: always
-    environment:
-      # Correo y clave para entrar al panel web (puedes poner lo que quieras)
-      PGADMIN_DEFAULT_EMAIL: ${DBADMIN_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${DBADMIN_PASSWORD}
-    ports:
-      - "5050:80"
-    depends_on:
-      - db
 
+  backend-vet-bel:
+    build: . # Construye la imagen desde el Dockerfile en el directorio actual (./)
+    container_name: vet_core_backend # Nombre del contenedor
+    restart: always # Reinicia el contenedor si se cae
+    ports: # Mapeo de puertos
+      - "8000:8000" # El puerto 8000 de tu máquina se conecta al 8000 del contenedor
+    environment: # Variables de entorno
+      # FastAPI leerá esto a través de pydantic-settings
+      - IS_DOCKER=true  # <--- Esta variable hace que database.py use "db"
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}      
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db-vet:5432/${DB_NAME} # <!> creo que esto no va 
+    depends_on: # Dependencia de servicios
+      - db-vet_bel # Espera a que el servicio 'db' esté listo antes de iniciar
+    volumes: # Volúmenes
+      - ./app:/app/app # Sincroniza tu código local con el contenedor
+      - ./static:/app/app/static # Sincroniza tus imágenes (muy importante)
+    networks:
+      - northcode-net  
+
+# Declaramos la red como externa para que Docker no la cree, sino que use la que ya creaste
+networks:
+  northcode-net:
+    external: true 
+    
+# Volúmenes se usa para guardar la informacion en el host 
+# <!> para evitar perdida de informacion en produccion volumen como external: true si quieres que Docker nunca intente crearlo solo, sino que use uno que tú ya creaste manualmente.
 volumes:
-  postgres_data:
+  postgres_data_vet_bel: # Persistencia de la base de datos

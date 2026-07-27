@@ -1,4 +1,4 @@
-// apps/web-client/src/sessions/landing/LandingPage.tsx
+// apps/web-client/src/pages/landing/LlandingPage.tsx
 
 
 import { ServiceCard } from '../../components/ServiceCard.tsx';
@@ -25,7 +25,7 @@ import HeroSession from './sessions/HeroSession.tsx';
 import Footer from './sessions/footer.tsx';
 
 
-// <!DMI> Seccion Principal de la web  Compuesto de 2 div uno con el texto y otro 
+// <!> Una ves que repare HederSession.tsx borar 
 // bgColor: string -> Color de fondo de la seccion
 
 // <!>  En la version desktop queda muy vasio queda todo al medio y no queda bien abria que plantear
@@ -354,8 +354,8 @@ export default function LandingPage() {
       <HeaderSession bgColor='bg-vete-secondary' />
 
       <main>
-        {/* <HeroSection bgColor='bg-vete-secondary' /> */}
-        <HeroSession bgColor='bg-vete-secondary' />
+        <HeroSection bgColor='bg-vete-secondary' />
+        {/* <HeroSession bgColor='bg-vete-secondary' /> */}
 
         {/* separador V1*/}
         <SectionDivider

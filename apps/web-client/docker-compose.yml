@@ -1,0 +1,18 @@
+# /apps/web-client/docker-compose.yml
+
+# Contenedor de Docker del frontend React 
+
+services:
+  web-client:
+    build: . # Construye la imagen desde el Dockerfile en el directorio actual (./)
+    container_name: nc-web-valeria # Nombre del contenedor
+    restart: unless-stopped # Reinicia el contenedor si se cae
+    ports:
+      - "80:80" # Mapeo de puertos
+    networks:
+      - northcode-net
+
+
+networks:
+  northcode-net:
+    external: true 

@@ -20,25 +20,3 @@ def listar_agrupados(db: Session = Depends(get_db)):
 def listar_productos(cat_id: int = None, search: str = None, db: Session = Depends(get_db)):
     return get_productos_filtrados(db, cat_id=cat_id, search=search)
 
-
-
-# # <!> Si uso esto funciona el cartar todo los producots pero no funciona cuando pongo espandir y cargo lo de categoria 
-# @router.get("/productos", response_model=list[ProdCatAgrupadaSchema])
-# def listar_productos(cat_id: int = None, search: str = None, db: Session = Depends(get_db)):
-#     # 1. Si quieres los productos agrupados para la landing:
-#     if not cat_id and not search:
-#         return get_productos_agrupados(db) 
-    
-#     # 2. Si quieres filtrar por categoría o búsqueda, usas otro método:
-#     return get_productos_filtrados(db, cat_id=cat_id, search=search)
-
-
-# <!> Si uso esto funciona el boton espandir que estoy aciendo pero no me carga las imagenes 
-# @router.get("/productos") # Quitamos el response_model fijo para evitar el error 500
-# def listar_productos(cat_id: int = None, search: str = None, db: Session = Depends(get_db)):
-#     if not cat_id and not search:
-#         return get_productos_agrupados(db) 
-    
-#     # Aquí devolvemos la lista plana de productos, FastAPI lo serializará automáticamente
-#     return get_productos_filtrados(db, cat_id=cat_id, search=search)
-

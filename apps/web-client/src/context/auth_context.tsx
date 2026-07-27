@@ -4,7 +4,7 @@
 // <!> este si no tengo ni idea para que sirve 
 
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { authService } from '../services/auth.service';
+import { authService } from '../services/auth_service';
 
 const AuthContext = createContext<any>(null);
 

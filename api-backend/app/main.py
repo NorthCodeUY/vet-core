@@ -9,7 +9,7 @@ from app.router import producto_router, auth_router # Importamos el router de pr
 
 from fastapi.middleware.cors import CORSMiddleware # <!> Revisar esto 
 from fastapi.staticfiles import StaticFiles # Importamos para el manejo de archivos estaticos 
-
+from .config import settings, origins_list, allow_credentials # Importamos settings y origins_list
 
 # Esto crea las tablas en Postgres al iniciar si no existen
 Base.metadata.create_all(bind=engine)
@@ -21,21 +21,28 @@ app = FastAPI() # Creamos la aplicacion
 app.include_router(producto_router.router, prefix="/api")
 app.include_router(auth_router.router, prefix="/api") 
 
-# Esto le dice a FastAPI: "Si alguien pide /static, busca en la carpeta app/static"
+# Esto le dice a FastAPI: "Si alguien pide /static, busca en la carpeta app/static" <!> Esto que me dijiste ya lo comente pero no tien sentido que sea porque estba asi y andaba 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 
 # --- CONFIGURACIÓN DE CORS ---
 # Esto le dice a FastAPI que acepte peticiones desde tu puerto de React
-app.add_middleware(
+app.add_middleware( 
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"], # URL de tu frontend
-    allow_credentials=True,
+
+    # Trae la informacion de config.py 
+    allow_origins=origins_list, # Lista dinámica procesada en config.py 
+     allow_credentials=allow_credentials,
+
+    # Version para no desarollo -- no borrar --- 
+      
+    # allow_credentials = False, # Para que funcione en desarollo no bloquea nada 
+    # allow_origins=["*"], # Para que funcione en desarollo no bloquea nada 
+    
+    # Permisos Generales
     allow_methods=["*"], # Permite GET, POST, etc.
     allow_headers=["*"], # Permite todos los headers
 )
-
-
 
 
 # Get raiz 

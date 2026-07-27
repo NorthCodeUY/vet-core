@@ -37,7 +37,8 @@ export const PlanCard = ({ title, description, benefits, borderColor, isFeatured
       <div className="mb-6">
         
         {/* Titulo del plan*/}
-        <h3 className={`text-2xl font-bold mb-2 italic`}
+        <h3 className={`
+        text-2xl font-bold mb-2 italic`}
           style={{ color: dynamicColor }}> {/* Asigno el color que paso por parametro a el titulo */}
           {title}
         </h3>

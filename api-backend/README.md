@@ -1,3 +1,4 @@
+// app/main.py -> Ejecutar con uvicorn app.main:app --reload
 ## <!> Estructur de baken sugerido de proeycto comparando miproyecot contaduria barion 4 mayo
 
 ``` text

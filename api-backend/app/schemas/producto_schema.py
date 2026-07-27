@@ -1,29 +1,79 @@
 # api-backend/app/schemas/producto_schema.py
-from pandas._libs.tslibs.offsets import Nano
-from pydantic import BaseModel, Field, field_validator # Importamos BaseModel de pydantic
+# from pandas._libs.tslibs.offsets import Nano # <!> Borrar 
+from pydantic import BaseModel, Field, field_validator, ConfigDict # Importamos BaseModel de pydantic
 from typing import List, Optional # Importamos List y Optional de typing
 
+from app.config import settings 
 
-class SubcategoriaSchema(BaseModel): # Clase que representa la tabla "subcategoria" en la base de datos
+class SubcategoriaSchema(BaseModel): 
+    """ 
+    Clase que representa la tabla "subcategoria" en la base de datos 
+    
+    """
     subc_nombre: str # Nombre de la subcategoria
-    class Config: # Clase que representa la tabla "subcategoria" en la base de datos
-        from_attributes = True # Permite que el modelo sea convertido a JSON
+    model_config = ConfigDict( # representa la tabla "subcategoria" en la base de datos
+        from_attributes=True # Permite que el modelo sea convertido a JSON
+        )
 
-class ImagenSchema(BaseModel): # Clase que representa la tabla "imagen" en la base de datos
+  
+class ImagenSchema(BaseModel): 
+    """ 
+    Clase que representa la tabla "imagen_url" en la 
+    base de datos
+    """
     img_url: str # Nombre de la imagen
     img_principal: bool # Determina cual es la imagen principal
-        # Esto es una "validación" que transforma el dato al salir
-    @field_validator('img_url')
+
+    # Esto es una "validación" que transforma el dato al salir
+   
+   
+    @field_validator(
+        'img_url', # Indica que se ejecutara cuando se acceda al campo img_url
+        mode="after" # Indica que se ejecutara despues de que se obtenga el valor del campo img_url
+        )
     @classmethod
-    def assemble_image_url(cls, v: str) -> str:
-        # Aquí defines la base de tu servidor
-        BASE_URL = "/static/productos/" # <!> Supongo que esto en produccion cuando este en el contenedor docker tendria que cambiar 
-        return f"{BASE_URL}{v}"
+    def assemble_image_url(cls, v: str) -> str: # <!>Esto lo deje porque si en si aca en mi fonten construye el la url apartir de su ruta absoluta pero lo dejo 
+        """
+        Lógica de construcción de URL:
+        1. Si es nulo o vacío, devuelve cadena vacía (el frontend decidirá qué mostrar).
+        2. Si ya es una URL completa (empieza con http), la respeta.
+        3. Si es solo el nombre, construye: BASE_URL + /static/productos/ + nombre.
+        """
+        if not v: # Si la url es nula o vacia 
+            return "" # Retorna una cadena vacia 
 
-    class Config: # Clase que representa la tabla "imagen" en la base de datos
-        from_attributes = True # Permite que el modelo sea convertido a JSON
+        #<!> Lo deje peor no entiendo porque seria absoluta 
+        if v.startswith("http"): # Si la url es absoluta 
+            return v # Retorna la url 
+        
+        # Limpiamos la base del .env (ej: http://192.168.1.11:8001)
+        base = settings.base_url.rstrip("/") # path = v.lstrip("/")
+        #  Limpiamos el nombre del archivo de la DB (ej: 3.png)
+        filename = v.lstrip("/")
 
-class ProductoSchema(BaseModel): # Clase que representa la tabla "producto" en la base de datos
+        # Construimos la ruta completa hacia la subcarpeta de productos
+        return f"{base}/static/productos/{filename}"
+
+        # # Si el path guardado en la DB no incluye 'static', se lo ponemos
+        # if not filename.startswith("static"): # <!> Esto esta mal simpre de la bse de datos solo trae el nombre o nada si no es nada que entrege la cadena vasi y yo desido su uso una imagen ausiliar para deterinar que no hay producto
+        #     return f"{base}/{filename}"
+        # else: 
+        #     return v
+
+
+
+    model_config = ConfigDict( # Representa la tabla "imagen_url" en la base de datos
+        from_attributes=True # Permite que el modelo sea convertido a JSON
+        )
+
+
+
+
+
+
+
+
+class ProductoSchema(BaseModel): 
     """
     Schema que representa un producto completo en la tienda.
     Incluye sus datos básicos, categoría, subcategoría e imágenes asociadas.
@@ -38,10 +88,10 @@ class ProductoSchema(BaseModel): # Clase que representa la tabla "producto" en l
     imagenes: List[ImagenSchema] = Field(default_factory=list, alias="rel_imagen_url") # Relación con la tabla "imagen"    
     subcategoria: List[SubcategoriaSchema] = Field(default_factory=list, alias="rel_subcategoria") # Relación con la tabla "subcategoria"
     
-    class Config: # Clase que representa la tabla "producto" en la base de datos
-        from_attributes = True # Permite que el modelo sea convertido a JSON
-        populate_by_name = True # Permite que el modelo sea convertido a JSON por el nombre
-        
+    model_config = ConfigDict( # Representa la tabla "producto" en la base de datos
+        from_attributes=True, # Permite que el modelo sea convertido a JSON
+        populate_by_name=True # Permite que el modelo sea convertido a JSON por el nombre
+    )
 
 class ProdCatAgrupadaSchema(BaseModel): 
     """
@@ -51,8 +101,10 @@ class ProdCatAgrupadaSchema(BaseModel):
     cat_id: int # ID de la categoria
     productos: List[ProductoSchema] # Reutilizamos el Schema anterior
     
-    class Config: # Clase que representa la tabla "categoria" en la base de datos
-        from_attributes = True # Permite que el modelo sea convertido a JSON
+    model_config = ConfigDict( # Representa la tabla "categoria" en la base de datos
+        from_attributes=True # Permite que el modelo sea convertido a JSON
+        )
+
     # Ejemplo de salida
     # [
     # {

@@ -46,5 +46,6 @@ networks:
     external: true 
     
 # Volúmenes se usa para guardar la informacion en el host 
+# <!> para evitar perdida de informacion en produccion volumen como external: true si quieres que Docker nunca intente crearlo solo, sino que use uno que tú ya creaste manualmente.
 volumes:
   postgres_data_vet_bel: # Persistencia de la base de datos

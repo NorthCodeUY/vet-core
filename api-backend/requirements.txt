@@ -42,4 +42,4 @@ typing-inspection==0.4.2    # Utilidad para Pydantic
 typing_extensions==4.16.0   # Extensiones de tipos de Python
 python-dateutil==2.9.0.post0 # Utilidades de fechas
 annotated-doc==0.0.4        # Documentación de tipos
-email-validator>=2.0.0      # Validación de correos electrónicos <!> Esto no se si lo necesito pero lo dejo y depues veo 
+email-validator>=2.0.0      # Validación de correos electrónicos 

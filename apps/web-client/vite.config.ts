@@ -1,17 +1,41 @@
 // app/vet-core/apps/web-client/vite.config.ts
 
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import svgr from 'vite-plugin-svgr' // Plugin para trabajar con SVG 
 
-export default defineConfig({ server: {
-  proxy: {
-      /* Reenvía peticiones de datos */
-      '/api': 'http://127.0.0.1:8000',
-      /* Reenvía peticiones de imágenes */
-      '/static': 'http://127.0.0.1:8000' 
-    }
-  },
+export default defineConfig(({ mode }) => {
+  // Cargamos las variables de entorno basándonos en el modo actual
+  const env = loadEnv(mode, process.cwd(), '') // Trae los dato de el archivo .env
+  const backendPort = env.VITE_BACKEND_PORT || '8000' // trae el puerto de backend 
+  const frontendPort = parseInt(env.VITE_FRONTEND_PORT) || 5173; // trae el puerto de frontend 
+
+  return {
+    server: {
+      port: frontendPort, // Usamos el puerto que viene del .env
+      host: true, // <!> Revisar la seguridad en este punto 
+      proxy: {
+        /* 
+           Configuración dinámica del Proxy:
+           Usa el puerto del backend definido en el .env
+        */
+        '/api': {
+          target: `http://127.0.0.1:${backendPort}`,// URL dinamica para la API con su puerto
+          changeOrigin: true, //  Cambia el origen de la petición <!> NO entiendo bien esto ni me quede tranquilo con lo que lei de esto 
+          secure: false, //  No valida el certificado SSL/TLS <!> Esto no hace inseguro el sitio 
+        },
+        '/static': {
+          target: `http://127.0.0.1:${backendPort}`, // URL dinamica para las imagenes con su puerto
+          changeOrigin: true, //  Cambia el origen de la petición <!> NO entiendo bien esto ni me quede tranquilo con lo que lei de esto 
+          secure: false, //  No valida el certificado SSL/TLS <!> Esto no hace inseguro el sitio 
+        }
+
+        // /* Reenvía peticiones de datos */
+        // '/api': `http://127.0.0.1:${backendPort}`,
+        // /* Reenvía peticiones de imágenes */
+        // '/static': `http://127.0.0.1:${backendPort}` 
+      }
+    },
 
   plugins: [  // plugins: [react()] // Asi estaba antes 
     react(),
@@ -28,7 +52,8 @@ export default defineConfig({ server: {
     })
   ],
   base: '/', // Esto es vital para dominios personalizados
-})
+  };
+});
 
 
 

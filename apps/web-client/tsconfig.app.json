@@ -1,28 +1,64 @@
+// apps/web-client/tsconfig.app.json
+
+/**
+ *  Configura cómo se compila tu código de React (.tsx, .ts)
+*/
 {
+  "extends": "./tsconfig.json",
   "compilerOptions": {
+    "noEmitOnError": false, // <!> Esto es mientras estoy en desarollo luego limpiar los errores de importacion 
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "target": "ES2022",
-    "useDefineForClassFields": true,
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "types": ["vite/client"],
-    "skipLibCheck": true,
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
+    "target": "ES2022",           // Convierte TS moderno a JS compatible con navegadores actuales.
+    "useDefineForClassFields": true, // Mejora el rendimiento de las clases JS.
+    "lib": ["ES2022", "DOM", "DOM.Iterable"], // Librerías base: qué características de JS reconoce el editor.
+    "module": "ESNext",           // Usa el sistema de módulos más moderno y eficiente.
+    "skipLibCheck": true,         // Evita revisar archivos de librerías externas (acelera el IDE).
+    "moduleResolution": "bundler",// Modo moderno para herramientas como Vite.
+    "allowImportingTsExtensions": true, 
+    "verbatimModuleSyntax": true, // Impide importar archivos que no existen.
     "moduleDetection": "force",
-    "noEmit": true,
-    "jsx": "react-jsx",
-
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noEmit": true,               // No genera archivos JS (deja que Vite lo haga).
+    "jsx": "react-jsx",           // Configura el soporte para archivos .tsx de React.
+    "strict": true,               // Aplica todas las reglas de calidad de código de TS.
+    "noUnusedLocals": false,      // Permite variables no usadas (para no molestarte mientras prototipas).
+    "noUnusedParameters": false,  // Permite parámetros no usados (para no molestarte).
+    "erasableSyntaxOnly": true,   // Solo permite sintaxis que pueda ser eliminada por el compilador.
+    "noFallthroughCasesInSwitch": true, // Evita bugs en los switches.
+    "noUncheckedSideEffectImports": true, // Seguridad extra al importar.
+    "types": ["vite/client"]      // <--- ESTA LÍNEA SOLUCIONA TU ERROR DE import.meta
   },
   "include": ["src"]
 }
+
+
+// Version viea por lo que entendi no funcina tan bien como la otra 
+// {
+//   "extends": "./tsconfig.json",
+//   "compilerOptions": {
+//     "noEmitOnError": false,
+//     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+//     "target": "ES2022",
+//     "useDefineForClassFields": true,
+//     "lib": ["ES2022", "DOM", "DOM.Iterable"],
+//     "module": "ESNext",
+//     "types": ["vite/client"],
+//     "skipLibCheck": true,
+
+//     /* Bundler mode */
+//     "moduleResolution": "bundler",
+//     "allowImportingTsExtensions": true,
+//     "verbatimModuleSyntax": true,
+//     "moduleDetection": "force",
+//     "noEmit": true,
+//     "jsx": "react-jsx",
+
+//     /* Linting */
+//     "strict": true, // acelera el proceso de compilación de TS
+//     "noUnusedLocals": false, // permite variables sin usar
+//     "noUnusedParameters": false, // permite parámetros sin usar
+//     "erasableSyntaxOnly": true,
+//     "noFallthroughCasesInSwitch": true,
+//     "noUncheckedSideEffectImports": true
+//   },
+//   "include": ["src"]
+// }

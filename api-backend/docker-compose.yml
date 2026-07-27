@@ -3,9 +3,9 @@
 # Levanta Backend FastAPI y PostgreSQL y PGAdmin 
 
 services:
-  db:
+  db-vet_bel:
     image: postgres:15 # Contenedor de PostgreSQL
-    container_name: vet_db # Nombre del contenedor
+    container_name: vet_db_bel # Nombre del contenedor
     restart: always # Reinicia el contenedor si se cae
     environment: # Variables de entorno
       POSTGRES_USER: ${DB_USER} # Usuario de la base de datos
@@ -14,12 +14,12 @@ services:
     ports: # Mapeo de puertos
       - "${DB_PORT}:5432" # El puerto 5432 de tu máquina se conecta al 5432 del contenedor
     volumes: # Volúmenes
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_vet_bel:/var/lib/postgresql/data
     networks:
       - northcode-net  
 
 
-  backend:
+  backend-vet-bel:
     build: . # Construye la imagen desde el Dockerfile en el directorio actual (./)
     container_name: vet_core_backend # Nombre del contenedor
     restart: always # Reinicia el contenedor si se cae
@@ -27,9 +27,13 @@ services:
       - "8000:8000" # El puerto 8000 de tu máquina se conecta al 8000 del contenedor
     environment: # Variables de entorno
       # FastAPI leerá esto a través de pydantic-settings
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      - IS_DOCKER=true  # <--- Esta variable hace que database.py use "db"
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}      
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db-vet:5432/${DB_NAME} # <!> creo que esto no va 
     depends_on: # Dependencia de servicios
-      - db # Espera a que el servicio 'db' esté listo antes de iniciar
+      - db-vet_bel # Espera a que el servicio 'db' esté listo antes de iniciar
     volumes: # Volúmenes
       - ./app:/app/app # Sincroniza tu código local con el contenedor
       - ./static:/app/app/static # Sincroniza tus imágenes (muy importante)
@@ -43,4 +47,4 @@ networks:
     
 # Volúmenes se usa para guardar la informacion en el host 
 volumes:
-  postgres_data: # Persistencia de la base de datos
+  postgres_data_vet_bel: # Persistencia de la base de datos

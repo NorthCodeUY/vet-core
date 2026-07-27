@@ -43,15 +43,3 @@ def create_access_token(data: dict) -> str:
     to_encode.update({"exp": expire}) # Actualización de los datos
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM) # Codificación del token
 
-# <!> 13-Julio-2026 - Codigo Anterior remover  
-# def hash_password(password: str):
-#     return pwd_context.hash(password)
-
-# def verify_password(plain_password, hashed_password):
-#     return pwd_context.verify(plain_password, hashed_password)
-
-# def create_access_token(data: dict):
-#     to_encode = data.copy()
-#     expire = datetime.utcnow() + timedelta(hours=24)
-#     to_encode.update({"exp": expire})
-#     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)

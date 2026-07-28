@@ -7,44 +7,51 @@ services:
     image: postgres:15 # Contenedor de PostgreSQL
     container_name: vet_db_bel # Nombre del contenedor
     restart: always # Reinicia el contenedor si se cae
-    environment: # Variables de entorno
+    environment:
+      # Variables de entorno
       POSTGRES_USER: ${DB_USER} # Usuario de la base de datos
       POSTGRES_PASSWORD: ${DB_PASSWORD} # Contraseña de la base de datos
       POSTGRES_DB: ${DB_NAME} # Nombre de la base de datos
-    ports: # Mapeo de puertos
+    ports:
+      # Mapeo de puertos
       - "${DB_PORT}:5432" # El puerto 5432 de tu máquina se conecta al 5432 del contenedor
-    volumes: # Volúmenes
+    volumes:
+      # Volúmenes
       - postgres_data_vet_bel:/var/lib/postgresql/data
     networks:
-      - northcode-net  
-
+      - northcode-net
 
   backend-vet-bel:
     build: . # Construye la imagen desde el Dockerfile en el directorio actual (./)
     container_name: vet_core_backend # Nombre del contenedor
     restart: always # Reinicia el contenedor si se cae
-    ports: # Mapeo de puertos
+    ports:
+      # Mapeo de puertos
       - "8000:8000" # El puerto 8000 de tu máquina se conecta al 8000 del contenedor
-    environment: # Variables de entorno
+    environment:
+      # Variables de entorno
       # FastAPI leerá esto a través de pydantic-settings
-      - IS_DOCKER=true  # <--- Esta variable hace que database.py use "db"
+      - IS_DOCKER=true # <--- Esta variable hace que database.py use "db"
+      - APP_PORT=8000 # Puerto del backend
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}      
+      - DB_NAME=${DB_NAME}
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db-vet:5432/${DB_NAME} # <!> creo que esto no va 
-    depends_on: # Dependencia de servicios
+    depends_on:
+      # Dependencia de servicios
       - db-vet_bel # Espera a que el servicio 'db' esté listo antes de iniciar
-    volumes: # Volúmenes
+    volumes:
+      # Volúmenes
       - ./app:/app/app # Sincroniza tu código local con el contenedor
       - ./static:/app/app/static # Sincroniza tus imágenes (muy importante)
     networks:
-      - northcode-net  
+      - northcode-net
 
 # Declaramos la red como externa para que Docker no la cree, sino que use la que ya creaste
 networks:
   northcode-net:
-    external: true 
-    
+    external: true
+
 # Volúmenes se usa para guardar la informacion en el host 
 # <!> para evitar perdida de informacion en produccion volumen como external: true si quieres que Docker nunca intente crearlo solo, sino que use uno que tú ya creaste manualmente.
 volumes:

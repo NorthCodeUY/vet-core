@@ -14,6 +14,11 @@ export default defineConfig(({ mode }) => {
     server: {
       port: frontendPort, // Usamos el puerto que viene del .env
       host: true, // <!> Revisar la seguridad en este punto 
+      allowedHosts: [ // Para que funcione el tunel de esportacion entorno desarollo
+        '.trycloudflare.com', // Permite cualquier subdominio de Cloudflare
+        'localhost',
+        '127.0.0.1'
+      ],
       proxy: {
         /* 
            Configuración dinámica del Proxy:
@@ -30,10 +35,6 @@ export default defineConfig(({ mode }) => {
           secure: false, //  No valida el certificado SSL/TLS <!> Esto no hace inseguro el sitio 
         }
 
-        // /* Reenvía peticiones de datos */
-        // '/api': `http://127.0.0.1:${backendPort}`,
-        // /* Reenvía peticiones de imágenes */
-        // '/static': `http://127.0.0.1:${backendPort}` 
       }
     },
 

@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# /exponer_entorno_tem.sh
+#./exponer_entorno_tem.sh
 
-# ==============================================================================
-# Script para exponer temporalmente el entorno de desarrollo (Frontend y Backend)
-# ==============================================================================
+echo "=============================================================================="
+echo "Script para exponer temporalmente el entorno de desarrollo (VetCore)"
+echo "=============================================================================="
 
 # 1. Verificar si cloudflared está instalado
 if ! command -v cloudflared &> /dev/null; then
@@ -25,19 +25,23 @@ LOG_FRONTEND=$(mktemp)
 
 # --- Función para leer variables de archivos .env ---
 get_env_var() {
-    local var_name=$1
-    local file_path=$2
+    local var_name=$1 # Recibe el nombre de la variable a buscar
+    local file_path=$2 # Recibe la ruta del archivo .env
     if [ -f "$file_path" ]; then
-        grep "^$var_name=" "$file_path" | cut -d'=' -f2 | tr -d '\r'
+        # 1. Busca la línea que empieza con la variable
+        # 2. Corta por el '=' 
+        # 3. Usa sed para eliminar todo lo que esté después de un '#'
+        # 4. Usa xargs para eliminar espacios en blanco sobrantes
+        grep "^$var_name=" "$file_path" | cut -d'=' -f2 | sed 's/#.*//' | xargs
     else
         echo ""
     fi
 }
 
-
 # --- Cargar puertos desde los .env ---
 PORT_BACKEND=$(get_env_var  VITE_BACKEND_PORT apps/web-client/.env)
-PORT_FRONTEND=$(get_env_var VITE_FRONTEND_PORT apps/web-client/.env)
+PORT_FRONTEND=$(get_env_var VITE_FRONTEN_PORT apps/web-client/.env)
+
 
 
 
@@ -67,6 +71,8 @@ echo "⚡ TÚNELES ACTIVOS (Entorno Temporal) ⚡"
 echo "=================================================="
 echo "🔗 Frontend (Vite) URL: $URL_FRONTEND"
 echo "🔗 Backend (FastAPI) URL:  $URL_BACKEND"
+echo "Puerto interno Frontend: $PORT_FRONTEND"
+echo "Puerto interno Backend: $PORT_BACKEND"
 echo "=================================================="
 echo "Nota: Recuerda configurar estas URLs en tus archivos .env si es necesario."
 echo "Presiona Ctrl+C para detener los túneles y limpiar el entorno..."

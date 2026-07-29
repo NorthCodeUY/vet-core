@@ -43,7 +43,7 @@ services:
     volumes:
       # Volúmenes
       - ./app:/app/app # Sincroniza tu código local con el contenedor
-      - ./static:/app/app/static # Sincroniza tus imágenes (muy importante)
+      - ./app/static:/app/app/static # Sincroniza tus imágenes (muy importante)
     networks:
       - northcode-net
 

@@ -1,11 +1,13 @@
+# ./docker-compose.yml 
+
 # Este archivo importa las configuraciones de las subcarpetas
 include:
   # Levanta Backend FastAPI y PostgreSQL Puerto 8000, 5432 y PGAdmin 5050 
-  - ./apps/api-backend/docker-compose.yml
+  - ./api-backend/docker-compose.yml
   # Levanta Frontend React Puerto 80 
   - ./apps/web-client/docker-compose.yml
 
 # Aquí solo definís la red común para que se hablen entre ellos
 networks:
   northcode-network:
-    driver: bridge
+    external: true # Usamos la red externa

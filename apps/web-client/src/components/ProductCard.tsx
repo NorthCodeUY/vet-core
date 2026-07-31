@@ -57,6 +57,8 @@ export function ProductCard({ producto }: Props) {
            1. Intenta cargar la URL del backend.
            2. Si es null o undefined, carga la imagen local de "No disponible".
         */
+      //  <!> Est ono daria error porque puee se que imagen imagen_principal_url sea nulo si por las dudas no carte en la base de datos 
+
         src={producto.imagen_principal_url?.img_url || '/images/producto_no_disponible.png'} 
         // Alt para accesibilidad
         alt={producto.imagen_principal_url ? producto.prod_nombre : "Imagen no encontrada"} 

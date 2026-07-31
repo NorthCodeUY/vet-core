@@ -7,6 +7,24 @@ import type { ApiProduct, ApiImageProducto } from '../types/product_types';
 export const productMapper = {
 
   /**
+   * Helper interno para formatear el objeto de imagen.
+   * Centraliza la construcción de la ruta relativa.
+   */
+  _formatImage(rawImg: any): ApiImageProducto {
+    return {
+      img_id: rawImg.img_id, // Fallback al ID del producto si no hay ID de imagen
+      /* 
+         RUTAS RELATIVAS: 
+         No necesitamos la URL del archivo de configuración. 
+         Al empezar con '/', el navegador busca automáticamente en el dominio actual.
+         El 'proxy' de vite.config.ts solo actúa como un "desviador" en desarrollo.
+      */
+      img_url: rawImg.img_url ? `/static/productos/${rawImg.img_url}` : ''
+    };
+  },
+
+
+  /**
    * Transforma un producto crudo del Backend al formato ApiProduct del Frontend.
    * @param p - Producto crudo del Backend 
    * @param catNombre - Nombre de la categoría 
@@ -14,12 +32,23 @@ export const productMapper = {
    * @returns Producto transformado 
    */
   toUI(p: any, catNombre: string, catId: number): ApiProduct {
-    /* 1. Calculamos la imagen principal primero (y corregimos el typo de ipmg -> img) */
-    const mainImage: ApiImageProducto = p.rel_imagen_url?.find((img: any) => img.img_principal) // Recorro el array de imagenes y filtro las que no son principales 
-                                       || p.rel_imagen_url?.[0] // Si no hay imagen principal toma la primera imagen 
-                                       || { img_url: '/images/placeholder.png', img_id: 0 }; // Si no hay ninguna imagen toma la imagen por defecto 
 
-    /* 2. Ahora sí, retornamos el objeto estructurado limpiamente */
+    /* Procesamos la lista de imágenes una sola vez para optimizar */
+    const rawImages = p.rel_imagen_url || [];
+    
+    /* Identificamos la imagen principal */
+    const principalData = rawImages.find((img: any) => img.img_principal) || rawImages[0];
+    
+    /* Construimos la instancia de imagen principal (puede ser null si no hay datos) */ //<!> Cambiarlo cuando modifique el bakend  
+    const imagenPrincipal = principalData ? this._formatImage(principalData) : null;
+
+    /* Filtramos y mapeamos las secundarias en un solo paso */
+    const imagenesSecundarias = rawImages
+      .filter((img: any) => img !== principalData) // Excluimos la que ya elegimos como principal
+      .map((img: any) => this._formatImage(img));
+
+
+    /* Ahora sí, retornamos el objeto estructurado limpiamente */
     return {
       prod_id: p.prod_id, // Id del producto 
       prod_nombre: p.prod_nombre, // Nombre del producto 
@@ -27,13 +56,11 @@ export const productMapper = {
       prod_descripcion: p.prod_descripcion, // Descripción del producto 
       cat_nombre: catNombre, // Nombre de la categoría 
       cat_id: catId, // Id de la categoría
-      imagen_principal_url: mainImage,
+      imagen_principal_url: imagenPrincipal,
 
-      /* Filtramos las que no son principales (agregamos ?. por si las moscas si viene null) */
-      imagenes_secundarias_url: p.rel_imagen_url?.filter ((img: any) => // Recorro el array de imagenes y filtro las que no son principales 
-                                                                !img.img_principal) // Si no es la imagen principal la agrego al array de imagenes secundarias 
-                                                                || [], // Si no hay ninguna imagen secundaria la devuelvo como un array vacio 
-      
+      /* Lista de imagenes secundarias */
+      imagenes_secundarias_url: imagenesSecundarias,
+
       /* Mapeamos las subcategorías de forma segura */
       subcategoria: p.rel_subcategoria?.map((sub: any) => ({ subc_nombre: sub.subc_nombre })) || []
     };
@@ -51,7 +78,8 @@ export const productMapper = {
   }
 };
 
-// Array de emeplo que voy a esplorar 
+// Json Esperado 
+
 // [
 //     {
 //         "cat_nombre": "Accesorios",
@@ -65,7 +93,7 @@ export const productMapper = {
 //                 "cat_id": 1,
 //                 "rel_imagen_url": [
 //                     {
-//                         "img_url": "/static/productos/3.png",
+//                         "img_url": "3.png",
 //                         "img_principal": true
 //                     }
 //                 ],
@@ -83,7 +111,7 @@ export const productMapper = {
 //                 "cat_id": 1,
 //                 "rel_imagen_url": [
 //                     {
-//                         "img_url": "/static/productos/2.png",
+//                         "img_url": "2.png",
 //                         "img_principal": true
 //                     }
 //                 ],

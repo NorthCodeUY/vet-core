@@ -12,6 +12,7 @@ services:
       POSTGRES_USER: ${DB_USER} # Usuario de la base de datos
       POSTGRES_PASSWORD: ${DB_PASSWORD} # Contraseña de la base de datos
       POSTGRES_DB: ${DB_NAME} # Nombre de la base de datos
+    # Estos puertos hay que comentarlos en produccion
     ports:
       # Mapeo de puertos
       - "${DB_PORT}:5432" # El puerto 5432 de tu máquina se conecta al 5432 del contenedor
@@ -25,8 +26,8 @@ services:
     build: . # Construye la imagen desde el Dockerfile en el directorio actual (./)
     container_name: vet_core_backend # Nombre del contenedor
     restart: always # Reinicia el contenedor si se cae
+    # Estos puertos hay que comentarlos en produccion
     ports:
-      # Mapeo de puertos
       - "8000:8000" # El puerto 8000 de tu máquina se conecta al 8000 del contenedor
     environment:
       # Variables de entorno
@@ -36,13 +37,15 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db-vet:5432/${DB_NAME} # <!> creo que esto no va 
+      # <!> Probar pero creo que este tengo que borrarlo 
+      # - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db-vet:5432/${DB_NAME} # <!> creo que esto no va 
     depends_on:
       # Dependencia de servicios
       - db-vet_bel # Espera a que el servicio 'db' esté listo antes de iniciar
     volumes:
       # Volúmenes
       - ./app:/app/app # Sincroniza tu código local con el contenedor
+      # En produccion comentar 
       - ./app/static:/app/app/static # Sincroniza tus imágenes (muy importante)
     networks:
       - northcode-net

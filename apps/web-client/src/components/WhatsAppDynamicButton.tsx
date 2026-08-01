@@ -1,3 +1,6 @@
+
+// apps/web-client/src/components/WhatsAppDynamicButton.tsx
+
 import WhatSapp_Icon from '../assets/branding/WhatSapp_Cuadrado.svg?react';
 import { useState } from 'react'; // 1. Importamos useState
 

@@ -1,3 +1,4 @@
+// apps/web-client/src/pages/landing/sessions/footer.tsx
 import { WhatsAppButton } from '../../../components/WhatsAppButtonProps.tsx';
 import companyInfo from '../../../data/companyInfo.json';
 import { MapPin, Facebook, Instagram, Phone, Mail } from 'lucide-react';

@@ -10,25 +10,33 @@ export default {
     extend: {
       screens: {
         // Creamos un punto de quiebre justo en 858px
-        'desktop-vete': '1008px', 
+        'desktop-vete': '1008px',
         'tablet-vete': '858px'
-      },           
+      },
       colors: {
         vete: {
           // Por lo que se es para el menu cartel de la web
-          bg: 'rgb(var(--vete-bg) / <alpha-value>)', // <!> Esto croe que no va no se donde ase algo 
+          bg: 'rgb(var(--vete-bg) / <alpha-value>)', // <!> Esto croe que no va no se donde ase algo
           // Colores para la web
-          primary: 'rgb(var(--vete-primary) / <alpha-value>)',    // Color Azul Esta en varios lados  
-          secondary: 'rgb(var(--vete-secondary) / <alpha-value>)',  // Color Secundario para mesclar 
+          primary: 'rgb(var(--vete-primary) / <alpha-value>)',    // Color Azul Esta en varios lados
+          secondary: 'rgb(var(--vete-secondary) / <alpha-value>)',  // Color Secundario para mesclar
           tertiary: 'rgb(var(--vete-tertiary) / <alpha-value>)',   // Color Boton Whatsap Verde
-          dark:'rgb(var(--vete-dark) / <alpha-value>)',        // Color fondo Verde claro 
+          dark:'rgb(var(--vete-dark) / <alpha-value>)',        // Color fondo Verde claro
 
           soft: 'rgb(var(--vete-soft) / <alpha-value>)', // Fondo tarjetas 'var(--vete-soft)'
 
           'text-light': 'rgb(var(--vete-text-light) / <alpha-value>)', // La malloria de texto
           error: 'rgb(var(--vete-error) / <alpha-value>)',
-          'vete-card-white': 'rgb(var(--vete-card-white) / <alpha-value>)', // Blanco puro para la tarjeta
-        }     
+          'card-white': 'rgb(var(--vete-card-white) / <alpha-value>)', // Blanco puro para la tarjeta
+
+          // --- NUEVOS COLORES AGREGADOS PARA ESTA REFECTORIZACIÓN ---
+          'dark-green': 'rgb(var(--vete-dark-green) / <alpha-value>)', // Para reemplazar bg-emerald-900 (Verde oscuro institucional)
+          'dark-green-hover': 'rgb(var(--vete-dark-green-hover) / <alpha-value>)', // Para hover de dark-green (Ligeramente más oscuro)
+          'text-muted': 'rgb(var(--vete-text-muted) / <alpha-value>)', // Para reemplazar text-slate-400 y text-slate-500 (Gris para textos secundarios)
+          'overlay': 'rgb(var(--vete-overlay) / <alpha-value>)', // Para reemplazar bg-slate-900 (Fondo de overlay)
+          'light-border': 'rgb(var(--vete-light-border) / <alpha-value>)', // Para reemplazar border-slate-100 (Borde muy sutil)
+          'light-bg-hover': 'rgb(var(--vete-light-bg-hover) / <alpha-value>)', // Para hover de elementos claros (Similar a emerald-50)
+        }
       },
       // AQUÍ TRASLADAMOS FIGMA A TAILWIND (Debe estar DENTRO de extend):
       fontFamily: {
@@ -46,11 +54,3 @@ export default {
   }, // <--- Cierra theme
   plugins: []
 } // <--- Cierra export default
-
-
-
-
-
-
-
-  

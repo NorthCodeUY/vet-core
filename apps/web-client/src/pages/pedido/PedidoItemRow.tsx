@@ -3,7 +3,7 @@
 import React from 'react';
 import { Plus, Minus, Trash2 } from 'lucide-react';
 
-import { usePedidoStore } from '../../context/pedido_context'; 
+import { usePedidoStore } from '../../context/pedido_context';
 import type { PedidoItem } from '../../types/pedido_types';
 
 /**
@@ -19,9 +19,9 @@ interface PedidoItemRowProps {
  * Implementa controles de cantidad y visualización de subtotal por producto.
  */
 export const PedidoItemRow = ({ item }: PedidoItemRowProps) => {
-  
 
-  const { 
+
+  const {
     addToPedido, // <!> Esto me parece totalmente al reves si esto es para agregar items al pedido 
     removeFromPedido // Accion para remover productos del pedido 
   } = usePedidoStore();
@@ -31,7 +31,7 @@ export const PedidoItemRow = ({ item }: PedidoItemRowProps) => {
   const subtotal = item.producto.prod_precio * item.cantidad;
 
   return (
-    <div  className= {`
+    <div className={`
       /* --- Posición --- */
       flex                         /* Contenedor flexible horizontal */
       items-center                 /* Centrado vertical de elementos */
@@ -50,8 +50,8 @@ export const PedidoItemRow = ({ item }: PedidoItemRowProps) => {
       rounded-2xl                  /* Bordes redondeados modernos */
       shadow-sm                    /* Sombra leve para profundidad */
     `} >
-  
-     {/* Miniatura del Producto */}
+
+      {/* Miniatura del Producto */}
       <div className={`
         /* --- Dimensiones --- */
         w-16                         /* Ancho fijo de 4rem */
@@ -63,16 +63,16 @@ export const PedidoItemRow = ({ item }: PedidoItemRowProps) => {
         overflow-hidden              /* Corta la imagen al borde */
         bg-slate-50                  /* Fondo de respaldo */
       `}>
-        <img 
+        <img
 
-        /* 
-           Lógica de visualización:
-           1. Intenta cargar la URL del backend.
-           2. Si es null o undefined, carga la imagen local de "No disponible".
-        */
-        src={item.producto.imagen_principal_url?.img_url || '/images/producto_no_disponible.png'} 
-        // Alt para accesibilidad
-        alt={item.producto.imagen_principal_url ? item.producto.prod_nombre : "Imagen no encontrada"}           
+          /* 
+             Lógica de visualización:
+             1. Intenta cargar la URL del backend.
+             2. Si es null o undefined, carga la imagen local de "No disponible".
+          */
+          src={item.producto.imagen_principal_url?.img_url || '/images/producto_no_disponible.png'}
+          // Alt para accesibilidad
+          alt={item.producto.imagen_principal_url ? item.producto.prod_nombre : "Imagen no encontrada"}
           className={`
             /* --- Dimensiones --- */
             w-full                       /* Ocupa todo el ancho disponible */
@@ -80,7 +80,7 @@ export const PedidoItemRow = ({ item }: PedidoItemRowProps) => {
             object-cover                 /* Ajusta la imagen para cubrir todo el contenedor sin distorsionarse */
           `}
         />
-      </div> 
+      </div>
 
 
       {/* Información del Producto */}
@@ -141,7 +141,7 @@ export const PedidoItemRow = ({ item }: PedidoItemRowProps) => {
 
           {/* Boton Para quitar el producto del Carrito */}
 
-          <button 
+          <button
             onClick={() => removeFromPedido(item.producto.prod_id)}
             className={`
               /* --- Dimensiones --- */
@@ -161,7 +161,7 @@ export const PedidoItemRow = ({ item }: PedidoItemRowProps) => {
           </span>
 
           {/* Boton Para agregar el producto al Carrito <!> Esto no tiene mucho sentido para mi no tendria que aber un boton alta en los item de carrito */}
-          <button 
+          <button
             onClick={() => addToPedido(item.producto)}
             className={`
               /* --- Dimensiones --- */
@@ -178,7 +178,7 @@ export const PedidoItemRow = ({ item }: PedidoItemRowProps) => {
         </div>
       </div>
 
-  
+
     </div>
   );
 };
@@ -187,4 +187,4 @@ export const PedidoItemRow = ({ item }: PedidoItemRowProps) => {
 
 
 
-   
+

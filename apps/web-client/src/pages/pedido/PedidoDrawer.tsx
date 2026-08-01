@@ -19,13 +19,13 @@ interface PedidoDrawerProps {
 export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
   // Usamos el store de pedido
   //<!> Esta sintacis trae los valores de pedidoContext segun lo que enteido 
-  const { 
+  const {
     pedido,  // Todo el estado
     total, // Total del pedido
     itemCount, // Cantidad de Productos <!> Esto capas este mal en el Pedido_context probar y repara 
     getWhatsAppUrl // URL de WhatsAppv  <!> Lo voy a dejar pero no lo voy a usar 
   } = usePedidoStore();
-  
+
   //<!> Esto no lo tengo claro 
   const [
     address, // Dirreccion a la que se envia el pedido 
@@ -37,7 +37,7 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
   const handleConfirmOrder = () => {
     if (!address) return alert("Por favor, ingresa una dirección de entrega.");
     if (pedido.length === 0) return alert("El pedido está vacío.");
-    
+
     /* Usamos la lógica centralizada en la Fachada */
     const url = getWhatsAppUrl(address);
     window.open(url, '_blank');
@@ -47,7 +47,7 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
   return (
     <>
       {/* Overlay: Fondo oscuro traslúcido */}
-      <div 
+      <div
         onClick={onClose}
         className={`
           /* --- Posición --- */
@@ -91,7 +91,7 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
         ease-in-out                  /* Curva de aceleración suave */
         ${isOpen ? 'translate-x-0' : 'translate-x-full'}
       `}>
-        
+
         {/* Header del Carrito */}
         <div className={`
           /* --- Posición --- */
@@ -137,15 +137,15 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
             </div>
           ) : (
             <div className="flex flex-col gap-4">
-              
+
 
 
               {/* Carga la lista de Itme Pedido */}
 
-               {pedido.map((item) => (
+              {pedido.map((item) => (
                 <PedidoItemRow key={item.producto.prod_id} item={item} />
               ))}
-              
+
             </div>
           )}
         </div>
@@ -165,7 +165,7 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
           border-t                     /* Línea superior */
           border-slate-100             /* Color de línea suave */
         `}>
-          
+
           {/* Resumen de Totales */}
           <div className="flex justify-between items-end">
             <div className="flex flex-col">
@@ -184,8 +184,8 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
               Dirección de Entrega
             </label>
             <div className="relative">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Calle, Número, Ciudad"
                 className={`
                   /* --- Dimensiones --- */
@@ -211,7 +211,7 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
           </div>
 
           {/* Botón WhatsApp */}
-          <button 
+          <button
             onClick={handleConfirmOrder}
             className={`
               /* --- Posición --- */

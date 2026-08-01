@@ -1,14 +1,10 @@
-/* --- apps/web-client/src/pages/landing/sessions/ProductsSession.tsx --- */
+  /* --- apps/web-client/src/pages/landing/sessions/ProductsSession.tsx --- */
 
 import { Search, Loader2 } from 'lucide-react';
 import { CategoryGroupCard } from '../../../components/CategoryGroupCard.tsx';
 import { ProductCard } from '../../../components/ProductCard.tsx';
 
 import { useProducts } from '../../../hooks/useProducts.ts';
-
-
-
-
 
 
 /**
@@ -23,15 +19,6 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
       loading, // Estado de carga 
       filteredResults // Resultados filtrados 
     } = useProducts();
-
-  
-  
-  
-  
-      
- 
-
-
 
   /* --- Renderizado de Estado de Carga --- */
   if (loading) {

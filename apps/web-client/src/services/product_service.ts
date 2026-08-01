@@ -13,14 +13,14 @@ export const productService = {
   /**
    * Petición pura al endpoint de productos agrupados.
    */
-  async fetchProductosAgrupados() { //<!> Esta vesriosn lo que quiero es que me traiga si es local en una ip de la red para probar con el celular o lo que tenga a mano 
+  async fetchProductosAgrupados() { 
   try {
     const response = await fetch(`${API_BASE}/agrupados`);
-    if (!response.ok) throw new Error('Error en la red');//  <!> Esto tendria que unirlo al log de errores  para mandarlo al bakend 
+    if (!response.ok) throw new Error('Error en la red');
     return await response.json();
   } catch (error) {
     await logErrorToBackend(error, `${API_BASE}/productos/agrupados`);
-    throw error; // Lanzamos el error para que la UI lo maneje
+    throw error; // <!> Esto deberia ir allog de errores 
   }
 },
 
@@ -31,8 +31,8 @@ export const productService = {
    */
   async fetchProductosPorCategoria(catId: number) {
     const response = await fetch(`${API_BASE}?cat_id=${catId}`);
-    if (!response.ok) throw new Error('Error en la red'); 
-    return await response.json();// <!> esto deberia ir al log de errores para el bakend que quiero programar para monitoreo de erroes de frontend 
+    if (!response.ok) throw new Error('Error en la red');  // <!> esto deberia ir al log de errores para el bakend que quiero programar para monitoreo de erroes de frontend 
+    return await response.json();
   }
 };
 

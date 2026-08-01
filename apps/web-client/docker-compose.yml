@@ -7,8 +7,11 @@ services:
     build: . # Construye la imagen desde el Dockerfile en el directorio actual (./)
     container_name: nc-web-valeria # Nombre del contenedor
     restart: unless-stopped # Reinicia el contenedor si se cae
+    # Estos puertos hay que comentarlos en produccion
     ports:
       - "80:80" # Mapeo de puertos
+    environment:
+      - VITE_BACKEND_PORT=8000 # Puerto Backend 
     networks:
       - northcode-net
 

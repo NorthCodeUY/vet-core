@@ -20,55 +20,57 @@ class ImagenSchema(BaseModel):
     """ 
     Clase que representa la tabla "imagen_url" en la 
     base de datos
+    @:param img_url: Nombre de la imagen
+    @:param img_id: ID de la imagen
+    @:param img_principal: Determina cual es la imagen principal
     """
     img_url: str # Nombre de la imagen
+    img_id: int # ID de la imagen
     img_principal: bool # Determina cual es la imagen principal
+
+
 
     # Esto es una "validación" que transforma el dato al salir
    
-   
-    @field_validator(
-        'img_url', # Indica que se ejecutara cuando se acceda al campo img_url
-        mode="after" # Indica que se ejecutara despues de que se obtenga el valor del campo img_url
-        )
-    @classmethod
-    def assemble_image_url(cls, v: str) -> str: # <!>Esto lo deje porque si en si aca en mi fonten construye el la url apartir de su ruta absoluta pero lo dejo 
-        """
-        Lógica de construcción de URL:
-        1. Si es nulo o vacío, devuelve cadena vacía (el frontend decidirá qué mostrar).
-        2. Si ya es una URL completa (empieza con http), la respeta.
-        3. Si es solo el nombre, construye: BASE_URL + /static/productos/ + nombre.
-        """
-        if not v: # Si la url es nula o vacia 
-            return "" # Retorna una cadena vacia 
+    # Crea RUtas Absolutas Lo dejo por si me sirve !!! NO BORRAR ESTOOOOO !!! 
+    # @field_validator(
+    #     'img_url', # Indica que se ejecutara cuando se acceda al campo img_url
+    #     mode="after" # Indica que se ejecutara despues de que se obtenga el valor del campo img_url
+    #     )
+    # @classmethod
+    # def assemble_image_url(cls, v: str) -> str: 
+    #     """
+    #     Lógica de construcción de URL:
+    #     1. Si es nulo o vacío, devuelve cadena vacía (el frontend decidirá qué mostrar).
+    #     2. Si ya es una URL completa (empieza con http), la respeta.
+    #     3. Si es solo el nombre, construye: BASE_URL + /static/productos/ + nombre.
+    #     """
+    #     if not v: # Si la url es nula o vacia 
+    #         return "" # Retorna una cadena vacia 
 
-        #<!> Lo deje peor no entiendo porque seria absoluta 
-        if v.startswith("http"): # Si la url es absoluta 
-            return v # Retorna la url 
+    #   
+    #     if v.startswith("http"): # Si la url es absoluta 
+    #         return v # Retorna la url 
         
-        # Limpiamos la base del .env (ej: http://192.168.1.11:8001)
-        base = settings.base_url.rstrip("/") # path = v.lstrip("/")
-        #  Limpiamos el nombre del archivo de la DB (ej: 3.png)
-        filename = v.lstrip("/")
+    #     # Limpiamos la base del .env (ej: http://192.168.1.11:8001)
+    #     base = settings.base_url.rstrip("/") # path = v.lstrip("/")
+    #     #  Limpiamos el nombre del archivo de la DB (ej: 3.png)
+    #     filename = v.lstrip("/")
 
-        # Construimos la ruta completa hacia la subcarpeta de productos
-        return f"{base}/static/productos/{filename}"
+    #     # Construimos la ruta completa hacia la subcarpeta de productos
+    #     return f"{base}/static/productos/{filename}"
 
-        # # Si el path guardado en la DB no incluye 'static', se lo ponemos
-        # if not filename.startswith("static"): # <!> Esto esta mal simpre de la bse de datos solo trae el nombre o nada si no es nada que entrege la cadena vasi y yo desido su uso una imagen ausiliar para deterinar que no hay producto
-        #     return f"{base}/{filename}"
-        # else: 
-        #     return v
+    #     # # Si el path guardado en la DB no incluye 'static', se lo ponemos
+    #     # if not filename.startswith("static"): 
+    #     #     return f"{base}/{filename}"
+    #     # else: 
+    #     #     return v
 
 
 
     model_config = ConfigDict( # Representa la tabla "imagen_url" en la base de datos
         from_attributes=True # Permite que el modelo sea convertido a JSON
         )
-
-
-
-
 
 
 

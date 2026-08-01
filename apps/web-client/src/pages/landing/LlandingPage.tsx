@@ -22,7 +22,7 @@ import { Clock, Stethoscope, Mail, MapPin, Phone, Instagram, Facebook } from 'lu
 import ProductsSession from './sessions/ProductsSession.tsx'; // Seccion de productos
 import HeaderSession from './sessions/HederSession.tsx'; // Seccion de productos
 import HeroSession from './sessions/HeroSession.tsx';
-import Footer from './sessions/footer.tsx';
+import Footer from './sessions/FooterSession.tsx';
 
 
 // <!> Una ves que repare HederSession.tsx borar 

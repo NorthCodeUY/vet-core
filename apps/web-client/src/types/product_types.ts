@@ -30,7 +30,7 @@ export interface ApiProduct {
   cat_nombre: string;
   prod_precio: number;
   prod_descripcion: string; 
-  imagen_principal_url?: ApiImageProducto; 
+  imagen_principal_url?: ApiImageProducto | null; 
   imagenes_secundarias_url?: ApiImageProducto[];
   subcategoria: { subc_nombre: string }[];
 }

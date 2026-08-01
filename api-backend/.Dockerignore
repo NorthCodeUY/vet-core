@@ -1,14 +1,60 @@
-# api-backend/.Dockerignore
-
-
-
-.venv
-__pycache__
+# ==========================================
+# VETERINARIA BELTRAMELLI - DOCKER IGNORE
+# ==========================================
 
 # --- ARCHIVOS DE DESCARTE / BASURA ---
-# Esta regla ignora cualquier archivo o carpeta que contenga 
-# la palabra "descarte" en cualquier parte de su nombre o ruta.
+#  Ignora cualquier archivo o carpeta que contenga "descarte"
+# Esto evita que versiones viejas o basura entren al contenedor.
 *descarte*
 **/*descarte*
 temp/
 tmp/
+*.bak
+*.old
+
+# --- ENTORNOS VIRTUALES (CRÍTICO) ---
+# Nunca copiar el venv local; Docker instalará sus propias librerías.
+venv/
+.venv/
+env/
+bin/
+lib/
+share/
+
+# --- PYTHON CACHE ---
+# Archivos compilados que no sirven dentro de Docker.
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ipynb_checkpoints/
+
+# --- CONFIGURACIÓN LOCAL ---
+# No copiamos el .env local para evitar conflictos de IPs/Passwords.
+# Las variables se pasan por el docker-compose.yml o se crean dentro.
+.env
+*.env
+.env.*
+!env.template
+
+# --- GIT ---
+.git/
+.gitignore
+
+# --- DOCKER ---
+# No es necesario que el contenedor tenga sus propias instrucciones de construcción.
+Dockerfile
+Dockerfile.*
+docker-compose.yml
+.dockerignore
+
+# --- DOCUMENTACIÓN Y OTROS ---
+README.md
+docs/
+*.pdf
+
+# Datos para poblar la bd 
+# .xlsx
+# *.csv
+# (A menos que necesites el CSV para el script de importación inicial)

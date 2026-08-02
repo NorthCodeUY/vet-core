@@ -10,6 +10,7 @@ import { PedidoProvider } from './context/pedido_context.tsx'; // Importa el pro
 function App() {
   // Mientras construimos la web real, devolvemos solo el cartel
   return (
+    // BrowserRouter se encarga de las rutas de la aplicacion
     <BrowserRouter>
       <PedidoProvider>
 

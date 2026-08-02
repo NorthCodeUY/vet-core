@@ -25,7 +25,7 @@
   --vete-accent: 145 65 34;       /* #914122 (Marrón footer) <!> Este creo que no va*/
   --vete-card-white: 255 255 255; /* #FFFFFF (Blanco puro) */
 
-  /* --- NUEVOS COLORES AGREGADOS PARA ESTA REFECTORIZACIÓN --- */
+  /* --- COLORES AGREGADOS PARA ESTA REFECTORIZACIÓN --- */
   --vete-dark-green: 0 77 64;           /* #004d40 - Dark Emerald, para fondo de Header/Botón principal */
   --vete-dark-green-hover: 0 60 50;     /* #003c32 - Ligeramente más oscuro para el hover del botón */
   --vete-text-muted: 156 163 175;       /* #9ca3af - Gris para textos secundarios o placeholders */

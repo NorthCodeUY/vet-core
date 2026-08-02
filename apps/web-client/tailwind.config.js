@@ -16,20 +16,20 @@ export default {
       colors: {
         vete: {
           // Por lo que se es para el menu cartel de la web
-          bg: 'rgb(var(--vete-bg) / <alpha-value>)', // <!> Esto croe que no va no se donde ase algo
+          bg: 'rgb(var(--vete-bg) / <alpha-value>)',
           // Colores para la web
-          primary: 'rgb(var(--vete-primary) / <alpha-value>)',    // Color Azul Esta en varios lados
-          secondary: 'rgb(var(--vete-secondary) / <alpha-value>)',  // Color Secundario para mesclar
-          tertiary: 'rgb(var(--vete-tertiary) / <alpha-value>)',   // Color Boton Whatsap Verde
-          dark:'rgb(var(--vete-dark) / <alpha-value>)',        // Color fondo Verde claro
+          primary: 'rgb(var(--vete-primary) / <alpha-value>)',
+          secondary: 'rgb(var(--vete-secondary) / <alpha-value>)',
+          tertiary: 'rgb(var(--vete-tertiary) / <alpha-value>)',
+          dark:'rgb(var(--vete-dark) / <alpha-value>)',
 
-          soft: 'rgb(var(--vete-soft) / <alpha-value>)', // Fondo tarjetas 'var(--vete-soft)'
+          soft: 'rgb(var(--vete-soft) / <alpha-value>)',
 
-          'text-light': 'rgb(var(--vete-text-light) / <alpha-value>)', // La malloria de texto
+          'text-light': 'rgb(var(--vete-text-light) / <alpha-value>)',
           error: 'rgb(var(--vete-error) / <alpha-value>)',
-          'card-white': 'rgb(var(--vete-card-white) / <alpha-value>)', // Blanco puro para la tarjeta
+          'card-white': 'rgb(var(--vete-card-white) / <alpha-value>)',
 
-          // --- NUEVOS COLORES AGREGADOS PARA ESTA REFECTORIZACIÓN ---
+          // --- COLORES AGREGADOS PARA ESTA REFECTORIZACIÓN ---
           'dark-green': 'rgb(var(--vete-dark-green) / <alpha-value>)', // Para reemplazar bg-emerald-900 (Verde oscuro institucional)
           'dark-green-hover': 'rgb(var(--vete-dark-green-hover) / <alpha-value>)', // Para hover de dark-green (Ligeramente más oscuro)
           'text-muted': 'rgb(var(--vete-text-muted) / <alpha-value>)', // Para reemplazar text-slate-400 y text-slate-500 (Gris para textos secundarios)
@@ -50,7 +50,7 @@ export default {
         'vete-body': ['18px', { lineHeight: '29.25px' }],  // El párrafo de tu captura
         'vete-small': ['14px', { lineHeight: '20px' }]    // Textos chicos
       }
-    } // <--- Cierra extend
-  }, // <--- Cierra theme
+    }
+  },
   plugins: []
-} // <--- Cierra export default
+}

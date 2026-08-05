@@ -20,39 +20,8 @@ Plataforma de Gestión Veterinaria y E-commerce desarrollada para la **Veterinar
 
 El frontend sigue el patrón **Fachada (Facade)** en la capa de datos/hooks y una separación limpia entre UI, estado y llamadas HTTP:
 
-```mermaid
-graph TD
-    subgraph Capa de Presentación UI
-        Page["Vista / Página: LandingPage"]
-        Section["Sección: ProductsSession"]
-        Component["Componente Atómico: ProductCard"]
-    end
+- 📄 **Diagrama de Arquitectura**: [Arquitectura del Frontend](docs/architecture/diagrama_arquitectura_fontend.md)
 
-    subgraph Capa de Fachada & Estado (Hooks)
-        Hook["Custom Hook: useProducts"]
-        Context["React Context: PedidoContext"]
-    end
-
-    subgraph Capa de Transformación
-        Mapper["Mapper: DTO -> Dominios Frontend"]
-    end
-
-    subgraph Capa de Infraestructura (Services)
-        Service["Service: product_service.ts"]
-    end
-
-    subgraph Backend / Data Source
-        API["FastAPI Backend / JSON Cache"]
-    end
-
-    Page --> Section
-    Section --> Component
-    Section --> Hook
-    Section --> Context
-    Hook --> Service
-    Hook --> Mapper
-    Service --> API
-```
 
 ### 🔗 Acceso Directo a Archivos del Diagrama de Arquitectura
 Para navegar directo al código desde tu editor o repositorio, haz clic en cualquiera de estos enlaces relativos:

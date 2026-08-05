@@ -12,22 +12,22 @@ import { PedidoDrawer } from '../../pedido/PedidoDrawer';
  * Implementa: Sticky behavior, Carrito con contador/total y Perfil de usuario.
  */
 export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
-  const [isScrolled, setIsScrolled] = useState(false); 
+  const [isScrolled, setIsScrolled] = useState(false);
 
   // Componente para el menu desplegable <!> no lo tengo calro 
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   /* --- Sustituye tus constantes por el Hook de la Fachada --- */
-  const { 
+  const {
     total, // Total de la compra
     itemCount // Cantidad de productos
-  } = usePedidoStore(); 
+  } = usePedidoStore();
 
   /* --- Para el usuario, lo ideal es usar un Contexto de Auth --- */
   // const { user, isAuthenticated } = useAuth(); 
   // const user = { isLoggedIn: true, name: "Ary" }; // Mantenlo así hasta que hagamos el AuthContext
 
-  
+
 
   /* Detecta el scroll para aplicar el efecto de transparencia/blur */
   useEffect(() => {
@@ -60,7 +60,7 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
             `;
   return (
     <>
-    <header className= {` 
+      <header className={` 
       /* --- Posición --- */
       fixed                        /* Mantiene el header siempre visible */
       top-0                        /* Alineado al tope superior */
@@ -77,12 +77,12 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
       md:px-16                     /* Padding lateral desktop */
 
       /* --- Colores de fondo --- */
-      ${isScrolled ? 
-        ' bg-white/80 ' +       /*  80% de blanco con transparencia*/
-        ' backdrop-blur-md ' +  /*  Efecto de desenfoque */
-        ' shadow-md '           /* sombra */
-        : 
-        bgColor 
+      ${isScrolled ?
+          ' bg-white/80 ' +       /*  80% de blanco con transparencia*/
+          ' backdrop-blur-md ' +  /*  Efecto de desenfoque */
+          ' shadow-md '           /* sombra */
+          :
+          bgColor
         }             /* Es el color de fondo que se le pasa como parametro */
     
       text-vete-light  /* Color de texto negro*/
@@ -94,20 +94,20 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
     `}>
 
 
-      {/* Bloque Logo */}
-      
-      <div className={`
+        {/* Bloque Logo */}
+
+        <div className={`
         /* --- Posición --- */
         flex                         /* Alineación horizontal */
         items-center                 /* Centrado vertical */
         gap-2                        /* Espacio entre logo y texto */
       `}>
-        <img 
-          src="/logo.png" 
-          className="w-10 shrink-0" 
-          alt="Logo Beltramelli" 
-        />
-        <span className={`
+          <img
+            src="/logo.png"
+            className="w-10 shrink-0"
+            alt="Logo Beltramelli"
+          />
+          <span className={`
           /* --- Posición --- */
           hidden                       /* Oculto en móviles pequeños */
           tablet-vete:inline           /* Visible en tablets/desktop */
@@ -119,28 +119,28 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
           uppercase                    /* Mayúsculas institucionales */
           tracking-tighter             /* Letras más juntas para estilo moderno */
         `}>
-          VETERINARIA BELTRAMELLI<span className="text-vete-primary">.</span>
-        </span>
-      </div>
+            VETERINARIA BELTRAMELLI<span className="text-vete-primary">.</span>
+          </span>
+        </div>
 
 
 
-      {/* Bloque Navegación y Acciones */}
-      <nav className={`
+        {/* Bloque Navegación y Acciones */}
+        <nav className={`
         /* --- Posición --- */
         flex                         /* Contenedor flexible */
         items-center                 /* Centrado vertical */
         gap-4                        /* Espacio entre elementos móvil */
         md:gap-8                     /* Espacio extendido en desktop */
       `}>
-        
-            {/* Links Principales <!> Esto depues tendria ue navegar por por la web a las diferentes secciones del LandingPage */} 
-            <div className="hidden md:flex items-center gap-6 font-bold text-sm">
+
+          {/* Links Principales <!> Esto depues tendria ue navegar por por la web a las diferentes secciones del LandingPage */}
+          <div className="hidden md:flex items-center gap-6 font-bold text-sm">
             <a href="#" className="hover:text-vete-primary transition-colors">Servicios</a>
             <a href="#" className="hover:text-vete-primary transition-colors">Tienda</a>
             <a href="#" className="hover:text-vete-primary transition-colors">Contacto</a>
-            </div>
-            {/*  <!> Esto despues lo miro esparanavegar a landing pague y al precionar que me vallaa dode tiene que ir en la landig pague pero no lo tengo claro 
+          </div>
+          {/*  <!> Esto despues lo miro esparanavegar a landing pague y al precionar que me vallaa dode tiene que ir en la landig pague pero no lo tengo claro 
                     y me gustaria ver lo de carrito primero 
 
             <div className="hidden md:flex items-center gap-6 font-bold text-sm">
@@ -149,11 +149,11 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
               <a href="#contacto" className="hover:text-vete-primary transition-colors">Contacto</a>
             </div>
             */}
-        
+
         </nav>
 
         {/* Carrito con Contador y Total */}
-        <div 
+        <div
           onClick={() => setIsCartOpen(true)}
           className={`
           /* --- Posición --- */
@@ -204,13 +204,13 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
         </div>
 
 
-    </header>
+      </header>
       {/* Menu desplegable del carrito */}
-      <PedidoDrawer 
-        isOpen={isCartOpen} 
-        onClose={() => setIsCartOpen(false)} 
+      <PedidoDrawer
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
       />
-  </>
+    </>
   );
 
 

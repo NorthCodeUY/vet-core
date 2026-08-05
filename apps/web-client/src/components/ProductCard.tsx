@@ -3,13 +3,13 @@
 import { ShoppingCart } from 'lucide-react';
 import { SUBCATEGORY_ICONS } from '../utils/categoryHelpers';
 
-import { usePedidoStore } from '../context/pedido_context'; 
+import { usePedidoStore } from '../context/pedido_context';
 import type { ApiProduct, ApiImageProducto } from '../types/product_types';
 
 
 
-interface Props { 
-  producto:ApiProduct
+interface Props {
+  producto: ApiProduct
 }
 
 /**
@@ -17,11 +17,11 @@ interface Props {
  * Formateado para máxima legibilidad y soporte de subcategorías.
  */
 //export const ProductCard = ({ title, desc, price, img, subcategories }: Props) => (                  
-  
+
 
 export function ProductCard({ producto }: Props) {
   /* --- Fachada: Extraemos lo que necesitamos --- */
-  const { 
+  const {
     pedido, // 🔍 Esto nos da la lista de productos agregados (array)
     addToPedido // ➕ Esta función agrega pedidos
   } = usePedidoStore();
@@ -49,19 +49,17 @@ export function ProductCard({ producto }: Props) {
       /* --- Estilo --- */
       rounded-[2rem]               /* Bordes muy redondeados según diseño Figma */
     `}>
-      
+
       {/* Imagen del producto */}
-      <img 
+      <img
         /* 
            Lógica de visualización:
            1. Intenta cargar la URL del backend.
            2. Si es null o undefined, carga la imagen local de "No disponible".
         */
-      //  <!> Est ono daria error porque puee se que imagen imagen_principal_url sea nulo si por las dudas no carte en la base de datos 
-
-        src={producto.imagen_principal_url?.img_url || '/images/producto_no_disponible.png'} 
+        src={producto.imagen_principal_url?.img_url || '/images/producto_no_disponible.png'}
         // Alt para accesibilidad
-        alt={producto.imagen_principal_url ? producto.prod_nombre : "Imagen no encontrada"} 
+        alt={producto.imagen_principal_url ? producto.prod_nombre : "Imagen no encontrada"}
         className={`
 
           /* --- Dimensiones --- */
@@ -71,7 +69,7 @@ export function ProductCard({ producto }: Props) {
           /* --- Estilo --- */
           object-cover             /* Asegura que la imagen no se deforme */
           rounded-2xl              /* Bordes redondeados para la imagen */
-        `} 
+        `}
       />
 
       {/* Sección de Subcategorías (Iconos de Perro, Gato, etc.) */}
@@ -81,7 +79,7 @@ export function ProductCard({ producto }: Props) {
         gap-2                      /* Espacio entre badges */
         mt-2                       /* Margen superior */
       `}>
-        {/* Subcategoria Especies que aparesen en la tarjeta */} 
+        {/* Subcategoria Especies que aparesen en la tarjeta */}
         {producto.subcategoria?.map((sub, idx) => (
           <div key={idx} title={sub.subc_nombre} className={`
             /* --- Posición --- */
@@ -135,7 +133,7 @@ export function ProductCard({ producto }: Props) {
         w-full                       /* Asegura que ocupe todo el ancho */      
 
       `}>
-        
+
         {/* Precio del producto con formato Uruguay */}
         <span className={`
           /* --- Texto --- */
@@ -153,9 +151,9 @@ export function ProductCard({ producto }: Props) {
           para que cea este producot algo como desde el selular del clite
           mande algo como estoy interesado en este producot algo asi al celular
           de la beterinaria que ya tenog en los datos globales */}
-          <img 
-            src="/images/branding/LogoWhtSapp.svg" 
-            alt="WhatsApp" 
+          <img
+            src="/images/branding/LogoWhtSapp.svg"
+            alt="WhatsApp"
             className={`
               /* --- Dimensiones --- */
               w-8 h-8                  /* Tamaño fijo de 2rem */
@@ -163,11 +161,11 @@ export function ProductCard({ producto }: Props) {
               hover:scale-110          /* Crece levemente al pasar el mouse */
               transition-transform     /* Transición suave */
               cursor-pointer           /* Cursor de mano */
-            `} 
+            `}
           />
 
-          <div 
-            onClick={() => {addToPedido(producto)}}
+          <div
+            onClick={() => { addToPedido(producto) }}
             className={`
             /* --- Posición --- */
             p-2                        /* Espaciado interno */

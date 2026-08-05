@@ -6,7 +6,7 @@
 
 @layer base {
   html, body, #root {
-    @apply h-full m-0 bg-[#212121] text-white antialiased font-sans; 
+    @apply h-full m-0 bg-[#212121] text-white antialiased font-sans;
   }
 }
 
@@ -24,5 +24,14 @@
   --vete-error: 220 38 38;        /* #DC2626 (Rojo error) */
   --vete-accent: 145 65 34;       /* #914122 (Marrón footer) <!> Este creo que no va*/
   --vete-card-white: 255 255 255; /* #FFFFFF (Blanco puro) */
+
+  /* --- COLORES AGREGADOS PARA ESTA REFECTORIZACIÓN --- */
+  --vete-dark-green: 0 77 64;           /* #004d40 - Dark Emerald, para fondo de Header/Botón principal */
+  --vete-dark-green-hover: 0 60 50;     /* #003c32 - Ligeramente más oscuro para el hover del botón */
+  --vete-text-muted: 156 163 175;       /* #9ca3af - Gris para textos secundarios o placeholders */
+  --vete-overlay: 15 23 42;             /* #0f172a - Gris muy oscuro para el fondo del overlay */
+  --vete-light-border: 243 244 246;     /* #f3f4f6 - Gris muy claro para bordes sutiles */
+  --vete-light-bg-hover: 240 253 244;   /* #f0fdf4 - Verde muy claro para fondos de hover en botones */
+
   /* Agregá todos los que quieras aquí */
 }

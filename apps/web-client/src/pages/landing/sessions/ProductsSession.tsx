@@ -12,13 +12,15 @@ import { useProducts } from '../../../hooks/useProducts.ts';
  * Gestiona la carga de datos, el filtrado global y la visualización por categorías.
  */
 export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
-    const { 
-      searchTerm, // Guardara lo que escriba el usuario y esto me ayudara a filtrar los resultados  
-      setSearchTerm, // Me va a permitir modificar el searchTerm
-      categories, // Todas las categorias
-      loading, // Estado de carga 
-      filteredResults // Resultados filtrados 
-    } = useProducts();
+  
+  // El hook useProducts se encarga de toda la logica de productos
+  const { 
+    searchTerm,       // Guardara lo que escriba el usuario y esto me ayudara a filtrar los resultados  
+    setSearchTerm,    // Me va a permitir modificar el searchTerm
+    categories,       // Todas las categorias
+    loading,          // Estado de carga 
+    filteredResults   // Resultados filtrados 
+  } = useProducts();
 
   /* --- Renderizado de Estado de Carga --- */
   if (loading) {

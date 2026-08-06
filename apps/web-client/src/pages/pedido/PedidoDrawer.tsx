@@ -5,7 +5,10 @@ import { X, ShoppingBag, MapPin, Send, Package, Trash2, Edit, Plus, ChevronDown 
 import { usePedidoStore } from '../../context/pedido_context';
 import { PedidoItemRow } from './PedidoItemRow';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
-import { useAddressManagement, UserAddress } from '../../hooks/useAddressManagement'; // Importamos el nuevo hook de direcciones y la interfaz UserAddress
+
+
+import type { UserAddress } from '../../hooks/useAddressManagement';
+import { useAddressManagement } from '../../hooks/useAddressManagement'
 
 /**
  * Interfaz para la dirección de usuario simulada (si aún se usa para pre-cargar inicial).

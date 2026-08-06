@@ -4,51 +4,51 @@
 ``` text
 api-backend/
 ├── app/
+│   ├── __init__.py
 │   ├── main.py                 # Punto de entrada (FastAPI)
 │   ├── config.py               # Variables de entorno y constantes
 │   ├── database.py             # Configuración de SQLAlchemy / Engine
-│   ├── dependencies.py         # Inyección de dependencias (get_db, get_current_user)
 │   ├── security.py             # Lógica de JWT y hashing
-│   │
+│   ├── docker-compose.yml      # Levanta los contenedores de Base de datos y api backend
+│   ├── Dockerfile              # Crea lia imagen de el poryecto para api backend
+│   ├── README.md               # README del proyecto
+│   ├── run_desarollo.py        # Scrip para ejecutar la api en modo desarrollo con uvicorn
+│   ├── requirements.txt        # Dependencias del proyecto
 │   ├── models/                 # Modelos de base de datos (SQLAlchemy)
-│   │   ├── business.py         # Para que sea multi-negocio (ID de la vete, ID de otros)
-│   │   ├── user.py             # Administradores (Vendedores/Veterinarios)
-│   │   ├── customer.py         # Clientes (Vinculados por WhatsApp ID)
-│   │   ├── product.py          # Catálogo (Raciones, Accesorios, etc.)
-│   │   ├── order.py            # Cabecera de pedido (Estados: Pendiente, Pago, etc.)
-│   │   ├── order_item.py       # Detalle de productos en cada pedido
-│   │   └── voucher.py          # Datos para el QR y etiquetas logísticas
-│   │
+│   │   ├── categoria_model.py
+│   │   ├── cliente_model.py
+│   │   ├── funcionario_model.py
+│   │   ├── imagen_url_model.py
+│   │   ├── __init__.py
+│   │   ├── pago_model.py
+│   │   ├── pedido_detalle_model.py
+│   │   ├── pedido_model.py
+│   │   ├── producto_model.py
+│   │   ├── producto_subcategoria_model.py
+│   │   ├── subcategoria_model.py
+│   │   └── user_model.py
+│   ├── repositories             # Repositorio para el acceso a datos
+│   │   ├── __init__.py
+│   │   └── product_repo.py
+│   ├── router                   # Endpoints de la API
+│   │   ├── auth_router.py
+│   │   ├── __init__.py
+│   │   ├── pedido_route.py
+│   │   └── producto_router.py
 │   ├── schemas/                # Validación de datos (Pydantic)
-│   │   ├── auth.py             # Login y Tokens
-│   │   ├── product.py          # Esquemas para CRUD de productos
-│   │   ├── order.py            # Lógica de validación bilateral
-│   │   ├── customer.py         # Registro vía WhatsApp
-│   │   └── voucher.py          # Datos para impresión de etiquetas
-│   │
-│   ├── router/                 # Endpoints de la API
-│   │   ├── auth.py             # Autenticación JWT (Seamless via WhatsApp)
-│   │   ├── store.py            # Catálogo público para el cliente
-│   │   ├── inventory.py        # CRUD administrativo de productos
-│   │   ├── orders.py           # Motor de gestión de pedidos y estados
-│   │   ├── logistics.py        # Generación de Vouchers y escaneo QR
-│   │   └── whatsapp.py         # Webhooks y notificaciones automáticas
-│   │
-│   ├── repositories/           # Capa de acceso a datos (Clean Architecture)
-│   │   ├── product_repo.py
-│   │   ├── order_repo.py
-│   │   ├── customer_repo.py
-│   │   └── voucher_repo.py
-│   │
-│   └── services/               # Lógica de negocio compleja
-│       ├── whatsapp_bridge.py  # Conexión con la API de WhatsApp
-│       ├── token_service.py    # Generación de links únicos para clientes
-│       ├── order_manager.py    # Máquina de estados (Pendiente -> Pago -> Entrega)
-│       └── qr_generator.py     # Generación de códigos QR para etiquetas
-│
-├── requirements.txt
-├── Dockerfile
-└── docker-compose.yml
+│   │   ├── __init__.py
+│   │   ├── producto_schema.py
+│   │   └── user_schema.py
+│   ├── services
+│   │   ├── import_excel.py
+│   │   ├── product_service.py
+│   │   ├── qr_generator.py
+│   │   ├── token_service.py
+│   │   └── whatsapp_service.py
+│   └── static/
+│       ├── productos/     # Imagenes guardadas de los productos
+│       └── productos.csv    # Archivo excel para importación de productos 
+
 ```
 
 
@@ -223,3 +223,42 @@ Problemas con el scheduler:
 Verifica que APScheduler esté correctamente instalado
 Revisa los logs para identificar errores específicos
 Esta guía te permitirá configurar y ejecutar el backend del sistema de gestión contable. Si encuentras algún problema específico durante la instalación, revisa los mensajes de error para obtener más detalles.
+
+
+<!> Comando que use para levantar el entorno lo e arriba toeno que pulilo pero porhaora no 
+
+
+
+   Como tu Senior Backend Architect, te confirmo que para una estación de trabajo nueva necesitas preparar tanto el entorno de Docker (para la base de datos y servicios) como el entorno Local (para desarrollo rápido y autocompletado en tu IDE).
+   Aquí tienes la hoja de ruta técnica para dejar la ThinkPad-L390 operativa en 5 minutos:
+   1. Requisitos del Sistema
+   Asegúrate de tener instalado:
+   Python 3.12 (es la versión que definimos en el Dockerfile).
+   Docker y Docker Compose V2.
+   Git.
+   2. Configuración del Entorno Virtual (Local)
+   Desde la raíz de api-backend/, ejecuta:
+   code
+   Bash
+   # 1. Crear el entorno virtual
+   python3 -m venv venv
+
+   # 2. Activarlo
+   source venv/bin/activate
+
+   # 3. Actualizar pip e instalar dependencias
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   3. Configuración de Infraestructura (Docker)
+   Tu proyecto depende de una red externa llamada northcode-net. Si no la creas, el docker-compose fallará.
+   code
+   Bash
+   # Crear la red necesaria para que los contenedores se hablen
+   docker network create northcode-net
+   4. Variables de Entorno (El paso más importante)
+   Como el archivo .env no se sube al repo, debes crearlo. Usa el template que definimos anteriormente:
+
+   poblar la dbse d datow on datos de prueb 
+   
+
+</!>

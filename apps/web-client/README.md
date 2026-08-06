@@ -49,10 +49,16 @@ Para navegar directamente al código desde el repositorio, haz clic en los sigui
 - 📄 **Documentación Técnica**: [Diagrama de Secuencia](docs/architecture/diagrama_secuencia_fronten.md)
 
 
+<!--Aca abria que mejorar aclarar -->
 ### 🔗 Acceso Directo a los Métodos y Archivos del Flujo
 - 🟢 **Componente Vista**: [ProductsSession.tsx](src/pages/landing/sessions/ProductsSession.tsx)
+<!--Seccion en la landink pague proudcto esta parte tiene sierta logica porque es donde coencta con la logica para interactuar con el bakend est solo teien parte visual pero desde aca llama useProducts pra traer la informacion de los productos-->
+
 - 🟢 **Fachada / Hook**: [useProducts.ts](src/hooks/useProducts.ts)
+<!-- Por lo que entiedo teien logica para el cuadro buacar y la ligica nesesaria para traer los producots de el baked pero no estoy ben segurooo no no esta bien documetada la clase  si el de aajo de encarga de traer el producto  -->
+
 - 🟢 **Cliente HTTP / Endpoints**: [product_service.ts](src/services/product_service.ts)
+<!--  aca se encarga de traer los productos de la categoria y hacer por lo que veo es rma la ruta de los get  de el proeuto supongo qu cuando lo requira aramar los put etc para productos  -->
 
 ---
 
@@ -70,11 +76,15 @@ graph LR
 ### 🔗 Acceso Directo a Archivos de Estilos
 - 🎨 **Variables CSS Globales**: [index.css](src/index.css)
 - 🎨 **Configuración de Tailwind**: [tailwind.config.js](tailwind.config.js)
+
 - 🎨 **Divisor SVG Animado**: [SectionDivider.tsx](src/components/SectionDivider.tsx)
+<!--Esto no tiene sentido qeu este aca caps si ponelo junto con los componentes en landing page que es el vector para la terminacion de las divisiones de la landing pate -->
 
 ---
 
 ## 📂 Estructura del Código en `src/`
+
+<!--  Esto estaría genial si fuera algo con macedonio estructura de archivos que fuese linkeable no se si se puede hacer si se puede seria ideal si no sacarlo de aca  y talves ponerlo como un un diagrama aparte -->
 
 ```text
 apps/web-client/src/
@@ -100,14 +110,23 @@ apps/web-client/src/
 ├── services/        # Capa HTTP pura (product_service.ts, auth_service.ts, logger.ts)
 ├── types/           # Interfaces y tipos TypeScript
 └── App.tsx          # Configuración del enrutador React Router DOM (App.tsx)
+  
 ```
 
 ### 🔗 Acceso Directo a los Componentes y Vistas Principales:
-- 🧩 **Sección Hero**: [HeroSession.tsx](src/pages/landing/sessions/HeroSession.tsx)
-- 🧩 **Sección Cabecera / Header**: [HederSession.tsx](src/pages/landing/sessions/HederSession.tsx)
-- 🧩 **Sección Pie de Página**: [FooterSession.tsx](src/pages/landing/sessions/FooterSession.tsx)
-- 🧩 **Enrutador**: [App.tsx](src/App.tsx)
+<!--Esto tendria que ir a como se compone landig page dejarlo todo junto no estar desperdigado  -->
 
+- 🧩 **Sección Hero**: [HeroSession.tsx](src/pages/landing/sessions/HeroSession.tsx)
+<!-- Seccion principal de la web es la primera cosa qeu el usario ve al inciar el sistema -->
+
+- 🧩 **Sección Cabecera / Header**: [HederSession.tsx](src/pages/landing/sessions/HederSession.tsx)
+<!-- Barra superior de la web siemrpe presente contiene el logito de carrito y la barra de navegacion junto a el log y el nombre de la empresa Y el boton para acceder a la modalidad de carrito  -->
+
+- 🧩 **Sección Pie de Página**: [FooterSession.tsx](src/pages/landing/sessions/FooterSession.tsx)
+<!-- sECCION INFERIOR DE LA WEB TIENE UNA BARRA SIMPRE PRESENTE CON EFECTO DE PASOT PARA LLAMAR A EMERJENCIA O ADMINSTRACION DE LA BETERINARIA ADEMAS DE LAS PRINCIPALES REDES SOCILES Y UBICACION Y SI ESCROLIAS PARA EL FINAL APARESE EL RESTO DE DATOS DE CONTANTO -->Ç
+
+- 🧩 **Enrutador**: [App.tsx](src/App.tsx)
+<!--aCA SUPONGO QUE ES DONDE GOLPEA AL LEVANTAR EL FOENTE PARA MI ESTA BIEN QUE LO MENSIONE PERO ACA NO ME ARESE CAPS EN ETRUCTURA NO ESTA BIEN UBICADO   -->
 ---
 
 ## 🛠️ Configuración de Entorno y Desarrollo Local
@@ -115,12 +134,15 @@ apps/web-client/src/
 ### 💻 Guía por Sistema Operativo y Optimización de Recursos
 
 #### 🪟 En Windows (Recomendado usar WSL2)
-Si trabajas en Windows, **se recomienda encarecidamente utilizar WSL2 (Windows Subsystem for Linux)**, especialmente en equipos con recursos limitados (ej. procesadores Dual-Core o RAM ajustada):
+Si trabajas en Windows, **se recomienda encarecidamente utilizar WSL2 (Windows Subsystem for Linux)**, 
+<!-- aCA DEBERIA IR UN LINK A LA INSTLACION DE WSL Y TAMBIEN OTRO A LA DOCUMENTACION OFICIAL  -->
+especialmente en equipos con recursos limitados (ej. procesadores Dual-Core o RAM ajustada):
 1. **Configuración del Entorno**: Clona e instala el proyecto dentro del sistema de archivos de Linux (ej. `~/Documentos/proyect/app/vet-core`) en lugar del sistema de archivos de Windows (`/mnt/c/`). Esto evita sobrecargar la memoria con Docker Desktop.
 2. **Ejecución Directa**: Abre tu terminal WSL2 e instala Node.js (v18+).
 
 #### 🐧 En Linux (Nativo)
 Asegúrate de contar con Node.js y npm instalados:
+<!--  aca deberia ir un link a la documentacion de instalacion de node y npm -->
 ```bash
 # 1. Entrar a la carpeta del cliente web
 cd apps/web-client
@@ -154,6 +176,7 @@ sudo docker run -it --rm -p 3000:80 --name vete-test vete-celu
 ```
 
 ### ⚡ 2. Compartición en Tiempo Real mediante Túnel de Cloudflare (`exponer_entorno_tem.sh`)
+<!--dOCUMETACION OFICIAL DE TUNEL CLOUDFLARE -->
 Para mostrar avances a clientes o compañeros de equipo fuera de tu red local sin necesidad de publicar en producción, el proyecto cuenta con un script automatizado que genera enlaces públicos temporales en segundo plano:
 
 ```bash
@@ -168,4 +191,4 @@ El script ([esponer_entorno_tem.sh](../../esponer_entorno_tem.sh)) se encarga de
 
 ---
 
-Desarrollado por **NorthCode**. 🚀 E-commerce & Portal Veterinaria Beltramelli. 🐄
+Desarrollado por **NorthCode**. 🚀 E-commerce & Portal Veterinaria Beltramelli. 🐄 <!-- Aca deberia linkiar a la web de la ermpesa >

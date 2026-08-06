@@ -1,9 +1,5 @@
 /* --- apps/web-client/src/services/product.service.ts --- */
 
-// const API_URL = import.meta.env.DEV 
-//   ? `http://${window.location.hostname}:8000/api` // Detecta automáticamente la IP de tu PC
-//   : import.meta.env.VITE_API_URL; // Usa la del .env en producción
-
 const API_BASE = '/api/productos';
 
 

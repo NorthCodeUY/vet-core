@@ -22,39 +22,32 @@ El frontend sigue el patrón **Fachada (Facade)** en la capa de datos/hooks y un
 
 - 📄 **Diagrama de Arquitectura**: [Arquitectura del Frontend](docs/architecture/diagrama_arquitectura_fontend.md)
 
+### 🔗 Acceso Directo a Archivos de Arquitectura
 
-### 🔗 Acceso Directo a Archivos del Diagrama de Arquitectura
-Para navegar directo al código desde tu editor o repositorio, haz clic en cualquiera de estos enlaces relativos:
-- 📄 **Página Principal**: [LlandingPage.tsx](src/pages/landing/LlandingPage.tsx)
-- 📄 **Sección de Productos**: [ProductsSession.tsx](src/pages/landing/sessions/ProductsSession.tsx)
-- 📄 **Tarjeta de Producto**: [ProductCard.tsx](src/components/ProductCard.tsx)
-- 📄 **Hook / Fachada de Productos**: [useProducts.ts](src/hooks/useProducts.ts)
-- 📄 **Servicio API Backend**: [product_service.ts](src/services/product_service.ts)
-- 📄 **Contexto de Pedidos / Carrito**: [pedido_context.tsx](src/context/pedido_context.tsx)
+Para navegar directamente al código desde el repositorio, haz clic en los siguientes enlaces:
+
+- 📄 **Página Principal**: [`LlandingPage.tsx`](src/pages/landing/LlandingPage.tsx)
+  > Punto de entrada principal y orquestador de la web. Es la primera interfaz de impacto para el cliente. Actualmente en proceso de refactorización para extraer componentes y mejorar la modularidad.
+
+- 📄 **Sección de Productos**: [`ProductsSession.tsx`](src/pages/landing/sessions/ProductsSession.tsx)
+  > Módulo central del catálogo. Gestiona la visualización de la mercadería y la lógica inicial del carrito, integrando la respuesta de datos proveniente del backend.
+
+- 📄 **Tarjeta de Producto**: [`ProductCard.tsx`](src/components/ProductCard.tsx)
+  > Componente atómico de interfaz. Recibe propiedades dinámicas de color para integrarse con el diseño de ondas SVG, permitiendo una separación visual estética entre secciones.
+
+- 📄 **Hook de Productos**: [`useProducts.ts`](src/hooks/useProducts.ts)
+  > Fachada de lógica de UI. Este Custom Hook encapsula el estado de los productos, gestionando el mapeo de datos, los filtros por categoría y los criterios de ordenamiento (precio/nombre).
+
+- 📄 **Servicio API Backend**: [`product_service.ts`](src/services/product_service.ts)
+  > Capa de infraestructura. Se encarga exclusivamente de las peticiones HTTP al Backend (FastAPI). Su función es aislar la lógica de comunicación para facilitar el mantenimiento y las pruebas.
+
+- 📄 **Contexto de Pedidos**: [`pedido_context.tsx`](src/context/pedido_context.tsx)
+  > Gestor de Estado Global. Centraliza la información del carrito y los datos del cliente en toda la aplicación. Permite que cualquier componente acceda a la información del pedido actual sin necesidad de pasar *props* manualmente.
 
 ---
 
-### 🔄 Diagrama de Secuencia: Obtención e Integración de Productos
+- 📄 **Documentación Técnica**: [Diagrama de Secuencia](docs/architecture/diagrama_secuencia_fronten.md)
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Usuario
-    participant UI as ProductsSession.tsx (UI)
-    participant Hook as useProducts.ts (Hook Fachada)
-    participant Service as product_service.ts (API)
-    participant Backend as FastAPI / Servidor
-
-    Usuario->>UI: Carga / Visualiza la sección de productos
-    UI->>Hook: Llama a useProducts()
-    Hook->>Service: Llama a fetchProducts()
-    Service->>Backend: GET /api/v1/products
-    Backend-->>Service: Retorna respuesta JSON (DTO)
-    Service-->>Hook: Devuelve DTOs sin procesar
-    Hook->>Hook: Filtra y mapea a modelos de UI
-    Hook-->>UI: Expone { products, loading, error }
-    UI-->>Usuario: Renderiza ProductCard por cada elemento
-```
 
 ### 🔗 Acceso Directo a los Métodos y Archivos del Flujo
 - 🟢 **Componente Vista**: [ProductsSession.tsx](src/pages/landing/sessions/ProductsSession.tsx)

@@ -134,21 +134,37 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
         md:gap-8                     /* Espacio extendido en desktop */
       `}>
 
-          {/* Links Principales <!> Esto depues tendria ue navegar por por la web a las diferentes secciones del LandingPage */}
+
+
+          <div className={`
+              /* --- Posición --- */
+              hidden                       /* Oculto en móviles */
+              md:flex                      /* Visible en desktop */
+              items-center                 /* Centrado vertical */
+              gap-6                        /* Espacio entre links */
+
+              /* --- Texto --- */
+              font-bold                    /* Negrita */
+              text-sm                      /* Tamaño pequeño */
+            `}>
+              {/* <!> Me falata arreglar eesto para que valla a los sectores de la pagian   */}
+              <a href="#servicios" className="hover:text-vete-primary transition-colors">Servicios</a>
+              <a href="#tienda" className="hover:text-vete-primary transition-colors">Tienda</a>
+              <a href="#contacto" className="hover:text-vete-primary transition-colors">Contacto</a>
+          </div>
+
+
+
+
+
+          {/* 
+          Links Principales <!> Esto depues tendria ue navegar por por la web a las diferentes secciones del LandingPage
           <div className="hidden md:flex items-center gap-6 font-bold text-sm">
             <a href="#" className="hover:text-vete-primary transition-colors">Servicios</a>
             <a href="#" className="hover:text-vete-primary transition-colors">Tienda</a>
             <a href="#" className="hover:text-vete-primary transition-colors">Contacto</a>
-          </div>
-          {/*  <!> Esto despues lo miro esparanavegar a landing pague y al precionar que me vallaa dode tiene que ir en la landig pague pero no lo tengo claro 
-                    y me gustaria ver lo de carrito primero 
+          </div> */}
 
-            <div className="hidden md:flex items-center gap-6 font-bold text-sm">
-              <a href="#servicios" className="hover:text-vete-primary transition-colors">Servicios</a>
-              <a href="#tienda" className="hover:text-vete-primary transition-colors">Tienda</a>
-              <a href="#contacto" className="hover:text-vete-primary transition-colors">Contacto</a>
-            </div>
-            */}
 
         </nav>
 

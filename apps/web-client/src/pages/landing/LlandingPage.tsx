@@ -353,7 +353,18 @@ export default function LandingPage() {
       {/* --- 1. Componente de Header --- */}
       <HeaderSession bgColor='bg-vete-secondary' />
 
-      <main>
+      <main className={`
+        /* <!> Esto tendria que mejorarlo queda demaciado espacio para con el heder
+        si lo dejo a pt a 4 me gusta pero a una resolucion de 767 de anco se parte lo dejo asi asi avansao */
+        /* --- Posición --- */
+        relative                     /* Mantiene el flujo del documento */
+
+        /* --- Dimensiones --- */
+        pt-24                        /* FIX: Compensa los 96px (h-24) del Header fixed */
+        md:pt-24                    /* FIX: Compensa los 96px (h-24) del Header fixed */
+   
+        `}>
+
         <HeroSection bgColor='bg-vete-secondary' />
         {/* <HeroSession bgColor='bg-vete-secondary' /> */}
 

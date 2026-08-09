@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 
-import { ShoppingCart } from "lucide-react";
+import {Menu, X, ShoppingCart, User } from "lucide-react";
 import { usePedidoStore } from '../../../context/pedido_context';
 import { PedidoDrawer } from '../../pedido/PedidoDrawer';
 
@@ -12,10 +12,9 @@ import { PedidoDrawer } from '../../pedido/PedidoDrawer';
  * Implementa: Sticky behavior, Carrito con contador/total y Perfil de usuario.
  */
 export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  // Componente para el menu desplegable <!> no lo tengo calro 
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false); // Detecta el scroll para aplicar el efecto de transparencia/blur, Si es true se aplica el efecto
+  const [isCartOpen, setIsCartOpen] = useState(false); // Componente para el menu desplegable del carrito 
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // Componente para el menu desplegable del header
 
   /* --- Sustituye tus constantes por el Hook de la Fachada --- */
   const {
@@ -23,7 +22,7 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
     itemCount // Cantidad de productos
   } = usePedidoStore();
 
-  /* --- Para el usuario, lo ideal es usar un Contexto de Auth --- */
+  /* --- No Borrar!!!!! <!> Para el usuario, lo ideal es usar un Contexto de Auth Lo voy a usar en el sprin 3  --- */
   // const { user, isAuthenticated } = useAuth(); 
   // const user = { isLoggedIn: true, name: "Ary" }; // Mantenlo así hasta que hagamos el AuthContext
 
@@ -94,31 +93,64 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
     `}>
 
 
+
+
+
+
+
+
+
+
+         {/* Botón Hamburguesa (Solo visible en móvil) */}
+        <button 
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className={`
+            /* --- Posición --- */
+            md:hidden                  /* Oculto en desktop */
+            flex                       /* Activa flex */
+            items-center               /* Centrado vertical */
+            
+            /* --- Colores --- */
+            text-vete-primary          /* Color marca */
+          `}
+        >
+          {isMenuOpen ? <X size={32} /> : <Menu size={32} />}
+        </button>
+
+
+
+
+
+
+
+
+
+
         {/* Bloque Logo */}
-
         <div className={`
-        /* --- Posición --- */
-        flex                         /* Alineación horizontal */
-        items-center                 /* Centrado vertical */
-        gap-2                        /* Espacio entre logo y texto */
-      `}>
-          <img
-            src="/logo.png"
-            className="w-10 shrink-0"
-            alt="Logo Beltramelli"
-          />
-          <span className={`
           /* --- Posición --- */
-          hidden                       /* Oculto en móviles pequeños */
-          tablet-vete:inline           /* Visible en tablets/desktop */
-          whitespace-nowrap            /* Evita salto de línea */
+          flex                         /* Alineación horizontal */
+          items-center                 /* Centrado vertical */
+          gap-2                        /* Espacio entre logo y texto */
+          `}>
 
-          /* --- Texto --- */
-          font-black                   /* Peso máximo de fuente */
-          text-xl                      /* Tamaño de fuente grande */
-          uppercase                    /* Mayúsculas institucionales */
-          tracking-tighter             /* Letras más juntas para estilo moderno */
-        `}>
+            <img
+              src="/logo.png"
+              className="w-10 shrink-0"
+              alt="Logo Beltramelli"
+            />
+            <span className={`
+            /* --- Posición --- */
+            hidden                       /* Oculto en móviles pequeños */
+            /* tablet-vete:inline   <!> Sacar si queda fijo como quiero         Visible en tablets/desktop */
+            whitespace-nowrap            /* Evita salto de línea */
+
+            /* --- Texto --- */
+            font-black                   /* Peso máximo de fuente */
+            text-xl                      /* Tamaño de fuente grande */
+            uppercase                    /* Mayúsculas institucionales */
+            tracking-tighter             /* Letras más juntas para estilo moderno */
+          `}>
             VETERINARIA BELTRAMELLI<span className="text-vete-primary">.</span>
           </span>
         </div>
@@ -127,19 +159,18 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
 
         {/* Bloque Navegación y Acciones */}
         <nav className={`
-        /* --- Posición --- */
-        flex                         /* Contenedor flexible */
-        items-center                 /* Centrado vertical */
-        gap-4                        /* Espacio entre elementos móvil */
-        md:gap-8                     /* Espacio extendido en desktop */
-      `}>
-
-
+            /* --- Posición --- */
+            flex                         /* Contenedor flexible */
+            items-center                 /* Centrado vertical */
+            gap-4                        /* Espacio entre elementos móvil */
+            md:gap-8                     /* Espacio extendido en desktop */
+          `}>
 
           <div className={`
               /* --- Posición --- */
               hidden                       /* Oculto en móviles */
-              md:flex                      /* Visible en desktop */
+              /* md:flex   <!> Sacar si queda fijo como quiero  */           /* Visible en desktop */
+              desktop-vete:flex            /* Visible en desktop */
               items-center                 /* Centrado vertical */
               gap-6                        /* Espacio entre links */
 
@@ -147,23 +178,16 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
               font-bold                    /* Negrita */
               text-sm                      /* Tamaño pequeño */
             `}>
-              {/* <!> Me falata arreglar eesto para que valla a los sectores de la pagian   */}
-              <a href="#servicios" className="hover:text-vete-primary transition-colors">Servicios</a>
-              <a href="#tienda" className="hover:text-vete-primary transition-colors">Tienda</a>
-              <a href="#contacto" className="hover:text-vete-primary transition-colors">Contacto</a>
+              {/* Link para navegar en la web  <!> Esto me gustaria que se uniera con lo de abajo par sacarlo a un metodo solo para no repetir 
+               Ademas veo que las cases es son reetitivas no se si se pudiera meter a el div para que me quede a mi me hace mas sentido   */}
+              <a href="#ServicioSeccion" className="hover:text-vete-primary transition-colors">Servicios</a>
+              <a href="#ProgramsSection" className="hover:text-vete-primary transition-colors">Promociones</a>
+              <a href="#ProductsSession" className="hover:text-vete-primary transition-colors">Tienda</a>
+              <a href="#AboutSection" className="hover:text-vete-primary transition-colors">Nosotros</a>
+              <a href="#MapsSection" className="hover:text-vete-primary transition-colors">Local</a>
+              
           </div>
 
-
-
-
-
-          {/* 
-          Links Principales <!> Esto depues tendria ue navegar por por la web a las diferentes secciones del LandingPage
-          <div className="hidden md:flex items-center gap-6 font-bold text-sm">
-            <a href="#" className="hover:text-vete-primary transition-colors">Servicios</a>
-            <a href="#" className="hover:text-vete-primary transition-colors">Tienda</a>
-            <a href="#" className="hover:text-vete-primary transition-colors">Contacto</a>
-          </div> */}
 
 
         </nav>
@@ -221,11 +245,76 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
 
 
       </header>
+
+
       {/* Menu desplegable del carrito */}
       <PedidoDrawer
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
       />
+
+
+      {/* --- MENÚ DESPLEGABLE MÓVIL (Drawer) --- */}
+      <div className={`
+        /* --- Posición --- */
+        fixed                        /* Queda fijo sobre la pantalla */
+        top-24                       /* Justo debajo del header */
+        left-0                       /* Alineado al inicio */
+        z-[90]                       /* Por debajo del header pero sobre el contenido */
+        
+        /* --- Dimensiones --- */
+        w-full                       /* Ancho total */
+        h-screen                     /* Altura total */
+        p-8                          /* Padding interno */
+
+        /* --- Colores --- */
+        bg-white                     /* Fondo blanco */
+        
+        /* --- Animación --- */
+        transition-all               /* Transición suave */
+        duration-500                 /* Velocidad */
+
+        /*Lanza el menu cuando isMenuOpen es true y lo oculta cuando es false */
+        ${isMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'}
+      `}>
+        <nav className={`
+            /* --- Posición --- */
+            flex                       /* Alineación horizontal */
+            flex-col                   /* Columna vertical */
+            items-center               /* Centrado vertical */
+            gap-8                      /* Espacio entre items */
+
+            /* --- Tipografía --- */
+            text-2xl                   /* Tamaño de fuente grande */
+            font-black                 /* Peso máximo de fuente */
+            italic                     /* Cursiva */
+            uppercase                  /* Mayúsculas */
+
+            /* --- Colores --- */
+            text-vete-secondary
+          `}>
+          
+          {/* <!> Estariba bueno que esto link y los de arriba fuera a un solo punto y los traiga con un metodo 
+          par sentralizar peo no se como hacerlo y no me quiero compliar adeas queir ver andando lo que si la diferencia
+          es que este teine un metodo para salir y el otor tiene clases de estilo caps si agrupo los etilo al nav que los contien
+          y aca no podria andar tendria que pensarlo  */}
+          <a href="#ServicioSeccion" >Servicios</a>
+          <a href="#ProgramsSection" >Promociones</a>
+          <a href="#ProductsSession" >Tienda</a>
+          <a href="#AboutSection" >Nosotros</a>
+          <a href="#MapsSection" >Local</a>
+
+          
+          <div className="h-[1px] w-full bg-slate-100 my-4" />
+          
+          {/* No Borrar !!!  Info extra en el menú móvil <!> Esto es para el sprin 3 es para cuando aya udario  */}
+          {/* <div className="flex items-center gap-4 text-sm not-italic font-bold text-vete-primary">
+            <User size={20} />
+            <span>Mi Perfil</span>
+          </div> */}
+        </nav>
+      </div>
+
     </>
   );
 

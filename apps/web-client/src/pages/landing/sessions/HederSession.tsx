@@ -7,6 +7,45 @@ import { usePedidoStore } from '../../../context/pedido_context';
 import { PedidoDrawer } from '../../pedido/PedidoDrawer';
 
 
+
+
+/* --- Componente de Link con estilos base --- */
+const NavLink = ({ href, label, onClick, className = "" }: { href: string; label: string; onClick?: () => void; className?: string }) => (
+  <a 
+    href={href} 
+    onClick={onClick}
+    className={`
+      /* --- Animación --- */
+      hover:text-vete-primary      /* Color marca al pasar mouse */
+      transition-colors            /* Suaviza el cambio de color */
+      duration-300                 /* Velocidad de transición */
+      ${className}                 /* Clases extra (ej: tamaño de fuente) */
+    `}
+  >
+    {label}
+  </a>
+);
+
+
+
+
+
+const NavigationButton = ({ href, children }: { href: string; children: React.ReactNode }) => (
+  <a href={href} className="hover:text-vete-primary transition-colors">{children}</a>
+);
+
+const NavigationDesktop = ({}: { children: React.ReactNode }) => (
+  <nav className={`
+            /* --- Posición --- */
+            flex                         /* Contenedor flexible */
+            items-center                 /* Centrado vertical */
+            gap-4                        /* Espacio entre elementos móvil */
+            md:gap-8                     /* Espacio extendido en desktop */
+          `}>
+            {children}
+          </nav>
+);
+
 /**
  * Header evolucionado para Veterinaria Beltramelli.
  * Implementa: Sticky behavior, Carrito con contador/total y Perfil de usuario.
@@ -43,7 +82,9 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
               
               /* --- Dimensiones --- */
               w-5 h-5                      /* Tamaño del círculo */
-              flex items-center justify-center
+              flex                          /* Contenedor flexible */
+              items-center                  /* Centrado vertical del contenido */
+              justify-center               /* Centrado horizontal del contenido */
               
               /* --- Colores --- */
               bg-red-500                   /* Color de alerta */
@@ -106,7 +147,7 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className={`
             /* --- Posición --- */
-            md:hidden                  /* Oculto en desktop */
+            desktop-vete:hidden        /* <!> Oculto en desktop  Quiero que aparesaca cuando se borra el menu de en el av  */
             flex                       /* Activa flex */
             items-center               /* Centrado vertical */
             
@@ -167,10 +208,10 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
           `}>
 
           <div className={`
-              /* --- Posición --- */
+              /* --- Posición --- <!> creo que es por aca lo que quiero qeu desaparesca al mismo tiempo que desaparese la imagen de HeroSession */
               hidden                       /* Oculto en móviles */
-              /* md:flex   <!> Sacar si queda fijo como quiero  */           /* Visible en desktop */
-              desktop-vete:flex            /* Visible en desktop */
+              
+              desktop-vete:flex            /* APARECE en desktop-vete (Sincronizado con Hero)  */
               items-center                 /* Centrado vertical */
               gap-6                        /* Espacio entre links */
 
@@ -178,14 +219,24 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
               font-bold                    /* Negrita */
               text-sm                      /* Tamaño pequeño */
             `}>
-              {/* Link para navegar en la web  <!> Esto me gustaria que se uniera con lo de abajo par sacarlo a un metodo solo para no repetir 
+
+
+             {/* <!> Mapeo centralizado: Si agregas un link arriba, aparece aquí solo */}
+              {NAV_LINKS.map((link) => (
+                <NavLink key={link.href} {...link} />
+              ))}   
+
+
+
+
+              {/* <!> Borrar cuando pruebe lo nuevo Link para navegar en la web  <!> Esto me gustaria que se uniera con lo de abajo par sacarlo a un metodo solo para no repetir 
                Ademas veo que las cases es son reetitivas no se si se pudiera meter a el div para que me quede a mi me hace mas sentido   */}
-              <a href="#ServicioSeccion" className="hover:text-vete-primary transition-colors">Servicios</a>
+              {/* <a href="#ServicioSeccion" className="hover:text-vete-primary transition-colors">Servicios</a>
               <a href="#ProgramsSection" className="hover:text-vete-primary transition-colors">Promociones</a>
               <a href="#ProductsSession" className="hover:text-vete-primary transition-colors">Tienda</a>
               <a href="#AboutSection" className="hover:text-vete-primary transition-colors">Nosotros</a>
               <a href="#MapsSection" className="hover:text-vete-primary transition-colors">Local</a>
-              
+               */}
           </div>
 
 
@@ -277,23 +328,8 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
         /*Lanza el menu cuando isMenuOpen es true y lo oculta cuando es false */
         ${isMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'}
       `}>
-        <nav className={`
-            /* --- Posición --- */
-            flex                       /* Alineación horizontal */
-            flex-col                   /* Columna vertical */
-            items-center               /* Centrado vertical */
-            gap-8                      /* Espacio entre items */
 
-            /* --- Tipografía --- */
-            text-2xl                   /* Tamaño de fuente grande */
-            font-black                 /* Peso máximo de fuente */
-            italic                     /* Cursiva */
-            uppercase                  /* Mayúsculas */
-
-            /* --- Colores --- */
-            text-vete-secondary
-          `}>
-          
+        <NavigationDesktop>
           {/* <!> Estariba bueno que esto link y los de arriba fuera a un solo punto y los traiga con un metodo 
           par sentralizar peo no se como hacerlo y no me quiero compliar adeas queir ver andando lo que si la diferencia
           es que este teine un metodo para salir y el otor tiene clases de estilo caps si agrupo los etilo al nav que los contien
@@ -304,15 +340,15 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
           <a href="#AboutSection" >Nosotros</a>
           <a href="#MapsSection" >Local</a>
 
-          
+
           <div className="h-[1px] w-full bg-slate-100 my-4" />
-          
+
           {/* No Borrar !!!  Info extra en el menú móvil <!> Esto es para el sprin 3 es para cuando aya udario  */}
           {/* <div className="flex items-center gap-4 text-sm not-italic font-bold text-vete-primary">
             <User size={20} />
             <span>Mi Perfil</span>
           </div> */}
-        </nav>
+        </NavigationDesktop>
       </div>
 
     </>

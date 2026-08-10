@@ -31,7 +31,7 @@ const HeroSession = ({ bgColor }: { bgColor: string }) => {
         flex                         /* Contenedor flexible */
         flex-col                     /* Dirección vertical en móviles */
         
-        /*<!>*/ 
+        /*Responsive a desktop-vete*/ 
         desktop-vete:flex-row        /* Dirección horizontal en pantallas grandes */
         items-center                 /* Centrado de los bloques */
         mx-auto                      /* Centrado horizontal del contenedor */

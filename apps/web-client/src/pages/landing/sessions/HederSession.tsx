@@ -7,7 +7,15 @@ import { usePedidoStore } from '../../../context/pedido_context';
 import { PedidoDrawer } from '../../pedido/PedidoDrawer';
 
 
-/* --- Configuración de Navegación Centralizada --- */
+/**  
+ * Configuración de Navegación Centralizada 
+ * 
+ * <!> En este me gustaria agregar logitos en
+ *  svg que agan referencia a esto 
+ * 
+ * label: Nombre control
+ * href: URL a la que apunta el enlace
+ */
 const NAV_LINKS = [
   { label: 'Servicios',   href: '#ServicioSeccion' },
   { label: 'Promociones', href: '#ProgramsSection' },
@@ -109,11 +117,9 @@ const MobileNavigationDrawer = ({
       flex-col                     /* Dirección vertical */
       gap-8                        /* Espacio entre links */
     `}>
-      {/* 
-          <!> CENTRALIZACIÓN: 
-          Usamos el mismo array NAV_LINKS. 
-          Al hacer clic, ejecutamos onClose() para que el menú se cierre solo.
-      */}
+
+      {/* Botones navegador  <!> Aca estaria bueno usar el NavigationButton y ya ponerle logitos  */}
+      
       {NAV_LINKS.map((link) => (
         <NavLink 
           key={link.href} 
@@ -230,15 +236,6 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
       duration-300    
     `}>
 
-
-
-
-
-
-
-
-
-
          {/* Botón Hamburguesa (Solo visible en móvil) */}
         <button 
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -256,34 +253,83 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
         </button>
 
 
-        {/* Logo y Nombre de Beterinaria */}
-        <div className={`
-          /* --- Posición --- */
-          flex                         /* Alineación horizontal */
-          items-center                 /* Centrado vertical */
-          gap-2                        /* Espacio entre logo y texto */
-          `}>
-
-            <img
-              src="/logo.png"
-              className="w-10 shrink-0"
-              alt="Logo Beltramelli"
-            />
-            <span className={`
+        {/*  Bloque Logo: Texto apilado en móvil y lineal en desktop */}
+        
+        <a 
+          href="#HeroSession" 
+          className={`
             /* --- Posición --- */
-            hidden                       /* Oculto en móviles pequeños */
-            /* tablet-vete:inline   <!> Sacar si queda fijo como quiero         Visible en tablets/desktop */
-            whitespace-nowrap            /* Evita salto de línea */
+            flex                         /* Contenedor principal */
+            items-center                 /* Alinea el logo con el bloque de texto */
+            gap-3                        /* Espacio entre logo y letras */
+            
+            /* --- Estilo --- */
+            cursor-pointer               /* Indica que es un link */
+            group                        /* Para efectos de hover */
+          `}
+        >
+          {/* Imagen del Logo */}
+          <img
+            src="/logo.png"
+            className={`
+              /* --- Dimensiones --- */
+              w-10                       /* Tamaño más grande en móvil para balancear las 2 líneas */
+              tablet-vete:w-12           /* Un poco más grande en desktop */
+              shrink-0                   /* Evita que se deforme */
+            `}
+            alt="Logo Beltramelli"
+          />
 
+          {/* Contenedor de Texto: Aquí ocurre la magia del apilado */}
+          <div className={`
+            /* --- Posición --- */
+            flex                         /* Activa flexbox */
+            flex-col                     /* <!> Apila: Veterinaria arriba, Beltramelli abajo */
+            tablet-vete:flex-row         /* <!> En desktop: vuelve a ponerlos en una sola línea */
+            tablet-vete:gap-1.5          /* Espacio entre palabras en desktop */
+            
             /* --- Texto --- */
-            font-black                   /* Peso máximo de fuente */
-            text-xl                      /* Tamaño de fuente grande */
-            uppercase                    /* Mayúsculas institucionales */
-            tracking-tighter             /* Letras más juntas para estilo moderno */
+            leading-[0.9]                /* Altura de línea muy junta para que se vea como un bloque */
+            tablet-vete:leading-none     /* Altura normal en desktop */
           `}>
-            VETERINARIA BELTRAMELLI<span className="text-vete-primary">.</span>
-          </span>
-        </div>
+            
+            <span className={`
+              /* --- Texto --- */
+              font-black                 /* Peso máximo */
+              uppercase                    /* Mayúsculas */
+              tracking-tighter             /* Estilo moderno */
+              
+              /* --- Tamaño --- */
+              text-[12px]                  /* Tamaño legible para "Veterinaria" */
+              tablet-vete:text-xl          /* Tamaño original en PC */
+
+              /* --- Colores --- */
+              text-vete-text-light         /* Color claro */
+              group-hover:text-vete-primary /* Cambio de color al pasar el mouse */
+              transition-colors
+            `}>
+              Veterinaria
+            </span>
+
+            <span className={`
+              /* --- Texto --- */
+              font-black                   /* Peso máximo */
+              uppercase                    /* Mayúsculas */
+              tracking-tighter             /* Estilo moderno */
+              
+              /* --- Tamaño --- */
+              text-[16px]                  /* <!> Más grande para resaltar la marca en móvil */
+              tablet-vete:text-xl          /* Igual al anterior en PC */
+
+              /* --- Colores --- */
+              text-vete-text-light         /* Color claro */
+              group-hover:text-vete-primary /* Cambio de color */
+              transition-colors
+            `}>
+              Beltramelli<span className="text-vete-primary">.</span>
+            </span>
+          </div>
+        </a>
 
 
       {/* 

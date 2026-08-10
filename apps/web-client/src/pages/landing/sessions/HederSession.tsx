@@ -2,9 +2,151 @@
 
 import React, { useState, useEffect } from 'react';
 
-import { ShoppingCart } from "lucide-react";
+import {Menu, X, ShoppingCart, User } from "lucide-react";
 import { usePedidoStore } from '../../../context/pedido_context';
 import { PedidoDrawer } from '../../pedido/PedidoDrawer';
+
+
+/**  
+ * Configuración de Navegación Centralizada 
+ * 
+ * <!> En este me gustaria agregar logitos en
+ *  svg que agan referencia a esto 
+ * 
+ * label: Nombre control
+ * href: URL a la que apunta el enlace
+ */
+const NAV_LINKS = [
+  { label: 'Servicios',   href: '#ServicioSeccion' },
+  { label: 'Promociones', href: '#ProgramsSection' },
+  { label: 'Tienda',      href: '#ProductsSession' },
+  { label: 'Nosotros',    href: '#AboutSection' },
+  { label: 'Local',       href: '#MapsSection' },
+];
+
+/**
+ *  Componente de Link con estilos base 
+ * @param href URL a la que apunta el enlace
+ * @param label Etiqueta del enlace
+ * @param onClick Función a ejecutar al hacer clic
+ * @param className Clases CSS adicionales
+ * @returns
+ * */
+const NavLink = ({ href, label, onClick, className = "" }: 
+  { href: string;            
+    label: string;            
+    onClick?: () => void;     
+    className?: string        
+  }) => (
+  <a 
+    href={href} 
+    onClick={onClick}
+    className={`
+      /* --- Animación --- */
+      hover:text-vete-primary      /* Color marca al pasar mouse */
+      transition-colors            /* Suaviza el cambio de color */
+      duration-300                 /* Velocidad de transición */
+      ${className}                 /* Clases extra (ej: tamaño de fuente) */
+    `}
+  >
+    {label}
+  </a>
+);
+
+
+
+
+/**
+ *  Compone un enlace de navegación con estilos base y opciones de personalización.
+ * @param href URL a la que apunta el enlace
+ * @param children Contenido del enlace
+ * @param className Clases CSS adicionales
+ * @returns 
+ */
+const NavigationButton = ({ href, children, className = "" }: { href: string; children: React.ReactNode; className?: string }) => (
+  // <!> A futuro estaria bueno agregarle un logito por Menu relacionado
+  //  algo en sfv o algo para que quede bonto
+  <a href={href} className={`
+      /* --- Animación --- */
+      hover:text-vete-primary      /* Color marca al pasar mouse */
+      transition-colors            /* Suaviza el cambio de color */
+      duration-300                 /* Velocidad de transición */
+      ${className}                 /* Clases extra (ej: tamaño de fuente) */
+    `}>{children}</a>
+);
+
+
+/**
+ *  Componente Interno: Menú Desplegable Móvil
+ * @param isOpen Estado del menú
+ * @param onClose Función para cerrar el menú
+ * @returns
+*/
+const MobileNavigationDrawer = ({ 
+  isOpen, 
+  onClose 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+}) => (
+  <div className={`
+    /* --- Posición --- */
+    fixed                        /* Queda fijo sobre la pantalla */
+    top-24                       /* Justo debajo del header (h-24) */
+    left-0                       /* Alineado al inicio */
+    z-[90]                       /* Por debajo del header pero sobre el contenido */
+    
+    /* --- Dimensiones --- */
+    w-full                       /* Ancho total */
+    h-screen                     /* Altura total */
+    p-8                          /* Padding interno */
+
+    /* --- Colores --- */
+    bg-white                     /* Fondo blanco */
+    
+    /* --- Animación --- */
+    transition-all               /* Transición suave */
+    duration-500                 /* Velocidad */
+
+    /* Lógica de visibilidad basada en el estado */
+    ${isOpen ? 'translate-x-0 opacity-100 visible' : '-translate-x-full opacity-0 invisible'}
+  `}>
+    <nav className={`
+      /* --- Posición --- */
+      flex                         /* Contenedor flexible */
+      flex-col                     /* Dirección vertical */
+      gap-8                        /* Espacio entre links */
+    `}>
+
+      {/* Botones navegador  <!> Aca estaria bueno usar el NavigationButton y ya ponerle logitos  */}
+      
+      {NAV_LINKS.map((link) => (
+        <NavLink 
+          key={link.href} 
+          {...link} 
+          onClick={onClose} 
+          className="text-2xl font-black italic uppercase text-vete-secondary"
+        />
+      ))}
+
+      <div className="h-[1px] w-full bg-slate-100 my-2" />
+      
+      {/* Espacio para Perfil de Usuario (Sprint 3) */}
+      <div className="flex items-center gap-4 text-sm font-bold text-vete-primary">
+        <User size={20} />
+        <span>Mi Perfil</span>
+      </div>
+    </nav>
+  </div>
+);
+
+
+
+
+
+
+
+
 
 
 /**
@@ -12,10 +154,9 @@ import { PedidoDrawer } from '../../pedido/PedidoDrawer';
  * Implementa: Sticky behavior, Carrito con contador/total y Perfil de usuario.
  */
 export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  // Componente para el menu desplegable <!> no lo tengo calro 
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false); // Detecta el scroll para aplicar el efecto de transparencia/blur, Si es true se aplica el efecto
+  const [isCartOpen, setIsCartOpen] = useState(false); // Componente para el menu desplegable del carrito 
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // Componente para el menu desplegable del header
 
   /* --- Sustituye tus constantes por el Hook de la Fachada --- */
   const {
@@ -23,7 +164,7 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
     itemCount // Cantidad de productos
   } = usePedidoStore();
 
-  /* --- Para el usuario, lo ideal es usar un Contexto de Auth --- */
+  /* --- No Borrar!!!!! <!> Para el usuario, lo ideal es usar un Contexto de Auth Lo voy a usar en el sprin 3  --- */
   // const { user, isAuthenticated } = useAuth(); 
   // const user = { isLoggedIn: true, name: "Ary" }; // Mantenlo así hasta que hagamos el AuthContext
 
@@ -44,7 +185,9 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
               
               /* --- Dimensiones --- */
               w-5 h-5                      /* Tamaño del círculo */
-              flex items-center justify-center
+              flex                          /* Contenedor flexible */
+              items-center                  /* Centrado vertical del contenido */
+              justify-center               /* Centrado horizontal del contenido */
               
               /* --- Colores --- */
               bg-red-500                   /* Color de alerta */
@@ -93,64 +236,116 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
       duration-300    
     `}>
 
+         {/* Botón Hamburguesa (Solo visible en móvil) */}
+        <button 
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className={`
+            /* --- Posición --- */
+            desktop-vete:hidden        /* <!> Oculto en desktop  Quiero que aparesaca cuando se borra el menu de en el av  */
+            flex                       /* Activa flex */
+            items-center               /* Centrado vertical */
+            
+            /* --- Colores --- */
+            text-vete-primary          /* Color marca */
+          `}
+        >
+          {isMenuOpen ? <X size={32} /> : <Menu size={32} />}
+        </button>
 
-        {/* Bloque Logo */}
 
-        <div className={`
-        /* --- Posición --- */
-        flex                         /* Alineación horizontal */
-        items-center                 /* Centrado vertical */
-        gap-2                        /* Espacio entre logo y texto */
-      `}>
+        {/*  Bloque Logo: Texto apilado en móvil y lineal en desktop */}
+        
+        <a 
+          href="#HeroSession" 
+          className={`
+            /* --- Posición --- */
+            flex                         /* Contenedor principal */
+            items-center                 /* Alinea el logo con el bloque de texto */
+            gap-3                        /* Espacio entre logo y letras */
+            
+            /* --- Estilo --- */
+            cursor-pointer               /* Indica que es un link */
+            group                        /* Para efectos de hover */
+          `}
+        >
+          {/* Imagen del Logo */}
           <img
             src="/logo.png"
-            className="w-10 shrink-0"
+            className={`
+              /* --- Dimensiones --- */
+              w-10                       /* Tamaño más grande en móvil para balancear las 2 líneas */
+              tablet-vete:w-12           /* Un poco más grande en desktop */
+              shrink-0                   /* Evita que se deforme */
+            `}
             alt="Logo Beltramelli"
           />
-          <span className={`
-          /* --- Posición --- */
-          hidden                       /* Oculto en móviles pequeños */
-          tablet-vete:inline           /* Visible en tablets/desktop */
-          whitespace-nowrap            /* Evita salto de línea */
 
-          /* --- Texto --- */
-          font-black                   /* Peso máximo de fuente */
-          text-xl                      /* Tamaño de fuente grande */
-          uppercase                    /* Mayúsculas institucionales */
-          tracking-tighter             /* Letras más juntas para estilo moderno */
-        `}>
-            VETERINARIA BELTRAMELLI<span className="text-vete-primary">.</span>
-          </span>
-        </div>
+          {/* Contenedor de Texto: Aquí ocurre la magia del apilado */}
+          <div className={`
+            /* --- Posición --- */
+            flex                         /* Activa flexbox */
+            flex-col                     /* <!> Apila: Veterinaria arriba, Beltramelli abajo */
+            tablet-vete:flex-row         /* <!> En desktop: vuelve a ponerlos en una sola línea */
+            tablet-vete:gap-1.5          /* Espacio entre palabras en desktop */
+            
+            /* --- Texto --- */
+            leading-[0.9]                /* Altura de línea muy junta para que se vea como un bloque */
+            tablet-vete:leading-none     /* Altura normal en desktop */
+          `}>
+            
+            <span className={`
+              /* --- Texto --- */
+              font-black                 /* Peso máximo */
+              uppercase                    /* Mayúsculas */
+              tracking-tighter             /* Estilo moderno */
+              
+              /* --- Tamaño --- */
+              text-[12px]                  /* Tamaño legible para "Veterinaria" */
+              tablet-vete:text-xl          /* Tamaño original en PC */
 
+              /* --- Colores --- */
+              text-vete-text-light         /* Color claro */
+              group-hover:text-vete-primary /* Cambio de color al pasar el mouse */
+              transition-colors
+            `}>
+              Veterinaria
+            </span>
 
+            <span className={`
+              /* --- Texto --- */
+              font-black                   /* Peso máximo */
+              uppercase                    /* Mayúsculas */
+              tracking-tighter             /* Estilo moderno */
+              
+              /* --- Tamaño --- */
+              text-[16px]                  /* <!> Más grande para resaltar la marca en móvil */
+              tablet-vete:text-xl          /* Igual al anterior en PC */
 
-        {/* Bloque Navegación y Acciones */}
-        <nav className={`
-        /* --- Posición --- */
-        flex                         /* Contenedor flexible */
-        items-center                 /* Centrado vertical */
-        gap-4                        /* Espacio entre elementos móvil */
-        md:gap-8                     /* Espacio extendido en desktop */
-      `}>
-
-          {/* Links Principales <!> Esto depues tendria ue navegar por por la web a las diferentes secciones del LandingPage */}
-          <div className="hidden md:flex items-center gap-6 font-bold text-sm">
-            <a href="#" className="hover:text-vete-primary transition-colors">Servicios</a>
-            <a href="#" className="hover:text-vete-primary transition-colors">Tienda</a>
-            <a href="#" className="hover:text-vete-primary transition-colors">Contacto</a>
+              /* --- Colores --- */
+              text-vete-text-light         /* Color claro */
+              group-hover:text-vete-primary /* Cambio de color */
+              transition-colors
+            `}>
+              Beltramelli<span className="text-vete-primary">.</span>
+            </span>
           </div>
-          {/*  <!> Esto despues lo miro esparanavegar a landing pague y al precionar que me vallaa dode tiene que ir en la landig pague pero no lo tengo claro 
-                    y me gustaria ver lo de carrito primero 
+        </a>
 
-            <div className="hidden md:flex items-center gap-6 font-bold text-sm">
-              <a href="#servicios" className="hover:text-vete-primary transition-colors">Servicios</a>
-              <a href="#tienda" className="hover:text-vete-primary transition-colors">Tienda</a>
-              <a href="#contacto" className="hover:text-vete-primary transition-colors">Contacto</a>
-            </div>
-            */}
 
-        </nav>
+      {/* 
+          NAV DESKTOP 
+          También usa el mapeo centralizado para no repetir código
+      */}
+      <nav className="hidden desktop-vete:flex items-center gap-6 font-bold text-sm">
+        {NAV_LINKS.map((link) => (
+          <NavLink key={link.href} {...link} />
+        ))}
+      </nav>
+ 
+
+
+
+
 
         {/* Carrito con Contador y Total */}
         <div
@@ -205,11 +400,20 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
 
 
       </header>
+
+
       {/* Menu desplegable del carrito */}
       <PedidoDrawer
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
       />
+
+      <MobileNavigationDrawer 
+        isOpen={isMenuOpen} 
+        onClose={() => setIsMenuOpen(false)} 
+      />
+
+
     </>
   );
 

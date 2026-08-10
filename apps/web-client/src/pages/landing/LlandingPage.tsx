@@ -353,48 +353,76 @@ export default function LandingPage() {
       {/* --- 1. Componente de Header --- */}
       <HeaderSession bgColor='bg-vete-secondary' />
 
-      <main>
-        <HeroSection bgColor='bg-vete-secondary' />
-        {/* <HeroSession bgColor='bg-vete-secondary' /> */}
+      <main className={`
+        /* <!> Esto tendria que mejorarlo queda demaciado espacio para con el heder
+        si lo dejo a pt a 4 me gusta pero a una resolucion de 767 de anco se parte lo dejo asi asi avansao */
+        /* --- Posición --- */
+        relative                     /* Mantiene el flujo del documento */
+
+        /* --- Dimensiones --- */
+        pt-24                        /* FIX: Compensa los 96px (h-24) del Header fixed */
+        md:pt-24                    /* FIX: Compensa los 96px (h-24) del Header fixed */
+   
+        `}>
+
+
+        <section id="HeroSession">
+          <HeroSection bgColor='bg-vete-secondary' />
+          {/* <HeroSession bgColor='bg-vete-secondary' /> */}
+        </section>
+
+        <section id="ProductsSession">
+          {/* separador V1*/}
+          <SectionDivider
+            topColor="bg-vete-dark"
+            bottomColor="text-vete-secondary"
+          />
+          {/* Productos */}
+          <ProductsSession bgColor='bg-vete-dark' />
+        </section>
+
+
+
+ 
+        
+
+        <section id="ServicioSeccion">
+
+          {/* separador V2*/}
+          <SectionDivider
+            topColor="bg-vete-secondary"
+            bottomColor="text-vete-dark"
+          />           
+          {/* Seccion de programas de bienestar animal */}
+          <ServicioSeccion bgColor='bg-vete-secondary' />
+        </section>
+        <section id="ProgramsSection">
+          {/* Seccion de programas de bienestar animal  <!>Anda per agregr ala clase para que qude igual debe estar eredando algo */}
+          <ProgramsSection />
+        </section>
+        
 
         {/* separador V1*/}
         <SectionDivider
           topColor="bg-vete-dark"
           bottomColor="text-vete-secondary"
         />
+        <section id="AboutSection">
+          {/* Seccion de quienes somos */}
+          <AboutSection bgColor='bg-vete-dark' />
 
-        {/* Productos */}
-        <ProductsSession bgColor='bg-vete-dark' />
-
-        {/* separador V2*/}
-        <SectionDivider
-          topColor="bg-vete-secondary"
-          bottomColor="text-vete-dark"
-        />
-
-        {/* Seccion de programas de bienestar animal */}
-        <ServicioSeccion bgColor='bg-vete-secondary' />
-
-        {/* Seccion de programas de bienestar animal  <!>Anda per agregr ala clase para que qude igual debe estar eredando algo */}
-        <ProgramsSection />
-
-        {/* separador V1*/}
-        <SectionDivider
-          topColor="bg-vete-dark"
-          bottomColor="text-vete-secondary"
-        />
-
-        {/* Seccion de quienes somos */}
-        <AboutSection bgColor='bg-vete-dark' />
-
-        {/* separador V2*/}
-        <SectionDivider
-          topColor="bg-vete-secondary"
-          bottomColor="text-vete-dark"
-        />
-
-        {/* Seccion de mapa */}
-        <MapsSection bgColor='bg-vete-secondary' />
+          {/* separador V2*/}
+          <SectionDivider
+            topColor="bg-vete-secondary"
+            bottomColor="text-vete-dark"
+          />
+        </section>
+        
+        <section id="MapsSection">
+          {/* Seccion de mapa */}
+          <MapsSection bgColor='bg-vete-secondary' />
+        </section>
+        
       </main>
 
       {/* Seccion inverior de la web Contacto etc*/}

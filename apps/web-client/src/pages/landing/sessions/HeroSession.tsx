@@ -30,6 +30,8 @@ const HeroSession = ({ bgColor }: { bgColor: string }) => {
         z-10                         /* Por encima de posibles fondos */
         flex                         /* Contenedor flexible */
         flex-col                     /* Dirección vertical en móviles */
+        
+        /*Responsive a desktop-vete*/ 
         desktop-vete:flex-row        /* Dirección horizontal en pantallas grandes */
         items-center                 /* Centrado de los bloques */
         mx-auto                      /* Centrado horizontal del contenedor */
@@ -99,7 +101,7 @@ const HeroSession = ({ bgColor }: { bgColor: string }) => {
             integral de tus compañeros.
           </p>
 
-          {/* Botones de Acción (Opcional, para mejorar el CTA) */}
+          {/* Botones de Acción (Opcional, para mejorar el CTA) <!> Esto me gusta pero tendria que agregarle una accion y mejorar el boton */}
           <div className="flex gap-4 mt-10">
              <button className={`
                 /* --- Dimensiones --- */

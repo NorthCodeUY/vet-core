@@ -7,49 +7,65 @@ import { usePedidoStore } from '../../../context/pedido_context';
 import { PedidoDrawer } from '../../pedido/PedidoDrawer';
 
 
+import { Stethoscope, Tag, ShoppingBag, Users, MapPin } from "lucide-react";
+
 /**  
- * Configuración de Navegación Centralizada 
- * 
- * <!> En este me gustaria agregar logitos en
- *  svg que agan referencia a esto 
- * 
- * label: Nombre control
- * href: URL a la que apunta el enlace
+ * Configuración de Navegación Centralizada con Iconos (SVGs)
  */
 const NAV_LINKS = [
-  { label: 'Servicios',   href: '#ServicioSeccion' },
-  { label: 'Promociones', href: '#ProgramsSection' },
-  { label: 'Tienda',      href: '#ProductsSession' },
-  { label: 'Nosotros',    href: '#AboutSection' },
-  { label: 'Local',       href: '#MapsSection' },
+  { label: 'Servicios',   href: '#ServicioSeccion', icon: Stethoscope },
+  { label: 'Promociones', href: '#ProgramsSection', icon: Tag },
+  { label: 'Tienda',      href: '#ProductsSession', icon: ShoppingBag }, // <!> El logo no me gusta tendria que ser algo mas como un carrito o un maletin esos de un shoping qeu son mas triangular 
+  { label: 'Nosotros',    href: '#AboutSection',    icon: Users },
+  { label: 'Local',       href: '#MapsSection',     icon: MapPin },
 ];
 
 /**
  *  Componente de Link con estilos base 
  * @param href URL a la que apunta el enlace
  * @param label Etiqueta del enlace
- * @param onClick Función a ejecutar al hacer clic
+ * @param onClick Función a ejecutar al hacer clic 
+ * @param icon Icono a mostrar   
  * @param className Clases CSS adicionales
  * @returns
  * */
-const NavLink = ({ href, label, onClick, className = "" }: 
-  { href: string;            
+
+const NavLink = ({ 
+  href, 
+  label, 
+  onClick,
+  icon: Icon,
+  className = "" 
+}: { 
+    href: string;            
     label: string;            
     onClick?: () => void;     
+    icon?: any;
     className?: string        
   }) => (
   <a 
     href={href} 
     onClick={onClick}
     className={`
+      /* --- Posición --- */
+      flex items-center            /* Alinea icono y texto */
+      gap-3                        /* Espacio entre icono y texto */
+      
       /* --- Animación --- */
       hover:text-vete-primary      /* Color marca al pasar mouse */
-      transition-colors            /* Suaviza el cambio de color */
-      duration-300                 /* Velocidad de transición */
-      ${className}                 /* Clases extra (ej: tamaño de fuente) */
+      transition-all               /* Suaviza el cambio */
+      duration-300                 
+      ${className}                 
     `}
   >
-    {label}
+    {/* Renderizado dinámico del icono SVG */}
+    {Icon && <Icon size={20} className={`
+      /* --- Animación --- */
+      opacity-70                /* Opracion de 70% cuando no se tiene el focus */
+      group-hover:opacity-100   /* Opracion de 100% cuando se tiene el focus */
+      ${className} 
+      `} />}
+    <span>{label}</span>
   </a>
 );
 
@@ -63,25 +79,38 @@ const NavLink = ({ href, label, onClick, className = "" }:
  * @param className Clases CSS adicionales
  * @returns 
  */
-const NavigationButton = ({ href, children, className = "" }: { href: string; children: React.ReactNode; className?: string }) => (
-  // <!> A futuro estaria bueno agregarle un logito por Menu relacionado
-  //  algo en sfv o algo para que quede bonto
+const NavigationButton = ({ href, children }: { href: string; children: React.ReactNode}) => (
+
   <a href={href} className={`
       /* --- Animación --- */
-      hover:text-vete-primary      /* Color marca al pasar mouse */
+      hover:text-vete-primary     /* Color al pasar mouse */
       transition-colors            /* Suaviza el cambio de color */
       duration-300                 /* Velocidad de transición */
-      ${className}                 /* Clases extra (ej: tamaño de fuente) */
+      
+      /* --- Texto --- */
+      text-3xl 
+      font-black 
+      italic uppercase 
+            
+      /* --- Colores --- */
+      text-vete-light             /* Color baseline de los enlaces */  
+      
+      /* --- Estilo --- */
+      border-b 
+      border-slate-50 
+      pb-4
     `}>{children}</a>
 );
 
 
 /**
- *  Componente Interno: Menú Desplegable Móvil
+ * <!> Este menu deberia toar una parte de la pantalla no dodo ponelo el contenido del menu y un poquito mas nada mas
+ * Componente Interno: Menú Desplegable Móvil
  * @param isOpen Estado del menú
  * @param onClose Función para cerrar el menú
  * @returns
 */
+
 const MobileNavigationDrawer = ({ 
   isOpen, 
   onClose 
@@ -89,55 +118,84 @@ const MobileNavigationDrawer = ({
   isOpen: boolean; 
   onClose: () => void; 
 }) => (
-  <div className={`
-    /* --- Posición --- */
-    fixed                        /* Queda fijo sobre la pantalla */
-    top-24                       /* Justo debajo del header (h-24) */
-    left-0                       /* Alineado al inicio */
-    z-[90]                       /* Por debajo del header pero sobre el contenido */
-    
-    /* --- Dimensiones --- */
-    w-full                       /* Ancho total */
-    h-screen                     /* Altura total */
-    p-8                          /* Padding interno */
+  <>
+    {/* Overlay: Fondo oscuro para resaltar el menú y permitir cerrar al tocar fuera */}
+    <div 
+      onClick={onClose}
+      className={`
+        /* --- Posición --- */
+        fixed inset-0 z-[80]
+        /* --- Animación --- */
+        transition-opacity duration-500
+        ${isOpen ? 
+          'opacity-100 visible' : 
+          'opacity-0 invisible'}
 
-    /* --- Colores --- */
-    bg-white                     /* Fondo blanco */
-    
-    /* --- Animación --- */
-    transition-all               /* Transición suave */
-    duration-500                 /* Velocidad */
+        /* --- Colores --- */
+        bg-slate-900/20 backdrop-blur-sm
+      `}
+    />
 
-    /* Lógica de visibilidad basada en el estado */
-    ${isOpen ? 'translate-x-0 opacity-100 visible' : '-translate-x-full opacity-0 invisible'}
-  `}>
-    <nav className={`
+    <div className={`
       /* --- Posición --- */
-      flex                         /* Contenedor flexible */
-      flex-col                     /* Dirección vertical */
-      gap-8                        /* Espacio entre links */
+      fixed                        /* Queda flotando sobre la web */
+      top-24                       /* Justo debajo del header */
+      left-0                       /* Alineado al inicio izquierdo */
+      z-[90]                       /* Por encima del overlay */
+      
+      /* --- Dimensiones --- */
+      w-[85%]                      /* <!> Ocupa el 85% del ancho para dejar ver el fondo */
+      max-w-[320px]                /* Límite de ancho para que no se estire de más */
+      h-fit                        /* <!> Altura ajustada al contenido de los links */
+      p-8                          /* Padding interno */
+
+      /* --- Colores --- */
+      bg-white                     /* Fondo blanco limpio */
+      shadow-2xl                   /* Sombra profunda para dar relieve */
+      
+      /* --- Estilo --- */
+      rounded-br-[3rem]            /* <!> Bordes redondeados solo en la esquina inferior derecha */
+      border-r border-b            /* Bordes sutiles de cierre */
+      border-slate-100
+
+      /* --- Animación --- */
+      transition-all               /* Transición suave de posición y opacidad */
+      duration-500                 /* Velocidad de medio segundo */
+      ease-in-out                  /* Curva de aceleración fluida */
+
+      /* Lógica de visibilidad */
+      ${isOpen ? 
+        'translate-x-0 opacity-100' : 
+        '-translate-x-full opacity-0'
+      }
+
     `}>
+      <nav className={`
+        /* --- Posición --- */
+        flex                         /* Contenedor flexible */
+        flex-col                     /* Dirección vertical */
+        gap-6                        /* Espacio entre links */
+      `}>
+        {/* Mapeo de links centralizados */}
+        {NAV_LINKS.map((link) => (
+          <NavLink 
+            key={link.href} 
+            {...link} 
+            onClick={onClose} 
+            className={`
+              /* --- Texto --- */
+               
+              font-black 
+              italic uppercase 
+            `}
+          />
+        ))}
 
-      {/* Botones navegador  <!> Aca estaria bueno usar el NavigationButton y ya ponerle logitos  */}
-      
-      {NAV_LINKS.map((link) => (
-        <NavLink 
-          key={link.href} 
-          {...link} 
-          onClick={onClose} 
-          className="text-2xl font-black italic uppercase text-vete-secondary"
-        />
-      ))}
-
-      <div className="h-[1px] w-full bg-slate-100 my-2" />
-      
-      {/* Espacio para Perfil de Usuario (Sprint 3) */}
-      <div className="flex items-center gap-4 text-sm font-bold text-vete-primary">
-        <User size={20} />
-        <span>Mi Perfil</span>
-      </div>
-    </nav>
-  </div>
+        {/* Línea decorativa final */}
+        <div className="h-1 w-12 bg-vete-primary rounded-full mt-2" />
+      </nav>
+    </div>
+  </>
 );
 
 
@@ -241,7 +299,7 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className={`
             /* --- Posición --- */
-            desktop-vete:hidden        /* <!> Oculto en desktop  Quiero que aparesaca cuando se borra el menu de en el av  */
+            heder-vete:hidden        /*  Quiero que aparesaca cuando se borra el menu de en el av  */
             flex                       /* Activa flex */
             items-center               /* Centrado vertical */
             
@@ -336,7 +394,17 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
           NAV DESKTOP 
           También usa el mapeo centralizado para no repetir código
       */}
-      <nav className="hidden desktop-vete:flex items-center gap-6 font-bold text-sm">
+      <nav className= {` 
+
+        /* -- Animacion --*/
+        heder-vete:flex 
+        /* -- Dimensiones -- */
+        hidden
+        /* -- Posición -- */
+        items-center
+        gap-6
+        font-bold
+        text-sm`}>
         {NAV_LINKS.map((link) => (
           <NavLink key={link.href} {...link} />
         ))}

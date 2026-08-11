@@ -11,7 +11,8 @@ export default {
       screens: {
         // Creamos un punto de quiebre justo en 858px
         'desktop-vete': '1008px',
-        'tablet-vete': '858px'
+        'tablet-vete': '858px',
+        'heder-vete': '1166px'
       },
       colors: {
         vete: {

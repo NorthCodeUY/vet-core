@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 
-import {Menu, X, ShoppingCart, User } from "lucide-react";
+import { Menu, X, ShoppingCart, User } from "lucide-react";
 import { usePedidoStore } from '../../../context/pedido_context';
 import { PedidoDrawer } from '../../pedido/PedidoDrawer';
 
@@ -13,11 +13,11 @@ import { Stethoscope, Tag, ShoppingBag, Users, MapPin } from "lucide-react";
  * Configuración de Navegación Centralizada con Iconos (SVGs)
  */
 const NAV_LINKS = [
-  { label: 'Servicios',   href: '#ServicioSeccion', icon: Stethoscope },
+  { label: 'Servicios', href: '#ServicioSeccion', icon: Stethoscope },
   { label: 'Promociones', href: '#ProgramsSection', icon: Tag },
-  { label: 'Tienda',      href: '#ProductsSession', icon: ShoppingBag }, // <!> El logo no me gusta tendria que ser algo mas como un carrito o un maletin esos de un shoping qeu son mas triangular 
-  { label: 'Nosotros',    href: '#AboutSection',    icon: Users },
-  { label: 'Local',       href: '#MapsSection',     icon: MapPin },
+  { label: 'Tienda', href: '#ProductsSession', icon: ShoppingBag }, // <!> El logo no me gusta tendria que ser algo mas como un carrito o un maletin esos de un shoping qeu son mas triangular 
+  { label: 'Nosotros', href: '#AboutSection', icon: Users },
+  { label: 'Local', href: '#MapsSection', icon: MapPin },
 ];
 
 /**
@@ -30,21 +30,22 @@ const NAV_LINKS = [
  * @returns
  * */
 
-const NavLink = ({ 
-  href, 
-  label, 
+const NavLink = ({
+  href,
+  label,
   onClick,
   icon: Icon,
-  className = "" 
-}: { 
-    href: string;            
-    label: string;            
-    onClick?: () => void;     
-    icon?: any;
-    className?: string        
-  }) => (
-  <a 
-    href={href} 
+  className = ""
+}: {
+  href: string;
+  label: string;
+  onClick?: () => void;
+  icon?: any;
+  className?: string
+}) => (
+
+  <a
+    href={href}
     onClick={onClick}
     className={`
       /* --- Posición --- */
@@ -79,7 +80,7 @@ const NavLink = ({
  * @param className Clases CSS adicionales
  * @returns 
  */
-const NavigationButton = ({ href, children }: { href: string; children: React.ReactNode}) => (
+const NavigationButton = ({ href, children }: { href: string; children: React.ReactNode }) => (
 
   <a href={href} className={`
       /* --- Animación --- */
@@ -111,24 +112,24 @@ const NavigationButton = ({ href, children }: { href: string; children: React.Re
  * @returns
 */
 
-const MobileNavigationDrawer = ({ 
-  isOpen, 
-  onClose 
-}: { 
-  isOpen: boolean; 
-  onClose: () => void; 
+const MobileNavigationDrawer = ({
+  isOpen,
+  onClose
+}: {
+  isOpen: boolean;
+  onClose: () => void;
 }) => (
   <>
     {/* Overlay: Fondo oscuro para resaltar el menú y permitir cerrar al tocar fuera */}
-    <div 
+    <div
       onClick={onClose}
       className={`
         /* --- Posición --- */
         fixed inset-0 z-[80]
         /* --- Animación --- */
         transition-opacity duration-500
-        ${isOpen ? 
-          'opacity-100 visible' : 
+        ${isOpen ?
+          'opacity-100 visible' :
           'opacity-0 invisible'}
 
         /* --- Colores --- */
@@ -164,8 +165,8 @@ const MobileNavigationDrawer = ({
       ease-in-out                  /* Curva de aceleración fluida */
 
       /* Lógica de visibilidad */
-      ${isOpen ? 
-        'translate-x-0 opacity-100' : 
+      ${isOpen ?
+        'translate-x-0 opacity-100' :
         '-translate-x-full opacity-0'
       }
 
@@ -178,10 +179,10 @@ const MobileNavigationDrawer = ({
       `}>
         {/* Mapeo de links centralizados */}
         {NAV_LINKS.map((link) => (
-          <NavLink 
-            key={link.href} 
-            {...link} 
-            onClick={onClose} 
+          <NavLink
+            key={link.href}
+            {...link}
+            onClick={onClose}
             className={`
               /* --- Texto --- */
                
@@ -294,8 +295,8 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
       duration-300    
     `}>
 
-         {/* Botón Hamburguesa (Solo visible en móvil) */}
-        <button 
+        {/* Botón Hamburguesa (Solo visible en móvil) */}
+        <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className={`
             /* --- Posición --- */
@@ -312,9 +313,9 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
 
 
         {/*  Bloque Logo: Texto apilado en móvil y lineal en desktop */}
-        
-        <a 
-          href="#HeroSession" 
+
+        <a
+          href="#HeroSession"
           className={`
             /* --- Posición --- */
             flex                         /* Contenedor principal */
@@ -350,7 +351,7 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
             leading-[0.9]                /* Altura de línea muy junta para que se vea como un bloque */
             tablet-vete:leading-none     /* Altura normal en desktop */
           `}>
-            
+
             <span className={`
               /* --- Texto --- */
               font-black                 /* Peso máximo */
@@ -390,11 +391,11 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
         </a>
 
 
-      {/* 
+        {/* 
           NAV DESKTOP 
           También usa el mapeo centralizado para no repetir código
       */}
-      <nav className= {` 
+        <nav className={` 
 
         /* -- Animacion --*/
         heder-vete:flex 
@@ -405,11 +406,11 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
         gap-6
         font-bold
         text-sm`}>
-        {NAV_LINKS.map((link) => (
-          <NavLink key={link.href} {...link} />
-        ))}
-      </nav>
- 
+          {NAV_LINKS.map((link) => (
+            <NavLink key={link.href} {...link} />
+          ))}
+        </nav>
+
 
 
 
@@ -476,9 +477,9 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
         onClose={() => setIsCartOpen(false)}
       />
 
-      <MobileNavigationDrawer 
-        isOpen={isMenuOpen} 
-        onClose={() => setIsMenuOpen(false)} 
+      <MobileNavigationDrawer
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
       />
 
 

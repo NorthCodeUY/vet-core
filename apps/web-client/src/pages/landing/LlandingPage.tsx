@@ -22,7 +22,9 @@ import { Clock, Stethoscope, Mail, MapPin, Phone, Instagram, Facebook } from 'lu
 import ProductsSession from './sessions/ProductsSession.tsx'; // Seccion de productos
 import HeaderSession from './sessions/HederSession.tsx'; // Seccion de productos
 import HeroSession from './sessions/HeroSession.tsx';
+import MapsSession from './sessions/MapsSession.tsx'; // Seccion de productos
 import Footer from './sessions/FooterSession.tsx';
+
 
 
 // <!> Una ves que repare HederSession.tsx borar 
@@ -258,91 +260,6 @@ const AboutSection = ({ bgColor }: { bgColor: string }) => {
 
 
 
-const MapsSection = ({ bgColor }: { bgColor: string }) => {
-  return (
-    <section className={`${bgColor} px-6 md:px-16 py-20`}>
-      <div className="max-w-7xl mx-auto bg-vete-soft rounded-[3rem] p-8 md:p-16 flex flex-col lg:flex-row gap-12 items-center">
-
-        {/* LADO IZQUIERDO: Información */}
-        <div className="w-full lg:w-1/2 space-y-8">
-          <div className="space-y-4">
-            <h3 className="text-vete-primary text-4xl font-black  text-vete-header leading-tight italic">
-              ¿<span className='text-vete-text-light'> Dónde estamos</span>?
-            </h3>   {/* <!> text-vete-text Creo que no ase nada sacar   */}
-            <p className=" text-lg opacity-90 leading-relaxed">
-              Te esperamos en Salto con una <span className="text-vete-header  font-bold text-xl">instalación de primera</span>,
-              equipada con sala de cirugía canina de vanguardia y atención especializada.
-            </p>
-          </div>
-
-          {/* Bloques de Información */}
-          <div className="grid grid-cols-1 gap-6">
-
-            {/* Ubicación Geográfica */}
-            <div className="flex items-start gap-4">
-              <div className="bg-white/60 p-3 rounded-2xl shadow-sm text-vete-primary shrink-0 mt-1">
-                <MapPin size={24} />
-              </div>
-              <div>
-                <p className="font-bold text-vete-header text-lg">Salto, Uruguay</p>
-                <p className="text-vete-text opacity-70">Barrio Volcán, Salto Uruguay</p>
-              </div>
-            </div>
-
-            {/* Horarios Detallados */}
-            <div className="flex items-start gap-4">
-              <div className="bg-white/60 p-3 rounded-2xl shadow-sm text-vete-primary shrink-0 mt-1">
-                <Clock size={24} />
-              </div>
-              <div className="space-y-1">
-                <p className="font-bold text-vete-header text-lg">Horarios de Atención</p>
-                <div className="text-vete-text text-sm space-y-1 opacity-80 font-medium">
-                  {/* Dias de la semana que abre */}
-                  <p>{companyInfo.location.schedule.weekdays}</p>
-
-                </div>
-              </div>
-            </div>
-
-            {/* Emergencias 24h - Resaltado */}
-            <div className="flex items-center gap-4 bg-vete-header/5 p-4 rounded-3xl border border-vete-header/10">
-              <div className="bg-red-500 p-3 rounded-2xl shadow-sm text-white shrink-0 animate-pulse">
-                <Stethoscope size={24} />
-              </div>
-              <div>
-                <p className="font-bold text-red-600 text-lg uppercase tracking-tight">Emergencias 24 Horas</p>
-                <p className="text-vete-text text-sm opacity-70">Disponibles en todo momento para tu mascota</p>
-              </div>
-            </div>
-          </div>
-
-
-        </div>
-
-        {/* LADO DERECHO: Mapa */}
-        <div className="w-full lg:w-1/2 relative h-[450px]">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-vete-header/90 backdrop-blur-md px-6 py-3 rounded-2xl flex items-center gap-3 shadow-2xl border border-white/10">
-            <div className="bg-vete-primary p-2 rounded-lg">
-              <MapPin size={20} className="text-white" />
-            </div>
-            <span className="text-white font-bold whitespace-nowrap">Salto, Uruguay</span>
-          </div>
-
-          <iframe
-            title="Ubicación Veterinaria Beltramelli"
-            className="w-full h-full rounded-[2.5rem] shadow-inner grayscale-[10%] hover:grayscale-0 transition-all duration-700"
-            src={companyInfo.location.googleMapsUrl}
-            style={{ border: 0 }}
-            allowFullScreen={true}
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          ></iframe>
-        </div>
-      </div>
-    </section>
-  );
-};
-
 
 
 export default function LandingPage() {
@@ -383,8 +300,8 @@ export default function LandingPage() {
 
 
 
- 
-        
+
+
 
         <section id="ServicioSeccion">
 
@@ -392,7 +309,7 @@ export default function LandingPage() {
           <SectionDivider
             topColor="bg-vete-secondary"
             bottomColor="text-vete-dark"
-          />           
+          />
           {/* Seccion de programas de bienestar animal */}
           <ServicioSeccion bgColor='bg-vete-secondary' />
         </section>
@@ -400,7 +317,7 @@ export default function LandingPage() {
           {/* Seccion de programas de bienestar animal  <!>Anda per agregr ala clase para que qude igual debe estar eredando algo */}
           <ProgramsSection />
         </section>
-        
+
 
         {/* separador V1*/}
         <SectionDivider
@@ -417,12 +334,12 @@ export default function LandingPage() {
             bottomColor="text-vete-dark"
           />
         </section>
-        
+
         <section id="MapsSection">
           {/* Seccion de mapa */}
-          <MapsSection bgColor='bg-vete-secondary' />
+          <MapsSession bgColor='bg-vete-secondary' />
         </section>
-        
+
       </main>
 
       {/* Seccion inverior de la web Contacto etc*/}

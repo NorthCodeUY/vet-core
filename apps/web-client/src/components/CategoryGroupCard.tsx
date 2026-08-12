@@ -8,34 +8,41 @@ import { useCategoryProducts } from '../hooks/useProducts';
 
 
 
-
+/**
+ * Interfaz que define las props del componente CategoryGroupCard.
+ * @param title - Nombre de la categoría
+ * @param catId - ID de la categoría
+ * @param initialData - Datos que vienen desde el backend
+ */
 interface CategoryGroupProps {
   title: string; // Nombre de la categoría
   catId: number; // Agregamos el ID para poder pedir más datos 
-  initialData: any[]; //<!> Esto supongo que es una coleccion de ProductoType ApiProducto
+  initialData: any[]; // Datos que vienen desde el backend
 }
 
 /**
  * Componente que agrupa productos por categoría.
  * Adaptado para la estructura de datos del Backend (FastAPI) y 
  * siguiendo el estándar estricto de legibilidad de Tailwind.
+ * @param title - Nombre de la categoría
+ * @param catId - ID de la categoría
+ * @param initialData - Datos que vienen desde el backend
+ * @returns 
  */
 export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupProps) => {
   /* --- Fachada de Lógica (Hook) --- */
-  const { 
-    products, 
-    isExpanded, 
-    toggleExpand 
+  const {
+    products,
+    isExpanded,
+    toggleExpand
   } = useCategoryProducts(catId, initialData, title);
 
-  /* Lógica de visualización responsiva */
-  const mobileLimit = isExpanded ? 5 : 1; // <!> tENGO QUE USAR ESTO ME PARESE QUE ME QUE MAL COMO ESTABA ANTES ESTABA BIEN 2 1 ERA MAS RESPONSIVE 
 
-  
+
   /* --- Fachada de Pedidos (Para el contador del título) --- */
   const { pedido } = usePedidoStore();
-  
- //<!> Esto no lo tengo claro como usarlo 
+
+
   const cantidadComprada = pedido // Me da el total de cantidad de productos de esta categoria que estan en el pedido 
     .filter(item => item.producto.cat_id === catId) // Me quedo con los productos de esta categoria
     .reduce((acc, item) => acc + item.cantidad, 0); // Me quedo con la cantidad de productos 
@@ -65,7 +72,7 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
       `}>
 
         <div className="flex items-center gap-4">
-          
+
           {/* Título de la categoría */}
           <h3 className={`
             /* --- Texto --- */
@@ -80,7 +87,7 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
           `}>
             {title}
           </h3>
-          
+
           {/* Badge de Carrito */}
           {cantidadComprada > 0 && (
             <div className={`
@@ -144,20 +151,24 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
       </div>
 
       {/* Grid de productos adaptado a la nueva estructura de datos */}
+
       <div className={`
         /* --- Posición --- */
         grid                         /* Activa el sistema de grilla */
-        grid-cols-1                  /* 1 columna en móviles */
-        sm:grid-cols-2               /* 2 columnas en tablets */
-        lg:grid-cols-3               /* 3 columnas en laptops */
-        xl:grid-cols-4               /* 4 columnas en pantallas grandes */
-        2xl:grid-cols-5              /* 5 columnas en pantallas extra grandes */
-        justify-items-center         /* Centra las tarjetas horizontalmente */
+        grid-cols-1                  /* 1 columna: Móvil (por defecto) */
+        sm:grid-cols-2               /* 2 columnas: Tablet */
+        lg:grid-cols-3               /* 3 columnas: Laptop */
+        xl:grid-cols-4               /* 4 columnas: Desktop (Tu pedido) */
+        2xl:grid-cols-5            /* 5 columnas: Pantallas extra grandes */
+        justify-items-center         /* Centra las tarjetas */
 
         /* --- Dimensiones --- */
-        gap-y-10                     /* Espacio vertical entre filas */
-        gap-x-6                      /* Espacio horizontal entre columnas */
+        gap-y-10                     /* Espacio vertical */
+        gap-x-6                      /* Espacio horizontal */
       `}>
+
+
+
         {products.map((p, index) => {
           /* Lógica de visibilidad basada en el índice y estado de expansión */
           const isHiddenOnMobile = index >= (isExpanded ? products.length : 1);
@@ -167,14 +178,21 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
             <div
               key={p.prod_id}
               className={`
-                /* --- Posición --- */
-                ${isHiddenOnMobile ? 'hidden' : 'flex'} 
-                ${isHiddenOnDesktop ? 'xl:hidden' : 'xl:flex'}
+                /* --- Lógica de Visibilidad Progresiva --- */
+                /* Si está expandido, mostramos todos. Si no, aplicamos el escalonamiento: */
+                ${isExpanded ? 'flex' : (
+                  index === 0 ? 'flex' :                         /* El 1ero siempre visible */
+                    index === 1 ? 'hidden sm:flex' :               /* El 2do aparece en Tablet */
+                      index === 2 ? 'hidden lg:flex' :               /* El 3ero aparece en Laptop */
+                        index === 3 ? 'hidden xl:flex' :               /* El 4to aparece en Desktop */
+                          index === 4 ? 'hidden 2xl:flex' :               /* El 5to aparece en Desktop */
+                          'hidden'                                       /* Del 6to en adelante ocultos */
+                )}
 
                 /* --- Animación --- */
-                animate-in                   /* Activa animación de entrada */
-                fade-in                      /* Efecto de desvanecimiento */
-                duration-300                 /* Duración de 300ms */
+                animate-in                   /* Entrada suave */
+                fade-in                      /* Desvanecimiento */
+                duration-300                 /* Velocidad */
               `}
             >
 

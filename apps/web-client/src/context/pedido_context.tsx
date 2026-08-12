@@ -13,6 +13,7 @@ interface PedidoContextType {
   pedido: PedidoItem[];                                    /*  Lista de líneas de productos seleccionados */
   addToPedido: (product: ApiProduct) => void;              /*  Método para dar de alta o incrementar producto */
   removeFromPedido: (productId: number) => void;           /*  Método para dar de baja o decrementar producto */
+  removAllPedido: (productId: number) => void;             /*  Método para eliminar completamente un producto del pedido */
   updateItemQuantity: (productId: number, newQuantity: number) => void; /* NUEVO: Método para actualizar la cantidad de un ítem directamente */
   clearPedido: () => void;                                 /*  Método para vaciar el pedido actual */
   getWhatsAppUrl: (address: string) => string;             /*  Generador de link de comunicación con Salto */
@@ -76,7 +77,8 @@ export const PedidoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return prev.filter(item => item.producto.prod_id !== productId);
       }
 
-      /* Si hay más de una, decrementamos la cantidad manteniendo la inmutabilidad */
+      /* Si hay más de una, decrementamos la cantidad manteniendo 
+      la inmutabilidad */
       return prev.map(item =>
         item.producto.prod_id === productId
           ? { ...item, cantidad: item.cantidad - 1 }
@@ -84,6 +86,16 @@ export const PedidoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       );
     });
   };
+
+  /**
+   * Elimina completamente un producto del pedido, sin importar la cantidad.
+   * @param productId 
+   */
+  const removAllPedido = (productId: number) => {
+    setPedido((prev) => {
+      return prev.filter(item => item.producto.prod_id !== productId);
+    });
+  }
 
   /**
    * Actualiza la cantidad de un producto específico en el pedido.
@@ -164,6 +176,7 @@ export const PedidoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       pedido,
       addToPedido,
       removeFromPedido,
+      removAllPedido,
       updateItemQuantity,
       clearPedido,
       getWhatsAppUrl,

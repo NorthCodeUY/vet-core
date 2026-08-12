@@ -1,10 +1,11 @@
 /* --- apps/web-client/src/components/ProductCard.tsx --- */
 
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart,  X, Plus, Minus } from 'lucide-react';
 import { SUBCATEGORY_ICONS } from '../utils/categoryHelpers';
 
 import { usePedidoStore } from '../context/pedido_context';
 import type { ApiProduct, ApiImageProducto } from '../types/product_types';
+import companyInfo from '../data/companyInfo.json';
 
 
 
@@ -16,39 +17,158 @@ interface Props {
  * Componente de UI para representar una tarjeta de producto en el catálogo.
  * Formateado para máxima legibilidad y soporte de subcategorías.
  */
-//export const ProductCard = ({ title, desc, price, img, subcategories }: Props) => (                  
-
-
 export function ProductCard({ producto }: Props) {
   /* --- Fachada: Extraemos lo que necesitamos --- */
   const {
     pedido, // 🔍 Esto nos da la lista de productos agregados (array)
-    addToPedido // ➕ Esta función agrega pedidos
+    addToPedido, // ➕ Esta función agrega pedidos
+    removAllPedido // ➖ Esta función saca pedidos
   } = usePedidoStore();
 
-  /* --- Lógica: Buscamos si este producto ya está en el pedido --- <!> Revisar despues */
-  const lineaActual = pedido.find(item => item.producto.prod_id === producto.prod_id);
-  const cantidad = lineaActual?.cantidad || 0; // <!> Creo que esto lo voy a usar cuando aga que la tarjetas con la cantidad comprada 
-  //const estaComprado = cantidad > 0;
+ /* --- Lógica de Estado Local del Producto --- */
+  const lineaActual = pedido.find(item => item.producto.prod_id === producto.prod_id); // Linea actual del producto en el pedido
+  const cantidad = lineaActual?.cantidad || 0; // Cantidad actual del producto en el pedido
+  const subtotal = producto.prod_precio * cantidad; // Subtotal del producto en el pedido
+  const estaSeleccionado = cantidad > 0; // Esta seleccionado el producto
+
+  /* --- Generación de Link de WhatsApp  <!> Los menaje yo lo quiero sentralizado por fuer asi que depues lo saco --- */
+  const whatsappLink = `https://wa.me/${companyInfo.contact.adminPhone}?text=${encodeURIComponent(
+    `¡Hola! Estoy interesado en el producto: *${producto.prod_nombre}*`
+  )}`;
+
+  // 1. Método separado para manejar la eliminación
+  const handleRemoveFromPedido = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation(); // Evita que se dispare el click del contenedor padre
+    removAllPedido(producto.prod_id);
+  };
+
+
+
 
   return (
-    <div className={`
-      /* --- Posición --- */
-      flex                         /* Contenedor flexible */
-      flex-col                     /* Alineación vertical de elementos */
-      gap-2                        /* Espacio entre hijos de 0.5rem */
-      
-      /* --- Dimensiones --- */
-      h-full                       /* Altura total */ 
-      min-w-[280px]                /* Ancho mínimo para consistencia */
-      p-6                          /* Padding interno de 1.5rem */
+    <div 
+      /* Al tocar la tarjeta, se agrega una unidad automáticamente */
+      onClick={() => addToPedido(producto)}
+    
+      className={`
+        /* --- Posición --- */
+        relative                     /* Base para badges absolutos <!> Lo agrege por no se para que */
+        flex                         /* Contenedor flexible */
+        flex-col                     /* Alineación vertical de elementos */
+        gap-2                        /* Espacio entre hijos de 0.5rem */
+        
+        /* --- Dimensiones --- */
+        h-full                       /* Altura total */ 
+        min-w-[280px]                /* Ancho mínimo para consistencia */
+        p-6                          /* Padding interno de 1.5rem */
 
-      /* --- Colores --- */
-      bg-vete-soft/50              /* Fondo suave con transparencia */
+        /* --- Colores --- */
+        
+        ${estaSeleccionado ?  //  Cambio de color si está seleccionado
+          'bg-vete-primary/20 border-vete-primary' :  // Si esta seleccionado
+          'bg-vete-soft/50 border-transparent'} /* Si no esta seleccionado */
+          border-2                     /* Borde para resaltar selección */
+        
+        /* --- Estilo --- */
+        rounded-[2rem]               /* Bordes Figma */
+        cursor-pointer               /* Indica que toda la tarjeta es clickeable */
       
-      /* --- Estilo --- */
-      rounded-[2rem]               /* Bordes muy redondeados según diseño Figma */
-    `}>
+        /* --- Animación --- */
+        transition-all               /* Suaviza cambios de color y borde */
+        duration-300                 /* Velocidad de transición */
+        hover:shadow-xl              /* Elevación al pasar el mouse */
+      `}>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      {/* --- BADGE SUPERIOR IZQUIERDO: Subtotal --- */}
+      {estaSeleccionado && (
+        <div className={`
+          /* --- Posición --- */
+          absolute                     /* Flota sobre la tarjeta */
+          top-4 left-4                 /* Ubicación exacta */
+          z-20                         /* Por encima de la imagen */
+          
+          /* --- Dimensiones --- */
+          flex                        /* Alineación icono-texto */
+          items-center                /* Centrado verticalmente */
+          gap-2                       /* Espaciado interno */
+          px-3 py-1.5                 /* Espaciado interno */
+          
+          /* --- Colores --- */
+          bg-vete-primary             /* Color Fondo */
+          text-white                   /* Texto blanco */
+          
+          /* --- Estilo --- */
+          rounded-full                 /* Forma de píldora */
+          shadow-lg                    /* Sombra de profundidad *               
+          text-lg                      /* Texto tamaño pequeño */
+          animate-in                   /* Animación de aparición */
+          fade-in                    /* Animación de aparición */
+          zoom-in                    /* Animación de zoom */
+        `}>
+          <ShoppingCart size={20} />
+          <span>
+            Can:{cantidad} / 
+            ${subtotal.toLocaleString('es-UY')}
+          </span>
+        </div>
+      )}
+
+      {/* --- BOTÓN CANCELAR (Top Right) --- */}
+      {estaSeleccionado && (
+        <button
+          /*  stopPropagation: Evita que al cancelar se agregue otro producto <!> Sacar a un metodo aparte  */
+          onClick={handleRemoveFromPedido}
+          className={`
+            /* --- Posición --- */
+            absolute top-4 right-4 z-20
+            /* --- Dimensiones --- */
+            p-2
+            /* --- Colores --- */
+            bg-red-500 text-white
+            /* --- Estilo --- */
+            rounded-full shadow-md
+            /* --- Animación --- */
+            hover:bg-red-600 transition-colors
+          `}
+        >
+          <X size={16} />
+        </button>
+      )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       {/* Imagen del producto */}
       <img

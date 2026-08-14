@@ -1,8 +1,10 @@
 /* --- apps/web-client/src/hooks/useProducts.ts --- */
 import { useState, useEffect, useMemo } from 'react';
 import { productService } from '../services/product_service';
+import { usePedidoStore } from '../context/pedido_context';
 import { productMapper } from '../mapper/product_mapper';
 import type { ApiCategory, ApiProduct } from '../types/product_types';
+import type { PedidoItem } from '../types/pedido_types';
 
 /**
  * Hook para manejar el estado global de los productos
@@ -12,7 +14,74 @@ export const useProducts = () => {
   const [categories, setCategories] = useState<ApiCategory[]>([]); // Guardo las categorias 
   const [loading, setLoading] = useState(true); // Guardo el estado de carga 
 
-  /* Carga inicial y mapeo <!> NO enteindo como llama esto */ 
+  const { pedido, loadPedidoMasivo } = usePedidoStore();
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  /* --- LÓGICA A: SERIALIZACIÓN (Actualizar URL al comprar) --- */
+  useEffect(() => {
+    if (pedido.length === 0) {
+      /* Si el carrito está vacío, limpiamos el parámetro de la URL */
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+      return;
+    }
+
+    /* Convertimos el array [ {id:1, cant:2}, {id:29, cant:1} ] en "1:2,29:1" */
+    const cartString = pedido
+      .map(item => `${item.producto.prod_id}:${item.cantidad}`)
+      .join(',');
+
+    const newUrl = `${window.location.pathname}?cart=${cartString}`;
+    /* replaceState actualiza la URL en la barra de direcciones sin recargar la página */
+    window.history.replaceState({}, '', newUrl);
+  }, [pedido]);
+
+
+  /* --- LÓGICA B: REHIDRATACIÓN (Leer URL al iniciar) --- */
+  useEffect(() => {
+    /* Solo intentamos rehidratar cuando las categorías (y productos) ya cargaron del backend */
+    if (categories.length > 0 && pedido.length === 0) {
+      const params = new URLSearchParams(window.location.search);
+      const cartParam = params.get('cart'); // "1:2,29:1"
+
+      if (cartParam) {
+        const allProducts = categories.flatMap(cat => cat.productos);
+        const lineasRehidratadas: PedidoItem[] = [];
+
+        cartParam.split(',').forEach(pair => {
+          const [id, qty] = pair.split(':').map(Number);
+          const productoEncontrado = allProducts.find(p => p.prod_id === id);
+
+          if (productoEncontrado) {
+            lineasRehidratadas.push({
+              producto: productoEncontrado,
+              cantidad: qty,
+              precio_unitario_capturado: productoEncontrado.prod_precio
+            });
+          }
+        });
+
+        if (lineasRehidratadas.length > 0) {
+          loadPedidoMasivo(lineasRehidratadas);
+        }
+      }
+    }
+  }, [categories]); // Se dispara cuando el backend responde con los productos
+
+
+
+  /* Carga inicial y mapeo  */ 
   useEffect(() => {// Se ejecuta solo una vez cuando el componente se monta
     const loadData = async () => { // Funcion asincrona que se encarga de cargar los datos iniciales y mapearlos
       try {
@@ -32,6 +101,24 @@ export const useProducts = () => {
     
     loadData(); // llamo a la funcion loadData dearria
   }, []);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   /* Lógica de filtrado (useMemo actúa como caché) */
   const filteredResults = useMemo(() => { // Se ejecuta solo cuando el searchTerm o las categorias cambian 

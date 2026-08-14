@@ -7,7 +7,7 @@ import { PedidoItemRow } from './PedidoItemRow';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
 
 
-import type { UserAddress } from '../../hooks/useAddressManagement';
+import type { UserAddress } from '../../hoo   ks/useAddressManagement';
 import { useAddressManagement } from '../../hooks/useAddressManagement'
 
 /**
@@ -168,6 +168,7 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
   /**
    * Maneja la confirmación del pedido a través de WhatsApp.
    * Realiza validaciones básicas antes de proceder.
+   * <!> Codi anterior 
    */
   const handleConfirmOrder = () => {
     if (!selectedAddress || !selectedAddress.addressLine.trim()) {
@@ -182,6 +183,39 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
     const url = getWhatsAppUrl(selectedAddress.addressLine);
     window.open(url, '_blank');
   };
+
+
+    //
+
+  const handleConfirmOrder = () => {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('es-UY');
+    const timeStr = now.toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' });
+    
+    /* Generamos la URL actual (que ya tiene el ?cart=... gracias al hook) */
+    const shareUrl = window.location.href;
+
+    let message = `🐾 *NUEVO PEDIDO - VETERINARIA BELTRAMELLI* 🐾\n`;
+    message += `📅 *Fecha:* ${dateStr} - ${timeStr} hs\n\n`;
+    message += `🛒 *Detalle de la compra:*\n`;
+    
+    pedido.forEach(item => {
+      const subtotal = item.producto.prod_precio * item.cantidad;
+      message += `• ${item.cantidad}x ${item.producto.prod_nombre} — $${subtotal.toLocaleString('es-UY')}\n`;
+    });
+
+    message += `\n💰 *TOTAL ESTIMADO: $${total.toLocaleString('es-UY')}*\n`;
+    message += `----------------------------------\n`;
+    message += `🔗 *Ver o Modificar este carrito en la web:*\n`;
+    message += `${shareUrl}\n\n`;
+    message += `_Mensaje generado automáticamente desde la web._`;
+
+    window.open(`https://wa.me/59892444510?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
+
+
+
 
   /**
    * Abre el modal de confirmación para vaciar el carrito.

@@ -10,7 +10,7 @@ import type { ApiProduct } from './product_types';
 export interface PedidoItem {
   producto: ApiProduct;
   cantidad: number;
-  precio_unitario_capturado: number; //<!> Tengo que ver como ago que esto lo pase de producto al seleccionarlo lo pongo aparte por si el precio cambia 
+  precio_unitario_capturado: number;
 }
 
 /**

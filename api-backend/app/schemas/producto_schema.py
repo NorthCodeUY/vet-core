@@ -1,5 +1,5 @@
 # api-backend/app/schemas/producto_schema.py
-# from pandas._libs.tslibs.offsets import Nano # <!> Borrar 
+
 from pydantic import BaseModel, Field, field_validator, ConfigDict # Importamos BaseModel de pydantic
 from typing import List, Optional # Importamos List y Optional de typing
 

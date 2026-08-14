@@ -1,4 +1,4 @@
-/* --- apps/web-client/src/components/ProductCardV2.tsx --- */
+/* --- apps/web-client/src/components/ProductCard/ProductCardV2.tsx --- */
 
 import { ShoppingCart,  X, Plus, Minus } from 'lucide-react';
 import { SUBCATEGORY_ICONS } from '../utils/categoryHelpers';

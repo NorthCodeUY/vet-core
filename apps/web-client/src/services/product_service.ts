@@ -1,4 +1,4 @@
-/* --- apps/web-client/src/services/product.service.ts --- */
+/* --- apps/web-client/src/services/product_service.ts --- */
 
 const API_BASE = '/api/productos';
 

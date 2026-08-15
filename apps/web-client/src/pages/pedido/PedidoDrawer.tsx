@@ -7,7 +7,7 @@ import { PedidoItemRow } from './PedidoItemRow';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
 
 
-import type { UserAddress } from '../../hoo   ks/useAddressManagement';
+import type { UserAddress } from '../../hoo   ks/useAddressManagement'; // <!> Esto esta mal yo no tengo esta clase 
 import { useAddressManagement } from '../../hooks/useAddressManagement'
 
 /**

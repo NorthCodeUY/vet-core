@@ -157,6 +157,7 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
         /* --- Dimensiones --- */
         gap-y-10                     /* Espacio vertical entre filas */
         gap-x-6                      /* Espacio horizontal entre columnas */
+        w-full                       /* Ocupa todo el ancho que le otorgan */
       `}>
         {products.map((p, index) => {
           /* Lógica de visibilidad basada en el índice y estado de expansión */
@@ -167,6 +168,10 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
             <div
               key={p.prod_id}
               className={`
+
+                w-full                      /* Ocupar el 100% de lo asignado */
+                min-w-0                     /* No se agranda el tamaño, se adapta el contenido */
+
                 /* --- Posición --- */
                 ${isHiddenOnMobile ? 'hidden' : 'flex'} 
                 ${isHiddenOnDesktop ? 'xl:hidden' : 'xl:flex'}

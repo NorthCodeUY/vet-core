@@ -6,9 +6,8 @@ import { usePedidoStore } from '../../context/pedido_context';
 import { PedidoItemRow } from './PedidoItemRow';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
 
-
-import type { UserAddress } from '../../hooks/useAddressManagement';
 import { useAddressManagement } from '../../hooks/useAddressManagement'
+import type { UserAddress } from '../../hooks/useAddressManagement'
 
 /**
  * Interfaz para la dirección de usuario simulada (si aún se usa para pre-cargar inicial).
@@ -165,23 +164,156 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
   }, [isOpen, pedido.length, onClose]);
 
 
-  /**
-   * Maneja la confirmación del pedido a través de WhatsApp.
-   * Realiza validaciones básicas antes de proceder.
-   */
-  const handleConfirmOrder = () => {
-    if (!selectedAddress || !selectedAddress.addressLine.trim()) {
-      alert("Por favor, selecciona o ingresa una dirección de entrega válida.");
-      return;
-    }
-    if (pedido.length === 0) {
-      alert("El pedido está vacío. Agrega productos para continuar.");
-      return;
-    }
 
-    const url = getWhatsAppUrl(selectedAddress.addressLine);
-    window.open(url, '_blank');
-  };
+
+
+
+
+
+
+
+
+
+
+
+/* --- Dentro de PedidoDrawer.tsx --- */
+
+const handleConfirmOrder = () => {
+  /* 1. Validaciones de seguridad */
+  if (!selectedAddress || !selectedAddress.addressLine.trim()) {
+    alert("Por favor, selecciona o ingresa una dirección de entrega válida.");
+    return;
+  }
+  if (pedido.length === 0) {
+    alert("El pedido está vacío.");
+    return;
+  }
+
+
+
+
+
+  // <!> Mensaje feo ----------------------------------------->
+
+
+  // /* 2. Captura de tiempo actual */
+  // const now = new Date();
+  // const dateStr = now.toLocaleDateString('es-UY');
+  // const timeStr = now.toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' });
+  
+  // /* 3. El link actual ya contiene el ?cart=... gracias al useEffect de useProducts */
+  // const shareUrl = window.location.href;
+
+  // /* 4. Construcción del mensaje profesional */
+  // let message = `🐾 *NUEVO PEDIDO - VETERINARIA BELTRAMELLI* 🐾\n`;
+  // message += `📅 *Fecha:* ${dateStr} - ${timeStr} hs\n`;
+  // message += `📍 *Entrega:* ${selectedAddress.addressLine}\n\n`;
+  // message += `🛒 *Detalle de la compra:*\n`;
+  
+  // pedido.forEach(item => {
+  //   const subtotal = item.precio_unitario_capturado * item.cantidad;
+  //   message += `• ${item.cantidad}x ${item.producto.prod_nombre} — $${subtotal.toLocaleString('es-UY')}\n`;
+  // });
+  // message += `\n💰 *TOTAL ESTIMADO: $${total.toLocaleString('es-UY')}*\n`;
+  // message += `----------------------------------\n\n`; // Doble salto de línea
+  // message += `🔗 *Ver o Modificar este carrito en la web:*\n`;
+  // message += `${shareUrl}\n\n`; // El link ahora queda aislado
+  // message += `_Mensaje generado automáticamente._`;
+
+
+
+
+
+  // /* 5. Apertura de WhatsApp */
+  // window.open(`https://wa.me/59892444510?text=${encodeURIComponent(message)}`, '_blank');
+
+
+
+
+
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('es-UY');
+  const timeStr = now.toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' });
+  
+  /* 
+     IMPORTANTE: El link debe ser absoluto. 
+     En producción usará veterinaria-beltramelli.com 
+  */
+  const shareUrl = window.location.href;
+
+  /* --- Construcción del Mensaje (Sin emojis problemáticos) --- */
+  let message = `*NUEVO PEDIDO - VETERINARIA BELTRAMELLI*\n\n`;
+  message += `*Fecha:* ${dateStr} - ${timeStr} hs\n`;
+  message += `*Entrega:* ${selectedAddress.addressLine}\n\n`;
+  
+  message += `*Detalle de la compra:*\n`;
+  
+  pedido.forEach(item => {
+    const subtotal = item.precio_unitario_capturado * item.cantidad;
+    message += `• ${item.cantidad}x ${item.producto.prod_nombre} — $${subtotal.toLocaleString('es-UY')}\n`;
+  });
+
+  message += `\n*TOTAL ESTIMADO: $${total.toLocaleString('es-UY')}*\n`;
+  message += `__________________________\n\n`;
+  
+  /* 
+     <!> TRUCO PARA LA VISTA PREVIA:
+     El link debe ir al final para que WhatsApp genere la tarjeta con el logo.
+  */
+  message += `*Ver o editar pedido en la web:*\n`;
+  message += `${shareUrl}`;
+
+  /* Usamos encodeURIComponent para que los espacios y saltos de línea no se rompan */
+  const whatsappUrl = `https://wa.me/59892444510?text=${encodeURIComponent(message)}`;
+  
+  window.open(whatsappUrl, '_blank');
+
+
+
+
+
+
+
+
+
+}; // Fin handleConfirmOrder
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   /**
    * Abre el modal de confirmación para vaciar el carrito.
@@ -521,6 +653,7 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
               onClick={handleConfirmOrder}
               disabled={isOrderButtonDisabled}
               className={`
+                
                 flex items-center justify-center gap-3
                 w-full py-3                                     /* Altura reducida de py-3.5 a py-3 */
                 bg-vete-dark-green text-vete-card-white

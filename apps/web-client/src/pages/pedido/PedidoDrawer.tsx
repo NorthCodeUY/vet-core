@@ -9,6 +9,8 @@ import { ConfirmationModal } from '../../components/ConfirmationModal';
 import { useAddressManagement } from '../../hooks/useAddressManagement'
 import type { UserAddress } from '../../hooks/useAddressManagement'
 
+import companyInfo from '../../data/companyInfo.json';
+
 /**
  * Interfaz para la dirección de usuario simulada (si aún se usa para pre-cargar inicial).
  */
@@ -231,7 +233,8 @@ const handleConfirmOrder = () => {
 
 
 
-
+  // Mensaje a mandar a whatsapp v2  <!> Esto deveria estar en un metodo aparte esta todo muy junto ----------------------------------------->
+  
   const now = new Date();
   const dateStr = now.toLocaleDateString('es-UY');
   const timeStr = now.toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' });
@@ -265,7 +268,8 @@ const handleConfirmOrder = () => {
   message += `${shareUrl}`;
 
   /* Usamos encodeURIComponent para que los espacios y saltos de línea no se rompan */
-  const whatsappUrl = `https://wa.me/59892444510?text=${encodeURIComponent(message)}`;
+  const numero_mandarmensaje = companyInfo.contact.adminPhone;
+  const whatsappUrl = `https://wa.me/${numero_mandarmensaje}?text=${encodeURIComponent(message)}`;
   
   window.open(whatsappUrl, '_blank');
 
@@ -421,6 +425,12 @@ const handleConfirmOrder = () => {
       handleCloseDeleteAddressModal();
     }
   };
+
+
+
+
+
+  
 
   // Determinar si los botones de acción deben estar deshabilitados
   const isOrderButtonDisabled = pedido.length === 0 || !selectedAddress?.addressLine.trim();

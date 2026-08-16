@@ -311,6 +311,35 @@ sequenceDiagram
 
 ---
 
+### Importación de Datos y Estándar de Entorno
+
+Luego de haber instalado todo lo necesario y haber puesto en marcha el servidor, queda agregar los productos a la base de datos.
+Estos vienen en un archivo en formato Excel, el cual hay que ejecutar y automaticamente se agregan a su base de datos
+
+1. **Si no has activado venv**:
+   > [!IMPORTANT]
+   > Es necesario activarlo para poder poner en funcionamiento este proyecto, teniendo en cuenta que estas en la raiz del mismo, ejecuta lo siguiente en la terminal en Windows:
+   ```powershell
+   cd api-backend
+   .\venv\Scripts\Activate.ps1
+   ```
+   > [!IMPORTANT]
+   > De lo contrario si estas en Linux o Mac ejecuta lo siguiente:
+   ```bash
+   cd api-backend
+   source venv/bin/activate
+   ```
+
+2. **Agregar datos a la base**:
+   > [!IMPORTANT]
+   > Ejecuta este script en la terminal luego de haber activado (venv) y estar en la carpeta api-backend:
+   ```bash
+   python -m app.services.import_excel
+   ```
+Te deberia de aparecer un mensaje como: ¡Carga completada con éxito!
+
+---
+
 ## 📖 Documentación Interactiva de la API
 
 Una vez que el servidor esté ejecutándose (localmente o en Docker), puedes explorar y probar los endpoints interactivos desde el navegador:

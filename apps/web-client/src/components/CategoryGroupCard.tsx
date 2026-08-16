@@ -182,8 +182,9 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
         justify-items-center         /* Centra las tarjetas */
 
         /* --- Dimensiones --- */
-        gap-y-10                     /* Espacio vertical */
-        gap-x-6                      /* Espacio horizontal */
+        gap-y-10                     /* Espacio vertical entre filas */
+        gap-x-6                      /* Espacio horizontal entre columnas */
+        w-full                       /* Ocupa todo el ancho que le otorgan */
       `}>
 
 
@@ -197,16 +198,13 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
             <div
               key={p.prod_id}
               className={`
-                /* --- Lógica de Visibilidad Progresiva --- */
-                /* Si está expandido, mostramos todos. Si no, aplicamos el escalonamiento: */
-                ${isExpanded ? 'flex' : (
-                  index === 0 ? 'flex' :                         /* El 1ero siempre visible */
-                    index === 1 ? 'hidden sm:flex' :               /* El 2do aparece en Tablet */
-                      index === 2 ? 'hidden lg:flex' :               /* El 3ero aparece en Laptop */
-                        index === 3 ? 'hidden xl:flex' :               /* El 4to aparece en Desktop */
-                          index === 4 ? 'hidden 2xl:flex' :               /* El 5to aparece en Desktop */
-                          'hidden'                                       /* Del 6to en adelante ocultos */
-                )}
+
+                w-full                      /* Ocupar el 100% de lo asignado */
+                min-w-0                     /* No se agranda el tamaño, se adapta el contenido */
+
+                /* --- Posición --- */
+                ${isHiddenOnMobile ? 'hidden' : 'flex'} 
+                ${isHiddenOnDesktop ? 'xl:hidden' : 'xl:flex'}
 
                 /* --- Animación --- */
                 animate-in                   /* Entrada suave */

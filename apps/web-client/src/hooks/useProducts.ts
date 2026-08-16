@@ -16,44 +16,45 @@ export const useProducts = () => {
 
   const { pedido, loadPedidoMasivo } = usePedidoStore();
   
+  
+  const [isRehydrated, setIsRehydrated] = useState(false); // <!> Nuevo: Control de carga
 
 
 
 
 
-
-
-
-
-
-
-
-  /* --- LÓGICA A: SERIALIZACIÓN (Actualizar URL al comprar) --- */
+  /* --- LÓGICA A: Se utiliza para que cuando se altera el carrito guarda la info en la URL --- */
   useEffect(() => {
+
+    // <!> FIX: Si no hemos procesado la URL inicial, no permitimos que este efecto limpie la URL
+    if (!isRehydrated) return; 
+    
     if (pedido.length === 0) {
       /* Si el carrito está vacío, limpiamos el parámetro de la URL */
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, '', newUrl);
+      const newUrl = window.location.pathname; // Tomamos la ruta actual
+      window.history.replaceState({}, '', newUrl); // Reemplaza el estado actual del historial sin recargar la pagina
       return;
     }
 
     /* Convertimos el array [ {id:1, cant:2}, {id:29, cant:1} ] en "1:2,29:1" */
-    const cartString = pedido
-      .map(item => `${item.producto.prod_id}:${item.cantidad}`)
-      .join(',');
+    const cartString = pedido // Recorro el array de productos 
+      .map(item => `${item.producto.prod_id}:${item.cantidad}`) // Recorro el array de productos 
+      .join(','); // Convierto el array en un string 
 
-    const newUrl = `${window.location.pathname}?cart=${cartString}`;
+    const newUrl = `${window.location.pathname}?cart=${cartString}`;// Tomamos la ruta actual y le sumamos el string del carrito 
     /* replaceState actualiza la URL en la barra de direcciones sin recargar la página */
     window.history.replaceState({}, '', newUrl);
-  }, [pedido]);
+  }, [pedido, isRehydrated]); // Agregamos isRehydrated como dependencia
+
+
 
 
   /* --- LÓGICA B: REHIDRATACIÓN (Leer URL al iniciar) --- */
   useEffect(() => {
-    /* Solo intentamos rehidratar cuando las categorías (y productos) ya cargaron del backend */
-    if (categories.length > 0 && pedido.length === 0) {
+    /* Solo actuamos cuando las categorías ya bajaron del backend */
+    if (categories.length > 0 && !isRehydrated) {
       const params = new URLSearchParams(window.location.search);
-      const cartParam = params.get('cart'); // "1:2,29:1"
+      const cartParam = params.get('cart');
 
       if (cartParam) {
         const allProducts = categories.flatMap(cat => cat.productos);
@@ -76,12 +77,17 @@ export const useProducts = () => {
           loadPedidoMasivo(lineasRehidratadas);
         }
       }
+
+      /* 
+         <!> FIX CRÍTICO: 
+         Esta línea debe estar FUERA del 'if (cartParam)'.
+         Dice: "Ya revisé la URL, ahora el sistema puede empezar a escribir".
+      */
+      setIsRehydrated(true); 
     }
-  }, [categories]); // Se dispara cuando el backend responde con los productos
+  }, [categories, isRehydrated]);
 
-
-
-  /* Carga inicial y mapeo  */ 
+  /* Carga inicial se utiliza cuando iniciamos el frontend para traer los datos de el bakend */ 
   useEffect(() => {// Se ejecuta solo una vez cuando el componente se monta
     const loadData = async () => { // Funcion asincrona que se encarga de cargar los datos iniciales y mapearlos
       try {
@@ -101,22 +107,6 @@ export const useProducts = () => {
     
     loadData(); // llamo a la funcion loadData dearria
   }, []);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

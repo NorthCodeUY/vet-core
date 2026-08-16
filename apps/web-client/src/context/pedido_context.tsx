@@ -11,7 +11,7 @@ import type { PedidoItem } from '../types/pedido_types';
  */
 interface PedidoContextType {
   pedido: PedidoItem[];
-  loadPedidoMasivo: (lineas: PedidoItem[]) => void;    /* Acción: Carga desde URL (Rehidratación) */
+  loadPedidoMasivo: (lineas: PedidoItem[]) => void;        /* <!> Nueva Funcionalidda Metodo para carga desde URL (Rehidratación) */
   addToPedido: (product: ApiProduct) => void;              /*  Método para dar de alta o incrementar producto */
   removeFromPedido: (productId: number) => void;           /*  Método para dar de baja o decrementar producto */
   removAllPedido: (productId: number) => void;             /*  Método para eliminar completamente un producto del pedido */

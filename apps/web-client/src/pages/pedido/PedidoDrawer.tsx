@@ -1,13 +1,26 @@
 /* --- apps/web-client/src/pages/pedido/PedidoDrawer.tsx --- */
 
+
+
+// <!> Cosas a arreglar
+
+// 1. La paleta de colores todos los colores tiene que si o si trabajar con la paleta de colores 
+
+
+
+
+
 import { useState, useEffect, useRef } from 'react';
 import { X, ShoppingBag, MapPin, Send, Package, Trash2, Edit, Plus, ChevronDown } from 'lucide-react';
 import { usePedidoStore } from '../../context/pedido_context';
 import { PedidoItemRow } from './PedidoItemRow';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
 
+
 import { useAddressManagement } from '../../hooks/useAddressManagement'
 import type { UserAddress } from '../../hooks/useAddressManagement'
+
+import companyInfo from '../../data/companyInfo.json'; // Datos de la empresa 
 
 /**
  * Interfaz para la dirección de usuario simulada (si aún se usa para pre-cargar inicial).
@@ -56,684 +69,911 @@ const useUserInitialAddress = () => {
   return { defaultAddress, loadingUserAddress };
 };
 
-/**
- * Interfaz para las props del componente PedidoDrawer.
- */
-interface PedidoDrawerProps {
-  isOpen: boolean;    // Controla la visibilidad del drawer.
-  onClose: () => void; // Función para cerrar el drawer.
-}
+  /**
+   * Interfaz para las props del componente PedidoDrawer.
+   * @param isOpen - Controla la visibilidad del drawer.
+   * @param onClose - Función para cerrar el drawer.
+   */
+  interface PedidoDrawerProps {
+    isOpen: boolean;    // Controla la visibilidad del drawer.
+    onClose: () => void; // Función para cerrar el drawer.
+  }
 
-/**
- * Drawer que muestra el carrito de compras y permite confirmar el pedido.
- * Incorpora un sistema de gestión de direcciones, un modal de confirmación,
- * y optimizaciones de UI/UX para una experiencia "Premium".
- *
- * @param {PedidoDrawerProps} props - Propiedades para el drawer.
- * @returns {React.FC} Un componente de drawer para el pedido.
- */
-export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
-  const {
-    pedido,
-    total,
-    itemCount,
-    getWhatsAppUrl,
-    clearPedido
-  } = usePedidoStore();
-
-  const {
-    addresses,
-    selectedAddress,
-    addAddress,
-    updateAddress,
-    deleteAddress,
-    selectAddress,
-    setDefaultAddress,
-    isAddressListOpen,
-    setIsAddressListOpen,
-    toggleAddressList
-  } = useAddressManagement();
-
-  const { defaultAddress: initialUserAddress, loadingUserAddress } = useUserInitialAddress();
-
-  /* Estado local para la dirección del input que se está editando o agregando. */
-  const [currentAddressInput, setCurrentAddressInput] = useState<string>('');
-  /* Estado para controlar si el usuario está editando una dirección existente o agregando una nueva. */
-  const [isEditingAddress, setIsEditingAddress] = useState<boolean>(false);
-  /* Estado para la etiqueta de la dirección que se está agregando/editando. */
-  const [currentAddressLabel, setCurrentAddressLabel] = useState<string>('');
-  /* Estado para el ID de la dirección que se está editando (null si es nueva). */
-  const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
-
-  /* Estado para controlar la visibilidad del modal de confirmación de vaciado. */
-  const [isClearCartModalOpen, setIsClearCartModalOpen] = useState(false);
-  /* Estado para controlar la visibilidad del modal de confirmación de eliminación de dirección. */
-  const [isDeleteAddressModalOpen, setIsDeleteAddressModalOpen] = useState(false);
-  /* Estado para almacenar el ID de la dirección a eliminar. */
-  const [addressIdToDelete, setAddressIdToDelete] = useState<string | null>(null);
-
-
-  /* Referencia para el elemento scrollable para asegurar que el footer permanezca visible. */
-  const scrollableRef = useRef<HTMLDivElement>(null);
 
   /**
-   * Efecto para inicializar el 'currentAddressInput' y 'currentAddressLabel'
-   * cuando el drawer se abre o la dirección seleccionada cambia.
+   * Header del carrito con el título y el contador de ítems.
+   * @param itemCount - Número de ítems en el carrito
+   * @param onClose - Función para cerrar el drawer
+   */
+  const DrawerHeader = ({ itemCount, onClose }: { itemCount: number; onClose: () => void }) => (
+    // <!> Cosas a arreglar
+    // 1. El logo no me gusta tendria que ser o un carrrito o uno de esos canastos del super 
+    // 2. Que aparesca Veterinaria beltrameli Vamos a ponerlo como una variable a el menu porque hay que emensar a
+    // estraer los datos que no vay para ponerlo a varialbe de entorno 
+    // 3. me gustaria poner  
+    <div className={`
+      /* --- Posición --- */
+      flex items-center justify-between
+      /* --- Dimensiones --- */
+      p-4
+      /* --- Colores --- */
+      bg-vete-dark-green text-vete-card-white
+    `}>
+      <div className="flex items-center gap-3">
+        <ShoppingBag size={24} />
+        <h2 className="text-xl font-black italic uppercase tracking-tight">Tu Carrito</h2>
+        <span className="bg-vete-primary text-vete-card-white text-[10px] px-2 py-1 rounded-full font-bold">
+          {itemCount} ITEMS
+        </span>
+      </div>
+      <button onClick={onClose} className="p-1.5 hover:bg-vete-card-white/10 rounded-full transition-colors">
+        <X size={24} />
+      </button>
+    </div>
+  );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//<!> Falta implementar este metodo Cambiar nobre yo le pondri footerPedidoDrawer 
+/**
+ * Menu del footer para mostrar el total del pedido y los botones de acción
+ * @param param0 
+ * @returns 
+ */
+const CartCheckoutSection = ({ 
+  pedido, 
+  total, 
+  selectedAddress, 
+  addressProps, 
+  onConfirm, 
+  onClear 
+}: any) => {
+  return (
+    <div className={`
+      /* --- Posición --- */
+      flex                         /* Contenedor flexible */
+      flex-col                     /* Alineación vertical */
+      gap-4                        /* Espacio entre elementos */
+      mt-4                         /* Margen superior */
+    `}>
+      
+
+
+
+
+
+
+      {/*<!> Gestión de direcciones No Borrar Para sprin Pedido sentralizado */}
+      {/* <AddressManager {...addressProps} selectedAddress={selectedAddress} /> */}
+
+
+
+
+
+      {/* Botonera de Acción */}
+      <div className="flex flex-col gap-3">
+        <button 
+          onClick={onConfirm} 
+          // disabled={pedido.length === 0 || !selectedAddress} //<!> Capas que es util si tenemos la ubicacion vemos 
+          className={`
+            /* --- Posición --- */
+            flex items-center justify-center gap-3
+            /* --- Dimensiones --- */
+            w-full py-3
+            /* --- Colores --- */
+            bg-vete-dark-green text-white
+            /* --- Texto --- */
+            font-black uppercase tracking-widest
+            /* --- Estilo --- */
+            rounded-xl shadow-xl
+            /* --- Animación --- */
+            disabled:opacity-50 transition-all
+          `}
+        >
+          Confirmar por WhatsApp <Send size={18} />
+        </button>
+
+        <button 
+          onClick={onClear} 
+          disabled={pedido.length === 0} 
+          className={`
+            /* --- Posición --- */
+            flex items-center justify-center gap-2
+            /* --- Dimensiones --- */
+            w-full py-2
+            /* --- Colores --- */
+            bg-transparent border-2 border-vete-error text-vete-error
+            /* --- Texto --- */
+            font-bold uppercase
+            /* --- Estilo --- */
+            rounded-xl
+            /* --- Animación --- */
+            disabled:opacity-30 transition-all
+          `}
+        >
+          <Trash2 size={16} /> Vaciar Carrito
+        </button>
+      </div>
+    </div>
+  );
+};
+
+
+  /**
+   * Renderiza el contenido del drawer, mostrando la lista de productos.
+   * @param pedido - Array de ítems del pedido
+   * @returns Componente DrawerContent
+   */
+  const DrawerContent = ({ pedido }: { pedido: any[] }) => (
+    <div className={`
+      /* --- Posición --- */
+      flex-1 overflow-y-auto
+      /* --- Dimensiones --- */
+      p-4
+      /* --- Colores --- */
+      bg-vete-dark
+    `}>
+      {pedido.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-full text-vete-text-muted gap-4">
+          <Package size={64} className="opacity-20" />
+          <p className="font-bold italic">Tu carrito está vacío</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {pedido.map((item) => (
+            <PedidoItemRow key={item.producto.prod_id} item={item} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+
+
+  /**
+   * Maneja la lógica de direcciones: selección, edición, guardado y eliminación.
+   * Es el "cerebro" de la gestión de direcciones dentro del carrito.
+   * @param selectedAddress - Dirección seleccionada actualmente
+   * @param isEditingAddress - Estado de edición
+   * @param currentAddressInput - Valor actual del input de dirección
+   * @param setCurrentAddressInput - Setter para el input de dirección
+   * @param currentAddressLabel - Valor actual de la etiqueta de dirección
+   * @param setCurrentAddressLabel - Setter para la etiqueta de dirección
+   * @param isAddressListOpen - Estado de la lista desplegable de direcciones
+   * @param addresses - Lista de direcciones disponibles
+   * @param onSave - Función para guardar la dirección
+   * @param onCancel - Función para cancelar la edición
+   * @param onStartEdit - Función para iniciar la edición
+   * @param onToggleList - Función para alternar la lista de direcciones
+   * @param onSelect - Función para seleccionar una dirección
+   * @param onDelete - Función para eliminar una dirección
+   * @param onNew - Función para crear una nueva dirección
+   */
+  const AddressManager = ({ 
+    selectedAddress, 
+    isEditingAddress, 
+    currentAddressInput, 
+    setCurrentAddressInput,
+    currentAddressLabel, 
+    setCurrentAddressLabel, 
+    isAddressListOpen, 
+    addresses,
+    onSave, 
+    onCancel, 
+    onStartEdit, 
+    onToggleList, 
+    onSelect, 
+    onDelete, 
+    onNew
+  }: any) => (
+
+    /* --- Bloque de Gestión de Direcciones --- */
+    <div className={`
+      /* --- Posición --- */
+      flex                         /* Activa contenedor flexible */
+      flex-col                     /* Alineación vertical */
+      
+      /* --- Dimensiones --- */
+      gap-2                        /* Espacio entre etiqueta e input */
+    `}>
+      <label className={`
+        /* --- Posición --- */
+        flex                         /* Alineación para icono y texto */
+        items-center                 /* Centrado vertical */
+        
+        /* --- Dimensiones --- */
+        gap-2                        /* Espacio icono-texto */
+        ml-1                         /* Margen izquierdo sutil */
+        
+        /* --- Texto --- */
+        text-xs                      /* Tamaño de fuente pequeño */
+        font-bold                    /* Peso de fuente negrita */
+        uppercase                    /* Texto en mayúsculas */
+
+        /* --- Colores --- */
+        text-vete-text-muted         /* Color gris de la paleta */
+      `}>
+        <MapPin size={14} className="text-vete-dark-green" />
+        Dirección de Entrega
+      </label>
+      
+      <div className="relative">
+        {isEditingAddress || !selectedAddress ? (
+          <div className={`
+            /* --- Posición --- */
+            flex                         /* Contenedor de edición */
+            flex-col                     /* Inputs apilados */
+            
+            /* --- Dimensiones --- */
+            gap-2                        /* Espacio entre campos */
+          `}>
+            <input 
+              type="text" 
+              placeholder="Ej: Av. Italia 1543"
+              className={`
+                /* --- Dimensiones --- */
+                w-full                       /* Ancho total */
+                py-2.5                       /* Padding vertical */
+                pl-4                         /* Padding izquierdo */
+                
+                /* --- Colores --- */
+                bg-vete-dark                 /* Fondo oscuro de la paleta */
+                text-vete-text-light         /* Texto claro */
+                border-transparent           /* Sin borde inicial */
+                
+                /* --- Estilo --- */
+                rounded-xl                   /* Bordes redondeados */
+                border-2                     /* Grosor de borde */
+                outline-none                 /* Quita el aro por defecto */
+                
+                /* --- Animación --- */
+                focus:border-vete-primary    /* Resalta al escribir */
+                transition-all               /* Suaviza el cambio */
+              `}
+              value={currentAddressInput} 
+              onChange={(e) => setCurrentAddressInput(e.target.value)}
+            />
+            <input 
+              type="text" 
+              placeholder="Etiqueta (Casa, Trabajo)"
+              className={`
+                /* --- Dimensiones --- */
+                w-full py-2.5 pl-4
+                /* --- Colores --- */
+                bg-vete-dark text-vete-text-light border-transparent
+                /* --- Estilo --- */
+                rounded-xl border-2 outline-none
+                /* --- Animación --- */
+                focus:border-vete-primary transition-all
+              `}
+              value={currentAddressLabel} 
+              onChange={(e) => setCurrentAddressLabel(e.target.value)}
+            />
+            <div className="flex gap-2 mt-1">
+              <button 
+                onClick={onSave} 
+                className={`
+                  /* --- Posición --- */
+                  flex-1                       /* Ocupa mitad del espacio */
+                  
+                  /* --- Dimensiones --- */
+                  py-2                         /* Padding vertical */
+                  
+                  /* --- Colores --- */
+                  bg-vete-primary              /* Verde principal */
+                  text-white                   /* Texto blanco */
+                  
+                  /* --- Texto --- */
+                  font-bold                    /* Negrita */
+                  text-sm                      /* Tamaño pequeño */
+                  
+                  /* --- Estilo --- */
+                  rounded-lg                   /* Bordes suavizados */
+                `}
+              >
+                Guardar
+              </button>
+              <button 
+                onClick={onCancel} 
+                className={`
+                  /* --- Posición --- */
+                  flex-1
+                  /* --- Dimensiones --- */
+                  py-2
+                  /* --- Colores --- */
+                  border                       /* Borde habilitado */
+                  border-vete-light-border     /* Color de borde suave */
+                  text-vete-text-muted         /* Texto gris */
+                  /* --- Estilo --- */
+                  rounded-lg
+                `}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col">
+            <div className={`
+              /* --- Posición --- */
+              flex                         /* Contenedor de visualización */
+              items-center                 /* Centrado vertical */
+              justify-between              /* Separa texto de botones */
+              
+              /* --- Dimensiones --- */
+              w-full                       /* Ancho total */
+              py-2.5                       /* Padding vertical */
+              pl-4                         /* Padding izquierdo */
+              pr-2                         /* Padding derecho menor */
+              
+              /* --- Colores --- */
+              bg-vete-dark                 /* Fondo oscuro */
+              
+              /* --- Estilo --- */
+              rounded-xl                   /* Bordes redondeados */
+            `}>
+              <p className={`
+                /* --- Texto --- */
+                text-vete-text-light         /* Color claro */
+                text-sm                      /* Tamaño pequeño */
+                font-medium                  /* Peso medio */
+                truncate                     /* Corta texto largo con ... */
+                
+                /* --- Posición --- */
+                flex-1                       /* Toma el espacio central */
+              `}>
+                <span className="font-bold text-vete-primary">{selectedAddress.label}:</span> {selectedAddress.addressLine}
+              </p>
+              <div className="flex gap-1">
+                <button onClick={() => onStartEdit(selectedAddress)} className="p-1.5 text-vete-primary">
+                  <Edit size={16} />
+                </button>
+                <button onClick={onToggleList} className="p-1.5 text-vete-text-muted">
+                  <ChevronDown size={16} />
+                </button>
+              </div>
+            </div>
+
+            {isAddressListOpen && (
+              <div className={`
+                /* --- Posición --- */
+                absolute                     /* Flota sobre el contenido */
+                z-50                         /* Capa superior */
+                
+                /* --- Dimensiones --- */
+                w-full                       /* Mismo ancho que el input */
+                mt-2                         /* Separación superior */
+                max-h-40                     /* Altura máxima con scroll */
+                overflow-y-auto              /* Activa scroll vertical */
+                
+                /* --- Colores --- */
+                bg-vete-dark                 /* Fondo oscuro */
+                border                       /* Borde habilitado */
+                border-vete-light-border     /* Color de borde */
+                
+                /* --- Estilo --- */
+                rounded-xl                   /* Bordes redondeados */
+                shadow-md                    /* Sombra para profundidad */
+              `}>
+                {addresses.map((addr: any) => (
+                  <div 
+                    key={addr.id} 
+                    className={`
+                      /* --- Posición --- */
+                      flex items-center justify-between
+                      /* --- Dimensiones --- */
+                      p-3
+                      /* --- Colores --- */
+                      border-b border-vete-light-border last:border-b-0
+                      /* --- Animación --- */
+                      hover:bg-vete-light-border   /* Feedback al pasar mouse */
+                      transition-colors
+                    `}
+                  >
+                    <button 
+                      onClick={() => onSelect(addr.id)} 
+                      className="flex-1 text-left text-vete-text-light text-sm"
+                    >
+                      <span className="font-bold text-vete-primary">{addr.label}:</span> {addr.addressLine}
+                    </button>
+                    <button onClick={() => onDelete(addr.id)} className="p-1 text-vete-error">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
+                <button 
+                  onClick={onNew} 
+                  className={`
+                    /* --- Dimensiones --- */
+                    w-full p-3
+                    /* --- Texto --- */
+                    text-vete-primary font-bold text-sm
+                    /* --- Colores --- */
+                    hover:bg-vete-light-border
+                    /* --- Animación --- */
+                    transition-colors
+                  `}
+                >
+                  + Nueva dirección
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+    );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Componente principal que orquesta el drawer de pedidos, manejando el estado 
+ * global del carrito y las direcciones del usuario.
+ * @param isOpen Estado que controla si el drawer está abierto o cerrado.
+ * @param onClose Función que se ejecuta cuando se intenta cerrar el drawer.
+ * @returns 
+ */
+export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
+  const { pedido, total, itemCount, clearPedido } = usePedidoStore();
+  
+  const { 
+    addresses, // Array de direcciones guardadas
+    selectedAddress, // Dirección seleccionada actual
+    addAddress, // Función para agregar una nueva dirección
+    updateAddress, // Función para actualizar una dirección existente
+    deleteAddress, // Función para eliminar una dirección
+    selectAddress, // Función para seleccionar una dirección como la actual para el pedido
+    setDefaultAddress, // Función para establecer una dirección como predeterminada
+    isAddressListOpen, // Estado que controla si el historial de direcciones está abierto o cerrado
+    setIsAddressListOpen, // Setter para el estado de visibilidad del historial
+    toggleAddressList // Función para alternar la visibilidad del historial
+  } = useAddressManagement(); // Logica de guardado y seleccion de direcciones
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ // <!> Version Borrar 
+
+ 
+  /* Estados locales para edición de dirección */
+  // const [
+  //   currentAddressInput,
+  //   setCurrentAddressInput // 
+  //   ] =  useState(''); // 
+  
+  // const [
+  //   currentAddressLabel, 
+  //   setCurrentAddressLabel
+  //   ] = useState('');
+
+  // const [
+  //   isEditingAddress,
+  //   setIsEditingAddress
+  // ] = useState(false);
+  
+  // const [
+  //   editingAddressId,
+  //   setEditingAddressId
+  // ] = useState<string | null>(null);
+  
+  // const [
+  //   isClearCartModalOpen,
+  //   setIsClearCartModalOpen
+  // ] = useState(false);
+  
+  // const [
+  //   isDeleteAddressModalOpen,
+  //   setIsDeleteAddressModalOpen
+  // ] = useState(false);
+
+  // const [
+  //   addressIdToDelete,
+  //   setAddressIdToDelete
+  // ] = useState<string | null>(null);
+
+
+
+
+
+
+  /* =============================================================================
+     ESTADOS LOCALES: GESTIÓN DE DIRECCIONES Y MODALES
+     ============================================================================= */
+
+  /* --- Inputs de Formulario --- */
+  const [currentAddressInput, setCurrentAddressInput] = useState(''); /* Almacena el texto de la calle y número */
+  const [currentAddressLabel, setCurrentAddressLabel] = useState(''); /* Almacena la etiqueta (ej: "Casa", "Trabajo") */
+
+  /* --- Control de Modos de UI --- */
+  const [isEditingAddress, setIsEditingAddress] = useState(false);    /* Switch entre modo lectura y modo edición <!> Creo que esto es para el enable de whatspa */
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null); /* ID de la dirección en edición (null = nueva) */
+
+  /* --- Control de Modales de Confirmación --- */
+  const [isClearCartModalOpen, setIsClearCartModalOpen] = useState(false);     /* Visibilidad del modal para vaciar carrito */
+  const [isDeleteAddressModalOpen, setIsDeleteAddressModalOpen] = useState(false); /* Visibilidad del modal para borrar dirección */
+  const [addressIdToDelete, setAddressIdToDelete] = useState<string | null>(null); /* Referencia temporal del ID a eliminar */
+
+  /* =============================================================================
+     EFECTOS DE SINCRONIZACIÓN (OBSERVADORES)
+     ============================================================================= */
+
+  /**
+   * Sincroniza los campos de texto locales con la dirección seleccionada globalmente.
+   * Se dispara cada vez que el Drawer se abre o cambia la dirección activa.
    */
   useEffect(() => {
-    if (isOpen) {
-      if (selectedAddress) {
-        setCurrentAddressInput(selectedAddress.addressLine);
-        setCurrentAddressLabel(selectedAddress.label);
-      } else {
-        setCurrentAddressInput('');
-        setCurrentAddressLabel('');
-      }
-      setIsEditingAddress(false); // Por defecto, no estamos editando al abrir
-      setEditingAddressId(null);
+    /* Solo sincronizamos si el Drawer está abierto y existe una dirección seleccionada */
+    if (isOpen && selectedAddress) {
+      setCurrentAddressInput(selectedAddress.addressLine);
+      setCurrentAddressLabel(selectedAddress.label);
     }
   }, [isOpen, selectedAddress]);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // /* Sincronización de input con dirección seleccionada */ <!> Eliminar 17 ago 
+  // useEffect(() => {
+  //   if (isOpen && selectedAddress) {
+  //     setCurrentAddressInput(selectedAddress.addressLine);
+  //     setCurrentAddressLabel(selectedAddress.label);
+  //   }
+  // }, [isOpen, selectedAddress]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   /**
-   * Efecto para pre-cargar la dirección inicial del usuario si no hay direcciones guardadas
-   * y se ha cargado la dirección inicial.
-   */
-  useEffect(() => {
-    // Solo agregar la dirección inicial si NO hay direcciones guardadas y se ha cargado una dirección inicial.
-    // Además, solo hacerlo UNA VEZ (por ejemplo, cuando el componente se monta por primera vez o el drawer se abre sin direcciones).
-    if (isOpen && !loadingUserAddress && initialUserAddress && addresses.length === 0) {
-      // Se utiliza un pequeño retraso para asegurar que la primera dirección
-      // se agregue y establezca como predeterminada correctamente, evitando conflictos
-      // si setSelectedAddress o setDefaultAddress ya están en cola.
-      setTimeout(() => {
-        const newId = addAddress(initialUserAddress, "Principal");
-        setDefaultAddress(newId);
-      }, 0);
-    }
-  }, [isOpen, loadingUserAddress, initialUserAddress, addresses.length, addAddress, setDefaultAddress]);
-
-  /**
-   * Efecto para cerrar el drawer automáticamente si el carrito se vacía.
-   */
-  useEffect(() => {
-    if (isOpen && pedido.length === 0) {
-      // Pequeño retraso para permitir que la animación de vaciado se muestre (si la hubiera)
-      const timer = setTimeout(() => onClose(), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen, pedido.length, onClose]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* --- Dentro de PedidoDrawer.tsx --- */
-
-const handleConfirmOrder = () => {
-  /* 1. Validaciones de seguridad */
-  if (!selectedAddress || !selectedAddress.addressLine.trim()) {
-    alert("Por favor, selecciona o ingresa una dirección de entrega válida.");
-    return;
-  }
-  if (pedido.length === 0) {
-    alert("El pedido está vacío.");
-    return;
-  }
-
-
-
-
-
-  // <!> Mensaje feo ----------------------------------------->
-
-
-  // /* 2. Captura de tiempo actual */
-  // const now = new Date();
-  // const dateStr = now.toLocaleDateString('es-UY');
-  // const timeStr = now.toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' });
-  
-  // /* 3. El link actual ya contiene el ?cart=... gracias al useEffect de useProducts */
-  // const shareUrl = window.location.href;
-
-  // /* 4. Construcción del mensaje profesional */
-  // let message = `🐾 *NUEVO PEDIDO - VETERINARIA BELTRAMELLI* 🐾\n`;
-  // message += `📅 *Fecha:* ${dateStr} - ${timeStr} hs\n`;
-  // message += `📍 *Entrega:* ${selectedAddress.addressLine}\n\n`;
-  // message += `🛒 *Detalle de la compra:*\n`;
-  
-  // pedido.forEach(item => {
-  //   const subtotal = item.precio_unitario_capturado * item.cantidad;
-  //   message += `• ${item.cantidad}x ${item.producto.prod_nombre} — $${subtotal.toLocaleString('es-UY')}\n`;
-  // });
-  // message += `\n💰 *TOTAL ESTIMADO: $${total.toLocaleString('es-UY')}*\n`;
-  // message += `----------------------------------\n\n`; // Doble salto de línea
-  // message += `🔗 *Ver o Modificar este carrito en la web:*\n`;
-  // message += `${shareUrl}\n\n`; // El link ahora queda aislado
-  // message += `_Mensaje generado automáticamente._`;
-
-
-
-
-
-  // /* 5. Apertura de WhatsApp */
-  // window.open(`https://wa.me/59892444510?text=${encodeURIComponent(message)}`, '_blank');
-
-
-
-
-
-
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('es-UY');
-  const timeStr = now.toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' });
-  
-  /* 
-     IMPORTANTE: El link debe ser absoluto. 
-     En producción usará veterinaria-beltramelli.com 
+   * Lógica de WhatsApp con Link al final para previsualización 
+   * @param selectedAddress  direccion seleccionada actual
+   * @param total total del pedido
+   * @param itemCount cantidad de items del pedido
+   * @param clearPedido limpiar pedido
+   * <!> No  se porque pero me ase raro que esto este aca denro tendria que estar fuera de pedidoDrawer de este metodo y llamarlo pero ta
   */
-  const shareUrl = window.location.href;
+  const handleConfirmOrder = () => {
+    const rawPhone = companyInfo.contact.adminPhone; // Numero de watsap del cliente 
+    const cleanPhone = rawPhone.startsWith('0') ? rawPhone.substring(1) : rawPhone; // para corregir el 0 al inicio
+    const finalPhone = `598${cleanPhone}`; // para agregar el codigo de pais <!> a futuro tiene que ir a configuracion por si el carrito espande a otro pais 
 
-  /* --- Construcción del Mensaje (Sin emojis problemáticos) --- */
-  let message = `*NUEVO PEDIDO - VETERINARIA BELTRAMELLI*\n\n`;
-  message += `*Fecha:* ${dateStr} - ${timeStr} hs\n`;
-  message += `*Entrega:* ${selectedAddress.addressLine}\n\n`;
+    const now = new Date(); // Fecha actual
+    const dateStr = now.toLocaleDateString('es-UY'); // Fecha en formato uruguayo <!> Esto tambien tengo que podes setiar con configuracion jeison la moneda que voy a usar 
+    const timeStr = now.toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' }); // Hora actual en formato uruguayo
+    const shareUrl = window.location.href; /* El link actual ya tiene el ?cart=... gracias al hook useProducts */
+
+    let message = `*NUEVO PEDIDO - ${companyInfo.name.toUpperCase()}*\n\n`; //<!> Estoy tiene que el archvio de configuracio 
+    message += `*Fecha:* ${dateStr} - ${timeStr} hs\n`;
+    
+    // message += `*Entrega:* ${selectedAddress?.addressLine}\n\n`; // <!> Esto es opcional
+        
+    // Direccion de entrega Opcional <!> En la interfase tengo que buscar como achicarlo queda muy grande 
+    const entrega = selectedAddress?.addressLine 
+    ? selectedAddress.addressLine 
+    : "A coordinar / Retiro en local";
+    message += `*Entrega:* ${entrega}\n\n`;  
+    
+    
+    
+    
+    
+    message += `*Detalle:*\n`;
+
+    // Linea de articulos 
+    pedido.forEach(item => {
+      message += `• ${item.cantidad}x ${item.producto.prod_nombre} — $${(item.producto.prod_precio * item.cantidad).toLocaleString('es-UY')}\n`;
+    });
+
+    message += `\n*TOTAL: $${total.toLocaleString('es-UY')}*\n`;
+    message += `__________________________\n\n`;
+
+
+
+
+
+    // <!> en le falta no se ve como un link a apretar 
+
+    message += `*Ver o editar pedido en la web:*\n`;
+    message += `${shareUrl}`;
+
+    window.open(`https://wa.me/${finalPhone}?text=${encodeURIComponent(message)}`, '_blank');
   
-  message += `*Detalle de la compra:*\n`;
   
-  pedido.forEach(item => {
-    const subtotal = item.precio_unitario_capturado * item.cantidad;
-    message += `• ${item.cantidad}x ${item.producto.prod_nombre} — $${subtotal.toLocaleString('es-UY')}\n`;
-  });
-
-  message += `\n*TOTAL ESTIMADO: $${total.toLocaleString('es-UY')}*\n`;
-  message += `__________________________\n\n`;
   
-  /* 
-     <!> TRUCO PARA LA VISTA PREVIA:
-     El link debe ir al final para que WhatsApp genere la tarjeta con el logo.
-  */
-  message += `*Ver o editar pedido en la web:*\n`;
-  message += `${shareUrl}`;
-
-  /* Usamos encodeURIComponent para que los espacios y saltos de línea no se rompan */
-  const whatsappUrl = `https://wa.me/59892444510?text=${encodeURIComponent(message)}`;
   
-  window.open(whatsappUrl, '_blank');
 
-
-
-
-
-
-
-
-
-}; // Fin handleConfirmOrder
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  /**
-   * Abre el modal de confirmación para vaciar el carrito.
-   */
-  const handleOpenClearCartModal = () => {
-    if (pedido.length > 0) {
-      setIsClearCartModalOpen(true);
-    }
   };
 
-  /**
-   * Cierra el modal de confirmación para vaciar el carrito.
-   */
-  const handleCloseClearCartModal = () => {
-    setIsClearCartModalOpen(false);
-  };
-
-  /**
-   * Confirma y ejecuta la acción de vaciar el carrito.
-   */
-  const handleConfirmClearCart = () => {
-    clearPedido();
-    handleCloseClearCartModal();
-  };
-
-  /**
-   * Inicia el modo de edición para una dirección, precargando sus datos en el input.
-   *
-   * @param {UserAddress} addressToEdit - La dirección a editar.
-   */
-  const startEditAddress = (addressToEdit: UserAddress) => {
-    setCurrentAddressInput(addressToEdit.addressLine);
-    setCurrentAddressLabel(addressToEdit.label);
-    setIsEditingAddress(true);
-    setEditingAddressId(addressToEdit.id);
-    setIsAddressListOpen(false); // Cierra la lista al editar
-  };
-
-  /**
-   * Guarda la dirección actual (ya sea nueva o editada).
-   * Realiza validación básica.
-   */
-  const handleSaveAddress = () => {
-    if (!currentAddressInput.trim()) {
-      alert('La dirección no puede estar vacía.');
-      return;
-    }
-
-    if (editingAddressId) {
-      // Actualizar dirección existente
-      updateAddress(editingAddressId, { addressLine: currentAddressInput, label: currentAddressLabel || currentAddressInput });
-      setDefaultAddress(editingAddressId); // Selecciona la editada como default
-    } else {
-      // Agregar nueva dirección
-      const newId = addAddress(currentAddressInput, currentAddressLabel || currentAddressInput);
-      setDefaultAddress(newId); // Selecciona la nueva como default
-    }
-
-    // Resetear el estado de edición
-    setIsEditingAddress(false);
-    setEditingAddressId(null);
-    setCurrentAddressLabel('');
-    // El currentAddressInput se reseteará automáticamente via useEffect que observa selectedAddress
-  };
-
-  /**
-   * Cancela la edición o adición de una dirección.
-   * Vuelve a mostrar la dirección seleccionada (o vacía si no hay ninguna).
-   */
-  const handleCancelAddressEdit = () => {
-    setIsEditingAddress(false);
-    setEditingAddressId(null);
-    if (selectedAddress) {
-      setCurrentAddressInput(selectedAddress.addressLine);
-      setCurrentAddressLabel(selectedAddress.label);
-    } else {
-      setCurrentAddressInput('');
-      setCurrentAddressLabel('');
-    }
-  };
-
-  /**
-   * Abre el modal de confirmación para eliminar una dirección.
-   * @param {string} id - ID de la dirección a eliminar.
-   */
-  const handleOpenDeleteAddressModal = (id: string) => {
-    setAddressIdToDelete(id);
-    setIsDeleteAddressModalOpen(true);
-  };
-
-  /**
-   * Cierra el modal de confirmación para eliminar una dirección.
-   */
-  const handleCloseDeleteAddressModal = () => {
-    setIsDeleteAddressModalOpen(false);
-    setAddressIdToDelete(null);
-  };
-
-  /**
-   * Confirma y ejecuta la acción de eliminar una dirección.
-   */
-  const handleConfirmDeleteAddress = () => {
-    if (addressIdToDelete) {
-      deleteAddress(addressIdToDelete);
-      handleCloseDeleteAddressModal();
-    }
-  };
-
-  // Determinar si los botones de acción deben estar deshabilitados
-  const isOrderButtonDisabled = pedido.length === 0 || !selectedAddress?.addressLine.trim();
-
-  return (
+  return ( // Retorno Componente --------------------------------------------------------------------------------------
     <>
-      {/* Overlay: Fondo oscuro traslúcido */}
-      <div
-        onClick={onClose}
-        className={`
-          fixed inset-0 z-[150] bg-vete-overlay/60 backdrop-blur-sm
-          transition-opacity duration-500
-          ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}
-        `}
-      />
+      <div onClick={onClose} className={`fixed inset-0 z-[150] bg-vete-overlay/60 backdrop-blur-sm transition-opacity ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`} />
+      
+      <aside className={`fixed top-0 right-0 z-[160] flex flex-col h-full w-full max-w-md bg-vete-card-white shadow-2xl transition-transform duration-500 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        
+        {/* Menu superior de la interface */}
+        <DrawerHeader itemCount={itemCount} onClose={onClose} />
+        
+        {/* Contenido del drawer: lista de productos */}
+        <DrawerContent pedido={pedido} />
 
-      {/* Drawer: Menú Lateral */}
-      <aside className={`
-        fixed top-0 right-0 z-[160] flex flex-col
-        h-full w-full max-w-md
-        bg-vete-card-white shadow-[-10px_0_50px_rgba(0,0,0,0.2)]
-        transition-transform duration-500 ease-in-out
-        ${isOpen ? 'translate-x-0' : 'translate-x-full'}
-      `}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="cart-title"
-      >
 
-        {/* Header del Carrito */}
-        <div className={`
-          flex items-center justify-between p-4
-          bg-vete-dark-green text-vete-card-white
-        `}>
-          <div className="flex items-center gap-3">
-            <ShoppingBag size={24} aria-hidden="true" />
-            <h2 id="cart-title" className="text-xl font-black italic uppercase tracking-tight">Tu Carrito</h2>
-            <span className="bg-vete-primary text-vete-card-white text-[10px] px-2 py-1 rounded-full font-bold">
-              {itemCount} ITEMS
-            </span>
-          </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-vete-card-white/10 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-vete-primary" aria-label="Cerrar carrito">
-            <X size={24} />
-          </button>
-        </div>
 
-        {/* Cuerpo: Lista de Items (Scrollable) */}
-        <div ref={scrollableRef} className={`
-          flex-1 overflow-y-auto p-4
-          bg-vete-dark
-        `}>
-          {pedido.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-vete-text-muted gap-4">
-              <Package size={64} className="opacity-20" aria-hidden="true" />
-              <p className="font-bold italic">Tu carrito está vacío</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-               {pedido.map((item) => (
-                <PedidoItemRow key={item.producto.prod_id} item={item} />
-              ))}
-            </div>
-          )}
-        </div>
 
-        {/* Footer: Resumen y Confirmación */}
-        <div className={`
-          sticky bottom-0
-          flex flex-col gap-4                           /* Espacio reducido de gap-5 a gap-4 */
-          py-4 px-5                                     /* Padding reducido de p-5 a py-4 px-5 */
-          bg-vete-card-white border-t border-vete-light-border
-        `}>
 
-          {/* Resumen de Totales */}
-          <div className="flex justify-between items-end">
-            <div className="flex flex-col">
-              <span className="text-[9px] font-black uppercase text-vete-text-muted tracking-widest">Resumen</span>
-              <span className="text-base font-bold text-vete-text-light">Total del Pedido</span> {/* Fuente reducida de text-lg a text-base */}
-            </div>
-            <span className="text-xl font-black text-vete-dark-green"> {/* Fuente reducida de text-2xl a text-xl */}
-              ${total.toLocaleString('es-UY')}
-            </span>
-          </div>
+        {/* Menu inferior  */}
+        <CartCheckoutSection 
+          pedido={pedido}
+          total={total}
+          onConfirm={handleConfirmOrder}
+          onClear={() => setIsClearCartModalOpen(true)}
+        />
 
-          {/* Sección de Dirección de Entrega Inteligente */}
-          <div className="flex flex-col gap-2">
-            <label className="flex items-center gap-2 text-xs font-bold text-vete-text-muted uppercase ml-1" htmlFor="delivery-address-input">
-              <MapPin size={14} className="text-vete-dark-green" aria-hidden="true" />
-              Dirección de Entrega
-            </label>
-            <div className="relative">
-              {loadingUserAddress && addresses.length === 0 ? (
-                 <div className="w-full py-3 pl-4 bg-vete-dark rounded-xl animate-pulse h-10"></div> /* Altura reducida de h-12 a h-10 */
-              ) : isEditingAddress || !selectedAddress ? (
-                // Input para nueva dirección o edición
-                <div className="flex flex-col gap-2">
-                  <input
-                    type="text"
-                    id="delivery-address-input"
-                    placeholder="Ej: Av. Italia 1543, Montevideo"
-                    className={`
-                      w-full py-2.5 pl-4 rounded-xl border-2 /* Altura reducida de py-3 a py-2.5 */
-                      bg-vete-dark text-vete-text-light placeholder-vete-text-muted
-                      border-transparent outline-none
-                      focus:border-vete-primary transition-all
-                    `}
-                    value={currentAddressInput}
-                    onChange={(e) => setCurrentAddressInput(e.target.value)}
-                    aria-label="Ingresa o edita la dirección de entrega"
-                  />
-                  { (isEditingAddress || !selectedAddress) &&
-                    <input
-                      type="text"
-                      placeholder="Etiqueta (Ej: Casa, Trabajo)"
-                      className={`
-                        w-full py-2.5 pl-4 rounded-xl border-2 /* Altura reducida de py-3 a py-2.5 */
-                        bg-vete-dark text-vete-text-light placeholder-vete-text-muted
-                        border-transparent outline-none
-                        focus:border-vete-primary transition-all
-                      `}
-                      value={currentAddressLabel}
-                      onChange={(e) => setCurrentAddressLabel(e.target.value)}
-                      aria-label="Etiqueta para la dirección"
-                    />
-                  }
-                  <div className="flex gap-2 mt-1">
-                    <button
-                      onClick={handleSaveAddress}
-                      className="flex-1 py-2 px-3 bg-vete-primary text-vete-card-white font-bold rounded-lg hover:bg-vete-primary/90 transition-all text-sm focus:outline-none focus:ring-2 focus:ring-vete-primary"
-                      aria-label={editingAddressId ? "Guardar cambios en dirección" : "Agregar dirección"}
-                    >
-                      {editingAddressId ? 'Guardar' : 'Agregar'}
-                    </button>
-                    <button
-                      onClick={handleCancelAddressEdit}
-                      className="flex-1 py-2 px-3 border border-vete-light-border text-vete-text-muted font-semibold rounded-lg hover:bg-vete-light-border transition-all text-sm focus:outline-none focus:ring-2 focus:ring-vete-primary"
-                      aria-label="Cancelar edición de dirección"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                // Mostrar dirección seleccionada y opciones
-                <div className="flex flex-col">
-                  <div className={`
-                    flex items-center justify-between
-                    w-full py-2.5 pl-4 pr-2 /* Altura reducida de py-3 a py-2.5 */
-                    bg-vete-dark rounded-xl border-2 border-transparent
-                  `}>
-                    <p className="text-vete-text-light text-sm font-medium mr-2 flex-1" id="delivery-address-input-display">
-                      <span className="font-bold text-vete-primary mr-1">{selectedAddress.label}:</span> {selectedAddress.addressLine}
-                    </p>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => startEditAddress(selectedAddress)}
-                        className="p-1.5 rounded-lg hover:bg-vete-light-border transition-colors focus:outline-none focus:ring-2 focus:ring-vete-primary"
-                        aria-label="Editar dirección actual"
-                      >
-                        <Edit size={16} className="text-vete-primary" />
-                      </button>
-                      <button
-                        onClick={toggleAddressList}
-                        className={`
-                          p-1.5 rounded-lg hover:bg-vete-light-border transition-colors
-                          focus:outline-none focus:ring-2 focus:ring-vete-primary
-                          ${isAddressListOpen ? 'bg-vete-light-border' : ''}
-                        `}
-                        aria-expanded={isAddressListOpen}
-                        aria-controls="address-history-list"
-                        aria-label="Ver historial de direcciones"
-                      >
-                        <ChevronDown size={16} className="text-vete-text-muted" />
-                      </button>
-                    </div>
-                  </div>
 
-                  {/* Historial de Direcciones */}
-                  {isAddressListOpen && (
-                    <div id="address-history-list" className="bg-vete-dark mt-2 rounded-xl border border-vete-light-border shadow-md max-h-40 overflow-y-auto">
-                      {addresses.map((addr) => (
-                        <div key={addr.id} className={`
-                          flex items-center justify-between p-3 border-b border-vete-light-border last:border-b-0
-                          hover:bg-vete-light-border transition-colors
-                          ${selectedAddress.id === addr.id ? 'bg-vete-light-border' : ''}
-                        `}>
-                          <button
-                            onClick={() => selectAddress(addr.id)}
-                            className="flex-1 text-left text-vete-text-light text-sm focus:outline-none focus:ring-2 focus:ring-vete-primary rounded-md p-1 -m-1"
-                            aria-label={`Seleccionar dirección ${addr.label}: ${addr.addressLine}`}
-                          >
-                            <span className="font-bold text-vete-primary mr-1">{addr.label}{addr.isDefault && <span className="ml-1 text-xs text-vete-text-muted">(Principal)</span>}:</span> {addr.addressLine}
-                          </button>
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => startEditAddress(addr)}
-                              className="p-1.5 rounded-lg hover:bg-vete-light-border transition-colors focus:outline-none focus:ring-2 focus:ring-vete-primary"
-                              aria-label={`Editar ${addr.label}`}
-                            >
-                              <Edit size={14} className="text-vete-primary" />
-                            </button>
-                            <button
-                              onClick={() => handleOpenDeleteAddressModal(addr.id)} /* Usa el nuevo modal */
-                              className="p-1.5 rounded-lg hover:bg-vete-error/10 transition-colors focus:outline-none focus:ring-2 focus:ring-vete-primary"
-                              aria-label={`Eliminar ${addr.label}`}
-                            >
-                              <Trash2 size={14} className="text-vete-error" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                      <button
-                        onClick={() => { setIsEditingAddress(true); setEditingAddressId(null); setCurrentAddressInput(''); setCurrentAddressLabel(''); setIsAddressListOpen(false); }}
-                        className="flex items-center justify-center gap-2 w-full p-3 text-vete-primary font-bold hover:bg-vete-light-border transition-colors rounded-b-xl focus:outline-none focus:ring-2 focus:ring-vete-primary"
-                        aria-label="Agregar nueva dirección"
-                      >
-                        <Plus size={16} aria-hidden="true" /> Nueva dirección
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
 
-          {/* Contenedor de Botones (WhatsApp y Vaciar Carrito) */}
-          <div className="flex flex-col gap-3">
-            {/* Botón WhatsApp */}
-            <button
-              onClick={handleConfirmOrder}
-              disabled={isOrderButtonDisabled}
-              className={`
-                
-                flex items-center justify-center gap-3
-                w-full py-3                                     /* Altura reducida de py-3.5 a py-3 */
-                bg-vete-dark-green text-vete-card-white
-                font-black uppercase tracking-widest
-                rounded-xl shadow-xl shadow-vete-dark-green/20
-                hover:bg-vete-dark-green-hover active:scale-98
-                transition-all duration-200
-                disabled:opacity-50 disabled:cursor-not-allowed
-                disabled:shadow-none disabled:active:scale-100
-                focus:outline-none focus:ring-2 focus:ring-vete-primary
-              `}
-              aria-label="Confirmar pedido por WhatsApp"
-            >
-              Confirmar por WhatsApp
-              <Send size={18} aria-hidden="true" />
-            </button>
 
-            {/* Botón "Vaciar Carrito" */}
-            <button
-              onClick={handleOpenClearCartModal}
-              disabled={pedido.length === 0}
-              className={`
-                flex items-center justify-center gap-2
-                w-full py-2                                     /* Altura reducida de py-2.5 a py-2 */
-                bg-transparent border-2 border-vete-error
-                text-vete-error font-bold uppercase tracking-wide
-                rounded-xl
-                transition-all duration-200
-                hover:bg-vete-error/10 active:scale-98
-                disabled:opacity-50 disabled:cursor-not-allowed
-                disabled:border-vete-text-muted/50 disabled:text-vete-text-muted/50
-                disabled:hover:bg-transparent disabled:active:scale-100
-                focus:outline-none focus:ring-2 focus:ring-vete-primary
-              `}
-              aria-label="Vaciar carrito"
-            >
-              <Trash2 size={16} aria-hidden="true" />
-              Vaciar Carrito
-            </button>
-          </div>
-        </div>
+
+
+
+
+        
       </aside>
 
-      {/* Modal de Confirmación para Vaciar Carrito */}
-      <ConfirmationModal
-        isOpen={isClearCartModalOpen}
-        onClose={handleCloseClearCartModal}
-        onConfirm={handleConfirmClearCart}
-        title="Vaciar Carrito"
-        message={
-          <>
-            ¿Estás seguro de que deseas eliminar todos los productos del carrito?
-            <p className="text-vete-text-muted text-sm mt-2">Esta acción no puede deshacerse.</p>
-          </>
-        }
-        confirmButtonText="Vaciar carrito"
-        confirmButtonColor="red"
-        icon={<Trash2 size={24} />}
-      />
 
-      {/* Nuevo Modal de Confirmación para Eliminar Dirección */}
-      <ConfirmationModal
-        isOpen={isDeleteAddressModalOpen}
-        onClose={handleCloseDeleteAddressModal}
-        onConfirm={handleConfirmDeleteAddress}
-        title="Eliminar Dirección"
-        message={
-          <>
-            ¿Estás seguro de que deseas eliminar la dirección
-            <span className="font-bold ml-1">
-              "{addresses.find(addr => addr.id === addressIdToDelete)?.label || 'seleccionada'}"
-            </span>
-            ?
-            <p className="text-vete-text-muted text-sm mt-2">Esta acción no puede deshacerse.</p>
-          </>
-        }
-        confirmButtonText="Eliminar"
-        confirmButtonColor="red"
-        icon={<Trash2 size={24} />}
-      />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  {/* Modal Menu Eliminar Carrito */}
+  <ConfirmationModal
+    isOpen={isClearCartModalOpen}
+    onClose={() => setIsClearCartModalOpen(false)}
+    onConfirm={() => { clearPedido(); setIsClearCartModalOpen(false); }}
+    title="Vaciar Carrito"
+    message="¿Estás seguro de que deseas eliminar todos los productos del carrito?"
+    confirmButtonText="Vaciar carrito"
+    confirmButtonColor="red"
+    /* <!> CORRECCIÓN: Cambiar TrAanitaash2 por Trash2 */
+    icon={<Trash2 size={24} />} 
+  />
+
+
+
+
+
+  
+  {/*!!!! NO borrar!!!!!!!   ->>  para Funcionalidad Cliete Sus direcciones 
+  
+  <ConfirmationModal 
+    isOpen={isDeleteAddressModalOpen} 
+    onClose={() => setIsDeleteAddressModalOpen(false)} 
+    onConfirm={() => { if (addressIdToDelete) deleteAddress(addressIdToDelete); setIsDeleteAddressModalOpen(false); }} 
+    title="Eliminar Dirección" 
+    message="¿Deseas eliminar esta dirección?" 
+    confirmButtonText="Eliminar" 
+    confirmButtonColor="red" 
+    icon={<Trash2 size={24} />} 
+  /> 
+  
+  */}
+
+
+    
     </>
   );
-};
+}; // FIN Componente PedidoDrawer----------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -4,12 +4,16 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 
 /**
  * Interfaz para representar una dirección guardada por el usuario.
+ * @description Propiedad id: Identificador único para cada dirección
+ * @description Propiedad label: Etiqueta descriptiva (ej. "Casa", "Trabajo", "Mamá")
+ * @description Propiedad addressLine: Línea completa de la dirección (ej. "Av. Italia 1543, Montevideo")
+ * @description Propiedad isDefault: Indica si esta es la dirección predeterminada
  */
 export interface UserAddress {
-  id: string;         // Identificador único para cada dirección
-  label: string;      // Etiqueta descriptiva (ej. "Casa", "Trabajo", "Mamá")
-  addressLine: string; // Línea completa de la dirección (ej. "Av. Italia 1543, Montevideo")
-  isDefault: boolean; // Indica si esta es la dirección predeterminada
+  id: string;
+  label: string;
+  addressLine: string;
+  isDefault: boolean;
   // Aquí se podrían agregar campos adicionales para futura integración con Google Maps
   // ejemplo: latitude?: number; longitude?: number; placeId?: string;
 }

@@ -69,20 +69,15 @@ const useUserInitialAddress = () => {
   return { defaultAddress, loadingUserAddress };
 };
 
-/**
- * Interfaz para las props del componente PedidoDrawer.
- */
-interface PedidoDrawerProps {
-  isOpen: boolean;    // Controla la visibilidad del drawer.
-  onClose: () => void; // Función para cerrar el drawer.
-}
-
-
-
-
-
-
-
+  /**
+   * Interfaz para las props del componente PedidoDrawer.
+   * @param isOpen - Controla la visibilidad del drawer.
+   * @param onClose - Función para cerrar el drawer.
+   */
+  interface PedidoDrawerProps {
+    isOpen: boolean;    // Controla la visibilidad del drawer.
+    onClose: () => void; // Función para cerrar el drawer.
+  }
 
 
   /**
@@ -154,20 +149,12 @@ interface PedidoDrawerProps {
 
 
 
-//<!> Falta implementar este metodo 
-
-/* =============================================================================
-Mil disculpas por el error de formato anterior. Aquí tienes los bloques de código limpios y 
-listos para inyectar, con las correcciones marcadas.
-
-  1. Nuevo Sub-componente Interno: CartCheckoutSection
-  Copia este bloque y colócalo fuera de tu componente PedidoDrawer (arriba de él). Este bloque
-   agrupa la lógica de totales, direcciones y botones.
-
- 2. Inyección en el componente PedidoDrawer
-  Reemplaza todo tu bloque de footer antiguo por esta llamad
-  a limpia. He corregido la lógica de guardado que no te funcionaba.
-   ============================================================================= */
+//<!> Falta implementar este metodo Cambiar nobre yo le pondri footerPedidoDrawer 
+/**
+ * Menu del footer para mostrar el total del pedido y los botones de acción
+ * @param param0 
+ * @returns 
+ */
 const CartCheckoutSection = ({ 
   pedido, 
   total, 
@@ -179,48 +166,42 @@ const CartCheckoutSection = ({
   return (
     <div className={`
       /* --- Posición --- */
-      sticky                       /* Se mantiene fijo al final del scroll */
-      bottom-0                     /* Pegado a la base del drawer */
       flex                         /* Contenedor flexible */
       flex-col                     /* Alineación vertical */
       gap-4                        /* Espacio entre elementos */
-      
-      /* --- Dimensiones --- */
-      py-4                         /* Padding vertical */
-      px-5                         /* Padding horizontal */
-      
-      /* --- Colores --- */
-      bg-vete-card-white           /* Fondo blanco de la paleta */
-      border-t                     /* Línea superior divisoria */
-      border-vete-light-border     /* Color de borde suave */
+      mt-4                         /* Margen superior */
     `}>
       
-      {/* Resumen de Totales */}
-      <div className="flex justify-between items-end">
-        <div className="flex flex-col">
-          <span className="text-[9px] font-black uppercase text-vete-text-muted tracking-widest">Resumen</span>
-          <span className="text-base font-bold text-vete-text-light">Total del Pedido</span>
-        </div>
-        <span className="text-xl font-black text-vete-dark-green">
-          ${total.toLocaleString('es-UY')}
-        </span>
-      </div>
 
-      {/* Gestión de direcciones */}
-      <AddressManager 
-        {...addressProps} 
-        selectedAddress={selectedAddress}
-      />
+
+
+
+
+
+      {/*<!> Gestión de direcciones No Borrar Para sprin Pedido sentralizado */}
+      {/* <AddressManager {...addressProps} selectedAddress={selectedAddress} /> */}
+
+
+
+
 
       {/* Botonera de Acción */}
       <div className="flex flex-col gap-3">
         <button 
           onClick={onConfirm} 
-          disabled={pedido.length === 0 || !selectedAddress} 
+          // disabled={pedido.length === 0 || !selectedAddress} //<!> Capas que es util si tenemos la ubicacion vemos 
           className={`
-            /* --- Estilos del botón Confirmar --- */
-            flex items-center justify-center gap-3 w-full py-3
-            bg-vete-dark-green text-white font-black uppercase rounded-xl
+            /* --- Posición --- */
+            flex items-center justify-center gap-3
+            /* --- Dimensiones --- */
+            w-full py-3
+            /* --- Colores --- */
+            bg-vete-dark-green text-white
+            /* --- Texto --- */
+            font-black uppercase tracking-widest
+            /* --- Estilo --- */
+            rounded-xl shadow-xl
+            /* --- Animación --- */
             disabled:opacity-50 transition-all
           `}
         >
@@ -231,10 +212,18 @@ const CartCheckoutSection = ({
           onClick={onClear} 
           disabled={pedido.length === 0} 
           className={`
-            /* --- Estilos del botón Vaciar --- */
-            flex items-center justify-center gap-2 w-full py-2
+            /* --- Posición --- */
+            flex items-center justify-center gap-2
+            /* --- Dimensiones --- */
+            w-full py-2
+            /* --- Colores --- */
             bg-transparent border-2 border-vete-error text-vete-error
-            font-bold uppercase rounded-xl transition-all
+            /* --- Texto --- */
+            font-bold uppercase
+            /* --- Estilo --- */
+            rounded-xl
+            /* --- Animación --- */
+            disabled:opacity-30 transition-all
           `}
         >
           <Trash2 size={16} /> Vaciar Carrito
@@ -245,78 +234,6 @@ const CartCheckoutSection = ({
 };
 
 
-// 2 Injeccion en componente pedido drae
-
-/* --- Dentro del return de PedidoDrawer.tsx, después de <DrawerContent /> --- */
-/* =============================================================================
-
-
-
-
-<CartCheckoutSection 
-  pedido={pedido}
-  total={total}
-  selectedAddress={selectedAddress}
-  onConfirm={handleConfirmOrder}
-  onClear={() => setIsClearCartModalOpen(true)}
-  addressProps={{
-    isEditingAddress,
-    currentAddressInput,
-    setCurrentAddressInput,
-    currentAddressLabel,
-    setCurrentAddressLabel,
-    isAddressListOpen,
-    addresses,
-    onSave: () => {
-      if (editingAddressId) {
-        updateAddress(editingAddressId, { addressLine: currentAddressInput, label: currentAddressLabel });
-      } else {
-        
-        
-        /* <!> CORRECCIÓN: Para que la dirección cambie al agregar, debemos capturar el ID que genera addAddress y seleccionarlo. 
-
-        const newId = addAddress(currentAddressInput, currentAddressLabel);
-        if (newId) selectAddress(newId); 
-      }
-      setIsEditingAddress(false);
-    },
-    onCancel: () => setIsEditingAddress(false),
-    onStartEdit: (addr: any) => {
-      setIsEditingAddress(true);
-      setEditingAddressId(addr.id);
-      setIsAddressListOpen(false);
-    },
-    onToggleList: toggleAddressList,
-    onSelect: selectAddress,
-    onDelete: (id: string) => {
-      setAddressIdToDelete(id);
-      setIsDeleteAddressModalOpen(true);
-    },
-    onNew: () => {
-      setIsEditingAddress(true);
-      setEditingAddressId(null);
-      setCurrentAddressInput('');
-      setCurrentAddressLabel('');
-      setIsAddressListOpen(false);
-    }
-  }}
-/>
-
-
-
-
-
-
-============================================================================== */
-
-
-
-
-
-
-
-
-  
   /**
    * Renderiza el contenido del drawer, mostrando la lista de productos.
    * @param pedido - Array de ítems del pedido
@@ -684,19 +601,93 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
     isAddressListOpen, // Estado que controla si el historial de direcciones está abierto o cerrado
     setIsAddressListOpen, // Setter para el estado de visibilidad del historial
     toggleAddressList // Función para alternar la visibilidad del historial
-  } = useAddressManagement();
+  } = useAddressManagement(); // Logica de guardado y seleccion de direcciones
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ // <!> Version Borrar 
+
+ 
   /* Estados locales para edición de dirección */
-  const [currentAddressInput, setCurrentAddressInput] = useState('');
-  const [currentAddressLabel, setCurrentAddressLabel] = useState('');
-  const [isEditingAddress, setIsEditingAddress] = useState(false);
-  const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
-  const [isClearCartModalOpen, setIsClearCartModalOpen] = useState(false);
-  const [isDeleteAddressModalOpen, setIsDeleteAddressModalOpen] = useState(false);
-  const [addressIdToDelete, setAddressIdToDelete] = useState<string | null>(null);
+  // const [
+  //   currentAddressInput,
+  //   setCurrentAddressInput // 
+  //   ] =  useState(''); // 
+  
+  // const [
+  //   currentAddressLabel, 
+  //   setCurrentAddressLabel
+  //   ] = useState('');
 
-  /* Sincronización de input con dirección seleccionada */
+  // const [
+  //   isEditingAddress,
+  //   setIsEditingAddress
+  // ] = useState(false);
+  
+  // const [
+  //   editingAddressId,
+  //   setEditingAddressId
+  // ] = useState<string | null>(null);
+  
+  // const [
+  //   isClearCartModalOpen,
+  //   setIsClearCartModalOpen
+  // ] = useState(false);
+  
+  // const [
+  //   isDeleteAddressModalOpen,
+  //   setIsDeleteAddressModalOpen
+  // ] = useState(false);
+
+  // const [
+  //   addressIdToDelete,
+  //   setAddressIdToDelete
+  // ] = useState<string | null>(null);
+
+
+
+
+
+
+  /* =============================================================================
+     ESTADOS LOCALES: GESTIÓN DE DIRECCIONES Y MODALES
+     ============================================================================= */
+
+  /* --- Inputs de Formulario --- */
+  const [currentAddressInput, setCurrentAddressInput] = useState(''); /* Almacena el texto de la calle y número */
+  const [currentAddressLabel, setCurrentAddressLabel] = useState(''); /* Almacena la etiqueta (ej: "Casa", "Trabajo") */
+
+  /* --- Control de Modos de UI --- */
+  const [isEditingAddress, setIsEditingAddress] = useState(false);    /* Switch entre modo lectura y modo edición <!> Creo que esto es para el enable de whatspa */
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null); /* ID de la dirección en edición (null = nueva) */
+
+  /* --- Control de Modales de Confirmación --- */
+  const [isClearCartModalOpen, setIsClearCartModalOpen] = useState(false);     /* Visibilidad del modal para vaciar carrito */
+  const [isDeleteAddressModalOpen, setIsDeleteAddressModalOpen] = useState(false); /* Visibilidad del modal para borrar dirección */
+  const [addressIdToDelete, setAddressIdToDelete] = useState<string | null>(null); /* Referencia temporal del ID a eliminar */
+
+  /* =============================================================================
+     EFECTOS DE SINCRONIZACIÓN (OBSERVADORES)
+     ============================================================================= */
+
+  /**
+   * Sincroniza los campos de texto locales con la dirección seleccionada globalmente.
+   * Se dispara cada vez que el Drawer se abre o cambia la dirección activa.
+   */
   useEffect(() => {
+    /* Solo sincronizamos si el Drawer está abierto y existe una dirección seleccionada */
     if (isOpen && selectedAddress) {
       setCurrentAddressInput(selectedAddress.addressLine);
       setCurrentAddressLabel(selectedAddress.label);
@@ -725,147 +716,151 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
 
 
 
+  // /* Sincronización de input con dirección seleccionada */ <!> Eliminar 17 ago 
+  // useEffect(() => {
+  //   if (isOpen && selectedAddress) {
+  //     setCurrentAddressInput(selectedAddress.addressLine);
+  //     setCurrentAddressLabel(selectedAddress.label);
+  //   }
+  // }, [isOpen, selectedAddress]);
 
 
 
-  
-  /* Lógica de WhatsApp con Link al final para previsualización */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /**
+   * Lógica de WhatsApp con Link al final para previsualización 
+   * @param selectedAddress  direccion seleccionada actual
+   * @param total total del pedido
+   * @param itemCount cantidad de items del pedido
+   * @param clearPedido limpiar pedido
+   * <!> No  se porque pero me ase raro que esto este aca denro tendria que estar fuera de pedidoDrawer de este metodo y llamarlo pero ta
+  */
   const handleConfirmOrder = () => {
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('es-UY');
-    const timeStr = now.toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' });
-    const shareUrl = window.location.href;
+    const rawPhone = companyInfo.contact.adminPhone; // Numero de watsap del cliente 
+    const cleanPhone = rawPhone.startsWith('0') ? rawPhone.substring(1) : rawPhone; // para corregir el 0 al inicio
+    const finalPhone = `598${cleanPhone}`; // para agregar el codigo de pais <!> a futuro tiene que ir a configuracion por si el carrito espande a otro pais 
 
-    let message = `*NUEVO PEDIDO - VETERINARIA BELTRAMELLI*\n\n`;
+    const now = new Date(); // Fecha actual
+    const dateStr = now.toLocaleDateString('es-UY'); // Fecha en formato uruguayo <!> Esto tambien tengo que podes setiar con configuracion jeison la moneda que voy a usar 
+    const timeStr = now.toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' }); // Hora actual en formato uruguayo
+    const shareUrl = window.location.href; /* El link actual ya tiene el ?cart=... gracias al hook useProducts */
+
+    let message = `*NUEVO PEDIDO - ${companyInfo.name.toUpperCase()}*\n\n`; //<!> Estoy tiene que el archvio de configuracio 
     message += `*Fecha:* ${dateStr} - ${timeStr} hs\n`;
-    message += `*Entrega:* ${selectedAddress?.addressLine}\n\n`;
+    
+    // message += `*Entrega:* ${selectedAddress?.addressLine}\n\n`; // <!> Esto es opcional
+        
+    // Direccion de entrega Opcional <!> En la interfase tengo que buscar como achicarlo queda muy grande 
+    const entrega = selectedAddress?.addressLine 
+    ? selectedAddress.addressLine 
+    : "A coordinar / Retiro en local";
+    message += `*Entrega:* ${entrega}\n\n`;  
+    
+    
+    
+    
+    
     message += `*Detalle:*\n`;
+
+    // Linea de articulos 
     pedido.forEach(item => {
       message += `• ${item.cantidad}x ${item.producto.prod_nombre} — $${(item.producto.prod_precio * item.cantidad).toLocaleString('es-UY')}\n`;
     });
+
     message += `\n*TOTAL: $${total.toLocaleString('es-UY')}*\n`;
     message += `__________________________\n\n`;
-    message += `*Ver/Editar pedido:* ${shareUrl}`;
-    // <!> aca hay que trabajar par terminar la funcionalidad aun no queda bien el mensaje creo que estamos teniendo problema con el numero
-    // `https://api.whatsapp.com/send/?phone=096368021&text=%2ANUEVO+PEDIDO+-+VETERINARIA+BELTRAMELLI%2A%0A%0A%2AFecha%3A%2A+16%2F8%2F2026+-+10%3A56+a.+m.+hs%0A%2AEntrega%3A%2A+Av.+Principal+1234%2C+Barrio+Centro%2C+Ciudad+Capital%0A%0A%2ADetalle+de+la+compra%3A%2A%0A%E2%80%A2+2x+Antideslizante+%E2%80%94+%24162%0A%E2%80%A2+1x+Antideslizante+%E2%80%94+%2486%0A%E2%80%A2+1x+Comedero+lento+%E2%80%94+%2499%0A%E2%80%A2+4x+Oreja+de+vaca+%E2%80%94+%24140%0A%0A%2ATOTAL+ESTIMADO%3A+%24487%2A%0A__________________________%0A%0A%2AVer+o+editar+pedido+en+la+web%3A%2A%0Ahttp%3A%2F%2Flocalhost%3A5173%2Frevision%3Fcart%3D3%3A2%2C4%3A1%2C5%3A1%2C33%3A4&type=phone_number&app_absent=0
-    window.open(`https://wa.me/${companyInfo.contact.adminPhone}?text=${encodeURIComponent(message)}`, '_blank');
+
+
+
+
+
+    // <!> en le falta no se ve como un link a apretar 
+
+    message += `*Ver o editar pedido en la web:*\n`;
+    message += `${shareUrl}`;
+
+    window.open(`https://wa.me/${finalPhone}?text=${encodeURIComponent(message)}`, '_blank');
   
   
   
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
   };
 
-  return (
+  return ( // Retorno Componente --------------------------------------------------------------------------------------
     <>
       <div onClick={onClose} className={`fixed inset-0 z-[150] bg-vete-overlay/60 backdrop-blur-sm transition-opacity ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`} />
       
       <aside className={`fixed top-0 right-0 z-[160] flex flex-col h-full w-full max-w-md bg-vete-card-white shadow-2xl transition-transform duration-500 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         
+        {/* Menu superior de la interface */}
         <DrawerHeader itemCount={itemCount} onClose={onClose} />
         
+        {/* Contenido del drawer: lista de productos */}
         <DrawerContent pedido={pedido} />
 
-        <div className="sticky bottom-0 flex flex-col gap-4 py-4 px-5 bg-vete-card-white border-t border-vete-light-border">
-          <div className="flex justify-between items-end">
-            <div className="flex flex-col">
-              <span className="text-[9px] font-black uppercase text-vete-text-muted tracking-widest">Resumen</span>
-              <span className="text-base font-bold text-vete-text-light">Total del Pedido</span>
-            </div>
-            <span className="text-xl font-black text-vete-dark-green">${total.toLocaleString('es-UY')}</span>
-          </div>
 
 
 
-          {/* Gestión de direcciones */}
-          <AddressManager // Se conecta con AddressManager.tsx
-            selectedAddress={selectedAddress} // Direccion seleccionada
-            isEditingAddress={isEditingAddress} // Variable booleana que indica si se está editando una dirección
-            
-            currentAddressInput={currentAddressInput} // Valor actual de la dirección
-            setCurrentAddressInput={setCurrentAddressInput}
-            
-            currentAddressLabel={currentAddressLabel} // Etiqueta de la dirección
-            setCurrentAddressLabel={setCurrentAddressLabel}
-            
-            isAddressListOpen={isAddressListOpen} // Lista de direcciones abierta
-            addresses={addresses}
-            
-            onSave={() => {
-              if (editingAddressId) 
-                // Actualiza la dirección
-                updateAddress(editingAddressId, 
-                  { 
-                    addressLine: currentAddressInput, 
-                    label: currentAddressLabel 
-                  });
-              else 
-                // <!> esto no modifica la direccion 
-                setDefaultAddress(
-                  addAddress(
-                    currentAddressInput, 
-                    currentAddressLabel
-                  )); // Agrega la dirección
-              setIsEditingAddress(false); // Cierra el modo edición
-            }}
-            onCancel={() => setIsEditingAddress(false)}
-            onStartEdit={
-              (addr: any) => { 
-                setIsEditingAddress(true); 
-                setEditingAddressId(addr.id); 
-                setIsAddressListOpen(false); 
-              }
-            }
-            onToggleList={toggleAddressList} 
-            onSelect={selectAddress}
-            onDelete={
-              (id: string) => { 
-                setAddressIdToDelete(id); 
-                setIsDeleteAddressModalOpen(true); 
-              }
-            }
-            onNew={() => {
-              setIsEditingAddress(true); 
-              setEditingAddressId(null); 
-              setCurrentAddressInput(''); 
-              setCurrentAddressLabel(''); 
-              setIsAddressListOpen(false); 
-            }}
-          />
 
-          <div className="flex flex-col gap-3">
-            <button onClick={handleConfirmOrder} disabled={pedido.length === 0 || !selectedAddress} className="flex items-center justify-center gap-3 w-full py-3 bg-vete-dark-green text-white font-black uppercase rounded-xl disabled:opacity-50">
-              Confirmar por WhatsApp <Send size={18} />
-            </button>
-            <button onClick={() => setIsClearCartModalOpen(true)} disabled={pedido.length === 0} className="flex items-center justify-center gap-2 w-full py-2 border-2 border-vete-error text-vete-error font-bold uppercase rounded-xl disabled:opacity-30">
-              <Trash2 size={16} /> Vaciar Carrito
-            </button>
-          </div>
-        </div>
+        {/* Menu inferior  */}
+        <CartCheckoutSection 
+          pedido={pedido}
+          total={total}
+          onConfirm={handleConfirmOrder}
+          onClear={() => setIsClearCartModalOpen(true)}
+        />
+
+
+
+
+
+
+
+
+        
       </aside>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
   {/* Modal Menu Eliminar Carrito */}
@@ -886,7 +881,7 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
 
 
   
-  {/* NO borrar para Funcionalidad Cliete Sus direcciones 
+  {/*!!!! NO borrar!!!!!!!   ->>  para Funcionalidad Cliete Sus direcciones 
   
   <ConfirmationModal 
     isOpen={isDeleteAddressModalOpen} 

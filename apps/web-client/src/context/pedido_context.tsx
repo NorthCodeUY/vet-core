@@ -10,7 +10,8 @@ import type { PedidoItem } from '../types/pedido_types';
  * Se mantiene aquí porque es específica de este Contexto, no es una entidad de datos pura.
  */
 interface PedidoContextType {
-  pedido: PedidoItem[];                                    /*  Lista de líneas de productos seleccionados */
+  pedido: PedidoItem[];
+  loadPedidoMasivo: (lineas: PedidoItem[]) => void;        /* <!> Nueva Funcionalidda Metodo para carga desde URL (Rehidratación) */
   addToPedido: (product: ApiProduct) => void;              /*  Método para dar de alta o incrementar producto */
   removeFromPedido: (productId: number) => void;           /*  Método para dar de baja o decrementar producto */
   removAllPedido: (productId: number) => void;             /*  Método para eliminar completamente un producto del pedido */
@@ -32,7 +33,15 @@ const PedidoContext = createContext<PedidoContextType | undefined>(undefined);
 export const PedidoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   /* Estado reactivo que almacena el array de líneas de pedido */
   const [pedido, setPedido] = useState<PedidoItem[]>([]);
-
+  
+  /**
+   * Carga el pedido desde una URL.
+   * @param lineas - Array de líneas de pedido a cargar.
+   */ 
+  const loadPedidoMasivo = (lineas: PedidoItem[]) => {
+    setPedido(lineas);
+  };
+  
   /**
    * Agrega un producto al pedido.
    * Si el producto ya existe en una línea, incrementa su cantidad.
@@ -174,6 +183,7 @@ export const PedidoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   return (
     <PedidoContext.Provider value={{
       pedido,
+      loadPedidoMasivo,
       addToPedido,
       removeFromPedido,
       removAllPedido,

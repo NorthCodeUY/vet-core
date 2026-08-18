@@ -73,11 +73,11 @@ export function ProductCard({ producto }: Props) {
         rounded-[2rem]               /* Bordes Figma */
         cursor-pointer               /* Indica que toda la tarjeta es clickeable */
       
-        /* --- Animación --- */
-        transition-all               /* Suaviza cambios de color y borde */
-        duration-300                 /* Velocidad de transición */
-        hover:shadow-xl              /* Elevación al pasar el mouse */
-      `}>
+      /* --- Estilo --- */
+      rounded-[2rem]               /* Bordes muy redondeados según diseño Figma */
+
+      w-full                       /* Ocupa todo el ancho que le otorgan */
+    `}>
 
 
 
@@ -236,6 +236,10 @@ export function ProductCard({ producto }: Props) {
         text-vete-text-light        /* Color oscuro para legibilidad */
         text-sm                    /* Tamaño de fuente pequeño */
         line-clamp-2               /* Corta el texto a 2 líneas máximo */
+        min-w-0
+        w-full
+        break-words
+
       `}>
         {producto.prod_descripcion}
       </p>

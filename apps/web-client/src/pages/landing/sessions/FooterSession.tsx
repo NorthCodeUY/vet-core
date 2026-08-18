@@ -268,8 +268,9 @@ const Footer = ({ bgColor }: FooterProps) => {
     <>
       {/* 1. BARRA FLOTANTE DE PASTO + ACCESOS RÁPIDOS */}
       <div className="fixed bottom-0 left-0 w-full h-24 z-20 flex items-end justify-between px-4 md:px-16 pb-4 pointer-events-none">
+        
         <img
-          src="/images/branding/NavPasto.png"
+          src="/images/branding/NavPasto.png" // <!> Hay que ver si es la mejor resolucion para esto  file NavPasto.png: PNG image data, 1376 x 138, 8-bit/color RGBA, non-interlaced
           alt="Nav Pasto"
           className="absolute bottom-0 left-0 w-full h-full object-cover object-top opacity-40 pointer-events-none z-0"
         />
@@ -500,6 +501,11 @@ const Footer = ({ bgColor }: FooterProps) => {
       </footer>
     </>
   );
+
+
+
+
+  
 };
 
 export default Footer;

@@ -11,12 +11,10 @@
 
 
 import { useState, useEffect, useRef } from 'react';
-import { X, ShoppingBag, MapPin, Send, Package, Trash2, Edit, Plus, ChevronDown } from 'lucide-react';
+import { X, ShoppingBag, MapPin, Send, Package, Trash2, Edit, Plus, ChevronDown, ShoppingCart } from 'lucide-react';
 import { usePedidoStore } from '../../context/pedido_context';
 import { PedidoItemRow } from './PedidoItemRow';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
-
-
 import { useAddressManagement } from '../../hooks/useAddressManagement'
 import type { UserAddress } from '../../hooks/useAddressManagement'
 
@@ -86,31 +84,71 @@ const useUserInitialAddress = () => {
    * @param onClose - Función para cerrar el drawer
    */
   const DrawerHeader = ({ itemCount, onClose }: { itemCount: number; onClose: () => void }) => (
-    // <!> Cosas a arreglar
-    // 1. El logo no me gusta tendria que ser o un carrrito o uno de esos canastos del super 
-    // 2. Que aparesca Veterinaria beltrameli Vamos a ponerlo como una variable a el menu porque hay que emensar a
-    // estraer los datos que no vay para ponerlo a varialbe de entorno 
-    // 3. me gustaria poner  
-    <div className={`
-      /* --- Posición --- */
-      flex items-center justify-between
-      /* --- Dimensiones --- */
-      p-4
-      /* --- Colores --- */
-      bg-vete-dark-green text-vete-card-white
-    `}>
-      <div className="flex items-center gap-3">
-        <ShoppingBag size={24} />
-        <h2 className="text-xl font-black italic uppercase tracking-tight">Tu Carrito</h2>
-        <span className="bg-vete-primary text-vete-card-white text-[10px] px-2 py-1 rounded-full font-bold">
-          {itemCount} ITEMS
-        </span>
-      </div>
-      <button onClick={onClose} className="p-1.5 hover:bg-vete-card-white/10 rounded-full transition-colors">
-        <X size={24} />
-      </button>
+  <div className={`
+    /* --- Posición --- */
+    flex items-center justify-between
+    /* --- Dimensiones --- */
+    p-4
+    /* --- Colores --- */
+    bg-vete-dark-green text-vete-card-white
+  `}>
+    <div className="flex items-center gap-3">
+      {/* <!> CORRECCIÓN: Icono cambiado a ShoppingCart */}
+      <ShoppingCart size={24} />
+      {/* <!> CORRECCIÓN: Nombre extraído de companyInfo */}
+      <h2 className="text-xl font-black italic uppercase tracking-tight">
+        {companyInfo.name}
+      </h2>
+      <span className="bg-vete-primary text-vete-card-white text-[10px] px-2 py-1 rounded-full font-bold">
+        {itemCount} ITEMS
+      </span>
     </div>
-  );
+    <button onClick={onClose} className="p-1.5 hover:bg-vete-card-white/10 rounded-full transition-colors">
+      <X size={24} />
+    </button>
+  </div>
+);
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  // const DrawerHeader = ({ itemCount, onClose }: { itemCount: number; onClose: () => void }) => (
+  //   // <!> Cosas a arreglar
+  //   // 1. El logo no me gusta tendria que ser o un carrrito o uno de esos canastos del super 
+  //   // 2. Que aparesca Veterinaria beltrameli Vamos a ponerlo como una variable a el menu porque hay que emensar a
+  //   // estraer los datos que no vay para ponerlo a varialbe de entorno 
+  //   // 3. me gustaria poner  
+  //   <div className={`
+  //     /* --- Posición --- */
+  //     flex items-center justify-between
+  //     /* --- Dimensiones --- */
+  //     p-4
+  //     /* --- Colores --- */
+  //     bg-vete-dark-green text-vete-card-white
+  //   `}>
+  //     <div className="flex items-center gap-3">
+  //       <ShoppingBag size={24} />
+  //       <h2 className="text-xl font-black italic uppercase tracking-tight">Tu Carrito</h2>
+  //       <span className="bg-vete-primary text-vete-card-white text-[10px] px-2 py-1 rounded-full font-bold">
+  //         {itemCount} ITEMS
+  //       </span>
+  //     </div>
+  //     <button onClick={onClose} className="p-1.5 hover:bg-vete-card-white/10 rounded-full transition-colors">
+  //       <X size={24} />
+  //     </button>
+  //   </div>
+  // );
 
 
 

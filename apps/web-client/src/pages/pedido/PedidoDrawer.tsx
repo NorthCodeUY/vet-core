@@ -17,6 +17,7 @@ import { PedidoItemRow } from './PedidoItemRow';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
 import { useAddressManagement } from '../../hooks/useAddressManagement'
 import type { UserAddress } from '../../hooks/useAddressManagement'
+import { WhatsAppDynamicButton } from '../../components/WhatsAppDynamicButton';
 
 import companyInfo from '../../data/companyInfo.json'; // Datos de la empresa 
 
@@ -83,72 +84,153 @@ const useUserInitialAddress = () => {
    * @param itemCount - Número de ítems en el carrito
    * @param onClose - Función para cerrar el drawer
    */
-  const DrawerHeader = ({ itemCount, onClose }: { itemCount: number; onClose: () => void }) => (
+/* --- Sub-componente interno del PedidoDrawer --- */
+const DrawerHeader = ({ itemCount, onClose }: { itemCount: number; onClose: () => void }) => (
   <div className={`
     /* --- Posición --- */
-    flex items-center justify-between
+    relative                     /* Base para el fondo de pasto absoluto */
+    flex                         /* Contenedor flexible */
+    items-center                 /* Centrado vertical */
+    justify-between              /* Separa identidad de botón cerrar */
+    overflow-hidden              /* Corta el pasto que sobresalga */
+    
     /* --- Dimensiones --- */
-    p-4
+    p-5                          /* Padding interno generoso */
+    min-h-[100px]                /* Altura mínima para lucir el diseño */
+
     /* --- Colores --- */
-    bg-vete-dark-green text-vete-card-white
+    bg-vete-secondary            /* Fondo azul pizarra de la marca */
+    
+    
   `}>
-    <div className="flex items-center gap-3">
-      {/* <!> CORRECCIÓN: Icono cambiado a ShoppingCart */}
-      <ShoppingCart size={24} />
-      {/* <!> CORRECCIÓN: Nombre extraído de companyInfo */}
-      <h2 className="text-xl font-black italic uppercase tracking-tight">
-        {companyInfo.name}
-      </h2>
-      <span className="bg-vete-primary text-vete-card-white text-[10px] px-2 py-1 rounded-full font-bold">
-        {itemCount} ITEMS
-      </span>
+    
+    {/* --- FONDO DE PASTO INVERTIDO --- */}
+    <img
+      src="/images/branding/NavPasto.png"
+      alt=""
+      className={`
+        /* --- Posición --- */
+        absolute                     /* Flota detrás del contenido */
+        top-0                        /* Pegado al techo del drawer */
+        left-0                       /* Alineado al inicio */
+        z-0                          /* Capa inferior */
+        pointer-events-none          /* No interfiere con clics */
+
+        /* --- Dimensiones --- */
+        w-full h-full                /* Cubre todo el header */
+        
+        /* --- Estilo --- */
+        object-cover                 /* No deforma la imagen */
+        opacity-35                   /* Transparencia sutil para no tapar texto */
+        
+        /* --- Transformación --- */
+        scale-y-[-1]                 /*  EFECTO ESPEJO: Puntas hacia abajo */
+      `}
+    />
+
+    {/* --- IDENTIDAD VISUAL (Logo + Título) --- */}
+    <div className="relative z-10 flex items-center gap-3">
+      {/* Logo de la Empresa */}
+      <img 
+        src="/logo.png" 
+        alt="Logo" 
+        className="w-10 h-10 object-contain shrink-0" 
+      />
+      
+      {/* Título con patrón del Header General */}
+      <div className={`
+          /* --- Posición --- */
+          relative /* Por encima del pasto */
+          z-10     /* Encima del pasto */         
+          flex     /* Flexbox */
+          flex-col /* Columna */
+          leading-[0.85] /* Altura de linea */
+          text-vete-text-light                  /* Texto base blanco */
+        `}>
+        <span className={`
+          /* --- Dimensiones --- */
+          text-[10px]                        /* Tamaño de letra */
+          
+          /* --- Estilo --- */
+          font-black                         /* Negrita */
+          uppercase                          /* Letra mayuscula */
+          tracking-tighter                   /* Espaciado entre letras */
+          opacity-80                         /* Opacidad */
+        `}>
+          Veterinaria
+        </span>
+        <span className={`
+          /* --- Dimensiones --- */
+          text-lg 
+          /* --- Colores ---   */
+          font-black 
+          uppercase 
+          /* --- Estilo --- */
+          tracking-tighter 
+          /* --- Animación --- */
+          opacity-80 
+        `}>
+          Beltramelli<span className="text-vete-primary">.</span>
+        </span>
+      </div>
+
+      {/* Badge de Cantidad */}
+      <div className={`
+        /* --- Posición --- */
+        flex items-center gap-1.5
+        /* --- Dimensiones --- */
+        ml-2 px-2.5 py-1
+        /* --- Colores --- */
+        bg-vete-primary              /* Verde marca */
+        /* --- Estilo --- */
+        rounded-full 
+        shadow-lg
+      `}>
+        <ShoppingCart size={12} className="text-white" />
+        <span className="text-[13px] font-black text-white">{itemCount}</span>
+      </div>
     </div>
-    <button onClick={onClose} className="p-1.5 hover:bg-vete-card-white/10 rounded-full transition-colors">
-      <X size={24} />
+
+
+    {/* --- BOTÓN CERRAR --- <!> Mejorar logo de cierre no me termina de convenser*/}
+    <button 
+      onClick={onClose} 
+      className={`
+        /* --- Posición --- */
+        relative z-10                /* Se posiciona por encima del fondo de pasto */
+        flex items-center            /* Centrado del icono X */
+        justify-center               /* Centrado del icono X */
+        
+        /* --- Dimensiones --- */
+        w-10 h-10                    /* Tamaño fijo para asegurar un círculo perfecto */
+        p-2                          /* Espaciado interno */
+
+        /* --- Colores --- */
+        bg-vete-secondary            /* Fondo azul (mismo color que el badge del carrito) */
+        text-vete-text-light                  /* Color de la cruz para máximo contraste */
+        
+        /* --- Estilo --- */
+        rounded-full                 /* Forma circular */
+        shadow-lg                    /* Sombra para dar profundidad sobre el pasto */
+        
+        /* --- Animación --- */
+        hover:bg-vete-primary        /* Cambia al verde de la marca al pasar el mouse */
+        active:scale-90              /* Efecto de pulsación al hacer clic */
+        transition-all               /* Suaviza la transición de color y escala */
+        duration-300                 /* Velocidad de la animación */
+      `}
+      aria-label="Cerrar carrito"
+    >
+      {/* 
+          Reducimos el size a 20 o 24 para que respire mejor dentro del círculo de 10x10, 
+          pero aumentamos el grosor (strokeWidth) para que sea bien legible. 
+      */}
+      <X size={20} strokeWidth={3} />
     </button>
+
   </div>
 );
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  // const DrawerHeader = ({ itemCount, onClose }: { itemCount: number; onClose: () => void }) => (
-  //   // <!> Cosas a arreglar
-  //   // 1. El logo no me gusta tendria que ser o un carrrito o uno de esos canastos del super 
-  //   // 2. Que aparesca Veterinaria beltrameli Vamos a ponerlo como una variable a el menu porque hay que emensar a
-  //   // estraer los datos que no vay para ponerlo a varialbe de entorno 
-  //   // 3. me gustaria poner  
-  //   <div className={`
-  //     /* --- Posición --- */
-  //     flex items-center justify-between
-  //     /* --- Dimensiones --- */
-  //     p-4
-  //     /* --- Colores --- */
-  //     bg-vete-dark-green text-vete-card-white
-  //   `}>
-  //     <div className="flex items-center gap-3">
-  //       <ShoppingBag size={24} />
-  //       <h2 className="text-xl font-black italic uppercase tracking-tight">Tu Carrito</h2>
-  //       <span className="bg-vete-primary text-vete-card-white text-[10px] px-2 py-1 rounded-full font-bold">
-  //         {itemCount} ITEMS
-  //       </span>
-  //     </div>
-  //     <button onClick={onClose} className="p-1.5 hover:bg-vete-card-white/10 rounded-full transition-colors">
-  //       <X size={24} />
-  //     </button>
-  //   </div>
-  // );
 
 
 
@@ -187,89 +269,208 @@ const useUserInitialAddress = () => {
 
 
 
-//<!> Falta implementar este metodo Cambiar nobre yo le pondri footerPedidoDrawer 
+
+
+
+
+
+
+
 /**
- * Menu del footer para mostrar el total del pedido y los botones de acción
+ * Menu footer muestra los totales y los botones de acción
+ * 
  * @param param0 
  * @returns 
  */
+
+
+
+
+
 const CartCheckoutSection = ({ 
   pedido, 
   total, 
   selectedAddress, 
   addressProps, 
-  onConfirm, 
+  onConfirm, // <!> Este onConfirm ahora debe generar el string del mensaje
   onClear 
 }: any) => {
   return (
     <div className={`
       /* --- Posición --- */
       flex                         /* Contenedor flexible */
-      flex-col                     /* Alineación vertical */
-      gap-4                        /* Espacio entre elementos */
-      mt-4                         /* Margen superior */
+      flex-col                     /* Alineación vertical base */
+      gap-4                        /* Espacio entre bloques */
+      mt-2                         /* Margen superior reducido */
     `}>
-      
 
-
-
-
-
-
-      {/*<!> Gestión de direcciones No Borrar Para sprin Pedido sentralizado */}
-      {/* <AddressManager {...addressProps} selectedAddress={selectedAddress} /> */}
-
-
-
-
-
-      {/* Botonera de Acción */}
-      <div className="flex flex-col gap-3">
-        <button 
-          onClick={onConfirm} 
-          // disabled={pedido.length === 0 || !selectedAddress} //<!> Capas que es util si tenemos la ubicacion vemos 
-          className={`
-            /* --- Posición --- */
-            flex items-center justify-center gap-3
-            /* --- Dimensiones --- */
-            w-full py-3
-            /* --- Colores --- */
-            bg-vete-dark-green text-white
+      {/* --- BLOQUE DE TOTALES --- */}
+      <div className={`
+        /* --- Posición --- */
+        flex                         /* Alineación horizontal */
+        justify-between              /* Separa etiqueta de monto */
+        items-end                    /* Alinea a la base del texto */
+        
+        /* --- Dimensiones --- */
+        px-1                         /* Ajuste lateral */
+      `}>
+        <div className="flex flex-col">
+          <span className={`
             /* --- Texto --- */
-            font-black uppercase tracking-widest
-            /* --- Estilo --- */
-            rounded-xl shadow-xl
-            /* --- Animación --- */
-            disabled:opacity-50 transition-all
-          `}
-        >
-          Confirmar por WhatsApp <Send size={18} />
-        </button>
+            text-[10px]                /* Texto muy pequeño */
+            font-black                 /* Peso máximo */
+            uppercase                  /* Mayúsculas */
+            tracking-widest            /* Espaciado de letras */
+            
+            /* --- Colores --- */
+            text-vete-text-muted       /* Gris tenue */
+          `}>
+            Resumen
+          </span>
+          <span className="text-base font-bold text-vete-text-light">Total del Pedido</span>
+        </div>
+        
+        <span className={`
+          /* --- Texto --- */
+          text-2xl                     /* Tamaño destacado */
+          font-black                   /* Peso máximo */
+          
+          /* --- Colores --- */
+          text-vete-dark-green         /* Verde oscuro */
+        `}>
+          ${total.toLocaleString('es-UY')}
+        </span>
+      </div>
 
+      {/* Gestión de direcciones */}
+      <AddressManager {...addressProps} selectedAddress={selectedAddress} /> 
+
+      {/* --- BOTONERA DE ACCIÓN (HORIZONTAL) --- */}
+      <div className={`
+        /* --- Posición --- */
+        flex                         /* <!> CAMBIO: Ahora es una fila */
+        items-center                 /* Centrado vertical */
+        gap-3                        /* Espacio entre botones */
+        
+        /* --- Dimensiones --- */
+        w-full                       /* Ancho total */
+      `}>
+        
+        {/* Botón Cancelar / Vaciar (Izquierda) */}
         <button 
           onClick={onClear} 
           disabled={pedido.length === 0} 
           className={`
             /* --- Posición --- */
             flex items-center justify-center gap-2
+            
             /* --- Dimensiones --- */
-            w-full py-2
+            px-4 py-3                /* Padding equilibrado */
+            
             /* --- Colores --- */
-            bg-transparent border-2 border-vete-error text-vete-error
-            /* --- Texto --- */
-            font-bold uppercase
+            bg-transparent           /* Sin fondo */
+            border-2                 /* Borde visible */
+            border-vete-error        /* Color rojo error */
+            text-vete-error          /* Texto rojo */
+            
             /* --- Estilo --- */
-            rounded-xl
+            rounded-xl               /* Bordes redondeados */
+            font-bold                /* Negrita */
+            uppercase                /* Mayúsculas */
+            text-[10px]              /* Tamaño pequeño para el row */
+            
             /* --- Animación --- */
-            disabled:opacity-30 transition-all
+            hover:bg-vete-error/10   /* Fondo tenue al pasar mouse */
+            disabled:opacity-30      /* Transparencia si está vacío */
+            transition-all
           `}
         >
-          <Trash2 size={16} /> Vaciar Carrito
+          <Trash2 size={14} />
+          <span className="hidden xs:inline">Vaciar</span>
         </button>
+
+        {/* Botón Confirmar (Derecha - Usando el componente dinámico) */}
+        <WhatsAppDynamicButton 
+          label="Confirmar Pedido"
+          phone={companyInfo.contact.adminPhone}
+          message={onConfirm()} // <!> Ejecutamos la función que genera el mensaje
+          disabled={pedido.length === 0 || !selectedAddress}
+        />
       </div>
     </div>
   );
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
   /**
@@ -301,7 +502,13 @@ const CartCheckoutSection = ({
     </div>
   );
 
-
+ // <!> Subcomponente nuevo: 
+ // Tengo que crear otro componente para la forma de pago. Debe ofrecer: efectivo o transferencia,
+ // y dólares o pesos. Si se selecciona transferencia, el mensaje mostrará el número de cuenta de la 
+ // empresa, tomado del JSON de información de la empresa. Si no, mostrar el mensaje "efectivo" con
+ // "coordinar con el vendedor". Pon logotipos pequeños de efectivo y de cuenta bancaria para
+ // que la interfaz sea agradable. No deben ocupar mucho espacio ni robar lugar innecesario.
+ // Marcar en rojo cómo lo quiero.
 
   /**
    * Maneja la lógica de direcciones: selección, edición, guardado y eliminación.
@@ -321,6 +528,13 @@ const CartCheckoutSection = ({
    * @param onSelect - Función para seleccionar una dirección
    * @param onDelete - Función para eliminar una dirección
    * @param onNew - Función para crear una nueva dirección
+   * 
+   * <!> Hacerlo más pequeño. Que funcione con Google Maps y permita añadir texto 
+   * para mayor claridad. Al principio no guardaremos direcciones porque no tenemos 
+   * backend; en su lugar, ofrecer una opción para seleccionar la dirección y guardarla 
+   * en el enlace para compartir, o incluirla en el mensaje predefinido. No me
+   * interesa que el enlace almacene ese dato, ya que los usuarios pueden tenerlo en WhatsApp.
+   * 
    */
   const AddressManager = ({ 
     selectedAddress, 
@@ -579,45 +793,6 @@ const CartCheckoutSection = ({
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
  * Componente principal que orquesta el drawer de pedidos, manejando el estado 
  * global del carrito y las direcciones del usuario.
@@ -640,62 +815,6 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
     setIsAddressListOpen, // Setter para el estado de visibilidad del historial
     toggleAddressList // Función para alternar la visibilidad del historial
   } = useAddressManagement(); // Logica de guardado y seleccion de direcciones
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- // <!> Version Borrar 
-
- 
-  /* Estados locales para edición de dirección */
-  // const [
-  //   currentAddressInput,
-  //   setCurrentAddressInput // 
-  //   ] =  useState(''); // 
-  
-  // const [
-  //   currentAddressLabel, 
-  //   setCurrentAddressLabel
-  //   ] = useState('');
-
-  // const [
-  //   isEditingAddress,
-  //   setIsEditingAddress
-  // ] = useState(false);
-  
-  // const [
-  //   editingAddressId,
-  //   setEditingAddressId
-  // ] = useState<string | null>(null);
-  
-  // const [
-  //   isClearCartModalOpen,
-  //   setIsClearCartModalOpen
-  // ] = useState(false);
-  
-  // const [
-  //   isDeleteAddressModalOpen,
-  //   setIsDeleteAddressModalOpen
-  // ] = useState(false);
-
-  // const [
-  //   addressIdToDelete,
-  //   setAddressIdToDelete
-  // ] = useState<string | null>(null);
-
-
-
 
 
 
@@ -733,61 +852,6 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
   }, [isOpen, selectedAddress]);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // /* Sincronización de input con dirección seleccionada */ <!> Eliminar 17 ago 
-  // useEffect(() => {
-  //   if (isOpen && selectedAddress) {
-  //     setCurrentAddressInput(selectedAddress.addressLine);
-  //     setCurrentAddressLabel(selectedAddress.label);
-  //   }
-  // }, [isOpen, selectedAddress]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   /**
    * Lógica de WhatsApp con Link al final para previsualización 
    * @param selectedAddress  direccion seleccionada actual
@@ -817,10 +881,6 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
     : "A coordinar / Retiro en local";
     message += `*Entrega:* ${entrega}\n\n`;  
     
-    
-    
-    
-    
     message += `*Detalle:*\n`;
 
     // Linea de articulos 
@@ -830,12 +890,6 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
 
     message += `\n*TOTAL: $${total.toLocaleString('es-UY')}*\n`;
     message += `__________________________\n\n`;
-
-
-
-
-
-    // <!> en le falta no se ve como un link a apretar 
 
     message += `*Ver o editar pedido en la web:*\n`;
     message += `${shareUrl}`;
@@ -860,11 +914,8 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
         {/* Contenido del drawer: lista de productos */}
         <DrawerContent pedido={pedido} />
 
-
-
-
-
-        {/* Menu inferior  */}
+        
+        {/* Menu inferior <!> Donde estoy parado porque esto no aparese    */}
         <CartCheckoutSection 
           pedido={pedido}
           total={total}
@@ -872,32 +923,7 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
           onClear={() => setIsClearCartModalOpen(true)}
         />
 
-
-
-
-
-
-
-
-        
       </aside>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -914,11 +940,6 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
     icon={<Trash2 size={24} />} 
   />
 
-
-
-
-
-  
   {/*!!!! NO borrar!!!!!!!   ->>  para Funcionalidad Cliete Sus direcciones 
   
   <ConfirmationModal 
@@ -934,8 +955,6 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
   
   */}
 
-
-    
     </>
   );
 }; // FIN Componente PedidoDrawer----------------------------------------------------------------------------------------------------------------

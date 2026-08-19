@@ -9,13 +9,15 @@ import { useState } from 'react'; // 1. Importamos useState
  * @param label - Texto que se muestra inicialmente (ej: "Consultar")
  * @param phone - El número de teléfono (ej: "092 444 510")
  * @param message - El texto predefinido para el chat de WhatsApp
- * @param colorToken - El nombre del color en el config (ej: "vete-primary")
+ * @param colorToken - El nombre del color en el config (ej: "vete-primary"
+ * @param disabled - Controla la visibilidad del botón
  */
 interface WhatsAppProps {
   label: string;
   phone: string;
   message: string;
   colorToken: string;
+  disabled?: boolean; // <!> AGREGAR ESTA LÍNEA
 }
 
 // Mapa de clases para que Tailwind las detecte correctamente
@@ -26,7 +28,14 @@ const hoverClasses: Record<string, string> = {
   'vete-accent': 'hover:bg-vete-accent',
 };
 
-export const WhatsAppDynamicButton = ({ label = "Contacto", phone, message, colorToken }: WhatsAppProps) => {
+export const WhatsAppDynamicButton = ({ 
+  label = "Contacto", 
+  phone, 
+  message, 
+  colorToken,
+  disabled = false 
+
+}: WhatsAppProps) => {
   
   // Limpieza de datos para el link
   const cleanPhone = phone.replace(/\s/g, ''); // Elimina los espacios en el número de teléfono
@@ -44,16 +53,31 @@ export const WhatsAppDynamicButton = ({ label = "Contacto", phone, message, colo
   return (
     <button 
       onClick={handleWhatsApp}
+      disabled={disabled}
       onMouseEnter={() => setIsHovered(true)} // 3. Activamos hover
       onMouseLeave={() => setIsHovered(false)} // 4. Desactivamos hover
       className={`
 
         /* Estructura y Animación */
-        w-full py-3 rounded-xl flex items-center justify-center gap-3 transition-all duration-300
+        w-full 
+        py-3 
+        rounded-xl 
+        flex items-center 
+        justify-center 
+        gap-3 
+        transition-all 
+        duration-300
+        
         /* Tipografía */
-        text-vete-small font-black uppercase tracking-widest 
+        text-vete-small 
+        font-black 
+        uppercase 
+        tracking-widest 
+        
         /* Borde y Grupo */
-        border-2 group
+        border-2 
+        group
+        
         /* EFECTO HOVER */
         ${hoverBg} hover:shadow-lg active:scale-95
         /* Animación */

@@ -2,7 +2,7 @@
 
 
 import { ChevronDown, ChevronUp, ShoppingCart } from 'lucide-react';
-import { ProductCard } from './ProductCard.tsx'
+import { ProductCard } from './ProductCard';
 import { usePedidoStore } from '../context/pedido_context';
 import { useCategoryProducts } from '../hooks/useProducts';
 
@@ -43,9 +43,9 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
   const { pedido } = usePedidoStore();
 
 
-  const cantidadComprada = pedido // Me da el total de cantidad de productos de esta categoria que estan en el pedido 
-    .filter(item => item.producto.cat_id === catId) // Me quedo con los productos de esta categoria
-    .reduce((acc, item) => acc + item.cantidad, 0); // Me quedo con la cantidad de productos 
+  const cantidadComprada = (pedido || []) // Me da el total de cantidad de productos de esta categoria que estan en el pedido 
+    .filter(item => item?.producto?.cat_id === catId) // Me quedo con los productos de esta categoria (con acceso seguro ?.)
+    .reduce((acc, item) => acc + (item?.cantidad || 0), 0); // Me quedo con la cantidad de productos 
 
 
 
@@ -169,50 +169,52 @@ export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupPr
         </button>
       </div>
 
-      {/* Grid de productos adaptado a la nueva estructura de datos */}
-
+      {/* Grid de productos adaptado para 2 columnas en Mobile */}
       <div className={`
         /* --- Posición --- */
         grid                         /* Activa el sistema de grilla */
-        grid-cols-1                  /* 1 columna: Móvil (por defecto) */
-        sm:grid-cols-2               /* 2 columnas: Tablet */
-        lg:grid-cols-3               /* 3 columnas: Laptop */
-        xl:grid-cols-4               /* 4 columnas: Desktop (Tu pedido) */
-        2xl:grid-cols-5            /* 5 columnas: Pantallas extra grandes */
+        grid-cols-2                  /* CRÍTICO: 2 columnas en Móvil por defecto cambiar a 1 si asi quiere */
+        sm:grid-cols-2               /* 2 columnas: Tablet pequeña */
+        md:grid-cols-3               /* 3 columnas: Tablet / Laptop corta */
+        lg:grid-cols-4               /* 4 columnas: Laptop */
+        xl:grid-cols-5               /* 5 columnas: Desktop grande */
         justify-items-center         /* Centra las tarjetas */
 
         /* --- Dimensiones --- */
-        gap-y-10                     /* Espacio vertical entre filas */
-        gap-x-6                      /* Espacio horizontal entre columnas */
-        w-full                       /* Ocupa todo el ancho que le otorgan */
+        gap-2.5                      /* Gap compacto para mobile (10px) */
+        sm:gap-4                     /* Gap medio para pantallas medianas */
+        md:gap-6                     /* Gap amplio para pantallas grandes */
+        w-full                       /* Ocupa todo el ancho disponible */
       `}>
 
-
-
         {products.map((p, index) => {
-          /* Lógica de visibilidad basada en el índice y estado de expansión */
-          const isHiddenOnMobile = index >= (isExpanded ? products.length : 1);
+          /* 
+            Lógica de visibilidad actualizada:
+            - En mobile no expandido: muestra 2 productos (índices 0 y 1).
+            - En desktop no expandido: muestra hasta 5 productos.
+            - Al expandir (isExpanded = true): muestra todos los productos.
+          */
+          const isHiddenOnMobile = index >= (isExpanded ? products.length : 2);
           const isHiddenOnDesktop = !isExpanded && index >= 5;
 
           return (
             <div
               key={p.prod_id}
               className={`
+                w-full                      /* Ocupa el 100% de la celda */
+                min-w-0                     /* Previene desbordamiento de texto */
+                flex-col                    /* Fuerza dirección vertical */
 
-                w-full                      /* Ocupar el 100% de lo asignado */
-                min-w-0                     /* No se agranda el tamaño, se adapta el contenido */
-
-                /* --- Posición --- */
+                /* --- Visibilidad según Breakpoints --- */
                 ${isHiddenOnMobile ? 'hidden' : 'flex'} 
-                ${isHiddenOnDesktop ? 'xl:hidden' : 'xl:flex'}
+                ${isHiddenOnDesktop ? 'lg:hidden' : 'lg:flex'}
 
                 /* --- Animación --- */
                 animate-in                   /* Entrada suave */
                 fade-in                      /* Desvanecimiento */
-                duration-300                 /* Velocidad */
+                duration-300                 /* Velocidad de la transición */
               `}
             >
-
               <ProductCard producto={p} />
             </div>
           );

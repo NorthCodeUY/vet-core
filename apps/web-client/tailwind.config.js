@@ -16,6 +16,10 @@ export default {
       },
       colors: {
         vete: {
+          // <!> La paleta de colores no esta bien definida es dificil de leer Tengo que arreglarla 
+          // ADEMAS NO SE SI ES TAN BUENA IDEA APUNTARLO A UN CSS NO ME ACUERDO PORQUE LO ISE tENER 
+          // EN CUETA EL TEMA DE QUE VAMOS A PASAR ESTO A VARIABLE DE ENTORNO 
+
           // Por lo que se es para el menu cartel de la web
           bg: 'rgb(var(--vete-bg) / <alpha-value>)',
           // Colores para la web

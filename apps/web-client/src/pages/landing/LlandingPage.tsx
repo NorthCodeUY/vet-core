@@ -298,13 +298,7 @@ export default function LandingPage() {
           <ProductsSession bgColor='bg-vete-dark' />
         </section>
 
-
-
-
-
-
         <section id="ServicioSeccion">
-
           {/* separador V2*/}
           <SectionDivider
             topColor="bg-vete-secondary"

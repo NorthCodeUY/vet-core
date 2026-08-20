@@ -1,21 +1,37 @@
 <!-- /apps/web-client/index.html -->
 <!doctype html>
-<html lang="en">
+<html lang="es"> <!-- <!> CORRECCIÓN: Cambiado a Español -->
   <head>
     <meta charset="UTF-8" />
-    <!-- <!> Estaria bueno ace logo svg para mejorar 512x512 px. esa es la resolucion ideal pero no se si aplica a svg  -->
-    <link rel="icon" type="image/png" href="/logo.png"  />
+    
+    <!-- FAVICON: El SVG es ideal porque es infinito, no necesita resolución fija -->
+    <link rel="icon" type="image/png" href="/logo.png" />
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Veterinaria Beltramelli</title>
+    
+    <!-- SEO ESTÁNDAR (Para Google) -->
+    <title>Veterinaria Beltramelli - Salto, Uruguay</title>
+    <meta name="description" content="Medicina veterinaria integral en Salto. Pedido online de raciones y accesorios con entrega a domicilio." />
+    <meta name="theme-color" content="#10b981" /> <!-- Color de la barra en móviles Android -->
 
-        <!-- CARGA DE FUENTE INTER (MÁS RÁPIDO QUE @IMPORT) -->
+    <!-- CONFIGURACIÓN OPEN GRAPH (WhatsApp, Facebook) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://veterinaria-beltramelli.com/" />
+    <meta property="og:title" content="Veterinaria Beltramelli - Pedido Online" />
+    <meta property="og:description" content="Cuidamos a quienes amas. Realizá tu pedido de forma rápida y segura." />
+    
+    <!-- <!> CRÍTICO: WhatsApp requiere una URL ABSOLUTA para la imagen -->
+    <meta property="og:image" content="https://veterinaria-beltramelli.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- CARGA DE FUENTES (Optimizado) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
 
-    <script type="module" crossorigin src="/assets/index-C5lETEE4.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-ezQKwxpe.css">
+    <script type="module" crossorigin src="/assets/index-DZ4BHflq.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-JZRBKEZl.css">
   </head>
   <body>
     <div id="root"></div>

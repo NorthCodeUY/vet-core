@@ -390,12 +390,84 @@ const CartCheckoutSection = ({
         </button>
 
         {/* Botón Confirmar (Derecha - Usando el componente dinámico) */}
-        <WhatsAppDynamicButton 
+
+
+        {/*<!> Borrar  <WhatsAppDynamicButton 
           label="Confirmar Pedido"
           phone={companyInfo.contact.adminPhone}
-          message={onConfirm()} // <!> Ejecutamos la función que genera el mensaje
+          onClick={onConfirm} // <!> Ejecutamos la función que genera el mensaje
+          disabled={pedido.length === 0 || !selectedAddress}
+        /> */}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <WhatsAppDynamicButton 
+          label="Confirmar Pedido"
+          hoverLabel="Enviar a WhatsApp" // <!> Nuevo campo dinámico
+          phone={companyInfo.contact.adminPhone}
+          colorToken="vete-secondary"      // <!> ESTO ES LO QUE FALTABA (Error ts2741)
+          onClick={onConfirm}
           disabled={pedido.length === 0 || !selectedAddress}
         />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       </div>
     </div>
   );

@@ -17,9 +17,23 @@ interface PlanCardProps {
   phoneWhattsApp: string;
 }
 
+
 export const PlanCard = ({ title, description, benefits, borderColor, isFeatured = false, mensajeWhatsApp, phoneWhattsApp }: PlanCardProps) => {
   
   const dynamicColor =  `rgb(var(--${borderColor}))`;
+
+  /* --- Lógica de Envío (Fachada de Acción) --- */
+  const handlePlanRequest = () => {
+    /* 1. Limpiamos el número (Quitamos espacios y el 0 inicial) */
+    const rawPhone = phoneWhattsApp.replace(/\s/g, '');
+    const cleanPhone = rawPhone.startsWith('0') ? rawPhone.substring(1) : rawPhone;
+    
+    /* 2. Construimos la URL con el mensaje personalizado del plan */
+    const url = `https://wa.me/598${cleanPhone}?text=${encodeURIComponent(mensajeWhatsApp)}`;
+    
+    /* 3. Abrimos el chat */
+    window.open(url, '_blank');
+  };
 
   return (
     <div className={`flex flex-col p-8 bg-white rounded-2xl shadow-sm 
@@ -62,13 +76,42 @@ export const PlanCard = ({ title, description, benefits, borderColor, isFeatured
           </li>
         ))}
       </ul>
-
-       <WhatsAppDynamicButton 
+        {/* <!> Aca hay que corrregir el problema que haora el boton aseipta 
+        la funcion clik hay que determinar por aca que quiero mandar el mensaje 
+        caps traer por parametro enves de el mensaje el clik para que para atras
+         aga el mensaje  */}
+      
+      
+      
+      
+      
+      
+       {/* <WhatsAppDynamicButton 
         label="Solicitar Plan"
         phone={phoneWhattsApp}
         message={mensajeWhatsApp}
         colorToken={borderColor}
+      /> */}
+
+
+
+
+
+
+      {/* 
+          <!> ADAPTACIÓN: 
+          Ahora pasamos 'onClick' en lugar de 'message'. 
+          La tarjeta decide QUÉ mensaje mandar, el botón solo lo ejecuta.
+      */}
+       <WhatsAppDynamicButton 
+        label="Solicitar Plan"
+        hoverLabel="Enviar Consulta"
+        phone={phoneWhattsApp}
+        colorToken={borderColor}
+        onClick={handlePlanRequest}
       />
+
+
 
     </div>
   );

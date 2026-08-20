@@ -1,139 +1,101 @@
-
-// apps/web-client/src/components/WhatsAppDynamicButton.tsx
+/* --- apps/web-client/src/components/WhatsAppDynamicButton.tsx --- */
 
 import WhatSapp_Icon from '../assets/branding/WhatSapp_Cuadrado.svg?react';
-import { useState } from 'react'; // 1. Importamos useState
 
-/**
- * Componente de Botón WhatsApp Dinámico
- * @param label - Texto que se muestra inicialmente (ej: "Consultar")
- * @param phone - El número de teléfono (ej: "092 444 510")
- * @param onClick - Función que se ejecuta al hacer clic en el botón
- * @param colorToken - El nombre del color en el config (ej: "vete-primary"
- * @param disabled - Controla la visibilidad del botón
- */
 interface WhatsAppProps {
   label: string;
   hoverLabel: string;
   phone: string;
-  onClick: (e: React.MouseEvent) => void; // <!> Ahora recibe la acción desde afuera
+  onClick: (e: React.MouseEvent) => void;
   colorToken: string;
-  disabled?: boolean; // <!> AGREGAR ESTA LÍNEA
+  disabled?: boolean;
 }
 
-// Mapa de clases para que Tailwind las detecte correctamente
-const hoverClasses: Record<string, string> = {
-  'vete-primary': 'hover:bg-vete-primary',
-  'vete-soft': 'hover:bg-vete-soft',
-  'vete-tertiary': 'hover:bg-vete-tertiary',
-  'vete-accent': 'hover:bg-vete-accent',
+/**
+ * Mapa de clases para forzar a Tailwind a generar los estilos.
+ * <!> IMPORTANTE: Si usas un color en el .env o JSON, DEBE estar aquí.
+ */
+const colorStyles: Record<string, string> = {
+  'vete-primary': 'border-vete-primary text-vete-primary hover:bg-vete-primary',
+  'vete-secondary': 'border-vete-secondary text-vete-secondary hover:bg-vete-secondary',
+  'vete-tertiary': 'border-vete-tertiary text-vete-tertiary hover:bg-vete-tertiary',
+  'vete-soft': 'border-vete-soft text-vete-soft hover:bg-vete-soft',
+  'vete-dark-green': 'border-vete-dark-green text-vete-dark-green hover:bg-vete-dark-green',
 };
 
 export const WhatsAppDynamicButton = ({ 
   label = "Contacto", 
   hoverLabel = "Enviar Mensaje",
-  phone, 
   onClick, 
   colorToken,
   disabled = false 
-
 }: WhatsAppProps) => {
   
-  // Limpieza de datos para el link
+  /* Obtenemos las clases según el token, o usamos gris por defecto si falla */
+  const activeStyles = colorStyles[colorToken] || 'border-slate-400 text-slate-400 hover:bg-slate-400';
 
-
-
-
-
-  const [isHovered, setIsHovered] = useState(false); // Estado para manejar el hover  
-  const dynamicColor = `rgb(var(--${colorToken}))`; // Obtiene el color dinámicamente desde el config
-  const hoverBg = hoverClasses[colorToken] || 'hover:bg-gray-500'; // Obtiene el color de hover dinámicamente desde el config
-  
-  
-
-  /* --- Handler Interno para proteger el evento --- */
   const handleInternalClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Evitamos que el click suba a la tarjeta o drawer
-    if (!disabled) {
-      onClick(e); // Ejecutamos la función que nos pasaron por props
-    }
+    e.stopPropagation();
+    if (!disabled) onClick(e);
   };
 
-
   return (
-     <button 
+    <button 
       onClick={handleInternalClick}
       disabled={disabled}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{ 
-        borderColor: dynamicColor,
-        color: isHovered ? '#FFFFFF' : dynamicColor 
-      }}
       className={`
         /* --- Posición --- */
-        flex                         /* Contenedor flexible */
-        items-center                 /* Centrado vertical */
-        justify-center               /* Centrado horizontal */
-        gap-3                        /* Espacio entre icono y texto */
-        relative                     /* Para el efecto de intercambio de texto */
-
+        flex items-center justify-center gap-3 relative
+        
         /* --- Dimensiones --- */
-        w-full                       /* Ancho total del contenedor */
-        py-3                         /* Padding vertical */
-        px-6                         /* Padding horizontal */
+        w-full py-3 px-6
         
         /* --- Estilo --- */
-        border-2                     /* Borde de 2px */
-        rounded-xl                   /* Bordes redondeados */
-        overflow-hidden              /* Corta las animaciones de texto */
+        border-2 rounded-xl overflow-hidden
+        
+        /* --- Colores Dinámicos --- */
+        ${activeStyles}             /* Aplica borde, texto y fondo hover */
+        hover:text-white            /* <!> ESTO ASEGURA EL TEXTO BLANCO */
         
         /* --- Texto --- */
-        text-[10px]                  /* Tamaño pequeño institucional */
-        font-black                   /* Peso máximo */
-        uppercase                    /* Mayúsculas */
-        tracking-widest              /* Espaciado de letras */
-
+        text-[10px] font-black uppercase tracking-widest
+        
         /* --- Animación --- */
-        transition-all               /* Transición para color y escala */
-        duration-300                 /* Velocidad de 300ms */
-        ${hoverBg}                   /* Color de fondo dinámico al hover */
-        hover:shadow-lg              /* Sombra al pasar el mouse */
-        active:scale-95              /* Efecto de presión */
-        disabled:opacity-50          /* Transparencia si está bloqueado */
-        group                        /* Grupo para animar hijos */
+        transition-all duration-300
+        active:scale-95 
+        disabled:opacity-30 
+        group                        /* Permite animar a los hijos */
       `}
     >
-      {/* Icono de WhatsApp  o */}
+      {/* Icono de WhatsApp */}
       <WhatSapp_Icon 
         className={`
           /* --- Dimensiones --- */
-          w-5 h-5 
-          /* --- Estilo --- */
-          shrink-0                   /* Evita que se aplaste */
-          fill-current               /* Toma el color del texto (dynamicColor) */
+          w-5 h-5 shrink-0 
+          /* --- Colores --- */
+          fill-current               /* Sigue el color del texto del botón */
           /* --- Animación --- */
           transition-colors duration-300 
-          z-10                       /* Por encima del fondo */
+          z-10
         `} 
       />
 
-      {/* Contenedor de Textos con Efecto de Intercambio <!> Phone tendria que ser el texto que aparese cuando estoy ensima o alg */}
-      <div className="relative h-5 flex items-center justify-center min-w-[120px]">
-        <span className="transition-all duration-300 opacity-100 group-hover:opacity-0 group-hover:-translate-y-2">
+      {/* Contenedor de Textos */}
+      <div className="relative h-5 flex items-center justify-center min-w-[120px] z-10">
+        <span className={`
+          transition-all duration-300 
+          opacity-100 group-hover:opacity-0 group-hover:-translate-y-2
+        `}>
           {label}
         </span>
 
-
-        {/* <!> Ahora usa la prop hoverLabel */}
-        <span className="absolute transition-all duration-300 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 whitespace-nowrap">
+        <span className={`
+          absolute whitespace-nowrap
+          transition-all duration-300 
+          opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0
+        `}>
           {hoverLabel}
         </span>
-
-        {/* <!> Esto creo que tendria que ser pasado por parametro  */}
-        {/* <span className="absolute transition-all duration-300 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 whitespace-nowrap">
-          Enviar Mensaje
-        </span> */}
       </div>
     </button>   
   );

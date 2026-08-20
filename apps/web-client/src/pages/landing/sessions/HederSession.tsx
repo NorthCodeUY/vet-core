@@ -424,8 +424,14 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
           flex                         /* Alineación horizontal */
           items-center                 /* Centrado vertical */
           gap-3                        /* Espacio entre precio e icono */
+          /* --- Estilo --- */                  
           cursor-pointer               /* Cursor de mano */
-          group                        /* Grupo para hover */
+          select-none                  /* Evita seleccionar texto al tocar rápido en móvil */
+      
+          /* --- Animación --- */
+          active:scale-95              /* Feedback táctil: se achica un poco al tocar (Móvil) */
+          hover:opacity-80             /* Feedback visual en Desktop */
+          transition-all               /* Transición suave */
         `}>
 
 

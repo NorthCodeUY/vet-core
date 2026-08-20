@@ -1,17 +1,13 @@
+
+
 /* --- apps/web-client/src/pages/pedido/PedidoDrawer.tsx --- */
-
-
-
-// <!> Cosas a arreglar
-
-// 1. La paleta de colores todos los colores tiene que si o si trabajar con la paleta de colores 
 
 
 
 
 
 import { useState, useEffect, useRef } from 'react';
-import { X, ShoppingBag, MapPin, Send, Package, Trash2, Edit, Plus, ChevronDown, ShoppingCart } from 'lucide-react';
+import { X, ShoppingBag, MapPin, Send, Package, Trash2, Edit, Plus, ChevronDown, ShoppingCart ,Banknote, Building2, Coins, DollarSign} from 'lucide-react';
 import { usePedidoStore } from '../../context/pedido_context';
 import { PedidoItemRow } from './PedidoItemRow';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
@@ -192,7 +188,7 @@ const DrawerHeader = ({ itemCount, onClose }: { itemCount: number; onClose: () =
     </div>
 
 
-    {/* --- BOTÓN CERRAR --- <!> Mejorar logo de cierre no me termina de convenser*/}
+    {/* --- BOTÓN CERRAR --- */}
     <button 
       onClick={onClose} 
       className={`
@@ -231,66 +227,17 @@ const DrawerHeader = ({ itemCount, onClose }: { itemCount: number; onClose: () =
   </div>
 );
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
+ * <!> Mejorar el comentario
  * Menu footer muestra los totales y los botones de acción
  * 
  * @param param0 
  * @returns 
- */
-
-
-
-
-
+   */
 const CartCheckoutSection = ({ 
   pedido, 
   total, 
-  selectedAddress, 
+  selectedAddress, // <!> Esto no se para qeu lo quiero no me cierra mucho 
   addressProps, 
   onConfirm, // <!> Este onConfirm ahora debe generar el string del mensaje
   onClear 
@@ -342,13 +289,54 @@ const CartCheckoutSection = ({
         </span>
       </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        {/* <!> !! esto es lo principal no funciona tengo que adaptarlo al lugar que lo meti caps pasando por parametro lo que necesito  */}
+        <PaymentSelector 
+          method={paymentMethod} 
+          setMethod={setPaymentMethod}
+          currency={currency} 
+          setCurrency={setCurrency}
+          bankInfo={companyInfo.bank.account} // Asegúrate de tener esto en tu JSON
+        />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+
       {/* Gestión de direcciones */}
       <AddressManager {...addressProps} selectedAddress={selectedAddress} /> 
 
       {/* --- BOTONERA DE ACCIÓN (HORIZONTAL) --- */}
       <div className={`
         /* --- Posición --- */
-        flex                         /* <!> CAMBIO: Ahora es una fila */
+        flex                         /* Ahora es una fila */
         items-center                 /* Centrado vertical */
         gap-3                        /* Espacio entre botones */
         
@@ -362,7 +350,9 @@ const CartCheckoutSection = ({
           disabled={pedido.length === 0} 
           className={`
             /* --- Posición --- */
-            flex items-center justify-center gap-2
+            flex 
+            items-center 
+            justify-center gap-2
             
             /* --- Dimensiones --- */
             px-4 py-3                /* Padding equilibrado */
@@ -392,80 +382,14 @@ const CartCheckoutSection = ({
         {/* Botón Confirmar (Derecha - Usando el componente dinámico) */}
 
 
-        {/*<!> Borrar  <WhatsAppDynamicButton 
-          label="Confirmar Pedido"
-          phone={companyInfo.contact.adminPhone}
-          onClick={onConfirm} // <!> Ejecutamos la función que genera el mensaje
-          disabled={pedido.length === 0 || !selectedAddress}
-        /> */}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         <WhatsAppDynamicButton 
           label="Confirmar Pedido"
-          hoverLabel="Enviar a WhatsApp" // <!> Nuevo campo dinámico
+          hoverLabel="Enviar a WhatsApp" 
           phone={companyInfo.contact.adminPhone}
-          colorToken="vete-secondary"      // <!> ESTO ES LO QUE FALTABA (Error ts2741)
+          colorToken="vete-tertiary"      
           onClick={onConfirm}
-          disabled={pedido.length === 0 || !selectedAddress}
+          disabled={pedido.length === 0}
         />
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
       </div>
@@ -511,6 +435,147 @@ const CartCheckoutSection = ({
 
 
 
+
+const PaymentSelector = ({ 
+  method, 
+  setMethod, 
+  currency, 
+  setCurrency, 
+  bankInfo 
+}: { 
+  method: string; 
+  setMethod: (m: string) => void; 
+  currency: string; 
+  setCurrency: (c: string) => void; 
+  bankInfo: string;
+}) => {
+  return (
+    <div className={`
+      /* --- Posición --- */
+      flex                         /* Contenedor flexible */
+      flex-col                     /* Alineación vertical */
+      gap-3                        /* Espacio entre filas */
+      
+      /* --- Dimensiones --- */
+      p-4                          /* Padding interno */
+      mb-2                         /* Margen inferior */
+      
+      /* --- Colores --- */
+      bg-vete-dark/30              /* Fondo oscuro tenue */
+      border                       /* Borde habilitado */
+      border-vete-light-border/50  /* Color de borde suave */
+      
+      /* --- Estilo --- */
+      rounded-2xl                  /* Bordes redondeados */
+    `}>
+      
+      {/* Fila 1: Método de Pago */}
+      <div className="flex flex-col gap-2">
+        <span className="text-[9px] font-black uppercase text-vete-text-muted tracking-widest ml-1">
+          Método de Pago
+        </span>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setMethod('efectivo')}
+            className={`
+              /* --- Posición --- */
+              flex-1 flex items-center justify-center gap-2
+              /* --- Dimensiones --- */
+              py-2 rounded-xl border-2
+              /* --- Colores y Animación --- */
+              transition-all duration-200
+              ${method === 'efectivo' 
+                ? 'bg-vete-primary border-vete-primary text-white shadow-md' 
+                : 'bg-vete-dark border-transparent text-vete-text-muted hover:bg-vete-dark/50'}
+            `}
+          >
+            <Banknote size={14} />
+            <span className="text-[10px] font-bold uppercase">Efectivo</span>
+          </button>
+          
+          <button
+            onClick={() => setMethod('transferencia')}
+            className={`
+              /* --- Posición --- */
+              flex-1 flex items-center justify-center gap-2
+              /* --- Dimensiones --- */
+              py-2 rounded-xl border-2
+              /* --- Colores y Animación --- */
+              transition-all duration-200
+              ${method === 'transferencia' 
+                ? 'bg-vete-primary border-vete-primary text-white shadow-md' 
+                : 'bg-vete-dark border-transparent text-vete-text-muted hover:bg-vete-dark/50'}
+            `}
+          >
+            <Building2 size={14} />
+            <span className="text-[10px] font-bold uppercase">Transferencia</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Fila 2: Moneda */}
+      <div className="flex flex-col gap-2">
+        <span className="text-[9px] font-black uppercase text-vete-text-muted tracking-widest ml-1">
+          Moneda
+        </span>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setCurrency('UYU')}
+            className={`
+              /* --- Posición --- */
+              flex-1 flex items-center justify-center gap-2
+              /* --- Dimensiones --- */
+              py-2 rounded-xl border-2
+              /* --- Colores y Animación --- */
+              transition-all duration-200
+              ${currency === 'UYU' 
+                ? 'bg-vete-secondary border-vete-secondary text-white shadow-md' 
+                : 'bg-vete-dark border-transparent text-vete-text-muted hover:bg-vete-dark/50'}
+            `}
+          >
+            <Coins size={14} />
+            <span className="text-[10px] font-bold uppercase">Pesos (UYU)</span>
+          </button>
+          
+          <button
+            onClick={() => setCurrency('USD')}
+            className={`
+              /* --- Posición --- */
+              flex-1 flex items-center justify-center gap-2
+              /* --- Dimensiones --- */
+              py-2 rounded-xl border-2
+              /* --- Colores y Animación --- */
+              transition-all duration-200
+              ${currency === 'USD' 
+                ? 'bg-vete-secondary border-vete-secondary text-white shadow-md' 
+                : 'bg-vete-dark border-transparent text-vete-text-muted hover:bg-vete-dark/50'}
+            `}
+          >
+            <DollarSign size={14} />
+            <span className="text-[10px] font-bold uppercase">Dólares (USD)</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Info de Transferencia (Condicional) */}
+      {method === 'transferencia' && (
+        <div className={`
+          /* --- Posición --- */
+          mt-1 p-3
+          /* --- Colores --- */
+          bg-white/5 border border-dashed border-vete-primary/30
+          /* --- Estilo --- */
+          rounded-lg animate-in fade-in slide-in-from-top-1
+        `}>
+          <p className="text-[10px] text-vete-text-light leading-tight">
+            <span className="font-bold text-vete-primary">Datos para transferencia:</span><br />
+            {bankInfo}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
 
 
 
@@ -574,13 +639,6 @@ const CartCheckoutSection = ({
     </div>
   );
 
- // <!> Subcomponente nuevo: 
- // Tengo que crear otro componente para la forma de pago. Debe ofrecer: efectivo o transferencia,
- // y dólares o pesos. Si se selecciona transferencia, el mensaje mostrará el número de cuenta de la 
- // empresa, tomado del JSON de información de la empresa. Si no, mostrar el mensaje "efectivo" con
- // "coordinar con el vendedor". Pon logotipos pequeños de efectivo y de cuenta bancaria para
- // que la interfaz sea agradable. No deben ocupar mucho espacio ni robar lugar innecesario.
- // Marcar en rojo cómo lo quiero.
 
   /**
    * Maneja la lógica de direcciones: selección, edición, guardado y eliminación.
@@ -894,6 +952,10 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
      ESTADOS LOCALES: GESTIÓN DE DIRECCIONES Y MODALES
      ============================================================================= */
 
+
+  const [paymentMethod, setPaymentMethod] = useState('efectivo');
+  const [currency, setCurrency] = useState('UYU');
+
   /* --- Inputs de Formulario --- */
   const [currentAddressInput, setCurrentAddressInput] = useState(''); /* Almacena el texto de la calle y número */
   const [currentAddressLabel, setCurrentAddressLabel] = useState(''); /* Almacena la etiqueta (ej: "Casa", "Trabajo") */
@@ -935,19 +997,39 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
   const handleConfirmOrder = () => {
     const rawPhone = companyInfo.contact.adminPhone; // Numero de watsap del cliente 
     const cleanPhone = rawPhone.startsWith('0') ? rawPhone.substring(1) : rawPhone; // para corregir el 0 al inicio
+    
     const finalPhone = `598${cleanPhone}`; // para agregar el codigo de pais <!> a futuro tiene que ir a configuracion por si el carrito espande a otro pais 
 
     const now = new Date(); // Fecha actual
     const dateStr = now.toLocaleDateString('es-UY'); // Fecha en formato uruguayo <!> Esto tambien tengo que podes setiar con configuracion jeison la moneda que voy a usar 
     const timeStr = now.toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' }); // Hora actual en formato uruguayo
     const shareUrl = window.location.href; /* El link actual ya tiene el ?cart=... gracias al hook useProducts */
-
-    let message = `*NUEVO PEDIDO - ${companyInfo.name.toUpperCase()}*\n\n`; //<!> Estoy tiene que el archvio de configuracio 
+    
+    
+    // Titulo del mensaje 
+    let message = `*NUEVO PEDIDO - ${companyInfo.name.toUpperCase()}*\n\n`;  
     message += `*Fecha:* ${dateStr} - ${timeStr} hs\n`;
     
-    // message += `*Entrega:* ${selectedAddress?.addressLine}\n\n`; // <!> Esto es opcional
-        
-    // Direccion de entrega Opcional <!> En la interfase tengo que buscar como achicarlo queda muy grande 
+    message += `*Entrega:* ${selectedAddress?.addressLine}\n\n`; 
+  
+
+
+
+
+    /*  NUEVA LÓGICA DE PAGO EN EL MENSAJE */
+    message += `*Pago:* ${paymentMethod.toUpperCase()} (${currency})\n`;
+    if (paymentMethod === 'transferencia') {
+      message += `_Adjuntaré comprobante a la cuenta: ${companyInfo.bank.account}_\n`;
+    } else {
+      message += `_Efectivo: Coordinar cambio con el vendedor_\n`;
+    }
+
+
+
+
+
+
+    // Direccion de entrega Opcional 
     const entrega = selectedAddress?.addressLine 
     ? selectedAddress.addressLine 
     : "A coordinar / Retiro en local";
@@ -987,7 +1069,7 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
         <DrawerContent pedido={pedido} />
 
         
-        {/* Menu inferior <!> Donde estoy parado porque esto no aparese    */}
+        {/* Menu inferior */}
         <CartCheckoutSection 
           pedido={pedido}
           total={total}
@@ -1008,7 +1090,6 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
     message="¿Estás seguro de que deseas eliminar todos los productos del carrito?"
     confirmButtonText="Vaciar carrito"
     confirmButtonColor="red"
-    /* <!> CORRECCIÓN: Cambiar TrAanitaash2 por Trash2 */
     icon={<Trash2 size={24} />} 
   />
 

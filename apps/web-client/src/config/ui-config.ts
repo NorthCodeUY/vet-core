@@ -7,12 +7,12 @@ const CARD_VERSIONS = {
 };
 
 export const UI_CONFIG = {
-  productCardVersion: (import.meta.env.VITE_CARD_VERSION as keyof typeof CARD_VERSIONS) || 'v1',
+  productCardVersion: (import.meta.env.VITE_CARD_VERSION as keyof typeof CARD_VERSIONS) || 'v2',
   
   /**
    * Devuelve dinámicamente el componente según la versión de .env
    */
   getProductCardComponent: () => {
-    return CARD_VERSIONS[UI_CONFIG.productCardVersion] || ProductCardV1;
+    return CARD_VERSIONS[UI_CONFIG.productCardVersion] || ProductCardV2;
   }
 };

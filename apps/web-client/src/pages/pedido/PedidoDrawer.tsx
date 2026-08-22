@@ -1,17 +1,13 @@
+
+
 /* --- apps/web-client/src/pages/pedido/PedidoDrawer.tsx --- */
-
-
-
-// <!> Cosas a arreglar
-
-// 1. La paleta de colores todos los colores tiene que si o si trabajar con la paleta de colores 
 
 
 
 
 
 import { useState, useEffect, useRef } from 'react';
-import { X, ShoppingBag, MapPin, Send, Package, Trash2, Edit, Plus, ChevronDown, ShoppingCart } from 'lucide-react';
+import { X, ShoppingBag, MapPin, Send, Package, Trash2, Edit, Plus, ChevronDown, ShoppingCart ,Banknote, Building2, Coins, DollarSign} from 'lucide-react';
 import { usePedidoStore } from '../../context/pedido_context';
 import { PedidoItemRow } from './PedidoItemRow';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
@@ -20,9 +16,20 @@ import type { UserAddress } from '../../hooks/useAddressManagement'
 import { WhatsAppDynamicButton } from '../../components/WhatsAppDynamicButton';
 
 import companyInfo from '../../data/companyInfo.json'; // Datos de la empresa 
+import { CartCheckoutCollapsible } from './CartCheckoutCollapsible';
 
 /**
- * Interfaz para la dirección de usuario simulada (si aún se usa para pre-cargar inicial).
+ * Entidad de Perfil de Usuario (`UserProfile`).
+ * 
+ * Representa los datos esenciales de la cuenta del cliente para fines de precarga 
+ * y logística en el proceso de compra. Utilizada para poblar automáticamente los campos 
+ * de contacto y dirección predeterminada cuando el usuario inicia sesión.
+ *
+ * @interface UserProfile
+ * @property {string} id - Identificador único del usuario/cliente.
+ * @property {string} name - Nombre completo del cliente para la cabecera del pedido.
+ * @property {string} email - Correo electrónico registrado para notificaciones.
+ * @property {string} defaultAddress - Dirección de entrega habitual utilizada por defecto.
  */
 interface UserProfile {
   id: string;
@@ -68,23 +75,22 @@ const useUserInitialAddress = () => {
   return { defaultAddress, loadingUserAddress };
 };
 
-  /**
-   * Interfaz para las props del componente PedidoDrawer.
-   * @param isOpen - Controla la visibilidad del drawer.
-   * @param onClose - Función para cerrar el drawer.
-   */
-  interface PedidoDrawerProps {
-    isOpen: boolean;    // Controla la visibilidad del drawer.
-    onClose: () => void; // Función para cerrar el drawer.
-  }
+/**
+ * Interfaz para las props del componente PedidoDrawer.
+ * @param isOpen - Controla la visibilidad del drawer.
+ * @param onClose - Función para cerrar el drawer.
+ */
+interface PedidoDrawerProps {
+  isOpen: boolean;    // Controla la visibilidad del drawer.
+  onClose: () => void; // Función para cerrar el drawer.
+}
 
 
-  /**
-   * Header del carrito con el título y el contador de ítems.
-   * @param itemCount - Número de ítems en el carrito
-   * @param onClose - Función para cerrar el drawer
-   */
-/* --- Sub-componente interno del PedidoDrawer --- */
+/**
+ * Header del carrito con el título y el contador de ítems.
+ * @param itemCount - Número de ítems en el carrito
+ * @param onClose - Función para cerrar el drawer
+ */
 const DrawerHeader = ({ itemCount, onClose }: { itemCount: number; onClose: () => void }) => (
   <div className={`
     /* --- Posición --- */
@@ -192,7 +198,7 @@ const DrawerHeader = ({ itemCount, onClose }: { itemCount: number; onClose: () =
     </div>
 
 
-    {/* --- BOTÓN CERRAR --- <!> Mejorar logo de cierre no me termina de convenser*/}
+    {/* --- BOTÓN CERRAR --- */}
     <button 
       onClick={onClose} 
       className={`
@@ -231,124 +237,133 @@ const DrawerHeader = ({ itemCount, onClose }: { itemCount: number; onClose: () =
   </div>
 );
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
- * Menu footer muestra los totales y los botones de acción
+ * Componente de Checkout y Cierre de Pedido (`CartCheckoutSection`).
  * 
- * @param param0 
- * @returns 
+ * Actúa como el pie de página (footer) interactivo del drawer del carrito.
+ * Centraliza la visualización del monto total acumulado, la selección dinámica 
+ * del método de pago (Efectivo/Transferencia) mediante un panel colapsable, 
+ * la captura de la dirección de entrega y la botonera de acciones finales 
+ * (Confirmación vía WhatsApp y Vaciado de carrito).
+ *
+ * @component
+ * @param {Object} props - Propiedades del componente.
+ * @param {PedidoItem[]} props.pedido - Lista reactiva de productos seleccionados actualmente en el carrito.
+ * @param {number} props.total - Monto total acumulado de la compra en Pesos Uruguayos (UYU).
+ * @param {string} props.address - Valor actual del campo de texto de la dirección de entrega.
+ * @param {function(string): void} props.setAddress - Función de despacho para actualizar la dirección de entrega.
+ * @param {string} props.paymentMethod - Método de pago seleccionado ('efectivo' | 'transferencia').
+ * @param {function(string): void} props.setPaymentMethod - Función para alternar el método de pago activo.
+ * @param {function(): void} props.onConfirm - Callback que procesa el pedido y abre el chat de WhatsApp con el mensaje estructurado.
+ * @param {function(): void} props.onClear - Callback para disparar el modal de confirmación de vaciado de carrito.
+ * 
+ * @returns {JSX.Element} Panel inferior fijo (sticky) con los controles de checkout del pedido.
  */
-
-
-
-
-
 const CartCheckoutSection = ({ 
   pedido, 
   total, 
-  selectedAddress, 
-  addressProps, 
-  onConfirm, // <!> Este onConfirm ahora debe generar el string del mensaje
+  address, 
+  setAddress, 
+  paymentMethod, 
+  setPaymentMethod,
+  onConfirm, 
   onClear 
 }: any) => {
+
+  /* Estado para mostrar/ocultar los detalles de pago y ahorrar espacio */
+  const [showPaymentDetails, setShowPaymentDetails] = useState(false);
+
+  
   return (
+    
     <div className={`
       /* --- Posición --- */
       flex                         /* Contenedor flexible */
       flex-col                     /* Alineación vertical base */
-      gap-4                        /* Espacio entre bloques */
-      mt-2                         /* Margen superior reducido */
+      gap-3                        /* <!> gap-4  Espacio entre bloques */
+      /*mt-2                    <!>     Margen superior reducido */
+      /* --- Dimensiones --- */
+      p-4                          /* Padding */
+      bg-vete-card-white           /* Fondo blanco */
+      border-t                     /* Borde superior */
+      border-vete-light-border     /* Borde superior gris */
     `}>
 
-      {/* --- BLOQUE DE TOTALES --- */}
+      {/* --- FILA 1: Método Rápido (Izquierda) + Total (Derecha) --- */}
       <div className={`
         /* --- Posición --- */
-        flex                         /* Alineación horizontal */
+        flex                         /* Contenedor flexible */
         justify-between              /* Separa etiqueta de monto */
         items-end                    /* Alinea a la base del texto */
-        
         /* --- Dimensiones --- */
         px-1                         /* Ajuste lateral */
-      `}>
-        <div className="flex flex-col">
-          <span className={`
-            /* --- Texto --- */
-            text-[10px]                /* Texto muy pequeño */
-            font-black                 /* Peso máximo */
-            uppercase                  /* Mayúsculas */
-            tracking-widest            /* Espaciado de letras */
-            
-            /* --- Colores --- */
-            text-vete-text-muted       /* Gris tenue */
-          `}>
-            Resumen
-          </span>
-          <span className="text-base font-bold text-vete-text-light">Total del Pedido</span>
-        </div>
-        
-        <span className={`
-          /* --- Texto --- */
-          text-2xl                     /* Tamaño destacado */
-          font-black                   /* Peso máximo */
-          
-          /* --- Colores --- */
-          text-vete-dark-green         /* Verde oscuro */
         `}>
-          ${total.toLocaleString('es-UY')}
-        </span>
+        
+        {/* Botón selector/toggle  */}
+        <button
+          type="button"
+          onClick={() => setShowPaymentDetails(!showPaymentDetails)}
+          className={`
+            /* --- Posición --- */
+            flex 
+            items-center 
+            gap-1.5
+            /* --- Dimensiones --- */
+            py-1.5 
+            px-3
+            /* --- Colores --- */
+            bg-vete-dark 
+            text-vete-text-light 
+            hover:bg-vete-dark/80
+            /* --- Estilo --- */
+            rounded-lg 
+            border 
+            border-vete-light-border/30
+            text-xs 
+            font-bold 
+            uppercase 
+            transition-all
+          `}
+        >
+          {paymentMethod === 'efectivo' ? <Banknote size={14} className="text-vete-primary" /> : <Building2 size={14} className="text-vete-primary" />}
+          <span>{paymentMethod}</span>
+          <ChevronDown size={12} className={`transition-transform duration-200 ${showPaymentDetails ? 'rotate-180' : ''}`} />
+        </button>
+
+        {/* Total destacado */}
+        <div className="flex items-baseline gap-2">
+          <span className="text-[10px] font-black uppercase text-vete-text-muted">Total:</span>
+          <span className="text-2xl font-black text-vete-dark-green">
+            ${total.toLocaleString('es-UY')}
+          </span>
+        </div>
       </div>
 
-      {/* Gestión de direcciones */}
-      <AddressManager {...addressProps} selectedAddress={selectedAddress} /> 
+      {/* --- PANEL DESPLEGABLE DE PAGO (Opcional, ahorra espacio) --- */}
+      {showPaymentDetails && (
+        <PaymentSelector 
+          method={paymentMethod} 
+          setMethod={setPaymentMethod} 
+          bankInfo={`${companyInfo.bank.name} - Cta: ${companyInfo.bank.accountNumber} (${companyInfo.bank.beneficiary})`}
+        />
+      )}
+
+
+      {/* Input de Dirección Compacto */}
+      <SimpleAddressInput 
+        value={address} 
+        onChange={setAddress} 
+      />
+
+
+
+
+      {/*<!> Esto es para cuando tenga la parte de pedidos sentralizado no borrar  <AddressManager {...addressProps} selectedAddress={selectedAddress} />  */}
 
       {/* --- BOTONERA DE ACCIÓN (HORIZONTAL) --- */}
       <div className={`
         /* --- Posición --- */
-        flex                         /* <!> CAMBIO: Ahora es una fila */
+        flex                         /* Ahora es una fila */
         items-center                 /* Centrado vertical */
         gap-3                        /* Espacio entre botones */
         
@@ -362,7 +377,9 @@ const CartCheckoutSection = ({
           disabled={pedido.length === 0} 
           className={`
             /* --- Posición --- */
-            flex items-center justify-center gap-2
+            flex 
+            items-center 
+            justify-center gap-2
             
             /* --- Dimensiones --- */
             px-4 py-3                /* Padding equilibrado */
@@ -392,80 +409,14 @@ const CartCheckoutSection = ({
         {/* Botón Confirmar (Derecha - Usando el componente dinámico) */}
 
 
-        {/*<!> Borrar  <WhatsAppDynamicButton 
-          label="Confirmar Pedido"
-          phone={companyInfo.contact.adminPhone}
-          onClick={onConfirm} // <!> Ejecutamos la función que genera el mensaje
-          disabled={pedido.length === 0 || !selectedAddress}
-        /> */}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         <WhatsAppDynamicButton 
           label="Confirmar Pedido"
-          hoverLabel="Enviar a WhatsApp" // <!> Nuevo campo dinámico
+          hoverLabel="Enviar a WhatsApp" 
           phone={companyInfo.contact.adminPhone}
-          colorToken="vete-secondary"      // <!> ESTO ES LO QUE FALTABA (Error ts2741)
+          colorToken="vete-tertiary"      
           onClick={onConfirm}
-          disabled={pedido.length === 0 || !selectedAddress}
+          disabled={pedido.length === 0}
         />
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
       </div>
@@ -474,75 +425,69 @@ const CartCheckoutSection = ({
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/* =============================================================================
+   SUB-COMPONENTE: SELECTOR DE PAGO (COMBO BOX)
+   <!> Por haora sacamos el campo monedas no lo deberia usar simpre la moneda es $ 
+   ============================================================================= */
+
+const PaymentSelector = ({ 
+  method, 
+  setMethod, 
+  bankInfo 
+}: { 
+  method: string; 
+  setMethod: (m: string) => void; 
+  bankInfo: string;
+}) => {
+  return (
+    <div className={`
+      /* --- Posición --- */
+      flex flex-col gap-2
+      /* --- Dimensiones --- */
+      w-full mt-1
+    `}>
+      <div className="relative flex items-center">
+        <Banknote size={14} className="absolute left-3 text-vete-primary pointer-events-none" />
+        <select
+          value={method}
+          onChange={(e) => setMethod(e.target.value)}
+          className={`
+            /* --- Dimensiones --- */
+            w-full py-2 pl-9 pr-8
+            /* --- Colores --- */
+            bg-vete-dark text-vete-text-light border border-vete-light-border/40
+            /* --- Texto --- */
+            text-xs font-bold uppercase
+            /* --- Estilo --- */
+            rounded-xl outline-none appearance-none cursor-pointer
+            focus:border-vete-primary
+          `}
+        >
+          <option value="efectivo">💵 Efectivo (Pago al recibir)</option>
+          <option value="transferencia">🏦 Transferencia Bancaria</option>
+        </select>
+        <ChevronDown size={14} className="absolute right-3 text-vete-text-muted pointer-events-none" />
+      </div>
+
+      {/* Datos Bancarios: Solo si elige Transferencia */}
+      {method === 'transferencia' && (
+        <div className={`
+          /* --- Posición --- */
+          p-2.5
+          /* --- Colores --- */
+          bg-vete-primary/10 border border-dashed border-vete-primary/40
+          /* --- Estilo --- */
+          rounded-xl animate-in fade-in duration-200
+        `}>
+          <p className="text-[11px] text-vete-text-light leading-tight">
+            <span className="font-bold text-vete-primary">Datos para el pago:</span><br />
+            {bankInfo}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
 
 
   /**
@@ -574,15 +519,120 @@ const CartCheckoutSection = ({
     </div>
   );
 
- // <!> Subcomponente nuevo: 
- // Tengo que crear otro componente para la forma de pago. Debe ofrecer: efectivo o transferencia,
- // y dólares o pesos. Si se selecciona transferencia, el mensaje mostrará el número de cuenta de la 
- // empresa, tomado del JSON de información de la empresa. Si no, mostrar el mensaje "efectivo" con
- // "coordinar con el vendedor". Pon logotipos pequeños de efectivo y de cuenta bancaria para
- // que la interfaz sea agradable. No deben ocupar mucho espacio ni robar lugar innecesario.
- // Marcar en rojo cómo lo quiero.
+
+
+
+
+
+
+
+
+
+/**
+ * Componente de Entrada de Dirección Simplificada (`SimpleAddressInput`).
+ * 
+ * Diseñado para la etapa MVP (sin persistencia en base de datos). Permite al cliente 
+ * ingresar manualmente su dirección de entrega o referencias en la ciudad de Salto, 
+ * e incluye un acceso directo para consultar la ubicación geográfica en Google Maps.
+ *
+ * @component
+ * @param {Object} props - Propiedades del componente.
+ * @param {string} props.value - Texto actual de la dirección ingresada por el usuario.
+ * @param {function(string): void} props.onChange - Callback que actualiza el estado de la dirección en el componente padre.
+ * 
+ * @returns {JSX.Element} Campo de texto estilizado con botón de enlace a Google Maps.
+ */
+const SimpleAddressInput = ({ value, onChange }: { value: string, onChange: (val: string) => void }) => {
+  
+  /* Función para ayudar al usuario a encontrar su dirección en Salto */
+  const openGoogleMaps = () => {
+    const url = "https://www.google.com/maps/search/?api=1&query=Veterinaria+Beltramelli+Salto";
+    window.open(url, '_blank');
+  };
+
+  return (
+    <div className={`
+      /* --- Posición --- */
+      flex                         /* Contenedor flexible */
+      flex-col                     /* Alineación vertical */
+      gap-2                        /* Espacio entre etiqueta e input */
+      
+      /* --- Dimensiones --- */
+      w-full                       /* Ancho total */
+      mb-4                         /* Margen inferior */
+    `}>
+      
+      {/* Cabecera con Link a Maps */}
+      <div className="flex justify-between items-center px-1">
+        <label className="flex items-center gap-2 text-[10px] font-black uppercase text-vete-text-muted tracking-widest">
+          <MapPin size={14} className="text-vete-primary" />
+          Dirección de Entrega
+        </label>
+        
+        <button 
+          onClick={openGoogleMaps}
+          className={`
+            /* --- Texto --- */
+            text-[9px] font-bold uppercase underline
+            /* --- Colores --- */
+            text-vete-primary/70 hover:text-vete-primary
+            /* --- Animación --- */
+            transition-colors
+          `}
+        >
+          Buscar en Maps
+        </button>
+      </div>
+
+      {/* Input Principal */}
+      <div className="relative group">
+        <input 
+          type="text"
+          placeholder="Calle, número o referencia (Salto)"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={`
+            /* --- Dimensiones --- */
+            w-full                       /* Ancho total */
+            py-3                         /* Padding vertical cómodo */
+            pl-4                         /* Padding izquierdo */
+            pr-4                         /* Padding derecho */
+            
+            /* --- Colores --- */
+            bg-vete-dark/40              /* Fondo oscuro sutil */
+            text-vete-text-light         /* Texto claro */
+            border-2                     /* Borde de 2px */
+            border-transparent           /* Invisible por defecto */
+            
+            /* --- Estilo --- */
+            rounded-2xl                  /* Bordes redondeados */
+            outline-none                 /* Quita el aro azul */
+            text-sm                      /* Tamaño de fuente de lectura */
+            
+            /* --- Animación --- */
+            focus:border-vete-primary    /* Resalta al escribir */
+            focus:bg-vete-dark/60        /* Oscurece un poco al foco */
+            transition-all duration-300
+          `}
+        />
+      </div>
+      
+      <p className="text-[9px] text-vete-text-muted italic ml-1">
+        * Esta dirección se incluirá en tu mensaje de WhatsApp.
+      </p>
+    </div>
+  );
+};
+
+
+
+
+
+
+
 
   /**
+   * <!> Esto no lo estamos usando aun hasta que tengamos pedido sentralizado 
    * Maneja la lógica de direcciones: selección, edición, guardado y eliminación.
    * Es el "cerebro" de la gestión de direcciones dentro del carrito.
    * @param selectedAddress - Dirección seleccionada actualmente
@@ -866,33 +916,45 @@ const CartCheckoutSection = ({
 
 
 /**
- * Componente principal que orquesta el drawer de pedidos, manejando el estado 
- * global del carrito y las direcciones del usuario.
- * @param isOpen Estado que controla si el drawer está abierto o cerrado.
- * @param onClose Función que se ejecuta cuando se intenta cerrar el drawer.
- * @returns 
+ * Contenedor Maestro del Carrito de Compras (`PedidoDrawer`).
+ * 
+ * Componente orquestador que gestiona la visualización lateral (Drawer) del pedido.
+ * Centraliza la interacción con la fachada `usePedidoStore`, coordina la lista de productos 
+ * seleccionados, el cálculo reactivo de subtotales, la selección del método de pago, 
+ * la dirección de entrega y los modales de confirmación.
+ *
+ * @component
+ * @param {PedidoDrawerProps} props - Propiedades de control de visibilidad.
+ * @param {boolean} props.isOpen - Bandera que determina si el menú lateral está visible o colapsado.
+ * @param {function(): void} props.onClose - Callback para cerrar el menú lateral y ocultar el overlay.
+ * 
+ * @returns {JSX.Element} Panel lateral deslizable (Off-canvas) con el flujo completo de compra.
  */
 export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
   const { pedido, total, itemCount, clearPedido } = usePedidoStore();
   
-  const { 
-    addresses, // Array de direcciones guardadas
-    selectedAddress, // Dirección seleccionada actual
-    addAddress, // Función para agregar una nueva dirección
-    updateAddress, // Función para actualizar una dirección existente
-    deleteAddress, // Función para eliminar una dirección
-    selectAddress, // Función para seleccionar una dirección como la actual para el pedido
-    setDefaultAddress, // Función para establecer una dirección como predeterminada
-    isAddressListOpen, // Estado que controla si el historial de direcciones está abierto o cerrado
-    setIsAddressListOpen, // Setter para el estado de visibilidad del historial
-    toggleAddressList // Función para alternar la visibilidad del historial
-  } = useAddressManagement(); // Logica de guardado y seleccion de direcciones
+  // const {  // <!> Esto no lo voy a usar por haora 
+  //   addresses, // Array de direcciones guardadas
+  //   selectedAddress, // Dirección seleccionada actual
+  //   addAddress, // Función para agregar una nueva dirección
+  //   updateAddress, // Función para actualizar una dirección existente
+  //   deleteAddress, // Función para eliminar una dirección
+  //   selectAddress, // Función para seleccionar una dirección como la actual para el pedido
+  //   setDefaultAddress, // Función para establecer una dirección como predeterminada
+  //   isAddressListOpen, // Estado que controla si el historial de direcciones está abierto o cerrado
+  //   setIsAddressListOpen, // Setter para el estado de visibilidad del historial
+  //   toggleAddressList // Función para alternar la visibilidad del historial
+  // } = useAddressManagement(); // Logica de guardado y seleccion de direcciones
 
 
 
   /* =============================================================================
-     ESTADOS LOCALES: GESTIÓN DE DIRECCIONES Y MODALES
+     ESTADOS LOCALES: GESTIÓN DE DIRECCIONES Y MODALES <!> Aca abajo debe aver sluno que no estoy usando por el tema de las direcicones 
      ============================================================================= */
+
+
+  const [paymentMethod, setPaymentMethod] = useState('efectivo');
+  const [currency, setCurrency] = useState('UYU');
 
   /* --- Inputs de Formulario --- */
   const [currentAddressInput, setCurrentAddressInput] = useState(''); /* Almacena el texto de la calle y número */
@@ -911,47 +973,80 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
      EFECTOS DE SINCRONIZACIÓN (OBSERVADORES)
      ============================================================================= */
 
-  /**
-   * Sincroniza los campos de texto locales con la dirección seleccionada globalmente.
-   * Se dispara cada vez que el Drawer se abre o cambia la dirección activa.
+  // <!> Esto lo voy a usar cuando tenga pedidos sentralizados 
+  // /**
+  //  * Sincroniza los campos de texto locales con la dirección seleccionada globalmente.
+  //  * Se dispara cada vez que el Drawer se abre o cambia la dirección activa.
+  //  */
+  // useEffect(() => {
+  //   /* Solo sincronizamos si el Drawer está abierto y existe una dirección seleccionada */
+  //   if (isOpen && selectedAddress) {
+  //     setCurrentAddressInput(selectedAddress.addressLine);
+  //     setCurrentAddressLabel(selectedAddress.label);
+  //   }
+  // }, [isOpen, selectedAddress]);
+
+
+/**
+   * Controlador de Confirmación y Despacho de Pedido vía WhatsApp.
+   * 
+   * Extrae la instantánea (snapshot) del estado actual del carrito, formatea los datos 
+   * de entrega, fecha, método de pago y el desglose de productos con la moneda local (UYU).
+   * Genera una URL serializada del carrito para permitir la reconstrucción del pedido en la web
+   * y abre una nueva pestaña hacia la API de WhatsApp con el mensaje estructurado.
+   *
+   * @function
+   * @throws {Alert} Alerta al usuario si la dirección está vacía o si no hay productos en el pedido.
+   * @returns {void}
    */
-  useEffect(() => {
-    /* Solo sincronizamos si el Drawer está abierto y existe una dirección seleccionada */
-    if (isOpen && selectedAddress) {
-      setCurrentAddressInput(selectedAddress.addressLine);
-      setCurrentAddressLabel(selectedAddress.label);
-    }
-  }, [isOpen, selectedAddress]);
-
-
-  /**
-   * Lógica de WhatsApp con Link al final para previsualización 
-   * @param selectedAddress  direccion seleccionada actual
-   * @param total total del pedido
-   * @param itemCount cantidad de items del pedido
-   * @param clearPedido limpiar pedido
-   * <!> No  se porque pero me ase raro que esto este aca denro tendria que estar fuera de pedidoDrawer de este metodo y llamarlo pero ta
-  */
   const handleConfirmOrder = () => {
     const rawPhone = companyInfo.contact.adminPhone; // Numero de watsap del cliente 
     const cleanPhone = rawPhone.startsWith('0') ? rawPhone.substring(1) : rawPhone; // para corregir el 0 al inicio
+    
     const finalPhone = `598${cleanPhone}`; // para agregar el codigo de pais <!> a futuro tiene que ir a configuracion por si el carrito espande a otro pais 
 
     const now = new Date(); // Fecha actual
     const dateStr = now.toLocaleDateString('es-UY'); // Fecha en formato uruguayo <!> Esto tambien tengo que podes setiar con configuracion jeison la moneda que voy a usar 
     const timeStr = now.toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' }); // Hora actual en formato uruguayo
     const shareUrl = window.location.href; /* El link actual ya tiene el ?cart=... gracias al hook useProducts */
-
-    let message = `*NUEVO PEDIDO - ${companyInfo.name.toUpperCase()}*\n\n`; //<!> Estoy tiene que el archvio de configuracio 
+    
+    
+    // Titulo del mensaje 
+    let message = `*NUEVO PEDIDO - ${companyInfo.name.toUpperCase()}*\n\n`;  
     message += `*Fecha:* ${dateStr} - ${timeStr} hs\n`;
     
-    // message += `*Entrega:* ${selectedAddress?.addressLine}\n\n`; // <!> Esto es opcional
-        
-    // Direccion de entrega Opcional <!> En la interfase tengo que buscar como achicarlo queda muy grande 
-    const entrega = selectedAddress?.addressLine 
-    ? selectedAddress.addressLine 
-    : "A coordinar / Retiro en local";
-    message += `*Entrega:* ${entrega}\n\n`;  
+
+
+
+    // <!> Cuando repare el tema de ubicacion
+    // message += `*Entrega:* ${selectedAddress?.addressLine}\n\n`; 
+  
+
+
+
+
+  /* --- LÓGICA DE PAGO DINÁMICA --- */
+  message += `*Pago:* ${paymentMethod.toUpperCase()} (${currency})\n`;
+  
+  if (paymentMethod === 'transferencia') {
+    message += `*Datos de Transferencia:*\n`;
+    message += `- Banco: ${companyInfo.bank.name}\n`;
+    message += `- Cuenta: ${companyInfo.bank.accountNumber}\n`;
+    message += `- Titular: ${companyInfo.bank.beneficiary}\n`;
+    message += `_Adjuntaré comprobante por este medio._\n`;
+  } else {
+    message += `_Efectivo: Coordinar cambio con el vendedor._\n`;
+  }
+
+
+
+
+    // <!> Creo que no va 
+    // // Direccion de entrega Opcional 
+    // const entrega = selectedAddress?.addressLine 
+    // ? selectedAddress.addressLine 
+    // : "A coordinar / Retiro en local";
+    // message += `*Entrega:* ${entrega}\n\n`;  
     
     message += `*Detalle:*\n`;
 
@@ -987,13 +1082,29 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
         <DrawerContent pedido={pedido} />
 
         
-        {/* Menu inferior <!> Donde estoy parado porque esto no aparese    */}
-        <CartCheckoutSection 
+
+        {/* Footer con el nuevo componente colapsable */}
+        <CartCheckoutCollapsible 
+          onClearCart={() => setIsClearCartModalOpen(true)} 
+        />
+
+
+
+
+
+        {/* Menu inferior <!> Fucionar con el nuevo componente*/}
+        {/* <CartCheckoutSection 
           pedido={pedido}
           total={total}
+          paymentProps={{
+            paymentMethod, 
+            setPaymentMethod, 
+            currency, 
+            setCurrency
+          }}
           onConfirm={handleConfirmOrder}
           onClear={() => setIsClearCartModalOpen(true)}
-        />
+        /> */}
 
       </aside>
 
@@ -1008,7 +1119,6 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
     message="¿Estás seguro de que deseas eliminar todos los productos del carrito?"
     confirmButtonText="Vaciar carrito"
     confirmButtonColor="red"
-    /* <!> CORRECCIÓN: Cambiar TrAanitaash2 por Trash2 */
     icon={<Trash2 size={24} />} 
   />
 
@@ -1030,79 +1140,5 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
     </>
   );
 }; // FIN Componente PedidoDrawer----------------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

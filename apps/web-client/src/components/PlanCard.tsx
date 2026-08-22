@@ -76,34 +76,23 @@ export const PlanCard = ({ title, description, benefits, borderColor, isFeatured
           </li>
         ))}
       </ul>
-        {/* <!> Aca hay que corrregir el problema que haora el boton aseipta 
-        la funcion clik hay que determinar por aca que quiero mandar el mensaje 
-        caps traer por parametro enves de el mensaje el clik para que para atras
-         aga el mensaje  */}
+
+
+
       
       
       
       
       
       
-       {/* <WhatsAppDynamicButton 
-        label="Solicitar Plan"
-        phone={phoneWhattsApp}
-        message={mensajeWhatsApp}
-        colorToken={borderColor}
-      /> */}
 
 
 
 
 
 
-      {/* 
-          <!> ADAPTACIÓN: 
-          Ahora pasamos 'onClick' en lugar de 'message'. 
-          La tarjeta decide QUÉ mensaje mandar, el botón solo lo ejecuta.
-      */}
-       <WhatsAppDynamicButton 
+
+      <WhatsAppDynamicButton 
         label="Solicitar Plan"
         hoverLabel="Enviar Consulta"
         phone={phoneWhattsApp}

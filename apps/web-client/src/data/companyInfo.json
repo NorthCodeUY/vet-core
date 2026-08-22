@@ -10,6 +10,12 @@
       "saturdays": "Sábados: 08:00 – 12:00"
     }
   },
+  "bank": {
+    "name": "PREX",
+    "moneda": "UYU",
+    "accountNumber": "19513183",
+    "beneficiary": "Ary Gumenez"
+  },
   "contact": {
     "adminPhone": "096368021",
     "emergencyPhone": "096368021",

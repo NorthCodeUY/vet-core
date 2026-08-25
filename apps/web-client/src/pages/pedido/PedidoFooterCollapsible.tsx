@@ -1,11 +1,13 @@
 
-/* --- apps/web-client/src/pages/pedido/CartCheckoutCollapsible.tsx
+/* --- apps/web-client/src/pages/pedido/PedidoFooterCollapsible.tsx
 
-<!> Cosas a corregir
+<!> 
+
+Cosas a corregir
 - Tengo que convinarlo con el componente que traigo de PedidoDrawer
 - Separa a sub componte forma de pago / Direccion 
 - Meterlo comentario de metodo para cerrar e menu 
-- El nombre no me ocmbese cambiarlo 
+- El nombre no me ocmbese cambiarlo  
 --- */
 
 import React, { useState } from 'react';
@@ -64,11 +66,11 @@ const PAYMENT_METHODS = [
   }
 ];
 
-interface CartCheckoutCollapsibleProps {
+interface PedidoFooterCollapsibleProps {
   onClearCart: () => void;
 }
 
-export const CartCheckoutCollapsible: React.FC<CartCheckoutCollapsibleProps> = ({ onClearCart }) => {
+export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = ({ onClearCart }) => {
   const { pedido, total } = usePedidoStore();
   
   /* --- Estados Locales de Checkout --- */
@@ -120,7 +122,7 @@ export const CartCheckoutCollapsible: React.FC<CartCheckoutCollapsibleProps> = (
     window.open(`https://wa.me/${finalPhone}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
-  return (
+  return ( // Retorno componente ---------------------------------------------------------------------------
     <div className={`
       /* --- Posición --- */
       sticky                       /* Se fija en la base del drawer */
@@ -140,7 +142,28 @@ export const CartCheckoutCollapsible: React.FC<CartCheckoutCollapsibleProps> = (
       shadow-[0_-10px_25px_rgba(0,0,0,0.05)] /* Sombra sutil superior */
     `}>
       
-      {/* 1. BARRA COLAPSABLE / RESUMEN RÁPIDO */}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      {/* 1. BARRA COLAPSABLE / RESUMEN RÁPIDO 
+      <!> Esto tiene que desapareser cuando se esteinde para que no sea 
+      reiterativo que la trancicion no sea grosera
+        */}
       <div 
         onClick={() => setIsExpanded(!isExpanded)}
         className={`
@@ -174,11 +197,31 @@ export const CartCheckoutCollapsible: React.FC<CartCheckoutCollapsibleProps> = (
           gap-3                        /* Separación entre método y dirección */
           overflow-hidden              /* Corta texto que desborde */
         `}>
-          {/* Preview Método */}
-          <div className="flex items-center gap-1.5 text-vete-primary shrink-0">
-            <CurrentIcon size={16} />
+
+
+
+
+
+
+ 
+
+
+
+          {/* <!> Me gustaria que este item colapsable en el menu me gusaria que desapareciese cuando esta extraido */}
+
+          {/* <!> Aca tien eque ir un texto que diga forma de pago  para que sea esplisito */}
+          {/* <!> Preview Método Forma de pago */}
+          <div className="
+            /* --- Posición --- */
+            flex 
+            items-center 
+            gap-1.5 
+            text-vete-primary 
+            shrink-0
+          ">
+            <CurrentIcon size={16} /> 
             <span className="text-[11px] font-bold uppercase tracking-wider">
-              {currentPayment.label}
+              {currentPayment.label} {}
             </span>
           </div>
 
@@ -211,6 +254,23 @@ export const CartCheckoutCollapsible: React.FC<CartCheckoutCollapsibleProps> = (
         </button>
       </div>
 
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       {/* 2. CONTENIDO DESPLEGABLE (Animado por clases) */}
       <div className={`
         /* --- Posición --- */
@@ -228,35 +288,86 @@ export const CartCheckoutCollapsible: React.FC<CartCheckoutCollapsibleProps> = (
         }
       `}>
         
-        {/* Selector de Método de Pago */}
+        {/* Selector de Método de Pago <!> Desplegado creo  */}
         <div className="flex flex-col gap-1.5">
           <label className="text-[10px] font-black uppercase text-vete-text-muted tracking-widest ml-1">
             Método de Pago
           </label>
+
+
           <div className="relative">
-            <CurrentIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-vete-primary pointer-events-none" />
+            
+            {/* Item de forma de pago <!> Esto hay que mejrorarlo  */}
+            <CurrentIcon size={16} className="
+              /* --- Posición --- */
+              absolute 
+              left-3.5 
+              top-1/2 
+              /* --- Colores --- */
+              text-vete-primary 
+              /* --- Estilo --- */
+              pointer-events-none" />
+
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              {/* El desplegable 
+              
+              
+              <!> El formato del desplegable anterior era mejor traer para aca */}
             <select
-              value={selectedMethod}
-              onChange={(e) => setSelectedMethod(e.target.value)}
+              value={selectedMethod} // Determina que selecciono el menu desplegable
+              onChange={(e) => setSelectedMethod(e.target.value)} // Detecta cuando cambia la seleccion y actualiza el estado
               className={`
                 /* --- Dimensiones --- */
-                w-full py-2.5 pl-10 pr-8
+                w-full                      /* Ocupa todo el ancho disponible */
+                py-2.5                      /* Relleno vertical */
+                pl-10                     /* Relleno a la izquierda */
+                pr-8                      /* Relleno a la derecha */
                 /* --- Colores --- */
-                bg-vete-dark text-vete-text-light border border-vete-light-border/40
+                bg-vete-dark                /* Fondo oscuro de la marca */
+                text-vete-text-light        /* Texto blanco */
+                border                      /* Borde */
+                border-vete-light-border/40 /* Borde translúcido */
                 /* --- Texto --- */
-                text-xs font-bold uppercase
+                text-xs font-bold           /* Texto pequeño en negrita */
+                uppercase                   /* Texto en mayúsculas */
                 /* --- Estilo --- */
-                rounded-xl outline-none appearance-none cursor-pointer
-                focus:border-vete-primary transition-colors
+                rounded-xl                  /* Bordes redondeados */
+                outline-none                /* Sin borde al hacer foco */
+                appearance-none             /* Sin estilo de navegador */
+                cursor-pointer              /* Cursor de mano */
+                focus:border-vete-primary   /* Borde verde al hacer foco */
+                transition-colors           /* Transición suave */
               `}
             >
-              {PAYMENT_METHODS.map((pm) => (
+              
+              {/* <!> Comentame esto porque no tengo ni idea que es  */}
+              {PAYMENT_METHODS.map((pm) => (  
                 <option key={pm.id} value={pm.id} className="bg-slate-900 text-white">
                   {pm.label} — {pm.description}
                 </option>
               ))}
             </select>
-            <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-vete-text-muted pointer-events-none" />
+              
+            {/* Icono que permite abrir y cerrar  */}
+            <ChevronDown size={14} className={`
+              /* --- Posición --- */
+              absolute 
+              right-3.5 
+              top-1/2 
+              /* --- Estilo --- */
+              -translate-y-1/2 
+              text-vete-text-muted 
+              pointer-events-none
+              `} />
           </div>
         </div>
 
@@ -274,7 +385,14 @@ export const CartCheckoutCollapsible: React.FC<CartCheckoutCollapsibleProps> = (
             rounded-xl                   /* Bordes suaves */
             animate-in fade-in           /* Entrada visual */
           `}>
-            <p className="text-[11px] text-vete-text-light leading-tight">
+            <p className={`
+              /* --- Colores --- */
+              text-vete-text-light 
+              /* --- Texto --- */
+              text-xs font-medium 
+              /* --- Estilo --- */
+              leading-tight
+            `}>
               <span className="font-bold text-vete-primary">Datos Bancarios:</span><br />
               Banco: {companyInfo.bank.name}<br />
               Cuenta: {companyInfo.bank.accountNumber}<br />
@@ -283,7 +401,24 @@ export const CartCheckoutCollapsible: React.FC<CartCheckoutCollapsibleProps> = (
           </div>
         )}
 
-        {/* Entrada de Dirección */}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+        {/* Entrada de Direccción */}
         <div className="flex flex-col gap-1.5">
           <div className="flex justify-between items-center px-1">
             <label className="text-[10px] font-black uppercase text-vete-text-muted tracking-widest">

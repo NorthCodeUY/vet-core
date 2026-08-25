@@ -1,14 +1,5 @@
 
-/* --- apps/web-client/src/pages/pedido/PedidoFooterCollapsible.tsx
-
-<!> 
-
-Cosas a corregir
-- Tengo que convinarlo con el componente que traigo de PedidoDrawer
-- Separa a sub componte forma de pago / Direccion 
-- Meterlo comentario de metodo para cerrar e menu 
-- El nombre no me ocmbese cambiarlo  
---- */
+/* --- apps/web-client/src/pages/pedido/PedidoFooterCollapsible.tsx--- */
 
 import React, { useState } from 'react';
 import { 
@@ -30,16 +21,33 @@ import { usePedidoStore } from '../../context/pedido_context';
 
 
 
-// --------------------------------------------------------------------- 
-/* =============================================================================
-   CONFIGURACIÓN CENTRALIZADA DE MÉTODOS DE PAGO
-   ============================================================================= */
+/**
+ * Catálogo de configuración de métodos de pago soportados por la plataforma.
+ * 
+ * Centraliza la definición visual (etiquetas, descripciones e iconografía de Lucide)
+ * y la lógica de generación de mensajes dinámicos para WhatsApp. Permite desacoplar
+ * la regla de negocio de cada pasarela/método respecto al componente de interfaz.
+ *
+ * @constant
+ * @type {Array<{
+ *   id: string,
+ *   label: string,
+ *   description: string,
+ *   icon: React.ComponentType<{ size?: number, className?: string }>,
+ *   getMessage: () => string
+ * }>}
+ * <!> Yo para mi tengo que camiar esto y mejorar el icono en el cado de los item desplegables 
+ */
 const PAYMENT_METHODS = [
   {
     id: 'efectivo',
     label: 'Efectivo',
     description: 'Pago en mano al recibir',
     icon: Banknote,
+    /**
+     * Genera la instrucción de cobro en efectivo para el mensaje de WhatsApp.
+     * @returns {string} Nota informativa sobre coordinación de cambio.
+     */
     getMessage: () => '_Forma de pago: Efectivo (coordinar cambio con el vendedor)_'
   },
   {
@@ -47,6 +55,11 @@ const PAYMENT_METHODS = [
     label: 'Transferencia',
     description: 'BROU / PREX / Santander',
     icon: Building2,
+    /**
+    * Extrae dinámicamente los datos bancarios del archivo de configuración empresarial
+    * y los formatea como bloque de texto para la transferencia.
+    * @returns {string} Datos bancarios estructurados (Banco, Cuenta, Titular).
+    */
     getMessage: () => 
       `*Datos de Transferencia:*\n- Banco: ${companyInfo.bank.name}\n- Cuenta: ${companyInfo.bank.accountNumber}\n- Titular: ${companyInfo.bank.beneficiary}\n_Adjuntaré el comprobante por este medio._`
   },
@@ -55,6 +68,10 @@ const PAYMENT_METHODS = [
     label: 'Tarjeta',
     description: 'Débito o Crédito al entregar',
     icon: CreditCard,
+    /**
+     * Genera la instrucción para coordinar el POS inalámbrico al momento del delivery.
+     * @returns {string} Nota informativa para llevar el terminal POS.
+     */
     getMessage: () => '_Forma de pago: Tarjeta de Débito/Crédito (coordinar pos con el vendedor)_'
   },
   {
@@ -62,14 +79,103 @@ const PAYMENT_METHODS = [
     label: 'Mercado Pago',
     description: 'Link de pago / Código QR',
     icon: QrCode,
+    /**
+     * Solicita la generación de un link de pago digital o código QR dinámico.
+     * @returns {string} Solicitud de pasarela de pago digital.
+     */
     getMessage: () => '_Forma de pago: Mercado Pago (solicito link de pago / QR)_'
   }
 ];
 
+
+
+
+
+/**
+ * Propiedades del componente `PedidoFooterCollapsible`.
+ * 
+ * @interface PedidoFooterCollapsibleProps
+ * @property {function(): void} onClearCart - Callback disparado al presionar el botón de vaciado de carrito (abre modal de confirmación en el padre).
+ */
 interface PedidoFooterCollapsibleProps {
   onClearCart: () => void;
 }
 
+
+
+const PaymentSelector = ({ 
+  method, 
+  setMethod, 
+  bankInfo 
+}: { 
+  method: string; 
+  setMethod: (m: string) => void; 
+  bankInfo: string;
+}) => {
+  return (
+    <div className={`
+      /* --- Posición --- */
+      flex flex-col gap-2
+      /* --- Dimensiones --- */
+      w-full mt-1
+    `}>
+      <div className="relative flex items-center">
+        <Banknote size={14} className="absolute left-3 text-vete-primary pointer-events-none" />
+        <select
+          value={method}
+          onChange={(e) => setMethod(e.target.value)}
+          className={`
+            /* --- Dimensiones --- */
+            w-full py-2 pl-9 pr-8
+            /* --- Colores --- */
+            bg-vete-dark text-vete-text-light border border-vete-light-border/40
+            /* --- Texto --- */
+            text-xs font-bold uppercase
+            /* --- Estilo --- */
+            rounded-xl outline-none appearance-none cursor-pointer
+            focus:border-vete-primary
+          `}
+        >
+          <option value="efectivo">💵 Efectivo (Pago al recibir)</option>
+          <option value="transferencia">🏦 Transferencia Bancaria</option>
+        </select>
+        <ChevronDown size={14} className="absolute right-3 text-vete-text-muted pointer-events-none" />
+      </div>
+
+      {/* Datos Bancarios: Solo si elige Transferencia */}
+      {method === 'transferencia' && (
+        <div className={`
+          /* --- Posición --- */
+          p-2.5
+          /* --- Colores --- */
+          bg-vete-primary/10 border border-dashed border-vete-primary/40
+          /* --- Estilo --- */
+          rounded-xl animate-in fade-in duration-200
+        `}>
+          <p className="text-[11px] text-vete-text-light leading-tight">
+            <span className="font-bold text-vete-primary">Datos para el pago:</span><br />
+            {bankInfo}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+
+/**
+ * Pie de página interactivo y colapsable del Drawer de Pedidos (`PedidoFooterCollapsible`).
+ * 
+ * Optimiza el espacio vertical mediante un panel tipo acordeón que resume el método de 
+ * pago y la dirección de entrega en una sola línea compacta, permitiendo expandir los controles 
+ * para su edición. Administra la construcción del mensaje de WhatsApp con formato enriquecido 
+ * y la persistencia de estado del carrito vía URL.
+ *
+ * @component
+ * @param {PedidoFooterCollapsibleProps} props - Propiedades recibidas del contenedor padre.
+ * @returns {JSX.Element} Panel de control de checkout fijo en la base del drawer.
+ */
 export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = ({ onClearCart }) => {
   const { pedido, total } = usePedidoStore();
   
@@ -254,23 +360,7 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
         </button>
       </div>
 
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
+
       {/* 2. CONTENIDO DESPLEGABLE (Animado por clases) */}
       <div className={`
         /* --- Posición --- */
@@ -282,15 +372,33 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
         /* --- Animación --- */
         transition-all               /* Anima altura y opacidad */
         duration-300                 /* Tiempo de transición */
-        ${isExpanded 
-          ? 'max-h-[400px] opacity-100 pt-1' 
-          : 'max-h-0 opacity-0 pointer-events-none'
+        ${isExpanded // Si el estado esta expandido entonces se expande, si no se contrae
+          ? 'max-h-[400px] opacity-100 pt-1' // Se expande
+          : 'max-h-0 opacity-0 pointer-events-none' // Se contrae
         }
       `}>
         
         {/* Selector de Método de Pago <!> Desplegado creo  */}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-[10px] font-black uppercase text-vete-text-muted tracking-widest ml-1">
+        <div className={`
+          lex 
+          flex-col 
+          gap-1.5
+          `}>
+          <label className={`
+            /* --- Tamaño --- */
+            text-[10px]  /* Tamaño de la fuente */
+
+            /* --- Estilo --- */<!> Esto no tendria que ir a variable si es color de te
+            font-black /* Fuente negrita*/
+            uppercase /* Tipo de letra <!> Esto no tendira que ir a variable si es tipo de letra  */ 
+
+            /* --- Colores --- */
+            text-vete-text-muted /* Color de texto */ 
+
+            /* --- Posición --- */
+            tracking-widest /* Espaciado entre letras*/ 
+            ml-1 /* Margen izquierdo */
+            `}>
             Método de Pago
           </label>
 
@@ -298,7 +406,7 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
           <div className="relative">
             
             {/* Item de forma de pago <!> Esto hay que mejrorarlo  */}
-            <CurrentIcon size={16} className="
+            <CurrentIcon size={16} className={`
               /* --- Posición --- */
               absolute 
               left-3.5 
@@ -306,22 +414,36 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
               /* --- Colores --- */
               text-vete-primary 
               /* --- Estilo --- */
-              pointer-events-none" />
+              pointer-events-none`}
+            />
 
               
-              
-              
-              
-              
-              
-              
-              
-              
-              
+
               {/* El desplegable 
               
               
-              <!> El formato del desplegable anterior era mejor traer para aca */}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+              <!> El formato del desplegable anterior era mejor traer para aca PaymentSelector
+              El menu complet esta bien por lo ite son mejor en ese componente ademas me gustaria sacar este menu a un subcomponente
+              NO se el tema de que el elemento seleccionado tiene que mostrarlo en la barra jeneral pero supongo que si lo selecciono lo gurado
+              en algn lado para usarlo tanto en el mensje como en la barra chica */}
             <select
               value={selectedMethod} // Determina que selecciono el menu desplegable
               onChange={(e) => setSelectedMethod(e.target.value)} // Detecta cuando cambia la seleccion y actualiza el estado
@@ -417,15 +539,19 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
 
 
         
-
-        {/* Entrada de Direccción */}
+        {/* <!> Esto tambien tendira que ir a un subcomponente dentro de este paquete */}
+        {/* Entrada de Direccción En este componente tendria que ser 
+        una divicion dificion que marque un boton que seimpre esta seleccionado que diga retiro en local
+        si lo aprtan que esa se la direcion que vamos a usar si no si que escondo o achique el boton no se y 
+        que me de el campo para agregar la direccion me gustaria un campo de texto que se integrara con guugle maps 
+        no se si buscas uno o que */}
         <div className="flex flex-col gap-1.5">
           <div className="flex justify-between items-center px-1">
             <label className="text-[10px] font-black uppercase text-vete-text-muted tracking-widest">
               Dirección de Entrega
             </label>
             <a 
-              href="https://www.google.com/maps/search/?api=1&query=Salto+Uruguay" 
+              href="https://www.google.com/maps/search/?api=1&query=Salto+Uruguay" // <!> Esta direccion no se donde la saca Caps lo mejor es que tome la direccion por defecto de la beterinaria o no se 
               target="_blank" 
               rel="noreferrer"
               className="text-[9px] font-bold uppercase text-vete-primary hover:underline"

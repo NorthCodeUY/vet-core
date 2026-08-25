@@ -16,7 +16,7 @@ import type { UserAddress } from '../../hooks/useAddressManagement'
 import { WhatsAppDynamicButton } from '../../components/WhatsAppDynamicButton';
 
 import companyInfo from '../../data/companyInfo.json'; // Datos de la empresa 
-import { CartCheckoutCollapsible } from './CartCheckoutCollapsible';
+import { PedidoFooterCollapsible } from './PedidoFooterCollapsible';
 
 /**
  * Entidad de Perfil de Usuario (`UserProfile`).
@@ -425,20 +425,100 @@ const CartCheckoutSection = ({
 };
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// <!> Bloque actual no inyectado 
+
+
+
+          /* =============================================================================
+            CONTRATO DE PROPIEDADES: SELECTOR DE PAGO
+            ============================================================================= */
+
+          /**
+           * Propiedades para el sub-componente `PaymentSelector`.
+           *
+           * @interface PaymentSelectorProps
+           * @property {string} method - Identificador del método de pago actualmente seleccionado (ej: 'efectivo', 'transferencia').
+           * @property {function(string): void} setMethod - Función disparadora para actualizar el estado del método de pago en el componente padre.
+           * @property {string} bankInfo - Cadena de texto preformateada con los datos bancarios institucionales para depósitos o transferencias.
+           */
+          interface PaymentSelectorProps {
+            method: string;
+            setMethod: (method: string) => void;
+            bankInfo: string;
+          }
+
+//<!> Aqui es donde guardaria los datos por si se quiere usar mas adelente 
+
 /* =============================================================================
    SUB-COMPONENTE: SELECTOR DE PAGO (COMBO BOX)
    <!> Por haora sacamos el campo monedas no lo deberia usar simpre la moneda es $ 
    ============================================================================= */
 
-const PaymentSelector = ({ 
+
+
+/* =============================================================================
+   SUB-COMPONENTE: SELECTOR DE MÉTODO DE PAGO
+   ============================================================================= */
+
+/**
+ * Selector desplegable de métodos de pago (`PaymentSelector`).
+ * 
+ * Renderiza un control de selección estilizado (combobox) que permite al cliente
+ * elegir la modalidad de abono de su pedido. Incluye soporte visual condicional
+ * para desplegar los datos bancarios oficiales cuando se selecciona la opción de transferencia.
+ *
+ * @component
+ * @param {PaymentSelectorProps} props - Propiedades de configuración y control de estado.
+ * @returns {JSX.Element} Control de formulario con select personalizado y panel condicional de datos bancarios.
+ */
+const PaymentSelector: React.FC<PaymentSelectorProps> = ({ 
   method, 
   setMethod, 
   bankInfo 
-}: { 
-  method: string; 
-  setMethod: (m: string) => void; 
-  bankInfo: string;
 }) => {
+
+// <!> Versio remover 
+// const PaymentSelector = ({ 
+//   method, 
+//   setMethod, 
+//   bankInfo 
+// }: { 
+//   method: string; 
+//   setMethod: (m: string) => void; 
+//   bankInfo: string;
+// }) => {
+
+
+
+
+
   return (
     <div className={`
       /* --- Posición --- */
@@ -1084,27 +1164,11 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
         
 
         {/* Footer con el nuevo componente colapsable */}
-        <CartCheckoutCollapsible 
+        <PedidoFooterCollapsible 
           onClearCart={() => setIsClearCartModalOpen(true)} 
         />
 
 
-
-
-
-        {/* Menu inferior <!> Fucionar con el nuevo componente*/}
-        {/* <CartCheckoutSection 
-          pedido={pedido}
-          total={total}
-          paymentProps={{
-            paymentMethod, 
-            setPaymentMethod, 
-            currency, 
-            setCurrency
-          }}
-          onConfirm={handleConfirmOrder}
-          onClear={() => setIsClearCartModalOpen(true)}
-        /> */}
 
       </aside>
 

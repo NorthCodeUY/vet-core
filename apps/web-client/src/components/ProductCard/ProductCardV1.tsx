@@ -1,11 +1,11 @@
 /* --- apps/web-client/src/components/ProductCard/ProductCardV1.tsx --- */
 
 import { ShoppingCart,  X, Plus, Minus } from 'lucide-react';
-import { SUBCATEGORY_ICONS } from '../utils/categoryHelpers';
+import { SUBCATEGORY_ICONS } from '../../utils/categoryHelpers';
 
-import { usePedidoStore } from '../context/pedido_context';
-import type { ApiProduct, ApiImageProducto } from '../types/product_types';
-import companyInfo from '../data/companyInfo.json';
+import { usePedidoStore } from '../../context/pedido_context';
+import type { ApiProduct, ApiImageProducto } from '../../types/product_types';
+import companyInfo from '../../data/companyInfo.json';
 
 
 
@@ -17,7 +17,7 @@ interface Props {
  * Componente de UI para representar una tarjeta de producto en el catálogo.
  * Formateado para máxima legibilidad y soporte de subcategorías.
  */
-export function ProductCard({ producto }: Props) {
+export function ProductCardV1({ producto }: Props) {
   /* --- Fachada: Extraemos lo que necesitamos --- */
   const {
     pedido, // 🔍 Esto nos da la lista de productos agregados (array)
@@ -31,10 +31,19 @@ export function ProductCard({ producto }: Props) {
   const subtotal = producto.prod_precio * cantidad; // Subtotal del producto en el pedido
   const estaSeleccionado = cantidad > 0; // Esta seleccionado el producto
 
-  /* --- Generación de Link de WhatsApp  <!> Los menaje yo lo quiero sentralizado por fuer asi que depues lo saco --- */
+  // Creamos el link del producto: .origin guarda el link de la pagina, .pathname guarda el subdominio, # el id del producto
+
+  const productUrl = typeof window !== 'undefined' 
+    ? `${window.location.origin}${window.location.pathname}#prod-${producto.prod_id}`
+    : '';
+
+  /* ${companyInfo.contact.adminPhone} cambiar por un numero para probar si asi lo desea */
+
+  /* --- Generación de Link de WhatsApp --- */
   const whatsappLink = `https://wa.me/${companyInfo.contact.adminPhone}?text=${encodeURIComponent(
-    `¡Hola! Estoy interesado en el producto: *${producto.prod_nombre}*`
+    `¡Hola! Estoy interesado en el producto: *${producto.prod_nombre}*, *$${producto.prod_precio}*\n\n Ver Producto: \n\n${productUrl}`
   )}`;
+
 
   // 1. Método separado para manejar la eliminación
   const handleRemoveFromPedido = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -48,6 +57,7 @@ export function ProductCard({ producto }: Props) {
   return (
     <div 
       /* Al tocar la tarjeta, se agrega una unidad automáticamente */
+      id={`prod-${producto.prod_id}`}  /* identificador de cada producto */
       onClick={() => addToPedido(producto)}
     
       className={`
@@ -271,18 +281,20 @@ export function ProductCard({ producto }: Props) {
           para que cea este producot algo como desde el selular del clite
           mande algo como estoy interesado en este producot algo asi al celular
           de la beterinaria que ya tenog en los datos globales */}
-          <img
-            src="/images/branding/LogoWhtSapp.svg"
-            alt="WhatsApp"
-            className={`
-              /* --- Dimensiones --- */
-              w-8 h-8                  /* Tamaño fijo de 2rem */
-              /* --- Animación --- */
-              hover:scale-110          /* Crece levemente al pasar el mouse */
-              transition-transform     /* Transición suave */
-              cursor-pointer           /* Cursor de mano */
-            `}
-          />
+          <a href={whatsappLink} target='blank_'>
+            <img
+              src="/images/branding/LogoWhtSapp.svg"
+              alt="WhatsApp"
+              className={`
+                /* --- Dimensiones --- */
+                w-8 h-8                  /* Tamaño fijo de 2rem */
+                /* --- Animación --- */
+                hover:scale-110          /* Crece levemente al pasar el mouse */
+                transition-transform     /* Transición suave */
+                cursor-pointer           /* Cursor de mano */
+              `}
+            />
+          </a>
 
           <div
             onClick={() => { addToPedido(producto) }}

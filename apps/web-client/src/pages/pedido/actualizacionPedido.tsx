@@ -1,5 +1,90 @@
-  // <!> Esto lo voy a usar cuando tenga pedidos sentralizados 
+ 
+ 
+ 
+ 
+ 
+ 
+ // Est oes codiog util pero para futuras versiones 
+ 
+
+
+
+
+
+
+
+
+
+
 /**
+ * Entidad de Perfil de Usuario (`UserProfile`).
+ * 
+ * Representa los datos esenciales de la cuenta del cliente para fines de precarga 
+ * y logística en el proceso de compra. Utilizada para poblar automáticamente los campos 
+ * de contacto y dirección predeterminada cuando el usuario inicia sesión.
+ *
+ * @interface UserProfile
+ * @property {string} id - Identificador único del usuario/cliente.
+ * @property {string} name - Nombre completo del cliente para la cabecera del pedido.
+ * @property {string} email - Correo electrónico registrado para notificaciones.
+ * @property {string} defaultAddress - Dirección de entrega habitual utilizada por defecto.
+ */
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  defaultAddress: string; // Dirección predeterminada del usuario
+}
+
+/**
+ * Hook simulado para obtener la dirección predeterminada del usuario logueado.
+ * Esta es una ABSTRACCIÓN. Debes reemplazarla con tu lógica real de autenticación/perfil.
+ * Ahora se usa para inicializar *si no hay direcciones guardadas*.
+ *
+ * @returns {{ defaultAddress: string | null, loadingUserAddress: boolean }}
+ */
+const useUserInitialAddress = () => {
+  const [defaultAddress, setDefaultAddress] = useState<string | null>(null);
+  const [loadingUserAddress, setLoadingUserAddress] = useState(true);
+
+  useEffect(() => {
+    const fetchUserAddress = async () => {
+      setLoadingUserAddress(true);
+      // Simula una llamada a la API o la obtención de datos del usuario logueado
+      await new Promise(resolve => setTimeout(resolve, 800)); // Retraso para simular carga
+      // <!- MODIFICAR AQUI -> Reemplazar con la lógica real para obtener el usuario y su dirección
+      const loggedInUser: UserProfile | null = { // Simula un usuario logueado
+        id: 'user-123',
+        name: 'Cliente Ejemplo',
+        email: 'cliente@ejemplo.com',
+        defaultAddress: 'Av. Principal 1234, Barrio Centro, Ciudad Capital', // Dirección por defecto
+      };
+      // const loggedInUser: UserProfile | null = null; // Simula un usuario NO logueado o sin dirección
+
+      if (loggedInUser?.defaultAddress) {
+        setDefaultAddress(loggedInUser.defaultAddress);
+      }
+      setLoadingUserAddress(false);
+    };
+
+    fetchUserAddress();
+  }, []);
+
+  return { defaultAddress, loadingUserAddress };
+};
+
+
+
+
+
+
+
+
+
+
+
+
+ /**
  * Sincroniza los campos de texto locales con la dirección seleccionada globalmente.
  * Se dispara cada vez que el Drawer se abre o cambia la dirección activa.
  */

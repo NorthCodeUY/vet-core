@@ -15,62 +15,6 @@ import { ConfirmationModal } from '../../components/ConfirmationModal';
 
 import { PedidoFooterCollapsible } from './PedidoFooterCollapsible';
 
-/**
- * Entidad de Perfil de Usuario (`UserProfile`).
- * 
- * Representa los datos esenciales de la cuenta del cliente para fines de precarga 
- * y logística en el proceso de compra. Utilizada para poblar automáticamente los campos 
- * de contacto y dirección predeterminada cuando el usuario inicia sesión.
- *
- * @interface UserProfile
- * @property {string} id - Identificador único del usuario/cliente.
- * @property {string} name - Nombre completo del cliente para la cabecera del pedido.
- * @property {string} email - Correo electrónico registrado para notificaciones.
- * @property {string} defaultAddress - Dirección de entrega habitual utilizada por defecto.
- */
-interface UserProfile {
-  id: string;
-  name: string;
-  email: string;
-  defaultAddress: string; // Dirección predeterminada del usuario
-}
-
-/**
- * Hook simulado para obtener la dirección predeterminada del usuario logueado.
- * Esta es una ABSTRACCIÓN. Debes reemplazarla con tu lógica real de autenticación/perfil.
- * Ahora se usa para inicializar *si no hay direcciones guardadas*.
- *
- * @returns {{ defaultAddress: string | null, loadingUserAddress: boolean }}
- */
-const useUserInitialAddress = () => {
-  const [defaultAddress, setDefaultAddress] = useState<string | null>(null);
-  const [loadingUserAddress, setLoadingUserAddress] = useState(true);
-
-  useEffect(() => {
-    const fetchUserAddress = async () => {
-      setLoadingUserAddress(true);
-      // Simula una llamada a la API o la obtención de datos del usuario logueado
-      await new Promise(resolve => setTimeout(resolve, 800)); // Retraso para simular carga
-      // <!- MODIFICAR AQUI -> Reemplazar con la lógica real para obtener el usuario y su dirección
-      const loggedInUser: UserProfile | null = { // Simula un usuario logueado
-        id: 'user-123',
-        name: 'Cliente Ejemplo',
-        email: 'cliente@ejemplo.com',
-        defaultAddress: 'Av. Principal 1234, Barrio Centro, Ciudad Capital', // Dirección por defecto
-      };
-      // const loggedInUser: UserProfile | null = null; // Simula un usuario NO logueado o sin dirección
-
-      if (loggedInUser?.defaultAddress) {
-        setDefaultAddress(loggedInUser.defaultAddress);
-      }
-      setLoadingUserAddress(false);
-    };
-
-    fetchUserAddress();
-  }, []);
-
-  return { defaultAddress, loadingUserAddress };
-};
 
 /**
  * Interfaz para las props del componente PedidoDrawer.
@@ -81,6 +25,8 @@ interface PedidoDrawerProps {
   isOpen: boolean;    // Controla la visibilidad del drawer.
   onClose: () => void; // Función para cerrar el drawer.
 }
+
+
 
   
 /**
@@ -97,6 +43,7 @@ interface DrawerHeaderProps {
 
 
 /**
+ * 
  * Barra superior de navegación y marca para el Drawer de Pedidos (`DrawerHeader`).
  * 
  * Proporciona el ancla visual del panel lateral. Integra la identidad corporativa
@@ -285,101 +232,6 @@ const DrawerContent = ({ pedido }: { pedido: any[] }) => (
 );
 
 
-/**
- * Componente de Entrada de Dirección Simplificada (`SimpleAddressInput`).
- * 
- * Diseñado para la etapa MVP (sin persistencia en base de datos). Permite al cliente 
- * ingresar manualmente su dirección de entrega o referencias en la ciudad de Salto, 
- * e incluye un acceso directo para consultar la ubicación geográfica en Google Maps.
- *
- * @component
- * @param {Object} props - Propiedades del componente.
- * @param {string} props.value - Texto actual de la dirección ingresada por el usuario.
- * @param {function(string): void} props.onChange - Callback que actualiza el estado de la dirección en el componente padre.
- * 
- * @returns {JSX.Element} Campo de texto estilizado con botón de enlace a Google Maps.
- */
-const SimpleAddressInput = ({ value, onChange }: { value: string, onChange: (val: string) => void }) => {
-  
-  /* Función para ayudar al usuario a encontrar su dirección en Salto */
-  const openGoogleMaps = () => {
-    const url = "https://www.google.com/maps/search/?api=1&query=Veterinaria+Beltramelli+Salto";
-    window.open(url, '_blank');
-  };
-
-  return (
-    <div className={`
-      /* --- Posición --- */
-      flex                         /* Contenedor flexible */
-      flex-col                     /* Alineación vertical */
-      gap-2                        /* Espacio entre etiqueta e input */
-      
-      /* --- Dimensiones --- */
-      w-full                       /* Ancho total */
-      mb-4                         /* Margen inferior */
-    `}>
-      
-      {/* Cabecera con Link a Maps */}
-      <div className="flex justify-between items-center px-1">
-        <label className="flex items-center gap-2 text-[10px] font-black uppercase text-vete-text-muted tracking-widest">
-          <MapPin size={14} className="text-vete-primary" />
-          Dirección de Entrega
-        </label>
-        
-        <button 
-          onClick={openGoogleMaps}
-          className={`
-            /* --- Texto --- */
-            text-[9px] font-bold uppercase underline
-            /* --- Colores --- */
-            text-vete-primary/70 hover:text-vete-primary
-            /* --- Animación --- */
-            transition-colors
-          `}
-        >
-          Buscar en Maps
-        </button>
-      </div>
-
-      {/* Input Principal */}
-      <div className="relative group">
-        <input 
-          type="text"
-          placeholder="Calle, número o referencia (Salto)"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className={`
-            /* --- Dimensiones --- */
-            w-full                       /* Ancho total */
-            py-3                         /* Padding vertical cómodo */
-            pl-4                         /* Padding izquierdo */
-            pr-4                         /* Padding derecho */
-            
-            /* --- Colores --- */
-            bg-vete-dark/40              /* Fondo oscuro sutil */
-            text-vete-text-light         /* Texto claro */
-            border-2                     /* Borde de 2px */
-            border-transparent           /* Invisible por defecto */
-            
-            /* --- Estilo --- */
-            rounded-2xl                  /* Bordes redondeados */
-            outline-none                 /* Quita el aro azul */
-            text-sm                      /* Tamaño de fuente de lectura */
-            
-            /* --- Animación --- */
-            focus:border-vete-primary    /* Resalta al escribir */
-            focus:bg-vete-dark/60        /* Oscurece un poco al foco */
-            transition-all duration-300
-          `}
-        />
-      </div>
-      
-      <p className="text-[9px] text-vete-text-muted italic ml-1">
-        * Esta dirección se incluirá en tu mensaje de WhatsApp.
-      </p>
-    </div>
-  );
-};
 
 
 

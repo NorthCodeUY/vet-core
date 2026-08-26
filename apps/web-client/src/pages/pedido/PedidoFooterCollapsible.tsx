@@ -10,7 +10,8 @@ import {
   MapPin, // Direccion 
   ChevronDown, // Desplegable 
   Trash2,  // Basura  
-  Send // Enviar 
+  Send, // Enviar 
+  Truck // Camioneta 
 } from 'lucide-react';
 import companyInfo from '../../data/companyInfo.json'; // Datos de la empresa 
 import { usePedidoStore } from '../../context/pedido_context'; // Contexto del pedido 
@@ -406,20 +407,14 @@ interface DeliveryAddressSectionProps {
  *
  * @component
  * @param {DeliveryAddressSectionProps} props - Propiedades de configuración y setters de estado.
- * @returns {JSX.Element} Panel de opciones de entrega con selector binario y entrada de texto condicional.
- * 
- * 
- * <!> Este tengo que cambiar el comportamiento para que por defecto este seleccionado Retiro en local la nimacion esta jenial
-*/
+ * @returns {JSX.Element} Panel de opciones de entrega con selector binario y entrada de texto condicional. 
+ */
 const DeliveryAddressSection: React.FC<DeliveryAddressSectionProps> = ({
   address,
   setAddress,
   mapsUrl
 }) => {
   const isRetiro = address === "Retiro en Local";
-
-
-
   return (
     <div className={`
       /* --- Posición --- */
@@ -461,27 +456,52 @@ const DeliveryAddressSection: React.FC<DeliveryAddressSectionProps> = ({
       </div>
 
       {/* Botón Selector: Retiro en Local vs Envío a Domicilio */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className={`
+        /* --- Posición --- */
+        grid                         /* Sistema de grilla */
+        grid-cols-2                  /* 2 columnas iguales */
+        gap-2                        /* Espaciado entre botones */
+      `}>
+
+        {/* 1. Botón para Retiro en Local */}
         <button
           type="button"
           onClick={() => setAddress("Retiro en Local")}
           className={`
             /* --- Posición --- */
-            flex items-center justify-center gap-1.5
+            flex                         /* Contenedor flexible */
+            items-center                 /* Centrado vertical */
+            justify-center               /* Centrado horizontal */
+            gap-1.5                      /* Espacio icono-texto */
+
             /* --- Dimensiones --- */
-            py-2 px-3
+            py-2.5                       /* Altura de botón cómoda */
+            px-3                         /* Padding lateral */
+
+            /* --- Texto --- */
+            text-xs                      /* Tamaño estándar */
+            font-bold                    /* Negrita */
+
             /* --- Estilo --- */
-            rounded-xl border transition-all text-xs font-bold
-            /* --- Colores --- */
+            rounded-xl                   /* Bordes redondeados */
+            border-2                     /* Borde visible de 2px */
+
+            /* --- Colores Dinámicos --- */
             ${isRetiro 
-              ? 'bg-vete-primary text-white border-vete-primary shadow-sm' 
-              : 'bg-vete-dark text-vete-text-muted border-vete-light-border/40 hover:text-vete-text-light'}
+              ? 'bg-vete-primary text-white border-vete-primary shadow-md' 
+              : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-vete-secondary'}
+
+            /* --- Animación --- */
+            transition-all               /* Transición suave */
+            duration-200                 /* Velocidad de cambio */
+            active:scale-95              /* Efecto de pulsación */
           `}
         >
-          <MapPin size={13} />
+          <MapPin size={14} className={isRetiro ? "text-white" : "text-vete-primary"} />
           <span>Retiro en Local</span>
         </button>
-
+        
+        {/* 2. Botón para Envío a Domicilio (Corregido) */}
         <button
           type="button"
           onClick={() => {
@@ -489,17 +509,35 @@ const DeliveryAddressSection: React.FC<DeliveryAddressSectionProps> = ({
           }}
           className={`
             /* --- Posición --- */
-            flex items-center justify-center gap-1.5
+            flex                         /* Contenedor flexible */
+            items-center                 /* Centrado vertical */
+            justify-center               /* Centrado horizontal */
+            gap-1.5                      /* Espacio icono-texto */
+
             /* --- Dimensiones --- */
-            py-2 px-3
+            py-2.5                       /* Altura de botón cómoda */
+            px-3                         /* Padding lateral */
+
+            /* --- Texto --- */
+            text-xs                      /* Tamaño estándar */
+            font-bold                    /* Negrita */
+
             /* --- Estilo --- */
-            rounded-xl border transition-all text-xs font-bold
-            /* --- Colores --- */
-            {!isRetiro 
-              ? 'bg-vete-primary text-white border-vete-primary shadow-sm' 
-              : 'bg-vete-dark text-vete-text-muted border-vete-light-border/40 hover:text-vete-text-light'}
+            rounded-xl                   /* Bordes redondeados */
+            border-2                     /* Borde visible de 2px */
+
+            /* --- Colores Dinámicos --- */
+            ${!isRetiro 
+              ? 'bg-vete-primary text-white border-vete-primary shadow-md' 
+              : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-vete-secondary'}
+
+            /* --- Animación --- */
+            transition-all               /* Transición suave */
+            duration-200                 /* Velocidad de cambio */
+            active:scale-95              /* Efecto de pulsación */
           `}
         >
+          <Truck size={14} className={!isRetiro ? "text-white" : "text-vete-primary"} />
           <span>Envío a Domicilio</span>
         </button>
       </div>
@@ -535,108 +573,7 @@ const DeliveryAddressSection: React.FC<DeliveryAddressSectionProps> = ({
       )}
     </div>
   );
-
-
-
-
-// <!> Version anterior 
-  // return (
-  //   <div className="flex flex-col gap-1.5">
-
-  //     <div className="flex justify-between items-center px-1">
-  //       <label className="text-[10px] font-black uppercase text-vete-text-muted tracking-widest">
-  //         Dirección de Entrega
-  //       </label>
-  //       <a 
-  //         href={mapsUrl}
-  //         target="_blank" 
-  //         rel="noreferrer"
-  //         className={`
-  //           /* --- Texto --- */
-  //           text-[9px] 
-  //           font-bold 
-  //           uppercase 
-  //           /* --- Colores --- */
-  //           text-vete-primary 
-  //           /* --- Efectos --- */
-  //           hover:underline
-  //         `}
-  //       >
-  //         Ver Local en Maps
-  //       </a>
-  //     </div>
-
-  //     {/* Botón rápido: Retiro en Local */}
-  //     <button
-  //       type="button"
-  //       onClick={() => setAddress(isRetiro ? "" : "Retiro en Local")}
-  //       className={`
-  //         /* --- Posición --- */
-  //         flex 
-  //         items-center 
-  //         justify-center 
-  //         gap-1.5
-  //         /* --- Dimensiones --- */
-  //         w-full 
-  //         py-2 
-  //         px-3
-  //         /* --- Estilo --- */
-  //         rounded-xl 
-  //         border 
-  //         transition-all 
-  //         text-xs 
-  //         font-bold
-  //         /* --- Colores --- */
-  //         ${isRetiro 
-  //           ? 'bg-vete-primary text-white border-vete-primary shadow-sm' 
-  //           : 'bg-vete-dark text-vete-text-muted border-vete-light-border/40 hover:text-vete-text-light'}
-  //       `}
-  //     >
-  //       <MapPin size={13} />
-  //       <span>{isRetiro ? "✓ Retiro en Veterinaria (Salto)" : "Retirar en el Local"}</span>
-  //     </button>
-
-  //     {/* Input Manual de Dirección */}
-  //     {!isRetiro && (
-  //       <div className="relative animate-in fade-in duration-200">
-  //         <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-vete-text-muted pointer-events-none" />
-  //         <input 
-  //           type="text"
-  //           placeholder="Calle, número de puerta o esquina..."
-  //           value={address}
-  //           onChange={(e) => setAddress(e.target.value)}
-  //           className={`
-  //             /* --- Dimensiones --- */
-  //             w-full 
-  //             py-2.5 
-  //             pl-10 
-  //             pr-4
-  //             /* --- Colores --- */
-  //             bg-vete-dark 
-  //             text-vete-text-light 
-  //             border 
-  //             border-vete-light-border/40
-  //             /* --- Texto --- */
-  //             text-xs 
-  //             font-medium 
-  //             placeholder:text-vete-text-muted/50
-  //             /* --- Estilo --- */
-  //             rounded-xl 
-  //             outline-none
-  //             focus:border-vete-primary 
-  //             transition-all
-  //           `}
-  //         />
-  //       </div>
-  //     )}
-  //   </div>
-  // );
-
-
-
 };
-
-
 
 /* =============================================================================
    COMPONENTE-Principal: 

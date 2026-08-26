@@ -1,144 +1,125 @@
-/* --- apps/web-client/src/components/ProductCard/ProductCardV2.tsx --- */
+/* --- apps/web-client/src/components/ProductCardV2.tsx --- */
 
-import { ShoppingCart,  X, Plus, Minus } from 'lucide-react';
+import React, { useState } from 'react';
+import { ShoppingCart, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { SUBCATEGORY_ICONS } from '../../utils/categoryHelpers';
-
 import { usePedidoStore } from '../../context/pedido_context';
-import type { ApiProduct, ApiImageProducto } from '../../types/product_types';
+import type { ApiProduct } from '../../types/product_types';
 import companyInfo from '../../data/companyInfo.json';
 
-
-
 interface Props {
-  producto: ApiProduct
+  producto: ApiProduct;
 }
 
 /**
- * Componente de UI para representar una tarjeta de producto en el catálogo.
- * Formateado para máxima legibilidad y soporte de subcategorías.
+ * Componente de UI para representar una tarjeta de producto en el catálogo (Versión 2).
+ * Incluye módulo acordeón para detalles expandibles y WhatsApp.
  */
 export function ProductCardV2({ producto }: Props) {
-  /* --- Fachada: Extraemos lo que necesitamos --- */
-  const {
-    pedido, // 🔍 Esto nos da la lista de productos agregados (array)
-    addToPedido, // ➕ Esta función agrega pedidos
-    removAllPedido // ➖ Esta función saca pedidos
-  } = usePedidoStore();
+  /* --- Estado Local para Control de Acordeón --- */
+  const [isExpanded, setIsExpanded] = useState(false);
 
- /* --- Lógica de Estado Local del Producto --- */
-  const lineaActual = pedido.find(item => item.producto.prod_id === producto.prod_id); // Linea actual del producto en el pedido
-  const cantidad = lineaActual?.cantidad || 0; // Cantidad actual del producto en el pedido
-  const subtotal = producto.prod_precio * cantidad; // Subtotal del producto en el pedido
-  const estaSeleccionado = cantidad > 0; // Esta seleccionado el producto
+  /* --- Fachada del Store --- */
+  const store = usePedidoStore() as any;
+  const pedido = store.pedido || [];
+  const addToPedido = store.addToPedido || (() => {});
+  
+  const handleRemove = store.removeAllPedido 
+    || store.removePedido 
+    || store.removeFromPedido 
+    || (() => {});
 
-  // Creamos el link del producto: .origin guarda el link de la pagina, .pathname guarda el subdominio, # el id del producto
-
-  const productUrl = typeof window !== 'undefined' 
-    ? `${window.location.origin}${window.location.pathname}#prod-${producto.prod_id}`
-    : '';
-
-  /* ${companyInfo.contact.adminPhone} cambiar por un numero para probar si asi lo desea */
+  /* --- Lógica de Estado del Producto --- */
+  const lineaActual = pedido.find((item: any) => item.producto?.prod_id === producto.prod_id);
+  const cantidad = lineaActual?.cantidad || 0;
+  const subtotal = producto.prod_precio * cantidad;
+  const estaSeleccionado = cantidad > 0;
 
   /* --- Generación de Link de WhatsApp --- */
   const whatsappLink = `https://wa.me/${companyInfo.contact.adminPhone}?text=${encodeURIComponent(
-    `¡Hola! Estoy interesado en el producto: *${producto.prod_nombre}*, *$${producto.prod_precio}*\n\n Ver Producto: \n\n${productUrl}`
+    `¡Hola! Estoy interesado en el producto: *${producto.prod_nombre}*`
   )}`;
 
-
-  // 1. Método separado para manejar la eliminación
+  /* --- Manejadores de Eventos --- */
   const handleRemoveFromPedido = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation(); // Evita que se dispare el click del contenedor padre
-    removAllPedido(producto.prod_id);
+    e.stopPropagation();
+    handleRemove(producto.prod_id);
   };
 
-
-
+  const toggleExpand = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Evita que se agregue al pedido al tocar la flecha
+    setIsExpanded(!isExpanded);
+  };
 
   return (
-    <div 
-      /* Al tocar la tarjeta, se agrega una unidad automáticamente */
-      id={`prod-${producto.prod_id}`}  /* identificador de cada producto */
+    <div
       onClick={() => addToPedido(producto)}
-    
       className={`
         /* --- Posición --- */
-        relative                     /* Base para badges absolutos <!> Lo agrege por no se para que */
-        flex                         /* Contenedor flexible */
-        flex-col                     /* Alineación vertical de elementos */
-        gap-2                        /* Espacio entre hijos de 0.5rem */
-        
+        relative                     /* Permite flotar los badges de selección y borrado */
+        flex                         /* Activa flexbox */
+        flex-col                     /* Dirección vertical de la tarjeta */
+        justify-between              /* Separa el contenido superior del bloque de compra */
+
         /* --- Dimensiones --- */
-        h-full                       /* Altura total */ 
-        min-w-[280px]                /* Ancho mínimo para consistencia */
-        p-6                          /* Padding interno de 1.5rem */
+        h-full                       /* Ocupa el 100% de la altura disponible */
+        w-full                       /* Ocupa todo el ancho de la celda de la grilla */
+        min-w-0                      /* Previene desbordamiento en mobile de 2 columnas */
 
         /* --- Colores --- */
-        
-        ${estaSeleccionado ?  //  Cambio de color si está seleccionado
-          'bg-vete-primary/20 border-vete-primary' :  // Si esta seleccionado
-          'bg-vete-soft/50 border-transparent'} /* Si no esta seleccionado */
-          border-2                     /* Borde para resaltar selección */
-        
+        bg-white                     /* Fondo blanco limpio */
+        ${estaSeleccionado 
+          ? 'border-vete-primary border-2'  /* Borde verde destacado si está seleccionado */
+          : 'border border-gray-200'         /* Borde gris sutil por defecto */
+        }
+
         /* --- Estilo --- */
-        rounded-[2rem]               /* Bordes Figma */
-        cursor-pointer               /* Indica que toda la tarjeta es clickeable */
-      
-        /* --- Animación --- */
-        transition-all               /* Suaviza cambios de color y borde */
-        duration-300                 /* Velocidad de transición */
-        hover:shadow-xl              /* Elevación al pasar el mouse */
-      `}>
+        rounded-md                   /* Bordes ligeramente redondeados */
+        overflow-hidden              /* Contiene imágenes y bordes recortados */
+        shadow-sm                    /* Sombra suave */
+        cursor-pointer               /* Cursor de selección para toda la tarjeta */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        /* --- Animaciones --- */
+        transition-all               /* Transición suave para todos los cambios */
+        duration-200                 /* Duración de 200ms */
+      `}
+    >
       {/* --- BADGE SUPERIOR IZQUIERDO: Subtotal --- */}
       {estaSeleccionado && (
         <div className={`
           /* --- Posición --- */
-          absolute                     /* Flota sobre la tarjeta */
-          top-4 left-4                 /* Ubicación exacta */
-          z-20                         /* Por encima de la imagen */
-          
+          absolute                   /* Flota sobre la tarjeta */
+          top-2                      /* Ubicación superior 0.5rem */
+          left-2                     /* Ubicación izquierda 0.5rem */
+          z-20                       /* Se superpone a la imagen */
+
+          /* --- Posición interna --- */
+          flex                       /* Alineación horizontal del icono y texto */
+          items-center               /* Centrado vertical */
+          gap-1                      /* Espacio de 0.25rem entre icono y texto */
+
           /* --- Dimensiones --- */
-          flex                        /* Alineación icono-texto */
-          items-center                /* Centrado verticalmente */
-          gap-2                       /* Espaciado interno */
-          px-3 py-1.5                 /* Espaciado interno */
-          
+          px-2                       /* Padding horizontal de 0.5rem */
+          py-1                       /* Padding vertical de 0.25rem */
+
           /* --- Colores --- */
-          bg-vete-primary             /* Color Fondo */
-          text-white                   /* Texto blanco */
-          
-          /* --- Estilo --- */
-          rounded-full                 /* Forma de píldora */
-          shadow-lg                    /* Sombra de profundidad *               
-          text-lg                      /* Texto tamaño pequeño */
-          animate-in                   /* Animación de aparición */
-          fade-in                    /* Animación de aparición */
-          zoom-in                    /* Animación de zoom */
+          bg-vete-primary            /* Fondo verde de la marca */
+          text-white                 /* Texto blanco */
+
+          /* --- Texto y Estilo --- */
+          text-xs                    /* Texto pequeño */
+          font-bold                  /* Texto en negrita */
+          rounded-md                 /* Bordes redondeados */
+          shadow-md                  /* Sombra para destacar */
+
+          /* --- Animación --- */
+          animate-in                 /* Animación de entrada */
+          fade-in                    /* Desvanecimiento */
+          zoom-in                    /* Leve efecto de zoom al aparecer */
         `}>
-          <ShoppingCart size={20} />
+          <ShoppingCart size={14} />
           <span>
-            Can:{cantidad} / 
-            ${subtotal.toLocaleString('es-UY')}
+            Can:{cantidad} / ${subtotal.toLocaleString('es-UY')}
           </span>
         </div>
       )}
@@ -146,178 +127,310 @@ export function ProductCardV2({ producto }: Props) {
       {/* --- BOTÓN CANCELAR (Top Right) --- */}
       {estaSeleccionado && (
         <button
-          /*  stopPropagation: Evita que al cancelar se agregue otro producto <!> Sacar a un metodo aparte  */
+          type="button"
           onClick={handleRemoveFromPedido}
           className={`
             /* --- Posición --- */
-            absolute top-4 right-4 z-20
+            absolute                 /* Flota en la esquina superior derecha */
+            top-2                    /* Ubicación superior 0.5rem */
+            right-2                  /* Ubicación derecha 0.5rem */
+            z-20                     /* Capa superior */
+
             /* --- Dimensiones --- */
-            p-2
+            p-1                      /* Padding de 0.25rem */
+
             /* --- Colores --- */
-            bg-red-500 text-white
+            bg-red-500               /* Fondo rojo */
+            text-white               /* Icono blanco */
+
             /* --- Estilo --- */
-            rounded-full shadow-md
+            rounded-full             /* Botón completamente circular */
+            shadow-md                /* Sombra leve */
+
             /* --- Animación --- */
-            hover:bg-red-600 transition-colors
+            hover:bg-red-600         /* Oscurece el rojo al pasar el mouse */
+            transition-colors        /* Transición de color suave */
           `}
         >
-          <X size={16} />
+          <X size={14} />
         </button>
       )}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      {/* Imagen del producto */}
-      <img
-        /* 
-           Lógica de visualización:
-           1. Intenta cargar la URL del backend.
-           2. Si es null o undefined, carga la imagen local de "No disponible".
-        */
-        src={producto.imagen_principal_url?.img_url || '/images/producto_no_disponible.png'}
-        // Alt para accesibilidad
-        alt={producto.imagen_principal_url ? producto.prod_nombre : "Imagen no encontrada"}
-        className={`
-
-          /* --- Dimensiones --- */
-          w-full                   /* Ocupa todo el ancho disponible */
-          h-48                     /* Altura fija de 12rem */
-          
-          /* --- Estilo --- */
-          object-cover             /* Asegura que la imagen no se deforme */
-          rounded-2xl              /* Bordes redondeados para la imagen */
-        `}
-      />
-
-      {/* Sección de Subcategorías (Iconos de Perro, Gato, etc.) */}
+      {/* --- CONTENEDOR SUPERIOR: Imagen e Iconos --- */}
       <div className={`
         /* --- Posición --- */
-        flex                       /* Alineación horizontal de iconos */
-        gap-2                      /* Espacio entre badges */
-        mt-2                       /* Margen superior */
+        relative                     /* Contenedor relativo para los iconos de subcategoría */
+        flex                         /* Contenedor flexible */
+        flex-col                     /* Dirección vertical */
+        items-center                 /* Centra la imagen */
+        justify-center               /* Centra el contenido verticalmente */
+        flex-1                       /* Ocupa el espacio disponible superior */
+
+        /* --- Dimensiones --- */
+        p-3                          /* Padding interno de 0.75rem */
+
+        /* --- Colores --- */
+        bg-white                     /* Fondo blanco */
       `}>
-        {/* Subcategoria Especies que aparesen en la tarjeta */}
-        {producto.subcategoria?.map((sub, idx) => (
-          <div key={idx} title={sub.subc_nombre} className={`
-            /* --- Posición --- */
-            flex items-center justify-center
+        <img
+          src={producto.imagen_principal_url?.img_url || '/images/producto_no_disponible.png'}
+          alt={producto.imagen_principal_url ? producto.prod_nombre : "Imagen no encontrada"}
+          className={`
             /* --- Dimensiones --- */
-            p-1.5                      /* Espaciado interno del icono */
-            /* --- Colores --- */
-            bg-vete-primary/10         /* Fondo verde muy tenue */
-            text-vete-primary          /* Color del icono verde marca */
+            w-full                   /* Ocupa todo el ancho disponible */
+            h-32                     /* Altura de 8rem en móvil */
+            sm:h-40                  /* Altura de 10rem en escritorio */
+
             /* --- Estilo --- */
-            rounded-lg                 /* Bordes suavizados */
-          `}>
-            {/* Renderiza el icono desde el helper según el nombre del backend */}
-            {SUBCATEGORY_ICONS[sub.subc_nombre] || null}
-          </div>
-        ))}
+            object-contain           /* Ajusta la imagen sin deformarla */
+          `}
+        />
+
+        {/* Sección de Subcategorías (Iconos) */}
+        <div className={`
+          /* --- Posición --- */
+          absolute                   /* Flota abajo a la izquierda del bloque superior */
+          bottom-1                   /* Pegado al fondo */
+          left-2                     /* Margen izquierdo */
+          flex                       /* Alineación horizontal de badges */
+          gap-1                      /* Espacio entre badges */
+        `}>
+          {producto.subcategoria?.map((sub, idx) => (
+            <div
+              key={idx}
+              title={sub.subc_nombre}
+              className={`
+                /* --- Posición --- */
+                flex                 /* Alineación */
+                items-center         /* Centrado vertical */
+                justify-center       /* Centrado horizontal */
+
+                /* --- Dimensiones --- */
+                p-1                  /* Padding pequeño */
+
+                /* --- Colores --- */
+                bg-vete-primary/10   /* Verde tenue */
+                text-vete-primary    /* Icono verde principal */
+
+                /* --- Estilo --- */
+                rounded-md           /* Bordes redondeados */
+              `}
+            >
+              {SUBCATEGORY_ICONS[sub.subc_nombre] || null}
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Titulo del producto */}
-      <h4 className={`
-        /* --- Texto --- */
-        text-vete-primary          /* Color verde principal */
-        font-bold                  /* Peso de fuente negrita */
-        text-lg                    /* Tamaño de fuente grande */
-        /* --- Dimensiones --- */
-        mt-1                       /* Margen superior mínimo */
-      `}>
-        {producto.prod_nombre}
-      </h4>
-
-      {/* Descripcion del producto */}
-      <p className={`
-        /* --- Texto --- */
-        text-vete-text-light        /* Color oscuro para legibilidad */
-        text-sm                    /* Tamaño de fuente pequeño */
-        line-clamp-2               /* Corta el texto a 2 líneas máximo */
-      `}>
-        {producto.prod_descripcion}
-      </p>
-
-      {/* Precio y botones de accion */}
+      {/* --- CONTENEDOR INFERIOR GRIS --- */}
       <div className={`
         /* --- Posición --- */
-        flex
-        justify-between
-        items-center
-        mt-auto                      /* Empuja este bloque al fondo del contenedor */
-        pt-4                         /* Agrega un padding superior para separar del texto */
+        flex                         /* Contenedor flexible */
+        flex-col                     /* Dirección vertical */
+        flex-1                       /* Toma el espacio restante */
+        justify-between              /* Distribuye el texto arriba y el botón al fondo */
+        gap-2                        /* Espaciado de 0.5rem */
 
         /* --- Dimensiones --- */
-        w-full                       /* Asegura que ocupe todo el ancho */      
+        p-3                          /* Padding de 0.75rem */
 
+        /* --- Colores --- */
+        bg-[#f2f2f2]                 /* Fondo gris e-commerce */
+        border-t                     /* Línea divisoria superior */
+        border-gray-100              /* Color suave para la divisoria */
       `}>
-
-        {/* Precio del producto con formato Uruguay */}
-        <span className={`
-          /* --- Texto --- */
-          text-vete-primary          /* Color verde principal */
-          font-black                 /* Peso de fuente máximo */
-          text-xl                    /* Tamaño de fuente extra grande */
-        `}>
-          ${producto.prod_precio.toLocaleString('es-UY')}
-        </span>
-
-        {/* Botones de accion */}
-        <div className="flex gap-2 items-center">
-          {/* Boton de whatsapp <!> Aca tengo que agregar algo para que 
-          me mande a un mensaje de watsa pero que me genere un link
-          para que cea este producot algo como desde el selular del clite
-          mande algo como estoy interesado en este producot algo asi al celular
-          de la beterinaria que ya tenog en los datos globales */}
-          <a href={whatsappLink} target='blank_'>
-            <img
-              src="/images/branding/LogoWhtSapp.svg"
-              alt="WhatsApp"
-              className={`
-                /* --- Dimensiones --- */
-                w-8 h-8                  /* Tamaño fijo de 2rem */
-                /* --- Animación --- */
-                hover:scale-110          /* Crece levemente al pasar el mouse */
-                transition-transform     /* Transición suave */
-                cursor-pointer           /* Cursor de mano */
-              `}
-            />
-          </a>
-
-          <div
-            onClick={() => { addToPedido(producto) }}
-            className={`
-            /* --- Posición --- */
-            p-2                        /* Espaciado interno */
-            cursor-pointer             /* Cursor de mano */
-            
-            /* --- Colores --- */
-            bg-vete-primary            /* Fondo verde principal */
-            
-            /* --- Estilo --- */
-            rounded-full               /* Forma circular */
-            
-            /* --- Animación --- */
-            hover:bg-vete-primary/80   /* Oscurece un poco al hover */
-            transition-colors          /* Transición de color */
+        <div>
+          {/* Título en negrita (bold) */}
+          <h4 className={`
+            /* --- Texto --- */
+            text-gray-900            /* Color gris muy oscuro */
+            font-bold                /* Negrita requerida */
+            text-sm                  /* Texto pequeño en móvil */
+            sm:text-base             /* Texto mediano en escritorio */
+            leading-tight            /* Interlineado ajustado */
+            line-clamp-2             /* Máximo 2 líneas antes de cortar */
           `}>
-            {/* <!> Tengo que ver como hago para que aparezca 
-            el numero del producto y poder modificar la cantidad */}
-            <ShoppingCart size={16} className="text-white" />
-          </div>
+            {producto.prod_nombre}
+          </h4>
         </div>
+
+        {/* Precio y Botón de Compra Limpio */}
+        <div className={`
+          /* --- Posición --- */
+          flex                       /* Dirección flexible */
+          flex-col                   /* Alineación vertical */
+          gap-2                      /* Espacio entre precio y botón */
+          mt-auto                    /* Empuja el bloque hacia el fondo */
+          w-full                     /* Ancho completo */
+        `}>
+          <div className={`
+            /* --- Posición --- */
+            flex                     /* Alineación del símbolo y el precio */
+            items-baseline           /* Alinea la moneda con la base del número */
+            gap-1                    /* Espacio de 0.25rem */
+          `}>
+            <span className={`
+              /* --- Texto --- */
+              text-vete-primary      /* Color verde marca */
+              font-bold              /* Negrita */
+              text-xs                /* Moneda chica */
+            `}>
+              U$S
+            </span>
+            <span className={`
+              /* --- Texto --- */
+              text-vete-primary      /* Color verde marca */
+              font-extrabold         /* Negrita reforzada */
+              text-lg                /* Grande en móvil */
+              sm:text-xl             /* Más grande en escritorio */
+            `}>
+              {producto.prod_precio.toLocaleString('es-UY')}
+            </span>
+          </div>
+
+          {/* Botón de Compra Compacto (Sin WhatsApp en la vista principal) */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              addToPedido(producto);
+            }}
+            className={`
+              /* --- Posición --- */
+              w-full                 /* Ocupa todo el ancho */
+              flex                   /* Contenedor flex */
+              items-center           /* Centra el icono y el texto */
+              justify-center         /* Centrado horizontal */
+              gap-1.5                /* Espacio de 0.375rem */
+
+              /* --- Dimensiones --- */
+              py-1.5                 /* Padding vertical compacto */
+              px-3                   /* Padding horizontal */
+
+              /* --- Colores --- */
+              bg-vete-primary        /* Fondo verde de la marca */
+              text-white             /* Texto e icono blancos */
+
+              /* --- Texto y Estilo --- */
+              font-bold              /* Texto en negrita */
+              text-sm                /* Texto estándar */
+              rounded-md             /* Bordes suavizados */
+              shadow-sm              /* Sombra pequeña */
+
+              /* --- Animaciones --- */
+              hover:opacity-90       /* Suave cambio de opacidad */
+              transition-opacity     /* Transición rápida */
+            `}
+          >
+            Comprar
+            <ShoppingCart size={15} className="text-white" />
+          </button>
+        </div>
+
+        {/* --- MÓDULO ACORDEÓN: Botón Desplegable --- */}
+        <button
+          type="button"
+          onClick={toggleExpand}
+          title={isExpanded ? "Ver menos" : "Ver más detalles"}
+          className={`
+            /* --- Posición --- */
+            flex                     /* Centrado del icono flecha */
+            items-center             /* Centrado vertical */
+            justify-center           /* Centrado horizontal */
+
+            /* --- Dimensiones --- */
+            w-full                   /* Ancho completo */
+            pt-1                     /* Espacio superior */
+
+            /* --- Colores --- */
+            text-gray-500             /* Color gris medio por defecto */
+            hover:text-vete-primary  /* Pasa a verde de marca al hover */
+
+            /* --- Estilo --- */
+            focus:outline-none       /* Quita el borde azul por defecto */
+            transition-colors        /* Transición suave de color */
+          `}
+        >
+          {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+        </button>
+
+        {/* --- CONTENIDO EXPANDIDO --- */}
+        {isExpanded && (
+          <div className={`
+            /* --- Posición --- */
+            flex                     /* Contenedor flexible vertical */
+            flex-col                 /* Apilado de elementos */
+            gap-2.5                  /* Espacio entre descripción y WhatsApp */
+
+            /* --- Dimensiones --- */
+            pt-2                     /* Padding superior */
+
+            /* --- Colores --- */
+            border-t                 /* Borde superior separador */
+            border-gray-200/60       /* Borde gris claro semitransparente */
+
+            /* --- Animaciones --- */
+            animate-in               /* Animación de entrada */
+            fade-in                  /* Aparece suavemente */
+            duration-200             /* Duración de 200ms */
+          `}>
+            {/* Descripción Completa */}
+            <p className={`
+              /* --- Texto --- */
+              text-gray-600          /* Texto gris oscuro */
+              text-xs                /* Tamaño pequeño */
+              leading-snug           /* Interlineado cómodo */
+              break-words            /* Evita desbordamientos de palabras largas */
+            `}>
+              {producto.prod_descripcion || "Sin descripción disponible."}
+            </p>
+
+            {/* Botón de WhatsApp dentro del acordeón */}
+            <a
+              href={whatsappLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className={`
+                /* --- Posición --- */
+                flex                 /* Contenedor flex */
+                items-center         /* Centrado vertical */
+                justify-center       /* Centrado horizontal */
+                gap-2                /* Espacio entre logo de WhatsApp y texto */
+
+                /* --- Dimensiones --- */
+                py-1.5               /* Padding vertical */
+                px-3                 /* Padding horizontal */
+
+                /* --- Colores --- */
+                bg-[#25D366]         /* Verde oficial de WhatsApp */
+                hover:bg-[#20bd5a]   /* Verde un poco más oscuro al hover */
+                text-white           /* Texto blanco */
+
+                /* --- Texto y Estilo --- */
+                font-semibold        /* Seminegrita */
+                text-xs              /* Texto compacto */
+                rounded-md           /* Bordes suavizados */
+                shadow-sm            /* Sombra suave */
+                transition-colors    /* Transición suave */
+              `}
+            >
+              <img
+                src="/images/branding/LogoWhtSapp.svg"
+                alt="WhatsApp"
+                className={`
+                  /* --- Dimensiones --- */
+                  w-4 h-4            /* Icono de 1rem x 1rem */
+
+                  /* --- Estilo --- */
+                  brightness-0       /* Convierte el icono a color sólido */
+                  invert             /* Lo vuelve blanco */
+                `}
+              />
+              Consultar por WhatsApp
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );

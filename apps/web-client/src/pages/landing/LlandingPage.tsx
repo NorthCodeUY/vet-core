@@ -24,6 +24,7 @@ import HeaderSession from './sessions/HederSession.tsx'; // Seccion de productos
 import HeroSession from './sessions/HeroSession.tsx';
 import MapsSession from './sessions/MapsSession.tsx'; // Seccion de productos
 import Footer from './sessions/FooterSession.tsx';
+import ServicioSession from './sessions/ServicioSession.tsx';
 
 
 
@@ -80,42 +81,6 @@ const HeroSection = ({ bgColor }: { bgColor: string }) => {
 
 
 
-//<!DMI>  Seccion donde muetro los servicios que proporciona la beterinaria 
-// Divididad por 3 secciones  
-// <> Animales produccion
-// <> Pequeños Animales
-// <> Equinos
-// resivo por parametro el color de fonde de el componente pra intercalarlo con el disenio de terminacion
-const ServicioSeccion = ({ bgColor }: { bgColor: string }) => {
-
-
-  return (
-    <section className={`${bgColor} w-full py-20 px-6 flex flex-col items-center`}>
-      <div className="max-w-[1280px] w-full flex flex-col items-center gap-16">
-
-        {/* Título Principal */}
-        <div className="text-center">
-          <h2 className="text-vete-h2 font-black text-vete-text-light italic uppercase tracking-tighter">
-            Servicios con los que <span className="text-vete-primary">contamos</span>
-          </h2>
-          <p className="mt-4 text-vete-body text-vete-text-light opacity-60">
-            Planes diseñados para asegurar la salud preventiva de sus animales.
-          </p>
-        </div>
-
-        {/* Grid de Tarjetas */}
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center">
-          {serviciosData.map((s, i) => (
-            <ServiceCard
-              key={i}
-              {...s}
-              phone={companyInfo.contact.adminPhone} />
-          ))}
-        </div>
-      </div>``
-    </section>
-  );
-};
 
 
 const ProgramsSection = () => {
@@ -305,7 +270,7 @@ export default function LandingPage() {
             bottomColor="text-vete-dark"
           />
           {/* Seccion de programas de bienestar animal */}
-          <ServicioSeccion bgColor='bg-vete-secondary' />
+          <ServicioSession bgColor='bg-vete-secondary' />
         </section>
         <section id="ProgramsSection">
           {/* Seccion de programas de bienestar animal  <!>Anda per agregr ala clase para que qude igual debe estar eredando algo */}

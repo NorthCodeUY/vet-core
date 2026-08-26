@@ -3,21 +3,19 @@
 
 import React, { useState } from 'react';
 import { 
-  Banknote, 
-  Building2, 
-  CreditCard, 
-  QrCode, 
-  MapPin, 
-  ChevronDown, 
-  Trash2, 
-  Send 
+  Banknote,  // Dinero en mano osea al recibir el pedido
+  Building2, // Banco 
+  CreditCard, // Tarjeta 
+  QrCode, // Codigo QR 
+  MapPin, // Direccion 
+  ChevronDown, // Desplegable 
+  Trash2,  // Basura  
+  Send // Enviar 
 } from 'lucide-react';
 
-// --------------------------------------------------------------------- 
 
-
-import companyInfo from '../../data/companyInfo.json';
-import { usePedidoStore } from '../../context/pedido_context';
+import companyInfo from '../../data/companyInfo.json'; // Datos de la empresa 
+import { usePedidoStore } from '../../context/pedido_context'; // Contexto del pedido 
 
 
 
@@ -102,59 +100,75 @@ interface PedidoFooterCollapsibleProps {
 }
 
 
-
+/* =============================================================================
+   SUB-COMPONENTE A: SELECTOR DE MÉTODO DE PAGO
+   ============================================================================= */
 const PaymentSelector = ({ 
-  method, 
-  setMethod, 
+  selectedMethod, 
+  setSelectedMethod,
   bankInfo 
 }: { 
-  method: string; 
-  setMethod: (m: string) => void; 
-  bankInfo: string;
+  selectedMethod: string; 
+  setSelectedMethod: (m: string) => void;
+  bankInfo: { name: string; accountNumber: string; beneficiary: string };
 }) => {
+  const currentPayment = PAYMENT_METHODS.find(m => m.id === selectedMethod) || PAYMENT_METHODS[0];
+  const CurrentIcon = currentPayment.icon;
+
   return (
-    <div className={`
-      /* --- Posición --- */
-      flex flex-col gap-2
-      /* --- Dimensiones --- */
-      w-full mt-1
-    `}>
-      <div className="relative flex items-center">
-        <Banknote size={14} className="absolute left-3 text-vete-primary pointer-events-none" />
+    <div className="flex flex-col gap-1.5">
+      <label className={`
+        /* --- Texto --- */
+        text-[10px] font-black uppercase tracking-widest ml-1
+        /* --- Colores --- */
+        text-vete-text-muted
+      `}>
+        Método de Pago
+      </label>
+
+      <div className="relative">
+        <CurrentIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-vete-primary pointer-events-none" />
+        
         <select
-          value={method}
-          onChange={(e) => setMethod(e.target.value)}
+          value={selectedMethod}
+          onChange={(e) => setSelectedMethod(e.target.value)}
           className={`
             /* --- Dimensiones --- */
-            w-full py-2 pl-9 pr-8
+            w-full py-2.5 pl-10 pr-8
             /* --- Colores --- */
             bg-vete-dark text-vete-text-light border border-vete-light-border/40
             /* --- Texto --- */
             text-xs font-bold uppercase
             /* --- Estilo --- */
             rounded-xl outline-none appearance-none cursor-pointer
-            focus:border-vete-primary
+            focus:border-vete-primary transition-colors
           `}
         >
-          <option value="efectivo">💵 Efectivo (Pago al recibir)</option>
-          <option value="transferencia">🏦 Transferencia Bancaria</option>
+          {PAYMENT_METHODS.map((pm) => (  
+            <option key={pm.id} value={pm.id} className="bg-slate-900 text-white">
+              {pm.label} — {pm.description}
+            </option>
+          ))}
         </select>
-        <ChevronDown size={14} className="absolute right-3 text-vete-text-muted pointer-events-none" />
+        
+        <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-vete-text-muted pointer-events-none" />
       </div>
 
-      {/* Datos Bancarios: Solo si elige Transferencia */}
-      {method === 'transferencia' && (
+      {/* Datos Bancarios condicionales */}
+      {selectedMethod === 'transferencia' && (
         <div className={`
           /* --- Posición --- */
-          p-2.5
+          p-3
           /* --- Colores --- */
           bg-vete-primary/10 border border-dashed border-vete-primary/40
           /* --- Estilo --- */
           rounded-xl animate-in fade-in duration-200
         `}>
-          <p className="text-[11px] text-vete-text-light leading-tight">
-            <span className="font-bold text-vete-primary">Datos para el pago:</span><br />
-            {bankInfo}
+          <p className="text-vete-text-light text-xs font-medium leading-tight">
+            <span className="font-bold text-vete-primary">Datos Bancarios:</span><br />
+            Banco: {bankInfo.name}<br />
+            Cuenta: {bankInfo.accountNumber}<br />
+            Titular: {bankInfo.beneficiary}
           </p>
         </div>
       )}
@@ -162,7 +176,143 @@ const PaymentSelector = ({
   );
 };
 
+// <!> Borrar !!! 
+// const PaymentSelector = ({ 
+//   method, 
+//   setMethod, 
+//   bankInfo 
+// }: { 
+//   method: string; 
+//   setMethod: (m: string) => void; 
+//   bankInfo: string;
+// }) => {
+//   return (
+//     <div className={`
+//       /* --- Posición --- */
+//       flex flex-col gap-2
+//       /* --- Dimensiones --- */
+//       w-full mt-1
+//     `}>
+//       <div className="relative flex items-center">
+//         <Banknote size={14} className="absolute left-3 text-vete-primary pointer-events-none" />
+//         <select
+//           value={method}
+//           onChange={(e) => setMethod(e.target.value)}
+//           className={`
+//             /* --- Dimensiones --- */
+//             w-full py-2 pl-9 pr-8
+//             /* --- Colores --- */
+//             bg-vete-dark text-vete-text-light border border-vete-light-border/40
+//             /* --- Texto --- */
+//             text-xs font-bold uppercase
+//             /* --- Estilo --- */
+//             rounded-xl outline-none appearance-none cursor-pointer
+//             focus:border-vete-primary
+//           `}
+//         >
+//           <option value="efectivo">💵 Efectivo (Pago al recibir)</option>
+//           <option value="transferencia">🏦 Transferencia Bancaria</option>
+//         </select>
+//         <ChevronDown size={14} className="absolute right-3 text-vete-text-muted pointer-events-none" />
+//       </div>
 
+//       {/* Datos Bancarios: Solo si elige Transferencia */}
+//       {method === 'transferencia' && (
+//         <div className={`
+//           /* --- Posición --- */
+//           p-2.5
+//           /* --- Colores --- */
+//           bg-vete-primary/10 border border-dashed border-vete-primary/40
+//           /* --- Estilo --- */
+//           rounded-xl animate-in fade-in duration-200
+//         `}>
+//           <p className="text-[11px] text-vete-text-light leading-tight">
+//             <span className="font-bold text-vete-primary">Datos para el pago:</span><br />
+//             {bankInfo}
+//           </p>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+
+/* =============================================================================
+   SUB-COMPONENTE B: SELECCIÓN Y ENTRADA DE DIRECCIÓN / RETIRO
+   ============================================================================= */
+const DeliveryAddressSection = ({
+  address,
+  setAddress,
+  mapsUrl
+}: {
+  address: string;
+  setAddress: (addr: string) => void;
+  mapsUrl: string;
+}) => {
+  const isRetiro = address === "Retiro en Local";
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex justify-between items-center px-1">
+        <label className="text-[10px] font-black uppercase text-vete-text-muted tracking-widest">
+          Dirección de Entrega
+        </label>
+        <a 
+          href={mapsUrl}
+          target="_blank" 
+          rel="noreferrer"
+          className="text-[9px] font-bold uppercase text-vete-primary hover:underline"
+        >
+          Ver Local en Maps
+        </a>
+      </div>
+
+      {/* Botón rápido: Retiro en Local */}
+      <button
+        type="button"
+        onClick={() => setAddress(isRetiro ? "" : "Retiro en Local")}
+        className={`
+          /* --- Posición --- */
+          flex items-center justify-center gap-1.5
+          /* --- Dimensiones --- */
+          w-full py-2 px-3
+          /* --- Estilo --- */
+          rounded-xl border transition-all text-xs font-bold
+          /* --- Colores --- */
+          ${isRetiro 
+            ? 'bg-vete-primary text-white border-vete-primary shadow-sm' 
+            : 'bg-vete-dark text-vete-text-muted border-vete-light-border/40 hover:text-vete-text-light'}
+        `}
+      >
+        <MapPin size={13} />
+        <span>{isRetiro ? "✓ Retiro en Veterinaria (Salto)" : "Retirar en el Local"}</span>
+      </button>
+
+      {/* Input Manual de Dirección */}
+      {!isRetiro && (
+        <div className="relative animate-in fade-in duration-200">
+          <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-vete-text-muted pointer-events-none" />
+          <input 
+            type="text"
+            placeholder="Calle, número de puerta o esquina..."
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            className={`
+              /* --- Dimensiones --- */
+              w-full py-2.5 pl-10 pr-4
+              /* --- Colores --- */
+              bg-vete-dark text-vete-text-light border border-vete-light-border/40
+              /* --- Texto --- */
+              text-xs font-medium placeholder:text-vete-text-muted/50
+              /* --- Estilo --- */
+              rounded-xl outline-none focus:border-vete-primary transition-all
+            `}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
 
 /**
  * Pie de página interactivo y colapsable del Drawer de Pedidos (`PedidoFooterCollapsible`).
@@ -263,324 +413,134 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
 
 
 
-
-
-
-      {/* 1. BARRA COLAPSABLE / RESUMEN RÁPIDO 
-      <!> Esto tiene que desapareser cuando se esteinde para que no sea 
-      reiterativo que la trancicion no sea grosera
-        */}
-      <div 
-        onClick={() => setIsExpanded(!isExpanded)}
-        className={`
-          /* --- Posición --- */
-          flex                         /* Contenedor flexible */
-          items-center                 /* Centrado vertical */
-          justify-between              /* Separa resumen de flecha */
-          cursor-pointer               /* Cursor interactivo */
-          select-none                  /* Evita selección accidental */
-
-          /* --- Dimensiones --- */
-          p-3                          /* Espacio de toque */
-
-          /* --- Colores --- */
-          bg-vete-dark                 /* Fondo oscuro suave */
-          border                       /* Borde sutil */
-          border-vete-light-border/40  /* Borde translúcido */
-
-          /* --- Estilo --- */
-          rounded-xl                   /* Bordes redondeados */
-
-          /* --- Animación --- */
-          hover:bg-vete-dark/80        /* Feedback hover */
-          transition-colors            /* Transición suave */
-        `}
-      >
-        <div className={`
-          /* --- Posición --- */
-          flex                         /* Elementos en línea */
-          items-center                 /* Centrado */
-          gap-3                        /* Separación entre método y dirección */
-          overflow-hidden              /* Corta texto que desborde */
-        `}>
-
-
-
-
-
-
- 
-
-
-
-          {/* <!> Me gustaria que este item colapsable en el menu me gusaria que desapareciese cuando esta extraido */}
-
-          {/* <!> Aca tien eque ir un texto que diga forma de pago  para que sea esplisito */}
-          {/* <!> Preview Método Forma de pago */}
-          <div className="
+      {/* 1. BARRA INTERRUPTORA (Afuera del colapsable) */}
+      {!isExpanded ? (
+        <div 
+          onClick={() => setIsExpanded(true)}
+          className={`
             /* --- Posición --- */
-            flex 
-            items-center 
-            gap-1.5 
-            text-vete-primary 
-            shrink-0
-          ">
-            <CurrentIcon size={16} /> 
-            <span className="text-[11px] font-bold uppercase tracking-wider">
-              {currentPayment.label} {}
-            </span>
-          </div>
-
-          <div className="h-3 w-px bg-vete-light-border shrink-0" />
-
-          {/* Preview Dirección */}
-          <div className="flex items-center gap-1.5 text-vete-text-muted truncate">
-            <MapPin size={14} className="shrink-0" />
-            <span className="text-[11px] font-medium truncate max-w-[140px]">
-              {address.trim() || 'Dirección de entrega...'}
-            </span>
-          </div>
-        </div>
-
-        {/* Flecha Toggle con rotación */}
-        <button 
-          type="button"
-          className="p-1 text-vete-text-muted hover:text-vete-primary transition-colors"
-          aria-label="Expandir configuración de pedido"
+            flex items-center justify-between cursor-pointer select-none
+            /* --- Dimensiones --- */
+            p-3
+            /* --- Colores --- */
+            bg-vete-dark border border-vete-light-border/40 hover:bg-vete-dark/80
+            /* --- Estilo --- */
+            rounded-xl transition-all
+          `}
         >
-          <ChevronDown 
-            size={18} 
-            className={`
-              /* --- Animación --- */
-              transition-transform       /* Rotación suave */
-              duration-300               /* Velocidad de giro */
-              ${isExpanded ? 'rotate-180 text-vete-primary' : ''}
-            `} 
-          />
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="flex items-center gap-1.5 text-vete-primary shrink-0">
+              <CurrentIcon size={16} /> 
+              <span className="text-[10px] font-black uppercase tracking-wider">
+                Pago: <span className="font-bold">{currentPayment.label}</span>
+              </span>
+            </div>
+
+            <div className="h-3 w-px bg-vete-light-border shrink-0" />
+
+            <div className="flex items-center gap-1.5 text-vete-text-muted truncate">
+              <MapPin size={13} className="shrink-0" />
+              <span className="text-[11px] font-medium truncate max-w-[130px]">
+                {address.trim() || 'Dirección de entrega...'}
+              </span>
+            </div>
+          </div>
+
+          <button type="button" className="p-1 text-vete-text-muted hover:text-vete-primary transition-colors">
+            <ChevronDown size={16} />
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setIsExpanded(false)}
+          className="flex items-center justify-between w-full py-1.5 px-3 bg-vete-dark/40 text-vete-text-muted hover:text-vete-primary rounded-lg border border-vete-light-border/20 text-[10px] font-bold uppercase tracking-wider transition-colors"
+        >
+          <span>Ocultar Configuración</span>
+          <ChevronDown size={14} className="rotate-180 transition-transform" />
         </button>
-      </div>
+      )}
 
-
-      {/* 2. CONTENIDO DESPLEGABLE (Animado por clases) */}
+      {/* 2. CONTENEDOR COLAPSABLE CON SUB-COMPONENTES */}
       <div className={`
         /* --- Posición --- */
-        flex                         /* Contenedor flexible */
-        flex-col                     /* Organización en columna */
-        gap-4                        /* Separación de secciones */
-        overflow-hidden              /* Evita desbordes durante animación */
-
+        flex flex-col gap-4 overflow-hidden
         /* --- Animación --- */
-        transition-all               /* Anima altura y opacidad */
-        duration-300                 /* Tiempo de transición */
-        ${isExpanded // Si el estado esta expandido entonces se expande, si no se contrae
-          ? 'max-h-[400px] opacity-100 pt-1' // Se expande
-          : 'max-h-0 opacity-0 pointer-events-none' // Se contrae
-        }
+        transition-all duration-300
+        ${isExpanded ? 'max-h-[500px] opacity-100 pt-1' : 'max-h-0 opacity-0 pointer-events-none'}
       `}>
-        
-        {/* Selector de Método de Pago <!> Desplegado creo  */}
-        <div className={`
-          lex 
-          flex-col 
-          gap-1.5
-          `}>
-          <label className={`
-            /* --- Tamaño --- */
-            text-[10px]  /* Tamaño de la fuente */
+        {/* Sub-componente Pago */}
+        <PaymentSelector 
+          selectedMethod={selectedMethod}
+          setSelectedMethod={setSelectedMethod}
+          bankInfo={companyInfo.bank}
+        />
 
-            /* --- Estilo --- */<!> Esto no tendria que ir a variable si es color de te
-            font-black /* Fuente negrita*/
-            uppercase /* Tipo de letra <!> Esto no tendira que ir a variable si es tipo de letra  */ 
-
-            /* --- Colores --- */
-            text-vete-text-muted /* Color de texto */ 
-
-            /* --- Posición --- */
-            tracking-widest /* Espaciado entre letras*/ 
-            ml-1 /* Margen izquierdo */
-            `}>
-            Método de Pago
-          </label>
-
-
-          <div className="relative">
-            
-            {/* Item de forma de pago <!> Esto hay que mejrorarlo  */}
-            <CurrentIcon size={16} className={`
-              /* --- Posición --- */
-              absolute 
-              left-3.5 
-              top-1/2 
-              /* --- Colores --- */
-              text-vete-primary 
-              /* --- Estilo --- */
-              pointer-events-none`}
-            />
-
-              
-
-              {/* El desplegable 
-              
-              
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-              <!> El formato del desplegable anterior era mejor traer para aca PaymentSelector
-              El menu complet esta bien por lo ite son mejor en ese componente ademas me gustaria sacar este menu a un subcomponente
-              NO se el tema de que el elemento seleccionado tiene que mostrarlo en la barra jeneral pero supongo que si lo selecciono lo gurado
-              en algn lado para usarlo tanto en el mensje como en la barra chica */}
-            <select
-              value={selectedMethod} // Determina que selecciono el menu desplegable
-              onChange={(e) => setSelectedMethod(e.target.value)} // Detecta cuando cambia la seleccion y actualiza el estado
-              className={`
-                /* --- Dimensiones --- */
-                w-full                      /* Ocupa todo el ancho disponible */
-                py-2.5                      /* Relleno vertical */
-                pl-10                     /* Relleno a la izquierda */
-                pr-8                      /* Relleno a la derecha */
-                /* --- Colores --- */
-                bg-vete-dark                /* Fondo oscuro de la marca */
-                text-vete-text-light        /* Texto blanco */
-                border                      /* Borde */
-                border-vete-light-border/40 /* Borde translúcido */
-                /* --- Texto --- */
-                text-xs font-bold           /* Texto pequeño en negrita */
-                uppercase                   /* Texto en mayúsculas */
-                /* --- Estilo --- */
-                rounded-xl                  /* Bordes redondeados */
-                outline-none                /* Sin borde al hacer foco */
-                appearance-none             /* Sin estilo de navegador */
-                cursor-pointer              /* Cursor de mano */
-                focus:border-vete-primary   /* Borde verde al hacer foco */
-                transition-colors           /* Transición suave */
-              `}
-            >
-              
-              {/* <!> Comentame esto porque no tengo ni idea que es  */}
-              {PAYMENT_METHODS.map((pm) => (  
-                <option key={pm.id} value={pm.id} className="bg-slate-900 text-white">
-                  {pm.label} — {pm.description}
-                </option>
-              ))}
-            </select>
-              
-            {/* Icono que permite abrir y cerrar  */}
-            <ChevronDown size={14} className={`
-              /* --- Posición --- */
-              absolute 
-              right-3.5 
-              top-1/2 
-              /* --- Estilo --- */
-              -translate-y-1/2 
-              text-vete-text-muted 
-              pointer-events-none
-              `} />
-          </div>
-        </div>
-
-        {/* Detalle Banco si es Transferencia */}
-        {selectedMethod === 'transferencia' && (
-          <div className={`
-            /* --- Posición --- */
-            p-3                          /* Espaciado interno */
-            /* --- Colores --- */
-            bg-vete-primary/10           /* Fondo de resalte */
-            border                       /* Borde con trazos */
-            border-dashed                /* Borde punteado */
-            border-vete-primary/40       /* Color verde marca */
-            /* --- Estilo --- */
-            rounded-xl                   /* Bordes suaves */
-            animate-in fade-in           /* Entrada visual */
-          `}>
-            <p className={`
-              /* --- Colores --- */
-              text-vete-text-light 
-              /* --- Texto --- */
-              text-xs font-medium 
-              /* --- Estilo --- */
-              leading-tight
-            `}>
-              <span className="font-bold text-vete-primary">Datos Bancarios:</span><br />
-              Banco: {companyInfo.bank.name}<br />
-              Cuenta: {companyInfo.bank.accountNumber}<br />
-              Titular: {companyInfo.bank.beneficiary}
-            </p>
-          </div>
-        )}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-        {/* <!> Esto tambien tendira que ir a un subcomponente dentro de este paquete */}
-        {/* Entrada de Direccción En este componente tendria que ser 
-        una divicion dificion que marque un boton que seimpre esta seleccionado que diga retiro en local
-        si lo aprtan que esa se la direcion que vamos a usar si no si que escondo o achique el boton no se y 
-        que me de el campo para agregar la direccion me gustaria un campo de texto que se integrara con guugle maps 
-        no se si buscas uno o que */}
-        <div className="flex flex-col gap-1.5">
-          <div className="flex justify-between items-center px-1">
-            <label className="text-[10px] font-black uppercase text-vete-text-muted tracking-widest">
-              Dirección de Entrega
-            </label>
-            <a 
-              href="https://www.google.com/maps/search/?api=1&query=Salto+Uruguay" // <!> Esta direccion no se donde la saca Caps lo mejor es que tome la direccion por defecto de la beterinaria o no se 
-              target="_blank" 
-              rel="noreferrer"
-              className="text-[9px] font-bold uppercase text-vete-primary hover:underline"
-            >
-              Buscar en Maps
-            </a>
-          </div>
-          <div className="relative">
-            <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-vete-text-muted" />
-            <input 
-              type="text"
-              placeholder="Calle, número de puerta o esquina..."
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              className={`
-                /* --- Dimensiones --- */
-                w-full py-2.5 pl-10 pr-4
-                /* --- Colores --- */
-                bg-vete-dark text-vete-text-light border border-vete-light-border/40
-                /* --- Texto --- */
-                text-xs font-medium placeholder:text-vete-text-muted/50
-                /* --- Estilo --- */
-                rounded-xl outline-none
-                focus:border-vete-primary transition-all
-              `}
-            />
-          </div>
-        </div>
+        {/* Sub-componente Dirección */}
+        <DeliveryAddressSection 
+          address={address}
+          setAddress={setAddress}
+          mapsUrl={companyInfo.location.googleMapsUrl}
+        />
       </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{/* Aca va el menu contraieble   */}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       {/* 3. TOTAL PERMANENTE Y BOTONERA */}
       <div className="flex flex-col gap-3 pt-2 border-t border-vete-light-border/30">

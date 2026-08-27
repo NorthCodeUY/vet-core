@@ -141,6 +141,9 @@ const PaymentSelector: React.FC<PaymentSelectorProps> = ({
         Método de Pago
       </label>
 
+
+
+
       <div className="relative">
         {/* Icono del metodo de pago */}
         <CurrentIcon size={16} className={`
@@ -206,6 +209,10 @@ const PaymentSelector: React.FC<PaymentSelectorProps> = ({
           pointer-events-none
         `}/>
       </div>
+
+
+
+
 
       {/* 
         Datos Bancarios condicionales 

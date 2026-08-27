@@ -30,6 +30,25 @@ interface CategoryGroupProps {
  * @returns 
  */
 export const CategoryGroupCard = ({ title, catId, initialData }: CategoryGroupProps) => {
+
+  // Funcion para llevar derecho al producto seleccionado
+
+  // 1. Extraemos el ID directamente del link cuando entra el usuario
+  const hash = window.location.hash; // Ej: "#prod-03"
+
+  // 2. Si la URL trae un hash de producto, esperas a que cargue la lista
+  if (hash && hash.startsWith('#prod-')) {
+    const targetId = hash.replace('#', ''); // Guardas "prod-03" en una variable
+
+    // 3. Le das unos segundos a la app para que cargue los productos de la API
+    setTimeout(() => {
+      const el = document.getElementById(targetId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 1500); // Espera 1.5 segundos antes de hacer el salto
+  }
+
   /* --- Fachada de Lógica (Hook) --- */
   const {
     products,

@@ -35,10 +35,18 @@ export function ProductCardV2({ producto }: Props) {
   const subtotal = producto.prod_precio * cantidad;
   const estaSeleccionado = cantidad > 0;
 
-  /* --- Generación de Link de WhatsApp --- */
-  const whatsappLink = `https://wa.me/${companyInfo.contact.adminPhone}?text=${encodeURIComponent(
-    `¡Hola! Estoy interesado en el producto: *${producto.prod_nombre}*`
-  )}`;
+  // Creamos el link del producto: .origin guarda el link de la pagina, .pathname guarda el subdominio, # el id del producto
+  
+    const productUrl = typeof window !== 'undefined' 
+      ? `${window.location.origin}${window.location.pathname}#prod-${producto.prod_id}`
+      : '';
+  
+    /* ${companyInfo.contact.adminPhone} cambiar por un numero para probar si asi lo desea */
+  
+    /* --- Generación de Link de WhatsApp --- */
+    const whatsappLink = `https://wa.me/${companyInfo.contact.adminPhone}?text=${encodeURIComponent(
+      `¡Hola! Estoy interesado en el producto: *${producto.prod_nombre}*, *$${producto.prod_precio}*\n\n Ver Producto: \n\n${productUrl}`
+    )}`;
 
   /* --- Manejadores de Eventos --- */
   const handleRemoveFromPedido = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -53,6 +61,7 @@ export function ProductCardV2({ producto }: Props) {
 
   return (
     <div
+      id={`prod-${producto.prod_id}`}  /* identificador de cada producto */
       onClick={() => addToPedido(producto)}
       className={`
         /* --- Posición --- */

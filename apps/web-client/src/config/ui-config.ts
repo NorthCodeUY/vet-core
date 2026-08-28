@@ -8,7 +8,7 @@ const CARD_VERSIONS = {
 
 type CardVersion = keyof typeof CARD_VERSIONS;
 
-const version = (import.meta.env.VITE_CARD_VERSION || 'v1') as CardVersion;
+const version = (import.meta.env.VITE_CARD_VERSION || 'v2') as CardVersion;
 
 export const UI_CONFIG = {
   productCardVersion: version,

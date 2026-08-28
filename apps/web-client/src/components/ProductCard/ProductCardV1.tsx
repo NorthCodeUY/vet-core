@@ -1,11 +1,11 @@
 /* --- apps/web-client/src/components/ProductCard/ProductCardV1.tsx --- */
 
 import { ShoppingCart, X, Plus, Minus } from 'lucide-react';
-import { SUBCATEGORY_ICONS } from '../utils/categoryHelpers';
+import { SUBCATEGORY_ICONS } from '../../utils/categoryHelpers';
 
-import { usePedidoStore } from '../context/pedido_context';
-import type { ApiProduct } from '../types/product_types';
-import companyInfo from '../data/companyInfo.json';
+import { usePedidoStore } from '../../context/pedido_context';
+import type { ApiProduct, ApiImageProducto } from '../../types/product_types';
+import companyInfo from '../../data/companyInfo.json';
 
 interface Props {
   producto: ApiProduct

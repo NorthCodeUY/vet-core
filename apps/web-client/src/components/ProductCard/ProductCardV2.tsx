@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import { ShoppingCart, X, ChevronDown, ChevronUp } from 'lucide-react';
-import { SUBCATEGORY_ICONS } from '../utils/categoryHelpers';
-import { usePedidoStore } from '../context/pedido_context';
-import type { ApiProduct } from '../types/product_types';
-import companyInfo from '../data/companyInfo.json';
+import { SUBCATEGORY_ICONS } from '../../utils/categoryHelpers';
+import { usePedidoStore } from '../../context/pedido_context';
+import type { ApiProduct } from '../../types/product_types';
+import companyInfo from '../../data/companyInfo.json';
 
 interface Props {
   producto: ApiProduct;

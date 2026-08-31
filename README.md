@@ -49,75 +49,6 @@ Este repositorio contiene el núcleo del sistema, diseñado como una solución *
 
 El modelo de datos está estructurado para manejar el historial de precios en el carrito y la gestión de productos.
 
-<!> Esto tengo que repararlo segun el nuevo modelo 
-
-```mermaid
-erDiagram
-    %% Relaciones principales
-    CLIENTE ||--o{ PEDIDO : "realiza"
-    PEDIDO ||--|{ PEDIDO_DETALLE : "contiene"
-    PEDIDO_DETALLE ||--|| PRODUCTO : "tiene"
-    PRODUCTO ||--|| PRODUCTO_SUBCATEGORIA : "tiene"
-    PRODUCTO_SUBCATEGORIA ||--|| SUBCATEGORIA : "tiene"
-    PAGO ||--|| PEDIDO : "tiene"
-    
-
-    CLIENTE {
-        int cli_id PK " Generacion automatica a trav"
-        string cli_nombre "Nombre del cliente"
-        string cli_whatsapp "Numero de whatssapp del cliente"
-        string cli_token "Token de acceso"
-        string cli_direccion "Direccion del cliente"
-    }
-
-    PRODUCTO {
-        int prod_id PK "Generacion automatica a trav"
-        string prod_nombre "Nombre del producto"
-        string prod_descripcion "Descripcion del producto"
-        float prod_precio "Precio actual del producto"
-        int prod_stock "Stock del producto"
-        string prod_categoria_nombre "Ej: `Medicamentos`, `Alimento`, `Accesorios`, `Medicamentos Animales Pequenios`"
-    }
-
-    PRODUCTO_SUBCATEGORIA {
-        int producto_id PK, FK "Cliente que realiza el pedido"
-        int subc_id PK, FK "Subcategoria del producto"
-    }
-
-    SUBCATEGORIA {
-        int subc_id PK "Generacion Automaticamtente"
-        string subc_nombre UK "Ej: Perro, Gato, Caballo, Oveja"
-    }
-
-    PEDIDO {
-        int ped_id PK "Generacion Automaticamtente"
-        int ped_cli_id FK "ID del cliente que realiza el pedido"
-        datetime ped_fecha_emision "Fecha de emision del pedido"
-        string ped_codigo_qr "Token de entrega, La idea es que genere un codigo para poder acceder deasde afuera atraves de el watsap"
-        datetime ped_fecha_entrega "Fecha de entrega del pedido"
-        string ped_estado "Ej: Generado, Armado, Entregado"
-        string ped_direccion_entrega "Direccion de entrega del pedido"
-        float ped_total "Total del pedido"
-        boolean ped_pagado "Indica si el pedido fue pagado"
-    }
-
-    PEDIDO_DETALLE {
-        int pedido_id PK, FK "ID del pedido"
-        int producto_id PK, FK "ID del producto"
-        int pd_cantidad "Cantidad del producto"
-        float pd_precio_venta "Precio capturado al momento"
-    }
-
-    PAGO {
-        int pag_id PK "Generacion Automaticamtente"
-        int ped_id FK "ID del pedido"
-        datetime pag_fecha "Fecha de pago"
-        string pag_detalle "Ej: Transferencia, Efectivo"
-        float pag_monto "Monto del pago"
-    }
-```
-
-
 ## 📊 [Documentacion Frontend Web Clientes](./apps/web-client/README.md)
 
 ## 📊 [Documentacion Backend](./api-backend/README.md)
@@ -129,7 +60,6 @@ erDiagram
 ## 📈 Filosofía de Desarrollo
 
 En **NorthCode**, creemos en la **Transparencia Total**. Este proyecto se desarrolla bajo una arquitectura de código abierto y documentado, permitiendo la auditoría técnica y garantizando que el cliente sea dueño de su activo tecnológico.
-
 
 
 
@@ -149,4 +79,13 @@ Desarrollado con ❤️ en Artigas/Salto, Uruguay por **NorthCode**.
 >
 > **Topics (Etiquetas):** Agregá etiquetas como `veterinary-software`, `react`, `fastapi`, `flutter`, `snig-uruguay`, `northcode`. Esto ayuda a que el repo se posicione mejor.
 
+# 🧠 Explicación Técnica del Auditor
+
+**Aislamiento de Datos:** Cada servicio de API (api_valeria, api_carlos) apunta a una base de datos distinta dentro del mismo motor PostgreSQL. Esto garantiza que un error en una instancia no comprometa los datos de otra y facilita los backups independientes.
+
+**Inyección por Volúmenes:** En lugar de crear una imagen de Docker por cada cliente, usamos la misma imagen y le "enchufamos" el config.json específico mediante volúmenes de Docker. Esto reduce drásticamente el uso de disco y simplifica el mantenimiento.
+
+**Configuración en Runtime (React):** El desarrollador de React debe entender que el archivo client_info.json en la carpeta public es su única fuente de verdad para el branding. Al cargar la app, un fetch inicial a este archivo local configurará el estado global (Context API o Redux) con los colores y textos del cliente actual.
+
+**Escalabilidad:** Para agregar un nuevo carrito, solo debes crear una nueva base de datos en Postgres y agregar un bloque nuevo al docker-compose.yml con su respectivo JSON de configuración. No se requiere tocar una sola línea de código Python o TypeScript.
 

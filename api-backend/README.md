@@ -1,5 +1,7 @@
 # ⚙️ VetCore API Backend (FastAPI)
 
+<!-- api-backend/README.md -->
+
 > **Núcleo de Servicios REST, Gestión de Inventario, Autenticación y Persistencia de VetCore**
 
 El módulo **API Backend** de VetCore proporciona una arquitectura sólida, escalable y desacoplada basada en **FastAPI**, **SQLAlchemy ORM** y **PostgreSQL**. Está diseñado siguiendo un patrón de arquitectura en capas (Routers -> Schemas -> Services -> Repositories -> Models) que garantiza mantenibilidad, validación estricta de datos y separación clara de responsabilidades.

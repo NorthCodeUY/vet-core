@@ -1,3 +1,4 @@
+<!-- apps/web-client/src/pages/pedido/README.md -->
 # 🛒 Módulo de Pedidos y Carrito de Compras (`pages/pedido`)
 
 Documentación detallada del módulo de checkout y carrito de compras lateral (Drawer) de **Veterinaria Beltramelli**.
@@ -163,3 +164,11 @@ Ubicado en `src/context/pedido_context.tsx`, proporciona la fachada de estado re
   * `bg-vete-secondary` / `bg-vete-dark` / `bg-vete-card-white`
   * `text-vete-primary` / `text-vete-dark-green` / `text-vete-text-muted`
 * **Transiciones**: Animaciones fluidas de deslizamiento para el Drawer (`translate-x-0` / `translate-x-full`) y de altura para el acordeón (`max-h-[500px] opacity-100`).
+
+---
+
+## 🔗 Navegación de Documentación
+
+* 📘 [Volver a la Documentación Principal de Web Client](../../../README.md)
+* 🏠 [Ver Documentación del Módulo Landing Page](../landing/README.md)
+

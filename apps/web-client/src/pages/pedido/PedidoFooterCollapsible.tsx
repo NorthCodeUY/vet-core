@@ -33,6 +33,7 @@ import { usePedidoStore } from '../../context/pedido_context'; // Contexto del p
  *   icon: React.ComponentType<{ size?: number, className?: string }>,
  *   getMessage: () => string
  * }>}
+ * 
  * <!> Yo para mi tengo que camiar esto y mejorar el icono en el cado de los item desplegables 
  */
 const PAYMENT_METHODS = [

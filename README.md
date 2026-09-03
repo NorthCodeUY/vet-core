@@ -44,6 +44,32 @@ Este repositorio contiene el núcleo del sistema, diseñado como una solución *
 ``` 
 ## <!> Tengoque terminar de docuemtar la parte de como levantar los entorno 
 
+
+
+<!--
+<!>
+Agregar esto para la parte de serializacion de proyecto
+Esto esta pensado para que cafgue la configuracion de cada cliete y poder 
+montar un solo cliet esto esta 
+Esto esta en .gitignore
+Lo que deberia capsa conservar es la estructuar de carpetas clietes y todo lo de _template para crear nuevos clientes 
+y dejoar el resto para que no ensucie el repo 
+
+/home/ary/Documentos/proyect/app/vet-core/
+├── api-backend/
+├── apps/
+│   └── web-client/
+├── clients/                  # 👈 AQUÍ (en la raíz)
+│   ├── _template/
+│   │   ├── config.json
+│   │   └── assets/
+│   └── valeria/
+│       ├── config.json
+│       └── assets/
+├── docker-compose.yml
+└── .gitignore
+ -->
+
 ## Modelo Entidad relacion 
 
 

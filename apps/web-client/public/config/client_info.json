@@ -1,0 +1,177 @@
+/* */
+{
+  "id": "template_client",
+  "business_name": "Veterinaria Demo",
+  "slogan": {
+    "prefix": "Cuidado profesional para",
+    "highlight": "Tus Mascotas",
+    "suffix": "las 24 horas"
+  },
+  
+  
+  
+  // <!> Esto tengo que corroborarlo con la paleta acutal y 
+  // mis colores yo los uso en el  Otra cosa quiero saber como 
+  // ago para poner comentario que no me de error  
+
+  "theme": {  
+    "primary": "#059669",
+    "primary_hover": "#047857",
+    "secondary": "#10B981",
+    "tertiary": "#1FAF38",
+    "dark": "#064E3B",
+    "surface": "#FFFFFF",
+    "soft": "#D1FAE5",
+    "overlay": "#0F172A",
+    "text_base": "#0F172A",
+    "text_muted": "#9CA3AF",
+    "border_subtle": "#F3F4F6",
+    "error": "#EF4444"
+  },
+  //<!> Esto no enteido como ago para apuntar
+  //  a el cliete que nesesito desde aca o de donde supongo qu eso es la ruta del log o
+  "branding": {
+    "logo_url": "/tenant/logo.svg",
+    "favicon_url": "/tenant/favicon.ico"
+  },
+  "ui_variants": { // Configuracion de versionces de los diverentes componentes de la web 
+    "header": "v1",
+    "footer": "v1",
+    "product_card": "v1"
+  },
+  "institutional": { // <!> Tengo que traer los realies Creo que 
+    "mission": "Brindar atención médica veterinaria con altos estándares de calidad.",
+    "vision": "Ser la clínica veterinaria de referencia en la comunidad.",
+    "about_us": "Equipo interdisciplinario dedicado a la salud y bienestar animal."
+  },
+  "contact": {
+    "admin_phone": "099123456",
+    "whatsapp_country_code": "598",
+    "email": "contacto@veterinariademo.com",
+    "address": "Av. Principal 1234",
+    "google_maps_url": "https://maps.google.com"
+  },
+  "bank_info": {
+    "bank_name": "BROU",
+    "account_number": "123-456789",
+    "beneficiary": "Veterinaria Demo S.R.L."
+  },
+  "custom_messages": {
+    "whatsapp_order_prefix": "NUEVO PEDIDO WEB",
+    "cash_payment_note": "Pago en mano al recibir (coordinar cambio con el vendedor)",
+    "pos_payment_note": "Pago con débito/crédito al entregar (solicitar POS)",
+    "transfer_note": "Adjuntaré el comprobante de transferencia bancaria por este medio"
+  },
+  "features": {
+    "has_cart": true,
+    "has_appointments": true,
+    "has_health_plans": true,
+    "has_emergency_button": true
+  }
+}
+
+//<!> Conviene acer una solo archivo o tener varis osea un directoir por licete y varios archivos 
+Uno para por ejemplo configuraion doclers tamianios 
+
+Otro para contenido Servicios
+Promociones
+Invormacion de la empresa 
+Mensaje que manda la prlataforma
+Mision vision 
+El mensaje del principio 
+nobmre de la empresa 
+logo
+Direccion 
+Telefono os Emergencia 
+Y el administratvo
+Redes sociales
+Google maps 
+
+
+
+
+
+
+
+
+
+
+
+
+<!> Actualizacion Cliete Ifo
+{
+  "_version": "1.0.0",
+  "id": "template_client",
+  "business_name": "Veterinaria Demo",
+  
+  "slogan": {
+    "prefix": "Cuidado profesional para",
+    "highlight": "Tus Mascotas",
+    "suffix": "las 24 horas"
+  },
+
+  "theme": {
+    "primary": "#059669",
+    "primary_hover": "#047857",
+    "secondary": "#10B981",
+    "tertiary": "#1FAF38",
+    "dark": "#064E3B",
+    "surface": "#FFFFFF",
+    "soft": "#D1FAE5",
+    "overlay": "#0F172A",
+    "text_base": "#0F172A",
+    "text_muted": "#9CA3AF",
+    "border_subtle": "#F3F4F6",
+    "error": "#EF4444"
+  },
+
+  "branding": {
+    "logo_url": "/tenant/logo.svg",
+    "favicon_url": "/tenant/favicon.ico"
+  },
+
+  "ui_variants": {
+    "header": "v1",
+    "footer": "v1",
+    "product_card": "v1"
+  },
+
+  "institutional": {
+    "mission": "Brindar atención médica veterinaria con los más altos estándares de calidad.",
+    "vision": "Ser la clínica veterinaria referente en salud preventiva de la región.",
+    "about_us": "Equipo multidisciplinario comprometido con la salud y el bienestar animal."
+  },
+
+  "contact": {
+    "admin_phone": "099123456",
+    "emergency_phone": "099999999",
+    "whatsapp_country_code": "598",
+    "email": "contacto@veterinariademo.com",
+    "address": "Av. Principal 1234, Montevideo",
+    "google_maps_url": "https://maps.google.com",
+    "social_networks": {
+      "instagram": "https://instagram.com/veterinaria_demo",
+      "facebook": "https://facebook.com/veterinaria_demo"
+    }
+  },
+
+  "bank_info": {
+    "bank_name": "BROU",
+    "account_number": "123-456789",
+    "beneficiary": "Veterinaria Demo S.R.L."
+  },
+
+  "custom_messages": {
+    "whatsapp_order_prefix": "NUEVO PEDIDO WEB",
+    "cash_payment_note": "Pago en mano al recibir (coordinar cambio con el vendedor)",
+    "pos_payment_note": "Pago con débito/crédito al entregar (solicitar terminal POS)",
+    "transfer_note": "Adjuntaré el comprobante de transferencia bancaria por este medio"
+  },
+
+  "features": {
+    "has_cart": true,
+    "has_appointments": true,
+    "has_health_plans": true,
+    "has_emergency_button": true
+  }
+}

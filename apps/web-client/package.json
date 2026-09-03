@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "vite build",
+    "tenant": "node scripts/switch-tenant.js",
+    "dev:valeria": "node scripts/switch-tenant.js valeria && vite --host 0.0.0.0",
+    "dev:flavia": "node scripts/switch-tenant.js flavia_esponda && vite --host 0.0.0.0",
+    "dev:template": "node scripts/switch-tenant.js _template && vite --host 0.0.0.0",
+    "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

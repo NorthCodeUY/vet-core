@@ -196,6 +196,14 @@ npm install
 npm run dev
 ```
 
+
+<!-- <!> 
+
+npm run dev:valeria
+
+
+ -->
+
 > ⚠️ **Nota sobre la API Backend**: Si el servidor Backend en FastAPI no está encendido en ese momento, el cliente web cargará de todas formas utilizando los datos en caché y archivos JSON de fallback ([`productos.json`](src/data/productos.json)).
 
 ---

@@ -207,6 +207,152 @@ Cambiar a otro cliente en nivel ejecucion
 npm run tenant flavia_esponda
 
 
+
+
+---
+
+### 4. Documentación: `docs/MULTI_TENANT_ARCHITECTURE.md`
+
+```markdown
+# 🏢 Arquitectura Multi-tenant SaaS: VetCore Frontend
+
+Este documento explica cómo funciona el sistema de tematización, inyección de configuración en tiempo de ejecución y aislamiento por cliente sin recompilar la aplicación.
+
+---
+
+## 🔄 Flujo de Datos en Tiempo de Ejecución (Zero-Rebuild)
+
+```text
+1. [Disco Host / Docker Volume]
+   clients/valeria/config.json + assets/
+           │
+           ▼
+2. [Servidor Web / Directorio Público]
+   /public/config/client_info.json + /public/tenant/
+           │
+           ▼ (fetch al iniciar)
+3. [TenantProvider (React Context)]
+   - Lee client_info.json
+   - Limpia comentarios (// y /* */) en memoria
+   - Parsea JSON a objeto tipado (TenantConfig)
+           │
+           ▼
+4. [theme_config.ts]
+   - Convierte Hexadecimales (#275D9E) a canales RGB ("39 93 158")
+   - Inyecta variables CSS en document.documentElement (:root)
+           │
+           ▼
+5. [Tailwind CSS + Componentes]
+   - Las clases semánticas (bg-vete-primary, text-vete-dark) leen las variables CSS
+   - Las imágenes se cargan desde /tenant/logo.png
+```
+
+---
+
+## 📁 Estructura del Directorio `clients/`
+
+```text
+vet-core/
+├── clients/
+│   ├── _template/             # ✅ EN GIT: Plantilla base para clonar
+│   │   ├── config.json        # Archivo con todas las propiedades comentadas
+│   │   └── assets/            # Imágenes de ejemplo (logo.png, mision.png, etc.)
+│   │
+│   ├── valeria/               # 🚫 EN .GITIGNORE: Datos del cliente real
+│   │   ├── config.json
+│   │   └── assets/
+│   │
+│   └── flavia_esponda/        # 🚫 EN .GITIGNORE: Datos de otro cliente real
+│       ├── config.json
+│       └── assets/
+```
+
+---
+
+## 🚀 Guía de Operación Diaria
+
+### 1. Levantar un Cliente en Desarrollo Local
+Para cambiar instantáneamente de cliente en tu máquina local:
+
+```bash
+# Para levantar a Valeria:
+npm run dev:valeria
+
+# Para levantar la plantilla de pruebas:
+npm run dev:template
+
+# Para cambiar a cualquier otro cliente:
+npm run tenant <nombre_carpeta_cliente>
+```
+
+### 2. Crear un Cliente Nuevo en 3 Pasos
+1. Duplica la carpeta `clients/_template/` y nómbrala con el slug del cliente (ej: `clients/ferreteria_central/`).
+2. Pega sus imágenes dentro de `clients/ferreteria_central/assets/`.
+3. Ajusta los colores, teléfonos y textos en `clients/ferreteria_central/config.json`.
+4. Ejecuta:
+   ```bash
+   npm run tenant ferreteria_central
+   ```
+
+---
+
+## 🎨 Paleta de Tokens Semánticos (`vete-*`)
+
+Queda prohibido usar nombres fijos de Tailwind como `bg-emerald-900` o `text-red-500`. Usa exclusivamente:
+
+| Clase Tailwind | Propósito |
+| :--- | :--- |
+| `bg-vete-primary` / `text-vete-primary` | Color principal de marca (Botones CTA, enlaces activos). |
+| `hover:bg-vete-primary-hover` | Estado hover para elementos con color primario. |
+| `bg-vete-secondary` / `text-vete-secondary` | Color secundario (Badges, acentos). |
+| `bg-vete-tertiary` / `text-vete-tertiary` | Canales de contacto directo (WhatsApp). |
+| `bg-vete-dark` | Fondos oscuros estructurales (Header, Footers, modales). |
+| `bg-vete-surface` | Fondo para tarjetas y áreas de contenido claro. |
+| `bg-vete-soft` / `text-vete-soft` | Tinte suave de marca para chips pasivos. |
+| `bg-vete-overlay` | Fondos oscurecidos para backdrops de modales. |
+| `text-vete-base` | Color principal para textos de lectura continua. |
+| `text-vete-muted` | Color secundario para subtítulos y placeholders. |
+| `border-vete-subtle` | Bordes suaves y líneas divisorias. |
+| `text-vete-error` / `bg-vete-error` | Acciones destructivas y alertas. |
+
+---
+
+# 🏢 Arquitectura Multi-tenant SaaS: VetCore
+
+Este documento detalla la arquitectura de desacoplamiento para clientes (*Zero-Rebuild SaaS Architecture*), el flujo de sincronización en desarrollo local mediante `switch-tenant.js` y el despliegue multi-contenedor con Docker.
+
+---
+
+## 🧩 1. Concepto Central: Separación de Identidad y Código
+
+React se compila **una sola vez** con componentes agnósticos. Toda la identidad corporativa (logos, paleta de colores, textos institucionales, teléfonos y variantes) se inyecta desde afuera sin tocar el código TypeScript.
+
+```text
+[CARPETA DE CLIENTE]                  [SCRIPT O DOCKER]                 [APLICACIÓN REACT]
+clients/valeria/config.json    ───►   public/config/client_info.json  ───►  useConfig()
+clients/valeria/assets/        ───►   public/tenant/                  ───►  <img src="/tenant/..." />
+
+
+
+## 🐳 Despliegue en Producción (Docker)
+
+En producción, la misma imagen de React se utiliza para todos los clientes montando sus carpetas por volumen en `docker-compose.yml`:
+
+```yaml
+services:
+  web_valeria:
+    image: vetcore-frontend:latest
+    container_name: web_valeria
+    volumes:
+      - ./clients/valeria/config.json:/usr/share/nginx/html/config/client_info.json:ro
+      - ./clients/valeria/assets:/usr/share/nginx/html/tenant:ro
+    ports:
+      - "3001:80"
+```
+```
+
+
+
  -->
 
 > ⚠️ **Nota sobre la API Backend**: Si el servidor Backend en FastAPI no está encendido en ese momento, el cliente web cargará de todas formas utilizando los datos en caché y archivos JSON de fallback ([`productos.json`](src/data/productos.json)).

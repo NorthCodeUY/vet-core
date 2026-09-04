@@ -1,13 +1,15 @@
-// apps/web-client/src/config/theme.ts
+// apps/web-client/src/config/theme_config.ts
 
-// <!> Inyectado por la ia para poder injectar los colores almenos fue lo que entendi 
+// <!> Por lo que entendi utiliso los que traje de type_tenatd  para 
+// pasalo a las variables de colores y impotar la paleta de el carrito 
+// Mejoralo como cometiario de paquete para saber par que se destina este
+//  paquete no se como llamarlo poro creo que ese el el termino correcto clase no supongo 
 
-
-import { type ThemeColors } from '../types/tenant';
+import type { ThemeColors } from '../types/tenant_types';
 
 /**
- * Convierte un código Hexadecimal (#RRGGBB o #RGB) a formato 'R G B' numérico.
- * Este formato permite que Tailwind aplique opacidades dinámicas (/10, /40).
+ * Convierte un color hexadecimal (#RRGGBB o #RGB) a formato numérico 'R G B'.
+ * Este formato permite que Tailwind CSS aplique opacidades dinámicas (/10, /40).
  * 
  * @param {string} hex - Código hexadecimal a convertir.
  * @returns {string} Canales RGB separados por espacio (ej: '5 150 105').

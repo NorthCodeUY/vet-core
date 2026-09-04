@@ -35,41 +35,163 @@ import ServicioSession from './sessions/ServicioSession.tsx';
 
 
 
-const ProgramsSection = () => {
 
+
+
+import React from 'react';
+
+/**
+ * Propiedades del bloque informativo `InfoSection`.
+ * 
+ * @interface InfoSectionProps
+ * @property {string} title - Título del bloque.
+ * @property {string} image - Ruta de la imagen ilustrativa.
+ * @property {boolean} [reversed] - Determina si la imagen va a la izquierda o derecha.
+ * @property {string} contentHtml - Texto estructurado en formato HTML.
+ */
+interface InfoSectionProps {
+  title: string;
+  image: string;
+  reversed?: boolean;
+  contentHtml: string;
+}
+
+/**
+ * Componente modular para desplegar bloques de información con imagen lateral (`InfoSection`).
+ * 
+ * @component
+ * @param {InfoSectionProps} props - Propiedades de renderizado.
+ * @returns {JSX.Element} Bloque adaptable con soporte responsive.
+ */
+export const InfoSection: React.FC<InfoSectionProps> = ({
+  title,
+  image,
+  reversed = false,
+  contentHtml,
+}) => {
   return (
-    <section className="w-full py-24 px-6 bg-vete-secondary flex flex-col items-center gap-16">
-      <div className="max-w-3xl text-center space-y-4">
-        {/* Usamos tu vete-h2 (36px) */}
-        <h2 className="text-vete-h2 font-black text-vete- tracking-tighter uppercase italic">
-          Programas de <span className="text-vete-primary">Bienestar Animal</span>
+    <article className={`
+      /* --- Posición --- */
+      flex                         /* Layout flexible */
+      flex-col                     /* Columna por defecto en móvil */
+      ${reversed ? 'lg:flex-row-reverse' : 'lg:flex-row'} /* Alterna orientación */
+      items-center                 /* Centrado vertical */
+      justify-between              /* Espaciado distribuido */
+
+      /* --- Dimensiones --- */
+      w-full                       /* Ancho completo */
+      max-w-6xl                    /* Contenedor centralizado */
+      mx-auto                      /* Centrado horizontal automático */
+      py-10                        /* Padding vertical */
+      px-6                         /* Padding horizontal */
+      gap-8                        /* Separación entre texto e imagen */
+
+      /* --- Colores --- */
+
+      /* --- Texto --- */
+
+      /* --- Animación --- */
+    `}>
+      {/* Columna de Texto */}
+      <div className={`
+        /* --- Posición --- */
+        flex                       /* Layout flexible */
+        flex-col                   /* Disposición en columna */
+
+        /* --- Dimensiones --- */
+        w-full                     /* Ancho total móvil */
+        lg:w-1/2                   /* 50% en escritorio */
+
+        /* --- Colores --- */
+
+        /* --- Texto --- */
+
+        /* --- Animación --- */
+      `}>
+        <h2 className={`
+          /* --- Posición --- */
+
+          /* --- Dimensiones --- */
+          mb-4                     /* Margen inferior */
+
+          /* --- Colores --- */
+          text-vete-primary        /* Color institucional */
+
+          /* --- Texto --- */
+          text-3xl                 /* Tamaño base */
+          md:text-4xl              /* Tamaño en pantallas medianas */
+          font-extrabold           /* Grosor 800 */
+          tracking-tight           /* Espaciado de letras ajustado */
+
+          /* --- Animación --- */
+        `}>
+          {title}
         </h2>
-        <p className="text-vete-text-light text-vete-body font-medium opacity-80 max-w-xl mx-auto">
-          Planes diseñados para asegurar la salud preventiva de tus animales a lo largo de toda su vida.
-        </p>
+
+        <div
+          dangerouslySetInnerHTML={{ __html: contentHtml }}
+          className={`
+            /* --- Posición --- */
+
+            /* --- Dimensiones --- */
+
+            /* --- Colores --- */
+            text-vete-text-base    /* Color tipográfico de lectura */
+
+            /* --- Texto --- */
+            text-base              /* Tamaño estándar */
+            md:text-lg             /* Tamaño cómodo en desktop */
+            leading-relaxed        /* Altura de línea cómoda */
+            font-normal            /* Grosor regular */
+
+            /* --- Animación --- */
+          `}
+        />
       </div>
 
+      {/* Columna de Imagen */}
+      <div className={`
+        /* --- Posición --- */
+        flex                       /* Layout flexible */
+        items-center               /* Centrado */
+        justify-center             /* Centrado */
 
-      {/* Contenedor de Tarjetas Planes o Promociones*/}
-      <div className="w-full max-w-7xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center">
+        /* --- Dimensiones --- */
+        w-full                     /* Ancho total móvil */
+        lg:w-5/12                  /* Proporción balanceada */
 
-        {/* Carga de datos de Tarjeta Planes o Promociones */}
-        {planData.map((plan, index) => (
-          <PlanCard
-            key={index}
-            {...plan}
-            phoneWhattsApp={companyInfo.contact.adminPhone} // Inyectamos el teléfono de la empresa
-          />
-        ))}
+        /* --- Colores --- */
 
+        /* --- Texto --- */
+
+        /* --- Animación --- */
+      `}>
+        <img
+          src={image}
+          alt={title}
+          className={`
+            /* --- Posición --- */
+
+            /* --- Dimensiones --- */
+            w-full                 /* Ocupa el ancho asignado */
+            max-w-md               /* Límite de ancho */
+            h-auto                 /* Mantiene proporción */
+            object-contain         /* Ajuste sin deformar */
+
+            /* --- Colores --- */
+
+            /* --- Texto --- */
+
+            /* --- Animación --- */
+            transition-transform   /* Transición suave */
+            duration-300           /* Velocidad 300ms */
+            hover:scale-105        /* Efecto sutil al pasar el cursor */
+          `}
+        />
       </div>
-    </section>
+    </article>
   );
 };
-
-
-
-
 
 // Componente auxiliar para evitar repetir código en Misión, Visión y Valores
 const InfoSection = ({ title, children, image, reversed = false }: { title: string, children: React.ReactNode, image: string, reversed?: boolean }) => (

@@ -1,76 +1,190 @@
 
 // clientes/_template/config.json
-
-Te marque codiog en el jesion si me vas a devolver el jeson no borres los cometarios que no tiene <!> que empesa a poner los comentarios como van asi me queda mas fail a mi enteneder ese coso largo yo depeus lo limpio antes de usarlo con una clase. bueno y no veo la parte de servicios croe que se te paso 
-
 {
-  "_version": "1.0.0", // <!> Par que me sirve esot
-  "id": "valeria_beltramelli", // <!> Para que me sirve esto 
-  "business_name": "Veterinaria Beltramelli", // Nombre de la empesa 
-  // <!> Esto no se que es ni tengo claro
+  
+    // Control de versión del esquema de configuración (para futuras migraciones de plataforma)
+  "_version": "1.0.0",
+
+  // Identificador único del cliente (usado para logs, cabeceras de API y analítica)
+  "id": "valeria_beltramelli",
+
+  // Nombre comercial que se muestra en títulos de pestaña, header y pie de página
+  "business_name": "Veterinaria Beltramelli",
+
+  // Eslogan institucional con formato segmentado (útil para cabeceras y meta tags de SEO)
   "slogan": {
     "prefix": "Cuidado profesional para",
     "highlight": "Tus Mascotas",
     "suffix": "en Salto"
   },
-  // Paleta Colores
+  
+  // Paleta de colores inyectada dinámicamente en tiempo de ejecución (variables CSS en :root)
   "theme": {
-    "primary": "#275D9E",
-    "primary_hover": "#1E4B82",
-    "secondary": "#76A165",
-    "tertiary": "#1FAF38",
-    "dark": "#004D40",
-    "surface": "#FFFFFF",
-    "soft": "#DBECD5",
-    "overlay": "#0F172A",
-    "text_base": "#000000",
-    "text_muted": "#9CA3AF",
-    "border_subtle": "#F3F4F6",
-    "error": "#DC2626"
-  },
-  // Logo de la empresa
-  // <!> Esto no entiendo yo actualmente tengo 
-  // clientes/_template/assets  supongo que dentro de de aset guardo los logos etc de la pagina y no se si copio eso y lo inyecto o como deveria acer 
-  "branding": {  
-    "logo_url": "/tenant/logo.svg",
-    "favicon_url": "/tenant/favicon.ico"
+    "primary": "#275D9E",         // Color principal de marca (Botones de acción, enlaces activos, iconos)
+    "primary_hover": "#1E4B82",   // Color para el estado hover del botón principal
+    "secondary": "#76A165",       // Color secundario (Badges, acentos complementarios)
+    "tertiary": "#1FAF38",        // Color para canales de contacto directo (WhatsApp)
+    "dark": "#004D40",            // Color oscuro para header, footers y modales
+    "surface": "#FFFFFF",         // Fondo para tarjetas de productos y áreas de contenido claro
+    "soft": "#DBECD5",            // Tinte suave de marca para fondos de chips y alertas
+    "overlay": "#0F172A",         // Fondo con oscurecimiento para backdrops de drawers/modales
+    "text_base": "#000000",       // Color tipográfico principal para textos de lectura continua
+    "text_muted": "#9CA3AF",      // Color tipográfico secundario (subtítulos y placeholders)
+    "border_subtle": "#F3F4F6",   // Bordes sutiles y líneas divisorias
+    "error": "#DC2626"            // Color para acciones destructivas (vaciar carrito, errores)
   },
 
+  // Rutas estandarizadas de logotipos e iconos servidos desde la carpeta /tenant/
+  "branding": {
+    "logo_url": "/tenant/logo.png" // Icono de la empresa 
+    // <!> Yo tengo el disneio del logo en png si sire para cosas en espesifico lo agrego  
+    // "favicon_url": "/tenant/favicon.ico" // <!> Por haora no lo uso luevo voe para agregarlo cmo deberia eser de reosolucion 
+  },
+
+  // Selector de variantes de diseño para componentes modulares
+  "ui_variants": {
+    "header": "v1",               // Variante visual de la barra de navegación superior
+    "footer": "v1",               // Variante visual del pie de página
+    "product_card": "v2",         // Variante visual de la tarjeta de producto en el catálogo
+    "hero": "v1"                  // Variante visual de la portada principal
+  },
 
 
+   // Interruptores de activación/desactivación de módulos en la interfaz
+  "features": {
+    "has_cart": true,             // true: activa el carrito y drawer de pedidos | false: solo catálogo informativo
+    "has_appointments": false,    // true: muestra botón y formulario de reserva de turnos | false: oculta reservas
+    "has_health_plans": true,     // true: muestra la sección de planes/suscripciones | false: oculta la sección
+    "has_services": true,         // true: muestra la sección de servicios ofrecidos | false: oculta la sección
+    "has_emergency_button": true  // true: activa el botón flotante de urgencias 24h en pantalla y en seccion mapas 
+  }, 
 
-
-
-
-  // Mensaje contenido inicial de la web 
+  // Contenido de la sección de portada (Hero) con soporte de etiquetas HTML
   "hero": {
     "title_html": "Cuidamos <span class='text-vete-primary'>a</span><br />quienes <span class='text-vete-primary'>amas</span>",
     "description": "Tu mascota merece la mejor atención médica en un ambiente cálido y profesional."
-  }
+  },
 
-
-
-
-
-
-
-  "ui_variants": {
-    // "header": "v1", //<!> Esto no tengo aun 
-    // "footer": "v1", // <!> Esto no tengo versiones aun 
-    "product_card": "v2"
+  // Módulo de Servicios ofrecidos por la veterinaria o comercio
+  "services_section": {
+    "title_html": "Nuestros <span class='text-vete-primary'>Servicios</span>",
+    "description": "Atención médica integral, diagnósticos precisos y cuidados preventivos para cada etapa de vida.",
+    "items": [
+      {
+        "id": "clinica-medica",
+        "title": "Clínica Médica",
+        "description": "Consultas generales, diagnóstico clínico, tratamientos integrales y medicina preventiva.",
+        "icon_name": "Stethoscope"
+      },
+      {
+        "id": "cirugia-general",
+        "title": "Cirugía General",
+        "description": "Quirófano equipado para cirugías de tejidos blandos, esterilizaciones y procedimientos de urgencia.",
+        "icon_name": "Activity"
+      },
+      {
+        "id": "vacunacion-desparasitacion",
+        "title": "Vacunación y Planes Sanitarios",
+        "description": "Esquemas de inmunización completos, desparasitaciones periódicas y seguimiento sanitario.",
+        "icon_name": "ShieldCheck"
+      },
+      {
+        "id": "analisis-laboratorio",
+        "title": "Diagnóstico y Análisis",
+        "description": "Estudios complementarios, análisis de laboratorio y control periódico de parámetros de salud.",
+        "icon_name": "Microscope"
+      }
+    ]
   },
 
 
-
-  
-  // <!> Tengo que cargar los datos reales 
+  // Secciones institucionales estructuradas (Misión, Visión, Valores)
   "institutional": {
-    "mission": "Brindar atención médica veterinaria de excelencia y con calidez humana en Salto.",
-    "vision": "Ser la clínica veterinaria referente en medicina preventiva y bienestar animal.",
-    "about_us": "Equipo especializado y comprometido con la salud de tus mascotas."
+    "sections": [
+      {
+        "id": "mision",
+        "title": "Misión",
+        "image_url": "/tenant/mision.png",
+        "reversed": false,
+        "content_html": "<p>Brindar atención <strong class='text-vete-primary font-bold'>veterinaria profesional</strong>, cálida y confiable, cuidando la salud y el bienestar de cada animal como parte fundamental de la vida de sus familias y de la producción responsable. Nos comprometemos a acompañar a cada mascota en todas las etapas de su vida, mediante tratamientos integrales, planes sanitarios, desparasitaciones y cirugías, incluyendo atención de emergencias. Al mismo tiempo, ofrecemos soluciones eficientes y basadas en el rigor profesional para animales de producción, contribuyendo al desarrollo y la sostenibilidad del sector agropecuario.</p>"
+      },
+      {
+        "id": "vision",
+        "title": "Visión",
+        "image_url": "/tenant/vision.png",
+        "reversed": true,
+        "content_html": "<p>Ser un referente en la medicina veterinaria, reconocido por la confianza, la calidad profesional y la cercanía con nuestros clientes.</p><p class='mt-3'>Aspiramos a consolidarnos como una clínica destacada en el cuidado de pequeños animales, sin dejar de aportar nuestra experiencia y eficiencia al servicio veterinario de grandes animales y producción, respaldados por años de trayectoria, formación constante y compromiso con la excelencia.</p>"
+      },
+      {
+        "id": "valores",
+        "title": "Valores",
+        "image_url": "/tenant/valores.png",
+        "reversed": false,
+        "content_html": "<div class='flex flex-col gap-3'><p><strong class='text-vete-primary font-bold'>Compromiso con la vida: </strong>Cuidamos cada animal con responsabilidad, vocación y respeto, entendiendo su importancia en la vida de las personas y en la producción.</p><p><strong class='text-vete-primary font-bold'>Profesionalismo y experiencia: </strong>Aplicamos conocimiento, criterio clínico y mejora continua, respaldados por años de trayectoria en el ámbito veterinario.</p><p><strong class='text-vete-primary font-bold'>Responsabilidad y confianza: </strong>Actuamos con honestidad, transparencia y ética, generando relaciones duraderas basadas en la confianza.</p></div>"
+      }
+    ]
   },
-  
-  // Datos de la empresa relevate  
+
+  // Sección de Planes, Suscripciones o Paquetes Promocionales
+  "plans_section": {
+    "title_html": "Programas de <span class='text-vete-primary'>Bienestar Animal</span>",
+    "description": "Planes diseñados para asegurar la salud preventiva de tus animales a lo largo de toda su vida.",
+    "items": [
+      {
+        "id": "salud-preventiva",
+        "title": "Salud Preventiva",
+        "description": "Lo esencial para mantener a tu mascota sana y protegida mes a mes.",
+        "benefits": [
+          "Consultas Gratis",
+          "Recordatorio",
+          "Descuentos especiales"
+        ],
+        "is_featured": false,
+        "whatsapp_message": "¡Hola! Me interesa el Plan *Salud Preventiva* para mi mascota. ¿Me podrían pasar los costos y requisitos? ¡Gracias!"
+      },
+      {
+        "id": "proteccion",
+        "title": "Protección",
+        "description": "Cobertura ampliada para mayor tranquilidad ante imprevistos.",
+        "benefits": [
+          "Consultas Gratis",
+          "Chequeo anual",
+          "Descuentos especiales",
+          "Baño mensual"
+        ],
+        "is_featured": true,
+        "whatsapp_message": "¡Hola! Vi en la web el Plan *Protección* y me pareció muy completo. ¿Me podrían asesorar un poco más? Gracias."
+      },
+      {
+        "id": "familia",
+        "title": "Familia",
+        "description": "Plan ideal para hogares con múltiples mascotas.",
+        "benefits": [
+          "Consultas Gratis",
+          "Recordatorios",
+          "Descuentos especiales",
+          "1 Baño mensual por mascota"
+        ],
+        "is_featured": false,
+        "whatsapp_message": "¡Hola! En casa tenemos varios integrantes y nos interesa el Plan *Familia*. ¿Cómo funciona la cobertura para más de 2 mascotas? ¡Gracias!"
+      },
+      {
+        "id": "senior",
+        "title": "Senior",
+        "description": "Cuidados especializados para los años dorados de tu compañero.",
+        "benefits": [
+          "Consultas Gratis",
+          "Chequeo anual",
+          "Descuentos especiales",
+          "Seguimiento personalizado"
+        ],
+        "is_featured": false,
+        "whatsapp_message": "¡Hola! Mi compañero está en sus años dorados y me interesa el Plan *Senior*. ¿Me cuentan más sobre el chequeo geriátrico? Gracias."
+      }
+    ]
+  },
+
+  // Datos de contacto, horarios y geolocalización
   "contact": {
     "admin_phone": "096368021",
     "emergency_phone": "096368021",
@@ -88,14 +202,32 @@ Te marque codiog en el jesion si me vas a devolver el jeson no borres los cometa
       "tiktok": "https://www.tiktok.com/@beltramelliuy"
     }
   },
-  // <!> Aca son 2 cuants de bano no se como lo coloco suongo wue conun []
-  "bank_info": {
-    "bank_name": "PREX",
-    "account_number": "19513183",
-    "beneficiary": "Ary Gimenez"
+
+  // Cuentas bancarias soportadas (permite una o múltiples cuentas para liquidación)
+  "bank_accounts": [
+    {
+      "bank_name": "PREX",
+      "currency": "UYU",
+      "account_number": "19513183",
+      "beneficiary": "Ary Gimenez"
+    },
+    {
+      "bank_name": "BROU",
+      "currency": "UYU",
+      "account_number": "123-456789",
+      "beneficiary": "Veterinaria Beltramelli"
+    }
+  ],
+
+  // Formas de pago soportadas (permite una o múltiples formas de pago para liquidación)
+  "payment_methods": {
+    "efectivo": true,
+    "transferencia": true,
+    "tarjeta": true,
+    "mercadopago": false
   },
 
-  // <!> Debo corregir esto pero me tengo que fijar como redacto los mensajes 
+  // Plantillas de texto para la generación de mensajes de WhatsApp
   "custom_messages": {
     "whatsapp_order_prefix": "NUEVO PEDIDO WEB",
     "cash_payment_note": "Pago en mano al recibir (coordinar cambio con el vendedor)",
@@ -103,65 +235,11 @@ Te marque codiog en el jesion si me vas a devolver el jeson no borres los cometa
     "transfer_note": "Adjuntaré comprobante por este medio"
   },
 
-  // <!> Esto no se que es 
-  "features": {
-    "has_cart": true,
-    "has_appointments": true,
-    "has_health_plans": true,
-    "has_emergency_button": true
-  },
-  // Planes de la empresa 
-  "health_plans": [
-    {
-      "id": "salud-preventiva",
-      "title": "Salud Preventiva",
-      "description": "Lo esencial para mantener a tu mascota sana y protegida mes a mes.",
-      "benefits": [
-        "Consultas Gratis",
-        "Recordatorio",
-        "Descuentos especiales"
-      ],
-      "is_featured": false,
-      "whatsapp_message": "¡Hola! Me interesa el Plan *Salud Preventiva* para mi mascota. ¿Me podrían pasar los costos y requisitos? ¡Gracias!"
-    },
-    {
-      "id": "proteccion",
-      "title": "Protección",
-      "description": "Cobertura ampliada para mayor tranquilidad ante imprevistos.",
-      "benefits": [
-        "Consultas Gratis",
-        "Chequeo anual",
-        "Descuentos especiales",
-        "Baño mensual"
-      ],
-      "is_featured": true,
-      "whatsapp_message": "¡Hola! Vi en la web el Plan *Protección* y me pareció muy completo. ¿Me podrían asesorar un poco más? Gracias."
-    },
-    {
-      "id": "familia",
-      "title": "Familia",
-      "description": "Plan ideal para hogares con múltiples mascotas.",
-      "benefits": [
-        "Consultas Gratis",
-        "Recordatorios",
-        "Descuentos especiales",
-        "1 Baño mensual por mascota"
-      ],
-      "is_featured": false,
-      "whatsapp_message": "¡Hola! En casa tenemos varios integrantes y nos interesa el Plan *Familia*. ¿Cómo funciona la cobertura para más de 2 mascotas? ¡Gracias!"
-    },
-    {
-      "id": "senior",
-      "title": "Senior",
-      "description": "Cuidados especializados para los años dorados de tu compañero.",
-      "benefits": [
-        "Consultas Gratis",
-        "Chequeo anual",
-        "Descuentos especiales",
-        "Seguimiento personalizado"
-      ],
-      "is_featured": false,
-      "whatsapp_message": "¡Hola! Mi compañero está en sus años dorados y me interesa el Plan *Senior*. ¿Me cuentan más sobre el chequeo geriátrico? Gracias."
-    }
-  ]
+  // Datos para la seccion Maps en landig page 
+  "location_section": {
+    "title_html": "¿<span class='text-vete-text-base'> Dónde estamos</span>?",
+    "description_html": "Te esperamos con <span class='font-bold'>instalaciones de primera</span>, atención personalizada y equipamiento especializado."
+  }
+
+
 }

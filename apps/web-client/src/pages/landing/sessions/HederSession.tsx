@@ -223,11 +223,6 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
     itemCount // Cantidad de productos
   } = usePedidoStore();
 
-  /* --- No Borrar!!!!! <!> Para el usuario, lo ideal es usar un Contexto de Auth Lo voy a usar en el sprin 3  --- */
-  // const { user, isAuthenticated } = useAuth(); 
-  // const user = { isLoggedIn: true, name: "Ary" }; // Mantenlo así hasta que hagamos el AuthContext
-
-
 
   /* Detecta el scroll para aplicar el efecto de transparencia/blur */
   useEffect(() => {
@@ -235,7 +230,7 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
+  // <!> Esto no tengo ide que es 
   const newLocal = `
               /* --- Posición --- */
               absolute                     /* Flota sobre el icono */

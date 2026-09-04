@@ -1,177 +1,167 @@
-/* */
+
+// clientes/_template/config.json
+
+Te marque codiog en el jesion si me vas a devolver el jeson no borres los cometarios que no tiene <!> que empesa a poner los comentarios como van asi me queda mas fail a mi enteneder ese coso largo yo depeus lo limpio antes de usarlo con una clase. bueno y no veo la parte de servicios croe que se te paso 
+
 {
-  "id": "template_client",
-  "business_name": "Veterinaria Demo",
+  "_version": "1.0.0", // <!> Par que me sirve esot
+  "id": "valeria_beltramelli", // <!> Para que me sirve esto 
+  "business_name": "Veterinaria Beltramelli", // Nombre de la empesa 
+  // <!> Esto no se que es ni tengo claro
   "slogan": {
     "prefix": "Cuidado profesional para",
     "highlight": "Tus Mascotas",
-    "suffix": "las 24 horas"
+    "suffix": "en Salto"
   },
-  
-  
-  
-  // <!> Esto tengo que corroborarlo con la paleta acutal y 
-  // mis colores yo los uso en el  Otra cosa quiero saber como 
-  // ago para poner comentario que no me de error  
-
-  "theme": {  
-    "primary": "#059669",
-    "primary_hover": "#047857",
-    "secondary": "#10B981",
+  // Paleta Colores
+  "theme": {
+    "primary": "#275D9E",
+    "primary_hover": "#1E4B82",
+    "secondary": "#76A165",
     "tertiary": "#1FAF38",
-    "dark": "#064E3B",
+    "dark": "#004D40",
     "surface": "#FFFFFF",
-    "soft": "#D1FAE5",
+    "soft": "#DBECD5",
     "overlay": "#0F172A",
-    "text_base": "#0F172A",
+    "text_base": "#000000",
     "text_muted": "#9CA3AF",
     "border_subtle": "#F3F4F6",
-    "error": "#EF4444"
+    "error": "#DC2626"
   },
-  //<!> Esto no enteido como ago para apuntar
-  //  a el cliete que nesesito desde aca o de donde supongo qu eso es la ruta del log o
-  "branding": {
+  // Logo de la empresa
+  // <!> Esto no entiendo yo actualmente tengo 
+  // clientes/_template/assets  supongo que dentro de de aset guardo los logos etc de la pagina y no se si copio eso y lo inyecto o como deveria acer 
+  "branding": {  
     "logo_url": "/tenant/logo.svg",
     "favicon_url": "/tenant/favicon.ico"
   },
-  "ui_variants": { // Configuracion de versionces de los diverentes componentes de la web 
-    "header": "v1",
-    "footer": "v1",
-    "product_card": "v1"
+
+
+
+
+
+
+
+  // Mensaje contenido inicial de la web 
+  "hero": {
+    "title_html": "Cuidamos <span class='text-vete-primary'>a</span><br />quienes <span class='text-vete-primary'>amas</span>",
+    "description": "Tu mascota merece la mejor atención médica en un ambiente cálido y profesional."
+  }
+
+
+
+
+
+
+
+  "ui_variants": {
+    // "header": "v1", //<!> Esto no tengo aun 
+    // "footer": "v1", // <!> Esto no tengo versiones aun 
+    "product_card": "v2"
   },
-  "institutional": { // <!> Tengo que traer los realies Creo que 
-    "mission": "Brindar atención médica veterinaria con altos estándares de calidad.",
-    "vision": "Ser la clínica veterinaria de referencia en la comunidad.",
-    "about_us": "Equipo interdisciplinario dedicado a la salud y bienestar animal."
+
+
+
+  
+  // <!> Tengo que cargar los datos reales 
+  "institutional": {
+    "mission": "Brindar atención médica veterinaria de excelencia y con calidez humana en Salto.",
+    "vision": "Ser la clínica veterinaria referente en medicina preventiva y bienestar animal.",
+    "about_us": "Equipo especializado y comprometido con la salud de tus mascotas."
   },
+  
+  // Datos de la empresa relevate  
   "contact": {
-    "admin_phone": "099123456",
+    "admin_phone": "096368021",
+    "emergency_phone": "096368021",
     "whatsapp_country_code": "598",
-    "email": "contacto@veterinariademo.com",
-    "address": "Av. Principal 1234",
-    "google_maps_url": "https://maps.google.com"
+    "email": "valeriabeltramelli.vet@gmail.com",
+    "address": "Calle 1 N°5657, Barrio Volcán, Salto, Uruguay",
+    "google_maps_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3391.5714443456!2d-57.9625!3d-31.3833!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95ade2f999999999%3A0x9999999999999999!2sSalto%2C%20Uruguay!5e0!3m2!1ses!2suy!4v1710000000000!5m2!1ses!2suy",
+    "schedule": {
+      "weekdays": "Lunes a Sábados: 08:00 – 20:00",
+      "saturdays": "Sábados: 08:00 – 12:00"
+    },
+    "social_networks": {
+      "instagram": "https://www.instagram.com/veterinariabeltramelliuy/",
+      "facebook": "https://facebook.com/vete.beltramelli",
+      "tiktok": "https://www.tiktok.com/@beltramelliuy"
+    }
   },
+  // <!> Aca son 2 cuants de bano no se como lo coloco suongo wue conun []
   "bank_info": {
-    "bank_name": "BROU",
-    "account_number": "123-456789",
-    "beneficiary": "Veterinaria Demo S.R.L."
+    "bank_name": "PREX",
+    "account_number": "19513183",
+    "beneficiary": "Ary Gimenez"
   },
+
+  // <!> Debo corregir esto pero me tengo que fijar como redacto los mensajes 
   "custom_messages": {
     "whatsapp_order_prefix": "NUEVO PEDIDO WEB",
     "cash_payment_note": "Pago en mano al recibir (coordinar cambio con el vendedor)",
     "pos_payment_note": "Pago con débito/crédito al entregar (solicitar POS)",
-    "transfer_note": "Adjuntaré el comprobante de transferencia bancaria por este medio"
+    "transfer_note": "Adjuntaré comprobante por este medio"
   },
+
+  // <!> Esto no se que es 
   "features": {
     "has_cart": true,
     "has_appointments": true,
     "has_health_plans": true,
     "has_emergency_button": true
-  }
-}
-
-//<!> Conviene acer una solo archivo o tener varis osea un directoir por licete y varios archivos 
-Uno para por ejemplo configuraion doclers tamianios 
-
-Otro para contenido Servicios
-Promociones
-Invormacion de la empresa 
-Mensaje que manda la prlataforma
-Mision vision 
-El mensaje del principio 
-nobmre de la empresa 
-logo
-Direccion 
-Telefono os Emergencia 
-Y el administratvo
-Redes sociales
-Google maps 
-
-
-
-
-
-
-
-
-
-
-
-
-<!> Actualizacion Cliete Ifo
-{
-  "_version": "1.0.0",
-  "id": "template_client",
-  "business_name": "Veterinaria Demo",
-  
-  "slogan": {
-    "prefix": "Cuidado profesional para",
-    "highlight": "Tus Mascotas",
-    "suffix": "las 24 horas"
   },
-
-  "theme": {
-    "primary": "#059669",
-    "primary_hover": "#047857",
-    "secondary": "#10B981",
-    "tertiary": "#1FAF38",
-    "dark": "#064E3B",
-    "surface": "#FFFFFF",
-    "soft": "#D1FAE5",
-    "overlay": "#0F172A",
-    "text_base": "#0F172A",
-    "text_muted": "#9CA3AF",
-    "border_subtle": "#F3F4F6",
-    "error": "#EF4444"
-  },
-
-  "branding": {
-    "logo_url": "/tenant/logo.svg",
-    "favicon_url": "/tenant/favicon.ico"
-  },
-
-  "ui_variants": {
-    "header": "v1",
-    "footer": "v1",
-    "product_card": "v1"
-  },
-
-  "institutional": {
-    "mission": "Brindar atención médica veterinaria con los más altos estándares de calidad.",
-    "vision": "Ser la clínica veterinaria referente en salud preventiva de la región.",
-    "about_us": "Equipo multidisciplinario comprometido con la salud y el bienestar animal."
-  },
-
-  "contact": {
-    "admin_phone": "099123456",
-    "emergency_phone": "099999999",
-    "whatsapp_country_code": "598",
-    "email": "contacto@veterinariademo.com",
-    "address": "Av. Principal 1234, Montevideo",
-    "google_maps_url": "https://maps.google.com",
-    "social_networks": {
-      "instagram": "https://instagram.com/veterinaria_demo",
-      "facebook": "https://facebook.com/veterinaria_demo"
+  // Planes de la empresa 
+  "health_plans": [
+    {
+      "id": "salud-preventiva",
+      "title": "Salud Preventiva",
+      "description": "Lo esencial para mantener a tu mascota sana y protegida mes a mes.",
+      "benefits": [
+        "Consultas Gratis",
+        "Recordatorio",
+        "Descuentos especiales"
+      ],
+      "is_featured": false,
+      "whatsapp_message": "¡Hola! Me interesa el Plan *Salud Preventiva* para mi mascota. ¿Me podrían pasar los costos y requisitos? ¡Gracias!"
+    },
+    {
+      "id": "proteccion",
+      "title": "Protección",
+      "description": "Cobertura ampliada para mayor tranquilidad ante imprevistos.",
+      "benefits": [
+        "Consultas Gratis",
+        "Chequeo anual",
+        "Descuentos especiales",
+        "Baño mensual"
+      ],
+      "is_featured": true,
+      "whatsapp_message": "¡Hola! Vi en la web el Plan *Protección* y me pareció muy completo. ¿Me podrían asesorar un poco más? Gracias."
+    },
+    {
+      "id": "familia",
+      "title": "Familia",
+      "description": "Plan ideal para hogares con múltiples mascotas.",
+      "benefits": [
+        "Consultas Gratis",
+        "Recordatorios",
+        "Descuentos especiales",
+        "1 Baño mensual por mascota"
+      ],
+      "is_featured": false,
+      "whatsapp_message": "¡Hola! En casa tenemos varios integrantes y nos interesa el Plan *Familia*. ¿Cómo funciona la cobertura para más de 2 mascotas? ¡Gracias!"
+    },
+    {
+      "id": "senior",
+      "title": "Senior",
+      "description": "Cuidados especializados para los años dorados de tu compañero.",
+      "benefits": [
+        "Consultas Gratis",
+        "Chequeo anual",
+        "Descuentos especiales",
+        "Seguimiento personalizado"
+      ],
+      "is_featured": false,
+      "whatsapp_message": "¡Hola! Mi compañero está en sus años dorados y me interesa el Plan *Senior*. ¿Me cuentan más sobre el chequeo geriátrico? Gracias."
     }
-  },
-
-  "bank_info": {
-    "bank_name": "BROU",
-    "account_number": "123-456789",
-    "beneficiary": "Veterinaria Demo S.R.L."
-  },
-
-  "custom_messages": {
-    "whatsapp_order_prefix": "NUEVO PEDIDO WEB",
-    "cash_payment_note": "Pago en mano al recibir (coordinar cambio con el vendedor)",
-    "pos_payment_note": "Pago con débito/crédito al entregar (solicitar terminal POS)",
-    "transfer_note": "Adjuntaré el comprobante de transferencia bancaria por este medio"
-  },
-
-  "features": {
-    "has_cart": true,
-    "has_appointments": true,
-    "has_health_plans": true,
-    "has_emergency_button": true
-  }
+  ]
 }

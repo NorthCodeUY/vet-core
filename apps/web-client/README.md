@@ -197,9 +197,14 @@ npm run dev
 ```
 
 
-<!-- <!> 
+<!-- <!> Levantar las direrentes versiones de carrito 
+
+Levantar un proyecto de un cliete espesifico
 
 npm run dev:valeria
+
+Cambiar a otro cliente en nivel ejecucion 
+npm run tenant flavia_esponda
 
 
  -->

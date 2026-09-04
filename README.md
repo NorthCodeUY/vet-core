@@ -47,7 +47,25 @@ Este repositorio contiene el núcleo del sistema, diseñado como una solución *
 
 
 <!--
-<!>
+<!>Aca voy a poner todo lo que considereo que va para la parte de serilizacion de carriot para luego documetar 
+
+
+
+
+Esto es como funciona para traer los colores 
+[1. Archivo JSON]               [2. React en Navegador]          [3. Variables en el DOM]          [4. Tailwind CSS]
+clients/valeria/config.json  ➔  TenantContext (fetch)  ➔  theme.ts (:root style)  ➔  bg-vete-primary
+"primary": "#059669"            Lee el JSON al iniciar       --vete-primary: 5 150 105      Pinta con el color activo
+
+Paso 1 (Origen): clients/valeria/config.json contiene el color en formato Hexadecimal (#059669).
+Paso 2 (Lectura): Cuando el usuario entra a la web, TenantContext.tsx ejecuta fetch('/config/client_info.json') y lee los datos.
+Paso 3 (Inyección): La función injectDynamicTheme en theme.ts convierte #059669 a canales RGB 5 150 105 y ejecuta:
+document.documentElement.style.setProperty('--vete-primary', '5 150 105').
+Paso 4 (Consumo): tailwind.config.js tiene configurado primary: 'rgb(var(--vete-primary) / <alpha-value>)'. Cuando pones bg-vete-primary en un botón, Tailwind lee la variable CSS que se inyectó en el paso 3.
+
+
+
+
 Agregar esto para la parte de serializacion de proyecto
 Esto esta pensado para que cafgue la configuracion de cada cliete y poder 
 montar un solo cliet esto esta 

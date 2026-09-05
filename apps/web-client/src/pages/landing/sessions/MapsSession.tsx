@@ -92,8 +92,8 @@ export const MapsSession = ({ bgColor }: { bgColor: string }) => {
                 <Clock size={24} />
               </div>
               <div>
-                <p className="font-bold text-vete-secondary text-lg">Horarios de Atención</p>
-                <p className="text-vete-secondary/70 text-sm">{companyInfo.location.schedule.weekdays}</p>
+                <p className="font-bold text-vete-secondary text-xl">Horarios de Atención</p>
+                <p className="text-vete-secondary/70 text-base">{companyInfo.location.schedule.weekdays}</p>
               </div>
             </div>
 

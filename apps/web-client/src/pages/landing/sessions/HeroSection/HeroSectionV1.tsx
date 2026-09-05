@@ -64,8 +64,8 @@ export const HeroSessionV1 = ({ bgColor }: { bgColor: string }) => {
           
           <h1 className={`
             /* --- Texto --- */
-            text-6xl                     /* Tamaño masivo en móvil */
-            md:text-8xl                  /* Tamaño gigante en desktop para evitar vacío */
+            text-4xl                     /* Tamaño masivo en móvil */
+            md:text-6xl                  /* Tamaño gigante en desktop para evitar vacío */
             font-black                   /* Peso máximo de fuente */
             leading-[0.95]               /* Altura de línea muy compacta y moderna */
             tracking-tighter             /* Letras apretadas para estilo editorial */
@@ -85,7 +85,7 @@ export const HeroSessionV1 = ({ bgColor }: { bgColor: string }) => {
           <p className={`
             /* --- Texto --- */
             text-xl                      /* Tamaño de fuente legible */
-            md:text-2xl                  /* Más grande en desktop para llenar espacio */
+            md:text-xl                  /* Más grande en desktop para llenar espacio */
             leading-relaxed              /* Altura de línea cómoda para lectura */
             font-medium                  /* Peso medio */
             
@@ -114,6 +114,18 @@ export const HeroSessionV1 = ({ bgColor }: { bgColor: string }) => {
                 hover:scale-105 transition-transform
              `}>
                 Agendar Cita
+             </button>
+             <button className={`
+                /* --- Dimensiones --- */
+                px-8 py-4
+                /* --- Colores --- */
+                bg-vete-primary text-white
+                /* --- Estilo --- */
+                rounded-2xl font-bold shadow-xl
+                /* --- Animación --- */
+                hover:scale-105 transition-transform
+             `}>
+                Conoscanos
              </button>
           </div>
         </div>

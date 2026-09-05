@@ -35,24 +35,26 @@ import ServicioSession from './sessions/ServicioSession.tsx';
 // agrandar la letar o algo y que la imagen el limite sea mas grande NO quea bien en resoluiones grandes 
 // Estaria bueno agregar animacion de 3 fotos para la version grande para que me jore el contenido 
 // 
+
+/*
 const HeroSection = ({ bgColor }: { bgColor: string }) => {
   return (
-    /* 
+    
       1. Agregamos un wrapper (div) o usamos la sección como contenedor.
       2. 'max-w-[1200px]' limita el crecimiento en pantallas ultra-anchas.
       3. 'mx-auto' centra todo el bloque horizontalmente.
-    */
+    
     <section className={`relative w-full ${bgColor}`}>
       <div className=" max-w-[1200px] mx-auto px-6 md:px-16 py-12 flex flex-col md:flex-row items-center gap-10 relative z-10">
 
-        {/* Lado del Texto: Limitamos el ancho para que no se estire de más */}
+        { Lado del Texto: Limitamos el ancho para que no se estire de más }
         <div className="w-full desktop-vete:w-1/2 text-center desktop-vete:text-left flex flex-col items-center desktop-vete:items-start">
           <h1 className="text-5xl md:text-7xl font-black leading-[1.1] mb-6 text-vete-primary">
             <span className="whitespace-nowrap">Cuidamos <span className='text-vete-text-light'>a</span></span> <br />
             <span className="text-vete-text-light">quienes</span> amas
           </h1>
 
-          {/* text-lg  _ text-white*/}
+          { text-lg  _ text-white}
           <p className="text-vete-body opacity-90 max-w-md leading-relaxed ">
             Tu mascota merece la mejor atención médica en un ambiente cálido y
             profesional. Contamos con especialistas comprometidos con el bienestar
@@ -61,7 +63,7 @@ const HeroSection = ({ bgColor }: { bgColor: string }) => {
           </p>
         </div>
 
-        {/* Lado de la Imagen: Controlamos el tamaño máximo para que no sea 'gigante' */}
+        { Lado de la Imagen: Controlamos el tamaño máximo para que no sea 'gigante' }
         <div className="hidden desktop-vete:flex w-full md:w-1/2 justify-center desktop-vete:justify-end relative">
           <img
             src="/images/branding/HeroSection.png"
@@ -76,7 +78,7 @@ const HeroSection = ({ bgColor }: { bgColor: string }) => {
   )
 };
 
-
+*/
 
 
 
@@ -249,8 +251,7 @@ export default function LandingPage() {
 
 
         <section id="HeroSession">
-          <HeroSection bgColor='bg-vete-secondary' />
-          {/* <HeroSession bgColor='bg-vete-secondary' /> */}
+          <HeroSession bgColor='bg-vete-secondary' />
         </section>
 
         <section id="ProductsSession">

@@ -327,8 +327,8 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
             src="/logo.png"
             className={`
               /* --- Dimensiones --- */
-              w-10                       /* Tamaño más grande en móvil para balancear las 2 líneas */
-              tablet-vete:w-12           /* Un poco más grande en desktop */
+              w-12                       /* Tamaño más grande en móvil para balancear las 2 líneas */
+              tablet-vete:w-14           /* Un poco más grande en desktop */
               shrink-0                   /* Evita que se deforme */
             `}
             alt="Logo Beltramelli"
@@ -354,8 +354,8 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
               tracking-tighter             /* Estilo moderno */
               
               /* --- Tamaño --- */
-              text-[12px]                  /* Tamaño legible para "Veterinaria" */
-              tablet-vete:text-xl          /* Tamaño original en PC */
+              text-[16px]                  /* Tamaño legible para "Veterinaria" */
+              tablet-vete:text-2xl          /* Tamaño original en PC */
 
               /* --- Colores --- */
               text-vete-text-light         /* Color claro */
@@ -373,7 +373,7 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
               
               /* --- Tamaño --- */
               text-[16px]                  /* <!> Más grande para resaltar la marca en móvil */
-              tablet-vete:text-xl          /* Igual al anterior en PC */
+              tablet-vete:text-2xl          /* Igual al anterior en PC */
 
               /* --- Colores --- */
               text-vete-text-light         /* Color claro */

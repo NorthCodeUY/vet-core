@@ -11,6 +11,7 @@ import { Stethoscope, Tag, ShoppingBag, Users, MapPin } from "lucide-react";
 
 /**  
  * Configuración de Navegación Centralizada con Iconos (SVGs)
+ * <!> Creo que esto depende de el clite tedria que ver para serializarlo en versiones futuras 
  */
 const NAV_LINKS = [
   { label: 'Servicios', href: '#ServicioSeccion', icon: Stethoscope },

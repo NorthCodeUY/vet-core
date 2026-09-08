@@ -1,8 +1,8 @@
 // apps/web-client/src/pages/landing/sessions/PlanSession.tsx
 
 import React from 'react';
-import { useConfig } from '../../../hooks/useConfig';
 import { PlanCard } from '../../../components/PlanCard';
+import { useConfig } from '../../../context/tenant_context';
 
 /**
  * Sección de Planes de Salud y Programas Preventivos (`PlanSession`).
@@ -16,13 +16,20 @@ import { PlanCard } from '../../../components/PlanCard';
 export const PlanSession: React.FC = () => {
   const { config } = useConfig();
 
+
+  /* Validación de Feature Flag y existencia de datos en el JSON */
+  const isEnabled = config?.features?.has_health_plans;
+  const plansData = config?.plans_section;
+
+
+
   /* 1. Validación de Feature Flag y datos */
   if (!config?.features?.has_health_plans || !config.health_plans?.length) {
     return null;
   }
 
-  const phone = config.contact.admin_phone;
-  const countryCode = config.contact.whatsapp_country_code;
+  const phone = config.contact.admin_phone; // Numero de whatsapp administrativo
+  const countryCode = config.contact.whatsapp_country_code; // Codigo de pais para whatsapp
 
   return (
     <section className={`
@@ -55,18 +62,13 @@ export const PlanSession: React.FC = () => {
         max-w-3xl                    /* Ancho máximo de lectura */
         gap-3                        /* Separación título-párrafo */
 
-        /* --- Colores --- */
-
         /* --- Texto --- */
         text-center                  /* Texto centrado */
-
-        /* --- Animación --- */
       `}>
-        <h2 className={`
-          /* --- Posición --- */
-
-          /* --- Dimensiones --- */
-
+        {/* Título Dinámico */}
+        <h2
+          dangerouslySetInnerHTML={{ __html: plansData?.title_html || 'Nuestros Programas' }} // Optimiza para resivir de el jeison los valores de colores etc 
+          className={`
           /* --- Colores --- */
           text-vete-text-base          /* Color tipográfico principal */
 
@@ -76,15 +78,10 @@ export const PlanSession: React.FC = () => {
           font-black                   /* Grosor 900 */
           tracking-tight               /* Espaciado cerrado */
           uppercase                    /* Mayúsculas */
-
-          /* --- Animación --- */
-        `}>
-          Programas de <span className="text-vete-primary">Bienestar Animal</span>
-        </h2>
+        `}
+        />
 
         <p className={`
-          /* --- Posición --- */
-
           /* --- Dimensiones --- */
           max-w-xl                     /* Límite de ancho */
 
@@ -96,10 +93,8 @@ export const PlanSession: React.FC = () => {
           md:text-lg                   /* Tamaño cómodo */
           font-normal                  /* Grosor regular */
           leading-relaxed              /* Altura de línea cómoda */
-
-          /* --- Animación --- */
         `}>
-          Planes diseñados para asegurar la salud preventiva de tus animales a lo largo de toda su vida.
+          {plansData?.description || "Planes diseñados para la satifacción de nuestros clientes"}
         </p>
       </div>
 
@@ -117,13 +112,8 @@ export const PlanSession: React.FC = () => {
         max-w-7xl                    /* Límite del viewport */
         gap-8                        /* Espaciado entre tarjetas */
 
-        /* --- Colores --- */
-
-        /* --- Texto --- */
-
-        /* --- Animación --- */
       `}>
-        {config.health_plans.map((plan) => (
+        {plansData?.items?.map((plan) => (
           <PlanCard
             key={plan.id}
             plan={plan}

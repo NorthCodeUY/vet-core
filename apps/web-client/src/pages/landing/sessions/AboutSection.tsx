@@ -1,8 +1,8 @@
 // app/vet-core/src/pages/landing/sessions/AboutSection.tsx
 
 import React from 'react';
-import { useConfig } from '../../../hooks/useConfig';
-import { InfoSection } from '../../../components/InfoSection';
+import { useConfig } from '../../../context/tenant_context';
+
 
 /**
  * Sección institucional modular (`AboutSection`).
@@ -33,10 +33,6 @@ export const AboutSection: React.FC = () => {
 
       /* --- Colores --- */
       bg-vete-surface              /* Fondo institucional claro */
-
-      /* --- Texto --- */
-
-      /* --- Animación --- */
     `}>
       {sections.map((section) => (
         <InfoSection
@@ -98,12 +94,6 @@ export const InfoSection: React.FC<InfoSectionProps> = ({
       py-10                        /* Padding vertical */
       px-6                         /* Padding horizontal */
       gap-8                        /* Separación entre texto e imagen */
-
-      /* --- Colores --- */
-
-      /* --- Texto --- */
-
-      /* --- Animación --- */
     `}>
       {/* Columna de Texto */}
       <div className={`
@@ -115,11 +105,6 @@ export const InfoSection: React.FC<InfoSectionProps> = ({
         w-full                     /* Ancho total móvil */
         lg:w-1/2                   /* 50% en escritorio */
 
-        /* --- Colores --- */
-
-        /* --- Texto --- */
-
-        /* --- Animación --- */
       `}>
         <h2 className={`
           /* --- Posición --- */
@@ -136,7 +121,7 @@ export const InfoSection: React.FC<InfoSectionProps> = ({
           font-extrabold           /* Grosor 800 */
           tracking-tight           /* Espaciado de letras ajustado */
 
-          /* --- Animación --- */
+
         `}>
           {title}
         </h2>
@@ -144,10 +129,6 @@ export const InfoSection: React.FC<InfoSectionProps> = ({
         <div
           dangerouslySetInnerHTML={{ __html: contentHtml }}
           className={`
-            /* --- Posición --- */
-
-            /* --- Dimensiones --- */
-
             /* --- Colores --- */
             text-vete-text-base    /* Color tipográfico de lectura */
 
@@ -156,8 +137,6 @@ export const InfoSection: React.FC<InfoSectionProps> = ({
             md:text-lg             /* Tamaño cómodo en desktop */
             leading-relaxed        /* Altura de línea cómoda */
             font-normal            /* Grosor regular */
-
-            /* --- Animación --- */
           `}
         />
       </div>
@@ -172,28 +151,16 @@ export const InfoSection: React.FC<InfoSectionProps> = ({
         /* --- Dimensiones --- */
         w-full                     /* Ancho total móvil */
         lg:w-5/12                  /* Proporción balanceada */
-
-        /* --- Colores --- */
-
-        /* --- Texto --- */
-
-        /* --- Animación --- */
       `}>
         <img
           src={image}
           alt={title}
           className={`
-            /* --- Posición --- */
-
             /* --- Dimensiones --- */
             w-full                 /* Ocupa el ancho asignado */
             max-w-md               /* Límite de ancho */
             h-auto                 /* Mantiene proporción */
             object-contain         /* Ajuste sin deformar */
-
-            /* --- Colores --- */
-
-            /* --- Texto --- */
 
             /* --- Animación --- */
             transition-transform   /* Transición suave */

@@ -1,28 +1,71 @@
 // app/vet-core/apps/web-client/src/components/PlanCard.tsx
  
+
+/* =============================================================================
+   COMPONENTE: TARJETA DE PLAN O PROMOCIÓN (PlanCard)
+   ============================================================================= */
+
+import React from 'react';
 import { Check } from 'lucide-react';
-import { WhatsAppDynamicButton } from "./WhatsAppDynamicButton.tsx";
+import { WhatsAppDynamicButton } from './WhatsAppDynamicButton';
 
-
-// <!DMI> Tarjeta para represetear los palnes de la empresa 
-// <!> Esta tarjeta tiene que tener una logica integrada pqra que al apretar un mensaje mande un mensaje tipo lindo estoy interesado en el plan x dependindo el qeu diriegido al portal administratio  para qeu mejor 
-
-interface PlanCardProps {
+/**
+ * Propiedades del componente `PlanCard`.
+ * 
+ * @interface PlanCardProps
+ * @property {string} title - Nombre comercial del plan o paquete.
+ * @property {string} description - Resumen del alcance y cobertura.
+ * @property {string[]} benefits - Listado de servicios y ventajas incluidas.
+ * @property {string} borderColor - Token de color dinámico para acentos (ej: 'vete-primary', 'vete-soft').
+ * @property {boolean} [isFeatured=false] - Habilita el estilo visual elevado para el plan más popular.
+ * @property {string} mensajeWhatsApp - Plantilla de texto preconfigurada para enviar al chat.
+ * @property {string} phoneWhattsApp - Número telefónico de recepción de consultas.
+ */
+export interface PlanCardProps {
   title: string;
   description: string;
   benefits: string[];
-  borderColor: string; 
+  borderColor: string;
   isFeatured?: boolean;
   mensajeWhatsApp: string;
   phoneWhattsApp: string;
 }
 
-
-export const PlanCard = ({ title, description, benefits, borderColor, isFeatured = false, mensajeWhatsApp, phoneWhattsApp }: PlanCardProps) => {
-  
+/**
+ * Tarjeta de presentación de planes, suscripciones y promociones (`PlanCard`).
+ * 
+ * Despliega los beneficios del plan, resalta visualmente la opción destacada
+ * mediante elevación y sombras, y administra el disparo del mensaje pre-armado
+ * hacia WhatsApp mediante el botón interactivo `WhatsAppDynamicButton`.
+ *
+ * @component
+ * @param {PlanCardProps} props - Propiedades de configuración del plan.
+ * @returns {JSX.Element} Tarjeta estructurada con llamada a la acción interactiva.
+ */
+export const PlanCard: React.FC<PlanCardProps> = ({
+  title,
+  description,
+  benefits,
+  borderColor,
+  isFeatured = false,
+  mensajeWhatsApp,
+  phoneWhattsApp,
+}) => {
+  /* ---------------------------------------------------------------------------
+     ASIGNACIÓN DE COLOR DINÁMICO
+     --------------------------------------------------------------------------- */
+  /* Extrae la variable CSS del tema activo correspondiente al token */
   const dynamicColor =  `rgb(var(--${borderColor}))`;
 
-  /* --- Lógica de Envío (Fachada de Acción) --- */
+  /* ---------------------------------------------------------------------------
+     MANEJADOR DE ENVÍO DE CONSULTA (WhatsApp Dispatcher)
+     --------------------------------------------------------------------------- */
+  /**
+   * Normaliza el número telefónico, construye el enlace codificado y abre WhatsApp.
+   * 
+   * @function handlePlanRequest
+   * @returns {void}
+   */
   const handlePlanRequest = () => {
     /* 1. Limpiamos el número (Quitamos espacios y el 0 inicial) */
     const rawPhone = phoneWhattsApp.replace(/\s/g, '');
@@ -76,22 +119,7 @@ export const PlanCard = ({ title, description, benefits, borderColor, isFeatured
           </li>
         ))}
       </ul>
-
-
-
-      
-      
-      
-      
-      
-      
-
-
-
-
-
-
-
+      {/* Boton para enviar mensaje a whatsapp */}
       <WhatsAppDynamicButton 
         label="Solicitar Plan"
         hoverLabel="Enviar Consulta"
@@ -99,8 +127,6 @@ export const PlanCard = ({ title, description, benefits, borderColor, isFeatured
         colorToken={borderColor}
         onClick={handlePlanRequest}
       />
-
-
 
     </div>
   );

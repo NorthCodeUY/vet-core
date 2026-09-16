@@ -24,7 +24,7 @@ export const PlanSession: React.FC = () => {
 
 
   /* 1. Validación de Feature Flag y datos */
-  if (!config?.features?.has_health_plans || !config.health_plans?.length) {
+  if (!config?.features?.has_health_plans) {
     return null;
   }
 
@@ -116,9 +116,13 @@ export const PlanSession: React.FC = () => {
         {plansData?.items?.map((plan) => (
           <PlanCard
             key={plan.id}
-            plan={plan}
-            phone={phone}
-            countryCode={countryCode}
+            title={plan.title}
+            description={plan.description}
+            benefits={plan.benefits}
+            borderColor={plan.is_featured ? 'vete-primary' : 'vete-soft'}
+            isFeatured={plan.is_featured}
+            mensajeWhatsApp={plan.whatsapp_message}
+            phoneWhattsApp={phone}
           />
         ))}
       </div>

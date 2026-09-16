@@ -22,7 +22,7 @@ import MapsSession from './sessions/MapsSession.tsx'; // Seccion de productos
 import Footer from './sessions/FooterSession.tsx';
 import ServicioSession from './sessions/ServicioSession.tsx';
 import { PlanSession } from './sessions/PlanSession.tsx';
-import { AboutSession } from './sessions/AboutSession.tsx'; 
+import { AboutSection } from './sessions/AboutSection.tsx'; 
 
 export default function LandingPage() {
   return (
@@ -81,7 +81,7 @@ export default function LandingPage() {
         />
         <section id="AboutSection">
           {/* Seccion de quienes somos */}
-          <AboutSection bgColor='bg-vete-dark' />
+          <AboutSection/>
 
           {/* separador V2*/}
           <SectionDivider

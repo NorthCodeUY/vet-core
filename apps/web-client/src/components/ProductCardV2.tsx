@@ -5,7 +5,8 @@ import { ShoppingCart, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { SUBCATEGORY_ICONS } from '../utils/categoryHelpers';
 import { usePedidoStore } from '../context/pedido_context';
 import type { ApiProduct } from '../types/product_types';
-import companyInfo from '../data/companyInfo.json';
+import { useCompanyStore } from '../context/company_context';
+
 
 interface Props {
   producto: ApiProduct;
@@ -283,8 +284,8 @@ export function ProductCardV2({ producto }: Props) {
               text-vete-primary      /* Color verde marca */
               font-bold              /* Negrita */
               text-xs                /* Moneda chica */
-            `}>
-              U$S
+            `}>  {/* <!> Esto croe que tendria que serializarlo porque no se la moneda del negocio  */}
+              U$S 
             </span>
             <span className={`
               /* --- Texto --- */

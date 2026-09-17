@@ -25,9 +25,6 @@ interface PedidoDrawerProps {
   isOpen: boolean;    // Controla la visibilidad del drawer.
   onClose: () => void; // Función para cerrar el drawer.
 }
-
-
-
   
 /**
  * Propiedades para el sub-componente `DrawerHeader`.
@@ -40,7 +37,6 @@ interface DrawerHeaderProps {
   itemCount: number;
   onClose: () => void;
 }
-
 
 /**
  * 

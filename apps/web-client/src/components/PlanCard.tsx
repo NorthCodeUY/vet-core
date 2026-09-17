@@ -1,110 +1,219 @@
 // app/vet-core/apps/web-client/src/components/PlanCard.tsx
- 
+import React from 'react';
 import { Check } from 'lucide-react';
-import { WhatsAppDynamicButton } from "./WhatsAppDynamicButton.tsx";
+import { WhatsAppDynamicButton } from './WhatsAppDynamicButton';
 
-
-// <!DMI> Tarjeta para represetear los palnes de la empresa 
-// <!> Esta tarjeta tiene que tener una logica integrada pqra que al apretar un mensaje mande un mensaje tipo lindo estoy interesado en el plan x dependindo el qeu diriegido al portal administratio  para qeu mejor 
-
-interface PlanCardProps {
+/**
+ * Propiedades del componente `PlanCard`.
+ * 
+ * @interface PlanCardProps
+ * @property {string} title - Nombre comercial del plan o paquete.
+ * @property {string} description - Resumen del alcance y cobertura.
+ * @property {string[]} benefits - Listado de servicios y ventajas incluidas.
+ * @property {string} borderColor - Token de color dinámico para acentos (ej: 'vete-primary', 'vete-soft').
+ * @property {boolean} [isFeatured=false] - Habilita el estilo visual elevado para el plan más popular.
+ * @property {string} mensajeWhatsApp - Plantilla de texto preconfigurada para enviar al chat.
+ * @property {string} phoneWhattsApp - Número telefónico de recepción de consultas.
+ */
+export interface PlanCardProps {
   title: string;
   description: string;
   benefits: string[];
-  borderColor: string; 
+  borderColor: string;
   isFeatured?: boolean;
   mensajeWhatsApp: string;
   phoneWhattsApp: string;
 }
 
+/**
+ * Tarjeta de presentación de planes, suscripciones y promociones (`PlanCard`).
+ * 
+ * Despliega los beneficios del plan, resalta visualmente la opción destacada
+ * mediante elevación y sombras, y administra la construcción y disparo del mensaje
+ * pre-armado hacia WhatsApp al presionar el botón interactivo.
+ *
+ * @component
+ * @param {PlanCardProps} props - Propiedades de configuración del plan.
+ * @returns {JSX.Element} Tarjeta estructurada con llamada a la acción interactiva.
+ */
+export const PlanCard: React.FC<PlanCardProps> = ({
+  title,
+  description,
+  benefits,
+  borderColor,
+  isFeatured = false,
+  mensajeWhatsApp,
+  phoneWhattsApp,
+}) => {
+  /* ---------------------------------------------------------------------------
+     1. ASIGNACIÓN DE COLOR DINÁMICO
+     --------------------------------------------------------------------------- */
+  /* Extrae la variable CSS del tema activo correspondiente al token */
+  const dynamicColor = `rgb(var(--${borderColor}))`;
 
-export const PlanCard = ({ title, description, benefits, borderColor, isFeatured = false, mensajeWhatsApp, phoneWhattsApp }: PlanCardProps) => {
-  
-  const dynamicColor =  `rgb(var(--${borderColor}))`;
+  /* ---------------------------------------------------------------------------
+     2. MANEJADOR DE ENVÍO DE CONSULTA (WhatsApp Dispatcher)
+     --------------------------------------------------------------------------- */
+  /**
+   * Normaliza el número telefónico, construye el enlace codificado y abre WhatsApp.
+   * 
+   * @param {React.MouseEvent<HTMLButtonElement>} e - Evento de clic del botón.
+   * @returns {void}
+   */
+  const handlePlanRequest = (e: React.MouseEvent<HTMLButtonElement>): void => {
+    e.stopPropagation();
 
-  /* --- Lógica de Envío (Fachada de Acción) --- */
-  const handlePlanRequest = () => {
-    /* 1. Limpiamos el número (Quitamos espacios y el 0 inicial) */
-    const rawPhone = phoneWhattsApp.replace(/\s/g, '');
-    const cleanPhone = rawPhone.startsWith('0') ? rawPhone.substring(1) : rawPhone;
-    
-    /* 2. Construimos la URL con el mensaje personalizado del plan */
-    const url = `https://wa.me/598${cleanPhone}?text=${encodeURIComponent(mensajeWhatsApp)}`;
-    
-    /* 3. Abrimos el chat */
-    window.open(url, '_blank');
+    /* 1. Limpieza de caracteres no numéricos y cero inicial */
+    const rawDigits = phoneWhattsApp.replace(/\D/g, '');
+    const cleanDigits = rawDigits.startsWith('0') ? rawDigits.slice(1) : rawDigits;
+    const finalPhone = `598${cleanDigits}`;
+
+    /* 2. Construcción de URL codificada segura */
+    const targetUrl = `https://wa.me/${finalPhone}?text=${encodeURIComponent(mensajeWhatsApp)}`;
+
+    /* 3. Apertura en nueva pestaña */
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
-    <div className={`flex flex-col p-8 bg-white rounded-2xl shadow-sm 
-      border-t-8 transition-all hover:shadow-xl w-full 
-        
-        ${isFeatured // CLASES PARA EL EFECTO LEVANTADO
-          ? 'scale-105 z-18 shadow-2xl -translate-y-3 border-t-[12px]' // Más grande, arriba de las otras y más sombra
-          : 'scale-100 z-10 shadow-sm border-t-8' // Tamaño normal
-        }
-      w-full
-      max-w-[320px]`}
-         // Color de borde superior 
-         style={{ borderTopColor: dynamicColor }}>
-      
-      <div className="mb-6">
-        
-        {/* Titulo del plan*/}
-        <h3 className={`
-        text-2xl font-bold mb-2 italic`}
-          style={{ color: dynamicColor }}> {/* Asigno el color que paso por parametro a el titulo */}
+    <article
+      style={{ borderTopColor: dynamicColor }}
+      className={`
+        /* --- Posición --- */
+        relative                     /* Contenedor relativo */
+        flex                         /* Layout flexible */
+        flex-col                     /* Disposición vertical */
+        justify-between              /* Separa el encabezado de la botonera inferior */
+        ${isFeatured ? 'z-20 -translate-y-3' : 'z-10'} /* Elevación para plan destacado */
+
+        /* --- Dimensiones --- */
+        w-full                       /* Ocupa el ancho disponible */
+        max-w-[320px]                /* Ancho máximo uniforme */
+        p-8                          /* Padding interno generoso */
+
+        /* --- Colores --- */
+        bg-vete-surface              /* Fondo claro del tema */
+        ${isFeatured ? 'shadow-2xl' : 'shadow-sm'} /* Sombra pronunciada si es destacado */
+
+        /* --- Estilo --- */
+        rounded-2xl                  /* Bordes redondeados */
+        ${isFeatured ? 'border-t-[12px]' : 'border-t-8'} /* Borde superior de acento */
+
+        /* --- Animación --- */
+        transition-all               /* Transición fluida */
+        duration-300                 /* Tiempo de respuesta de 300ms */
+        ${isFeatured ? 'scale-105' : 'scale-100'} /* Aumento de escala */
+        hover:shadow-xl              /* Elevación en hover */
+      `}
+    >
+      {/* ===================================================================
+         SECCIÓN SUPERIOR: Título y Descripción
+         =================================================================== */}
+      <div className={`
+        /* --- Dimensiones --- */
+        mb-6                         /* Margen inferior */
+
+      `}>
+        {/* Título del Plan */}
+        <h3
+          style={{ color: dynamicColor }}
+          className={`
+            /* --- Dimensiones --- */
+            mb-2                     /* Margen inferior */
+
+            /* --- Texto --- */
+            text-2xl                 /* Tamaño destacado */
+            font-bold                /* Grosor 700 */
+            italic                   /* Estilo cursivo editorial */
+          `}
+        >
           {title}
         </h3>
-        
-        {/* Descripcion del plan*/}
-        <p className="text-vete-text-light text-sm opacity-80 leading-relaxed min-h-[60px]">
+
+        {/* Descripción del Plan */}
+        <p className={`
+
+          /* --- Dimensiones --- */
+          min-h-[60px]               /* Altura mínima para nivelar las tarjetas */
+
+          /* --- Colores --- */
+          text-vete-text-muted       /* Color atenuado */
+
+          /* --- Texto --- */
+          text-sm                    /* Tamaño de lectura */
+          leading-relaxed            /* Altura de línea cómoda */
+        `}>
           {description}
         </p>
       </div>
 
-      {/* Beneficios del plan - Servicos*/}
-      <ul className="flex-1 space-y-4 mb-8">
+      {/* ===================================================================
+         SECCIÓN CENTRAL: Lista de Beneficios
+         =================================================================== */}
+      <ul className={`
+        /* --- Posición --- */
+        flex-1                       /* Toma el espacio vertical disponible */
+
+        /* --- Dimensiones --- */
+        space-y-4                    /* Espaciado vertical entre ítems */
+        mb-8                         /* Margen inferior */
+
+      `}>
         {benefits.map((benefit, index) => (
-          <li key={index} className="flex items-start gap-3">
-            <div className="mt-1 bg-vete-secondary/30 p-0.5 rounded-md">
-               <Check size={14} style={{ color: dynamicColor }} />
+          <li
+            key={index}
+            className={`
+              /* --- Posición --- */
+              flex                   /* Layout flexible */
+              items-start            /* Alineación al inicio */
+              gap-3                  /* Espacio icono-texto */
+            `}
+          >
+            {/* Contenedor del Icono Check */}
+            <div className={`
+              /* --- Posición --- */
+              shrink-0               /* No se deforma */
+
+              /* --- Dimensiones --- */
+              mt-1                   /* Ajuste de alineación con texto */
+              p-0.5                  /* Padding interno */
+
+              /* --- Colores --- */
+              bg-vete-secondary/30   /* Fondo suave derivado */
+
+              /* --- Estilo --- */
+              rounded-md             /* Bordes redondeados sutiles */
+
+            `}>
+              <Check size={14} style={{ color: dynamicColor }} />
             </div>
-            <span className={`text-vete-text-light text-vete-body font-medium`}>
+
+            {/* Texto del Beneficio */}
+            <span className={`
+
+              /* --- Colores --- */
+              text-vete-text-base    /* Color tipográfico principal */
+
+              /* --- Texto --- */
+              text-sm                /* Tamaño estándar */
+              font-medium            /* Grosor medio (500) */
+
+            `}>
               {benefit}
             </span>
           </li>
         ))}
       </ul>
 
-
-
-      
-      
-      
-      
-      
-      
-
-
-
-
-
-
-
-      <WhatsAppDynamicButton 
+      {/* ===================================================================
+         SECCIÓN INFERIOR: Botón Dinámico de WhatsApp
+         =================================================================== */}
+      <WhatsAppDynamicButton
         label="Solicitar Plan"
         hoverLabel="Enviar Consulta"
-        phone={phoneWhattsApp}
         colorToken={borderColor}
         onClick={handlePlanRequest}
       />
-
-
-
-    </div>
+    </article>
   );
-
 };
-
-

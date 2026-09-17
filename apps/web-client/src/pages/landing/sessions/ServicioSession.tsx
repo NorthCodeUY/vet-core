@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { ServiceCard } from '../../../components/ServiceCard';
-import serviciosData from '../../../data/servicios.json';
-import companyInfo from '../../../data/companyInfo.json';
+import { useConfig } from '../../../context/tenant_context';
+
 
 /* =============================================================================
    CONTRATO DE PROPIEDADES (PROPS)
@@ -39,6 +39,20 @@ interface ServicioSessionProps {
  * @returns {JSX.Element} Sección estructurada con encabezado y grilla responsiva de servicios.
  */
 export const ServicioSession: React.FC<ServicioSessionProps> = ({ bgColor }) => {
+  
+  /* 1. Consumo del contexto multi-tenant */
+  const { config } = useConfig();
+
+  /* 2. Control de visibilidad mediante Feature Flag y validación de datos */
+  const isEnabled = config?.features?.has_services;
+  const servicesData = config?.services_section;
+
+  if (!isEnabled || !servicesData || !servicesData.items?.length) {
+    return null;
+  }
+
+  const phone = config.contact.admin_phone;
+
   return (
     <section 
       id="ServicioSession"
@@ -71,6 +85,11 @@ export const ServicioSession: React.FC<ServicioSessionProps> = ({ bgColor }) => 
         gap-16                       /* Espacio amplio entre título y grilla */
       `}>
 
+
+
+
+
+
         {/* Bloque de Título y Subtítulo */}
         <div className={`
           /* --- Posición --- */
@@ -78,7 +97,11 @@ export const ServicioSession: React.FC<ServicioSessionProps> = ({ bgColor }) => 
           /* --- Texto --- */
           text-center                  /* Texto centrado */
         `}>
-          <h2 className={`
+          <h2
+            dangerouslySetInnerHTML={{
+              __html: servicesData.title_html || 'Nuestros <span class="text-vete-primary">Servicios</span>',
+            }}
+            className={`
             /* --- Texto --- */
             text-vete-h2                 /* Tamaño tipográfico corporativo H2 */
             font-black                   /* Peso máximo (900) */
@@ -88,9 +111,9 @@ export const ServicioSession: React.FC<ServicioSessionProps> = ({ bgColor }) => 
 
             /* --- Colores --- */
             text-vete-text-light         /* Color de texto claro */
-          `}>
-            Servicios con los que <span className="text-vete-primary">contamos</span>
-          </h2>
+          `}
+          />
+            
           
           <p className={`
             /* --- Dimensiones --- */
@@ -105,7 +128,7 @@ export const ServicioSession: React.FC<ServicioSessionProps> = ({ bgColor }) => 
             text-vete-text-light         /* Color claro */
             opacity-60                   /* Atenuado para jerarquía visual */
           `}>
-            Planes diseñados para asegurar la salud preventiva y el rendimiento productivo de sus animales.
+            {servicesData.description}
           </p>
         </div>
 
@@ -122,13 +145,25 @@ export const ServicioSession: React.FC<ServicioSessionProps> = ({ bgColor }) => 
           w-full                       /* Ancho total del contenedor */
           gap-10                       /* Espaciado uniforme entre tarjetas */
         `}>
-          {serviciosData.map((servicio, index) => (
+
+            {servicesData.items.map((servicio) => (
             <ServiceCard
-              key={index}
-              {...servicio}
-              phone={companyInfo.contact.adminPhone}
+              key={servicio.id}
+              title={servicio.title}
+              description={servicio.description}
+              items={servicio.items || []}
+              iconKey={servicio.iconKey || servicio.icon_name || 'Stethoscope'}
+              message={
+                servicio.message ||
+                `¡Hola! Me comunico para consultar por el servicio de *${servicio.title}*.`
+              }
+              phone={phone}
             />
           ))}
+
+          
+          
+
         </div>
 
       </div>

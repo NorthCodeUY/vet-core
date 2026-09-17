@@ -5,7 +5,8 @@ import { SUBCATEGORY_ICONS } from '../../utils/categoryHelpers';
 
 import { usePedidoStore } from '../../context/pedido_context';
 import type { ApiProduct, ApiImageProducto } from '../../types/product_types';
-import companyInfo from '../../data/companyInfo.json';
+import { useConfig } from '../../context/tenant_context';
+
 
 interface Props {
   producto: ApiProduct
@@ -34,14 +35,53 @@ export function ProductCardV1({ producto }: Props) {
     ? `${window.location.origin}${window.location.pathname}#prod-${producto.prod_id}`
     : '';
 
-  // Limpieza de número de teléfono para evitar errores de WhatsApp
-  const cleanPhone = companyInfo.contact.adminPhone.replace(/\D/g, '');
-  const formattedPhone = cleanPhone.startsWith('0') ? `598${cleanPhone.slice(1)}` : cleanPhone;
 
-  /* --- Generación de Link de WhatsApp --- */
-  const whatsappLink = `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encodeURIComponent(
-    `¡Hola! Estoy interesado en el producto: *${producto.prod_nombre}*, *$${producto.prod_precio}*\n\n Ver Producto: \n\n${productUrl}`
-  )}`;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // // Limpieza de número de teléfono para evitar errores de WhatsApp
+  // const cleanPhone = companyInfo.contact.adminPhone.replace(/\D/g, '');
+  // const formattedPhone = cleanPhone.startsWith('0') ? `598${cleanPhone.slice(1)}` : cleanPhone;
+
+  // /* --- Generación de Link de WhatsApp --- */
+  // const whatsappLink = `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encodeURIComponent(
+  //   `¡Hola! Estoy interesado en el producto: *${producto.prod_nombre}*, *$${producto.prod_precio}*\n\n Ver Producto: \n\n${productUrl}`
+  // )}`;
+
+
+
+
+
+  /* --- 1. Extracción dinámica de datos de contacto --- */
+  const { config } = useConfig();
+  const rawPhone = config?.contact?.admin_phone || '';
+  const countryCode = config?.contact?.whatsapp_country_code || '598';
+
+  /* --- 2. Normalización del número de teléfono --- */
+  const digitsOnly = rawPhone.replace(/\D/g, '');
+  const cleanPhone = digitsOnly.startsWith('0') ? digitsOnly.slice(1) : digitsOnly;
+  const formattedPhone = `${countryCode}${cleanPhone}`;
+
+  /* --- 3. Generación del Link seguro de WhatsApp --- */
+  const whatsappLink = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(
+    `¡Hola! Estoy interesado en el producto: *${producto.prod_nombre}*, *$${producto.prod_precio.toLocaleString('es-UY')}*\n\nVer Producto:\n${productUrl}`
+  )}`;  
+
+
+
+
 
   // 1. Método separado para manejar la eliminación
   const handleRemoveFromPedido = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -124,15 +164,22 @@ export function ProductCardV1({ producto }: Props) {
           onClick={handleRemoveFromPedido}
           className={`
             /* --- Posición --- */
-            absolute top-3 right-3 sm:top-4 sm:right-4 z-20
+            absolute 
+            top-3 
+            right-3 
+            sm:top-4 
+            sm:right-4 
+            z-20
             /* --- Dimensiones --- */
             p-2
             /* --- Colores --- */
-            bg-red-500 text-white
+            bg-vete-error 
+            text-white
             /* --- Estilo --- */
             rounded-full shadow-md
             /* --- Animación --- */
-            hover:bg-red-600 transition-colors
+            hover:bg-red-600
+            transition-colors
           `}
         >
           <X size={16} />
@@ -230,12 +277,15 @@ export function ProductCardV1({ producto }: Props) {
 
         {/* Botones de accion */}
         <div className="flex gap-2 items-center shrink-0">
+
+
           {/* Boton de whatsapp */}
           <a 
             href={whatsappLink} 
             target="_blank" 
             rel="noreferrer"
-            onClick={(e) => e.stopPropagation()} 
+            onClick={(e) => e.stopPropagation()}
+            title="Consultar por WhatsApp"
           >
             <img
               src="/images/branding/LogoWhtSapp.svg"

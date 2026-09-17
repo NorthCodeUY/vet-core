@@ -1,6 +1,6 @@
 // apps/web-client/src/pages/landing/sessions/footer.tsx
 import { WhatsAppButton } from '../../../components/WhatsAppButtonProps.tsx';
-import companyInfo from '../../../data/companyInfo.json';
+import { useConfig } from '../../../context/tenant_context';
 import { MapPin, Facebook, Instagram, Phone, Mail } from 'lucide-react';
 import { useMemo, useCallback } from 'react';
 
@@ -121,18 +121,30 @@ const useIsOpen = (scheduleString: string): boolean => {
  * en el renderizado del componente.
  * 
  * Dependencias: actualiza cuando companyInfo cambia (props/context futuro)
- * 
+ *  <!> Actualizar cometario segun el nuevo metodo
  * @returns {SafeContactInfo} - Objeto con información de contacto validada
  */
-const useSafeContactInfo = (): SafeContactInfo => {
+const useSafeContactInfo = (config: ReturnType<typeof useConfig>['config']): SafeContactInfo => {
   return useMemo(() => ({
-    phone: companyInfo.contact.adminPhone || 'No disponible',
-    email: companyInfo.contact.email || 'No disponible',
-    city: companyInfo.location.city || '',
-    country: companyInfo.location.country || '',
-    mapsUrl: companyInfo.location.googleMapsUrl || '#',
-  }), []);
+    phone: config?.contact?.admin_phone || 'No disponible',
+    email: config?.contact?.email || 'No disponible',
+    city: config?.contact?.address || '',
+    country: '',
+    mapsUrl: config?.contact?.google_maps_url || '#',
+  }), [config]);
 };
+// <!> Borrar al probar lo nuevo 
+// const useSafeContactInfo = (): SafeContactInfo => {
+//   return useMemo(() => ({
+//     phone: companyInfo.contact.adminPhone || 'No disponible',
+//     email: companyInfo.contact.email || 'No disponible',
+//     city: companyInfo.location.city || '',
+//     country: companyInfo.location.country || '',
+//     mapsUrl: companyInfo.location.googleMapsUrl || '#',
+//   }), []);
+// };
+
+
 
 /**
  * Hook personalizado que prepara redes sociales validadas
@@ -142,16 +154,26 @@ const useSafeContactInfo = (): SafeContactInfo => {
  * en enlaces externos.
  * 
  * Dependencias: actualiza cuando companyInfo cambia (props/context futuro)
- * 
+ * <!> Actualizar cometario segun el nuevo metodo 
  * @returns {SafeSocials} - Objeto con URLs de redes sociales validadas
  */
-const useSafeSocials = (): SafeSocials => {
+const useSafeSocials = (config: ReturnType<typeof useConfig>['config']): SafeSocials => {
   return useMemo(() => ({
-    facebook: companyInfo.socials.facebook || '#',
-    instagram: companyInfo.socials.instagram || '#',
-    tiktok: companyInfo.socials.tiktok || '#',
-  }), []);
+    facebook: config?.contact?.social_networks?.facebook || '#',
+    instagram: config?.contact?.social_networks?.instagram || '#',
+    tiktok: config?.contact?.social_networks?.tiktok || '#',
+  }), [config]);
 };
+
+
+// <!> Borar al probar lo nuevo 
+// const useSafeSocials = (): SafeSocials => {
+//   return useMemo(() => ({
+//     facebook: companyInfo.socials.facebook || '#',
+//     instagram: companyInfo.socials.instagram || '#',
+//     tiktok: companyInfo.socials.tiktok || '#',
+//   }), []);
+// };
 
 /**
  * Hook personalizado que prepara el horario para mostrar en el footer
@@ -163,14 +185,12 @@ const useSafeSocials = (): SafeSocials => {
  * - Todo se obtiene dinámicamente del backend
  * 
  * Dependencias: actualiza cuando schedule cambia
- * 
+ * <!> Actualizar cometario segun el nuevo metodo
  * @returns {ScheduleItem[]} - Array con días y horarios a mostrar
  */
-const useSafeSchedule = (): ScheduleItem[] => {
+const useSafeSchedule = (weekdays?: string): ScheduleItem[] => {
   return useMemo(() => {
-    const weekdaysSchedule = companyInfo.location.schedule.weekdays || '08:00 – 20:00';
-    
-    // Extrae el rango de días del string (ej: "Lunes a Sábados" de "Lunes a Sábados: 08:00 – 20:00")
+    const weekdaysSchedule = weekdays || 'Lunes a Sábados: 08:00 – 20:00';
     const daysMatch = weekdaysSchedule.match(/^([^:]+):\s*/);
     const weekdaysLabel = daysMatch ? daysMatch[1] : 'Lunes a Sábados';
     
@@ -184,8 +204,33 @@ const useSafeSchedule = (): ScheduleItem[] => {
         hours: 'Cerrado',
       },
     ];
-  }, []);
+  }, [weekdays]);
 };
+
+
+
+
+// <!> Borrar cuando funcione lo nuevo  
+// const useSafeSchedule = (): ScheduleItem[] => {
+//   return useMemo(() => {
+//     const weekdaysSchedule = companyInfo.location.schedule.weekdays || '08:00 – 20:00';
+    
+//     // Extrae el rango de días del string (ej: "Lunes a Sábados" de "Lunes a Sábados: 08:00 – 20:00")
+//     const daysMatch = weekdaysSchedule.match(/^([^:]+):\s*/);
+//     const weekdaysLabel = daysMatch ? daysMatch[1] : 'Lunes a Sábados';
+    
+//     return [
+//       {
+//         day: weekdaysLabel,
+//         hours: weekdaysSchedule.split(':').slice(1).join(':').trim(),
+//       },
+//       {
+//         day: 'Domingos',
+//         hours: 'Cerrado',
+//       },
+//     ];
+//   }, []);
+// };
 
 /**
  * Componente Footer
@@ -208,20 +253,21 @@ const useSafeSchedule = (): ScheduleItem[] => {
  * @returns {JSX.Element} - Elemento del footer
  */
 const Footer = ({ bgColor }: FooterProps) => {
-  // Año actual para el copyright
-  const currentYear = new Date().getFullYear();
+  /* 1. Consumo del contexto de configuración */
+  const { config } = useConfig();
 
-  // Información de contacto segura con validación
-  const safeContactInfo = useSafeContactInfo();
+  const currentYear = new Date().getFullYear(); // Año actual para el copyright Año actual para el copyright
+  const weekdaysSchedule = config?.contact?.schedule?.weekdays || ''; // <!> Croe que esto son los dias que abre 
 
-  // Redes sociales seguras con validación
-  const safeSocials = useSafeSocials();
+  /* 2. Hooks pasando los datos dinámicos */
+  const safeContactInfo = useSafeContactInfo(config); // Trae la info de contacto
+  const safeSocials = useSafeSocials(config); // Trae las redes sociales
+  const safeSchedule = useSafeSchedule(weekdaysSchedule); // Trae el horario
+  const isOpen = useIsOpen(weekdaysSchedule);  // Estado de operación dinámico basado en el horario del backend
 
-  // Horario seguro desde la configuración dinámico de la empresa
-  const safeSchedule = useSafeSchedule();
 
-  // Estado de operación dinámico basado en el horario del backend
-  const isOpen = useIsOpen(companyInfo.location.schedule.weekdays);
+
+
 
   /**
    * Array de items de contacto con íconos
@@ -331,7 +377,7 @@ const Footer = ({ bgColor }: FooterProps) => {
         <div className="pointer-events-auto transition-all duration-300 hover:-translate-y-1 hover:scale-102 z-30">
           <WhatsAppButton
             label="Emergencia"
-            phone={companyInfo.contact.emergencyPhone}
+            phone={config?.contact?.emergency_phone || '#'}
             bgColor="bg-vete-error"
             isReversed={true}
           />
@@ -352,14 +398,14 @@ const Footer = ({ bgColor }: FooterProps) => {
             {/* SECCIÓN 1: LOGO + IDENTIDAD */}
             <div className="flex flex-col items-center md:items-start gap-2">
               <img
-                src="/logo.png"
+                src={config?.branding?.logo_url || '/logo.png'}
                 className="w-16 h-16 object-contain hover:scale-105 transition-transform duration-400 cursor-pointer filter drop-shadow-sm"
-                alt={`${companyInfo.name} Logo`}
+                alt={`${config?.business_name} Logo`}
               />
               
               <div className="text-center md:text-left">
                 <h3 className="font-bold text-base text-vete-text-light leading-tight">
-                  {companyInfo.name}
+                  {config?.business_name}
                 </h3>
                 <p className="mt-0.5 text-vete-primary text-[11px] font-semibold tracking-[0.08em]">
                   Cuidamos
@@ -484,7 +530,7 @@ const Footer = ({ bgColor }: FooterProps) => {
 
           {/* BOTTOM BAR - CRÉDITOS COMPACTO */}
           <div className="flex flex-col sm:flex-row justify-center items-center gap-2 text-xs text-vete-text-light/60 font-medium">
-            <span>© {currentYear} {companyInfo.name}. Todos los derechos reservados.</span>
+            <span>© {currentYear} {config?.business_name}. Todos los derechos reservados.</span>
             <span className="hidden sm:block text-vete-primary/20">•</span>
             <a
               href="https://northcode-uy.com/"

@@ -33,6 +33,7 @@ import { usePedidoStore } from '../../context/pedido_context'; // Contexto del p
  *   icon: React.ComponentType<{ size?: number, className?: string }>,
  *   getMessage: () => string
  * }>}
+ * 
  * <!> Yo para mi tengo que camiar esto y mejorar el icono en el cado de los item desplegables 
  */
 const PAYMENT_METHODS = [
@@ -174,20 +175,6 @@ const PaymentSelector: React.FC<PaymentSelectorProps> = ({
         >
           {/* Opciones de los metodos de pago */}
           {PAYMENT_METHODS.map((pm) => (  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
             
             // <!> Esto quiero mejorarlo en el menu anterior mostraba los logitos y se veia mejor la lista desplebalbe 

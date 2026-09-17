@@ -5,7 +5,8 @@ import { ShoppingCart, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { SUBCATEGORY_ICONS } from '../../utils/categoryHelpers';
 import { usePedidoStore } from '../../context/pedido_context';
 import type { ApiProduct } from '../../types/product_types';
-import companyInfo from '../../data/companyInfo.json';
+import { useConfig } from '../../context/tenant_context';
+
 
 interface Props {
   producto: ApiProduct;
@@ -41,12 +42,23 @@ export function ProductCardV2({ producto }: Props) {
       ? `${window.location.origin}${window.location.pathname}#prod-${producto.prod_id}`
       : '';
   
-    /* ${companyInfo.contact.adminPhone} cambiar por un numero para probar si asi lo desea */
+    
+  /* --- 1. Extracción dinámica de contacto desde el contexto --- */
+  const { config } = useConfig();
+  const rawPhone = config?.contact?.admin_phone || '';
+  const countryCode = config?.contact?.whatsapp_country_code || '598';
+
+  /* --- 2. Normalización del número telefónico --- */
+  const digitsOnly = rawPhone.replace(/\D/g, '');
+  const cleanPhone = digitsOnly.startsWith('0') ? digitsOnly.slice(1) : digitsOnly;
+  const formattedPhone = `${countryCode}${cleanPhone}`;
+
+  /* --- 3. Generación del Link seguro de WhatsApp --- */
+  const whatsappLink = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(
+    `¡Hola! Estoy interesado en el producto: *${producto.prod_nombre}*, *$${producto.prod_precio.toLocaleString('es-UY')}*\n\nVer Producto:\n${productUrl}`
+  )}`;
+
   
-    /* --- Generación de Link de WhatsApp --- */
-    const whatsappLink = `https://wa.me/${companyInfo.contact.adminPhone}?text=${encodeURIComponent(
-      `¡Hola! Estoy interesado en el producto: *${producto.prod_nombre}*, *$${producto.prod_precio}*\n\n Ver Producto: \n\n${productUrl}`
-    )}`;
 
   /* --- Manejadores de Eventos --- */
   const handleRemoveFromPedido = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -138,6 +150,8 @@ export function ProductCardV2({ producto }: Props) {
         <button
           type="button"
           onClick={handleRemoveFromPedido}
+          title="Quitar del pedido"
+          aria-label="Quitar del pedido"
           className={`
             /* --- Posición --- */
             absolute                 /* Flota en la esquina superior derecha */
@@ -149,7 +163,7 @@ export function ProductCardV2({ producto }: Props) {
             p-1                      /* Padding de 0.25rem */
 
             /* --- Colores --- */
-            bg-red-500               /* Fondo rojo */
+            bg-vete-error            /* Fondo rojo */
             text-white               /* Icono blanco */
 
             /* --- Estilo --- */
@@ -284,7 +298,8 @@ export function ProductCardV2({ producto }: Props) {
               font-bold              /* Negrita */
               text-xs                /* Moneda chica */
             `}>
-              U$S
+              {/* <!> Aca deberia serializar la mnoeda par que trabaje segun el cliet por un tema de velocidad lo decamos asi  */}
+              $ 
             </span>
             <span className={`
               /* --- Texto --- */

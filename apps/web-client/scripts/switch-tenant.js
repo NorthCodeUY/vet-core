@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 const tenantName = process.argv[2] || '_template';
 
 /* 2. Definir rutas de origen y destino */
-const rootClientsDir = path.resolve(__dirname, '../../../clients');
+const rootClientsDir = path.resolve(__dirname, '../../../clientes');
 const clientSourceDir = path.join(rootClientsDir, tenantName);
 const publicConfigDir = path.resolve(__dirname, '../public/config');
 const publicTenantDir = path.resolve(__dirname, '../public/tenant');

@@ -109,25 +109,25 @@ export interface HeroSectionConfig {
 }
 
 /**
- * Ítem individual de servicio.
+ * Ítem individual de servicio con soporte para viñetas y clave de icono.
  * 
  * @interface ServiceItem
  * @property {string} id - Identificador único del servicio.
  * @property {string} title - Nombre del servicio.
  * @property {string} description - Detalle y alcance del procedimiento.
- * @property {string} icon_name - Nombre del icono de Lucide a renderizar.
+ * @property {string[]} [items] - Lista de prestaciones o procedimientos incluidos en el servicio.
+ * @property {string} [iconKey] - Clave del icono a buscar en el registro (`IconMap`).
+ * @property {string} [icon_name] - Clave alternativa de icono (fallback).
+ * @property {string} [message] - Mensaje preconfigurado para consultar por WhatsApp.
  */
 export interface ServiceItem {
   id: string;
   title: string;
   description: string;
-  // <!> Esto no se si esta vien pero bueno lo purebo y voy bienod 
-  // Lo que me generia ruido mentarl es que yo lo que ise en el codiog en la 
-  // tarjeta es importe un icono y lo seleccione con los dtaos del jeson como 
-  // ago aca tnedria que en proyecto tener todos los icons que he seleccionado 
-  // de todos lso carrito y en esta seccion meterlo o simpre trabajar con un
-  //  svg para que eso sea estandar no se tengo que ver 
-  icon_name: string; 
+  items?: string[];
+  iconKey?: string;
+  icon_name?: string;
+  message?: string;
 }
 
 /**

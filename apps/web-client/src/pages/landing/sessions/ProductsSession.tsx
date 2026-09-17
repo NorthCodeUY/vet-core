@@ -2,7 +2,7 @@
 
 import { Search, Loader2 } from 'lucide-react';
 import { CategoryGroupCard } from '../../../components/CategoryGroupCard.tsx';
-import { ProductCard } from '../../../components/ProductCard.tsx';
+import { ProductCard } from '../../../components/ProductCard/ProductCard';
 
 import { useProducts } from '../../../hooks/useProducts.ts';
 

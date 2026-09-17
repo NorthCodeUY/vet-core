@@ -176,20 +176,6 @@ const PaymentSelector: React.FC<PaymentSelectorProps> = ({
           {/* Opciones de los metodos de pago */}
           {PAYMENT_METHODS.map((pm) => (  
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             
             // <!> Esto quiero mejorarlo en el menu anterior mostraba los logitos y se veia mejor la lista desplebalbe 
             <option key={pm.id} value={pm.id} className="bg-slate-900 text-white">

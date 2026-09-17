@@ -1,111 +1,211 @@
-# VetCore
+<!-- README.MD -->
+# VetCore & NorthCode SaaS Engine
 
-🐾 **VetCore Ecosystem by NorthCode**
+🐾 **Ecosistema Agnóstico Multi-Rubro by [NorthCode](https://northcode-uy.com/)**
 
-VetCore es una plataforma integral de gestión veterinaria diseñada para cerrar la brecha entre la atención clínica de pequeñas mascotas y la gestión productiva de grandes animales. Desarrollado con un enfoque en **Rigor Científico**, **Escalabilidad** y **Cumplimiento Normativo (SNIG/DILAVE)**.
+> **<!> NOTA DE EVOLUCIÓN ARQUITECTÓNICA:**  
+> Aunque la plataforma nació originalmente para la gestión clínica y e-commerce veterinario (**Veterinaria Beltramelli**), el sistema evolucionó hacia un **Motor Agnóstico Multi-Rubro White-Label**. Permite desplegar sitios web, catálogos interactivos, listas de servicios y carritos de compra con cierre de pedido por WhatsApp para **cualquier tipo de comercio o rubro** (clínicas, petshops, ferreterías, tiendas de retail, etc.).
 
-Este repositorio contiene el núcleo del sistema, diseñado como una solución *White Label* para clínicas veterinarias que buscan profesionalizar su identidad digital y optimizar su flujo de caja mediante e-commerce y logística integrada.
+---
+
+## 🌐 Enlaces y Entornos de Revisión
+
+- 🛒 **Instancia de Revisión / Demo Activa (Veterinaria Beltramelli)**: [https://veterinaria-beltramelli.com/revision](https://veterinaria-beltramelli.com/revision)
+- 🏢 **Sitio Oficial de Desarrolladores**: [https://northcode-uy.com/](https://northcode-uy.com/)
+- 📊 **[Documentación Frontend Web Clientes](./apps/web-client/README.md)**
+- ⚙️ **[Documentación Backend API FastAPI](./api-backend/README.md)**
+
+---
 
 ## 🚀 Características Principales
 
-### Fase 1: Identidad & Presencia Digital
-- **Landing Page High-Performance**: Desarrollada en React + Tailwind CSS para una carga instantánea.
-- **Catálogo Dinámico**: Visualización de productos vía JSON para despliegue rápido.
-- **Módulo de Emergencias**: Integración directa con WhatsApp API para asistencia inmediata.
+### Fase 1: Identidad & Presencia Digital Multi-Cliente (Agnóstica)
+- **Landing Page High-Performance**: Desarrollada en React 19 + Tailwind CSS con tematización dinámica en tiempo de ejecución (Zero-Rebuild).
+- **Catálogo Dinámico & Servicios**: Visualización de productos y servicios configurable por JSON para cualquier rubro comercial.
+- **Módulo de Contacto Directo & WhatsApp**: Conversión inmediata con atención directa configurada por cliente.
 
-### Fase 2: E-commerce & Logística de Proximidad
-- **Smart Cart**: Sistema de pedidos automatizado con cierre en WhatsApp.
+### Fase 2: E-commerce Multi-Carrito & Logística por WhatsApp
+- **Smart Cart**: Sistema de pedidos automatizado con formateo de ticket dinámico directo a WhatsApp.
 - **Gestión de Stock Proactiva**: Control de inventario con soporte para lectores de códigos de barras Bluetooth.
-- **Fleet Management**: Aplicación móvil (Flutter) para la organización de repartos por zona y horario.
+- **Fleet Management**: Organización de repartos por zona y horario.
 
-### Fase 3: Gestión Clínica & Compliance MGAP
-- **Historia Clínica Digital**: Registro cronológico detallado y trazabilidad sanitaria.
-- **Módulo de Producción**: Gestión por pred io (DICOSE) y seguimiento de patologías en rodeos.
+### Fase 3: Módulos Especializados (Veterinaria / Producción)
+- **Historia Clínica Digital**: Registro cronológico detallado y trazabilidad sanitaria para clínicas.
+- **Módulo de Producción**: Gestión por predio (DICOSE) y seguimiento de patologías en rodeos.
 - **Compliance DILAVE/SNIG**: Registro automatizado de específicos y generación de reportes ministeriales.
+
+---
 
 ## 🛠 Stack Tecnológico
 
-- **Frontend**: React.js + Tailwind CSS
-- **Backend**: FastAPI (Python)
-- **Mobile**: Flutter (Dart), Portales administrativos, clinica, logisticas 
-- **Infraestructura**: Docker, Nginx Proxy Manager, PostgreSQL.
+- **Frontend Cliente**: React 19 + TypeScript + Tailwind CSS (Inyección de branding en runtime vía JSON).
+- **Backend API**: FastAPI (Python 3.12) + SQLAlchemy 2.0 + Pydantic v2.
+- **Portal Administrativo**: Flutter (Dart) — *<!> En desarrollo futuro para administración centralizada multi-tienda*.
+- **Infraestructura**: Docker, Docker Compose, Nginx Proxy Manager, PostgreSQL.
 - **Comunicación**: WhatsApp Business API.
 
+---
 
-## 📦 Estructura genera de proyecto
+## 📦 Estructura General del Proyecto
 
 ```text
 /vet-core
-├── apps/                   # Frontend 
-│    web-client/            # React (E-commerce y Portal Clientes)
-├── api-backend/            # Backend FastAPI 
-├── docker-compose.yml       # Orquestador local <!> Falta desarollar 
-└── README.md                # Documentación técnica centralizada
-``` 
-## <!> Tengoque terminar de docuemtar la parte de como levantar los entorno 
-
-
-
-<!--
-<!>Aca voy a poner todo lo que considereo que va para la parte de serilizacion de carriot para luego documetar 
-
-
-
-
-Esto es como funciona para traer los colores 
-[1. Archivo JSON]               [2. React en Navegador]          [3. Variables en el DOM]          [4. Tailwind CSS]
-clients/valeria/config.json  ➔  TenantContext (fetch)  ➔  theme.ts (:root style)  ➔  bg-vete-primary
-"primary": "#059669"            Lee el JSON al iniciar       --vete-primary: 5 150 105      Pinta con el color activo
-
-Paso 1 (Origen): clients/valeria/config.json contiene el color en formato Hexadecimal (#059669).
-Paso 2 (Lectura): Cuando el usuario entra a la web, TenantContext.tsx ejecuta fetch('/config/client_info.json') y lee los datos.
-Paso 3 (Inyección): La función injectDynamicTheme en theme.ts convierte #059669 a canales RGB 5 150 105 y ejecuta:
-document.documentElement.style.setProperty('--vete-primary', '5 150 105').
-Paso 4 (Consumo): tailwind.config.js tiene configurado primary: 'rgb(var(--vete-primary) / <alpha-value>)'. Cuando pones bg-vete-primary en un botón, Tailwind lee la variable CSS que se inyectó en el paso 3.
-
-
-
-
-Agregar esto para la parte de serializacion de proyecto
-Esto esta pensado para que cafgue la configuracion de cada cliete y poder 
-montar un solo cliet esto esta 
-Esto esta en .gitignore
-Lo que deberia capsa conservar es la estructuar de carpetas clietes y todo lo de _template para crear nuevos clientes 
-y dejoar el resto para que no ensucie el repo 
-
-/home/ary/Documentos/proyect/app/vet-core/
-├── api-backend/
 ├── apps/
-│   └── web-client/
-├── clients/                  # 👈 AQUÍ (en la raíz)
-│   ├── _template/
-│   │   ├── config.json
-│   │   └── assets/
-│   └── valeria/
-│       ├── config.json
-│       └── assets/
-├── docker-compose.yml
-└── .gitignore
- -->
+│   └── web-client/            # Frontend React (E-commerce y Portal Clientes)
+├── api-backend/               # Backend FastAPI (REST API, SQLAlchemy, Pydantic)
+├── clients/                   # Plantillas y datos de configuración por cliente (Zero-Rebuild)
+│   ├── _template/             # Estructura base para nuevos clientes (config.json + assets)
+│   └── valeria/               # Assets y marcas de cliente específico
+├── docker-compose.yml         # Orquestador multi-servicio local y producción <!> (Pendiente de personalizar por entorno)
+└── README.md                  # Documentación técnica centralizada
+```
 
-## Modelo Entidad relacion 
+---
 
+## 🏗️ Arquitectura de Despliegue Multi-Tenant (Estrategia por Droplet)
 
-El modelo de datos está estructurado para manejar el historial de precios en el carrito y la gestión de productos.
+El ecosistema está estructurado bajo un modelo de **Aislamiento por Contenedor por Cliente**, optimizado para ejecutarse eficientemente en un único servidor o VPS (DigitalOcean Droplet):
 
-## 📊 [Documentacion Frontend Web Clientes](./apps/web-client/README.md)
+```mermaid
+flowchart TD
+    subgraph Droplet["☁️ DigitalOcean Droplet (Servidor Único)"]
+        subgraph DBGroup["🗄️ Capa de Persistencia (Contenedor Único DB)"]
+            Postgres["🐘 Contenedor PostgreSQL (postgres:15)"]
+            DB1[("DB: vet_db_beltramelli")]
+            DB2[("DB: vet_db_cliente2")]
+            Postgres --- DB1
+            Postgres --- DB2
+        end
 
-## 📊 [Documentacion Backend](./api-backend/README.md)
+        subgraph Backends["⚙️ Capa Backend (FastAPI - Imagen Única vetcore-backend)"]
+            BE1["📦 Backend Beltramelli\n(Puerto 8000 / ENV: vet_db_beltramelli)"]
+            BE2["📦 Backend Cliente 2\n(Puerto 8001 / ENV: vet_db_cliente2)"]
+        end
 
+        subgraph Frontends["📱 Capa Frontend Web (React - Imagen Única vetcore-frontend)"]
+            FE1["🌐 Frontend Beltramelli\n(Volumen: /clientes/beltramelli)"]
+            FE2["🌐 Frontend Cliente 2\n(Volumen: /clientes/cliente2)"]
+        end
 
+        subgraph AdminPortal["🛠️ Capa Administrativa (Próximamente)"]
+            FlutterAdmin["📱 Portal Admin Flutter\n(Conexión Multi-Backend / Tenant)"]
+        end
+    end
 
+    ReverseProxy["🛡️ Nginx Proxy Manager / Traefik"] --> FE1
+    ReverseProxy --> FE2
+    ReverseProxy --> BE1
+    ReverseProxy --> BE2
 
+    FE1 -->|API REST| BE1
+    FE2 -->|API REST| BE2
+    BE1 -->|SQLAlchemy| DB1
+    BE2 -->|SQLAlchemy| DB2
+    FlutterAdmin -.->|API REST| BE1
+    FlutterAdmin -.->|API REST| BE2
+```
+
+### Principios Fundamentales:
+1. **Un Solo Contenedor de Base de Datos por Droplet**: Un único motor PostgreSQL en ejecución para minimizar uso de recursos. Cada tienda posee su base de datos independiente (`vet_db_beltramelli`, `vet_db_cliente2`, etc.).
+2. **Un Contenedor Backend por Carrito/Cliente**: Se reutiliza la **misma imagen de Docker** (`vetcore-backend:latest`), configurada vía variables de entorno (`DB_NAME`, `SECRET_KEY`, `ALLOWED_ORIGINS`, `APP_PORT`).
+3. **Un Contenedor Frontend Web por Carrito/Cliente**: Se reutiliza la **misma imagen de Docker** (`vetcore-frontend:latest`), inyectando el `config.json` y los assets por volumen de Docker.
+4. **Portal Administrativo Unificado en Flutter**: Desarrollado independientemente en Flutter para la gestión central de catálogo, stock y pedidos.
+
+---
+
+## 🧠 Guía Paso a Paso para Agnostizar el Backend (Comentarios <!> para Desarrollador)
+
+Para terminar de agnostizar el backend sin modificar el código Python existente, sigue esta lista de tareas:
+
+<!-- <!> PUNTOS DE VERIFICACIÓN Y AGNOSTIZACIÓN BACKEND -->
+
+- [ ] **<!> Paso 1: Configurar Variables de Entorno por Instancia (`.env`)**  
+  Asegurar que cada contenedor tenga su `DB_NAME` propia (ej: `vet_db_beltramelli`), clave `SECRET_KEY` única y `ALLOWED_ORIGINS` configurado con los dominios permitidos.
+
+- [ ] **<!> Paso 2: Aislar Carpetas de Imágenes Estáticas**  
+  Mapear en `docker-compose.yml` el volumen `./storage/<cliente>/productos:/app/app/static/productos` para que los archivos multimedia subidos no se mezclen entre tiendas.
+
+- [ ] **<!> Paso 3: Ingesta de Catálogo Inicial por Comercio**  
+  Cargar la plantilla Excel específica del cliente mediante el comando:
+  ```bash
+  docker exec -it backend-vet-beltramelli python -m app.services.import_excel
+  ```
+
+- [ ] **<!> Paso 4: Ajustar Nginx Proxy Manager / SSL**  
+  Redirigir las solicitudes públicas HTTPS desde el dominio del cliente (ej: `veterinaria-beltramelli.com`) hacia el puerto del contenedor frontend correspondiente.
+
+- [ ] **<!> Paso 5: Desarrollar e Integrar el Portal Admin en Flutter**  
+  Construir la app en Flutter para autenticarse contra `/api/auth/login` y gestionar productos y pedidos consumiendo la URL base de cada cliente.
+
+---
+
+## 💻 Ejemplo de `docker-compose.yml` Multi-Instancia
+
+```yaml
+version: '3.8'
+
+services:
+  # 🗄️ 1. Motor Único de Base de Datos para el Droplet
+  db-postgres-main:
+    image: postgres:15
+    container_name: postgres_main_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password_seguro_db
+    volumes:
+      - postgres_data_droplet:/var/lib/postgresql/data
+    networks:
+      - northcode-net
+
+  # ⚙️ 2. Backend Instancia 1 (Beltramelli)
+  backend-beltramelli:
+    image: vetcore-backend:latest
+    container_name: backend_beltramelli
+    restart: always
+    environment:
+      - IS_DOCKER=true
+      - DB_HOST=db-postgres-main
+      - DB_USER=postgres
+      - DB_PASSWORD=password_seguro_db
+      - DB_NAME=vet_db_beltramelli
+      - APP_PORT=8000
+      - ALLOWED_ORIGINS=https://veterinaria-beltramelli.com
+    volumes:
+      - ./storage/beltramelli/productos:/app/app/static/productos
+    depends_on:
+      - db-postgres-main
+    networks:
+      - northcode-net
+
+  # 🌐 3. Frontend Cliente Web Instancia 1 (Beltramelli)
+  web-beltramelli:
+    image: vetcore-frontend:latest
+    container_name: web_beltramelli
+    restart: always
+    volumes:
+      - ./clientes/beltramelli/config.json:/usr/share/nginx/html/config/client_info.json:ro
+      - ./clientes/beltramelli/assets:/usr/share/nginx/html/tenant:ro
+    ports:
+      - "3001:80"
+    networks:
+      - northcode-net
+
+networks:
+  northcode-net:
+    external: true
+
+volumes:
+  postgres_data_droplet:
+```
+
+---
 
 ## 📈 Filosofía de Desarrollo
 
-En **NorthCode**, creemos en la **Transparencia Total**. Este proyecto se desarrolla bajo una arquitectura de código abierto y documentado, permitiendo la auditoría técnica y garantizando que el cliente sea dueño de su activo tecnológico.
+En **NorthCode**, creemos en la **Transparencia Total** y la **Arquitectura Agnóstica**. Este proyecto está diseñado para permitir la reutilización de código en múltiples modelos de negocio, garantizando la soberanía tecnológica del cliente.
 
-
+---
 
 ## 📝 Licencia
 
@@ -113,23 +213,5 @@ Este proyecto es propiedad de **NorthCode**. Se otorga una licencia de uso perpe
 
 ---
 
-Desarrollado con ❤️ en Artigas/Salto, Uruguay por **NorthCode**.
-
----
-
-> **💡 Tip de Senior PM para el Repo:**
->
-> En la descripción corta del repo (la que sale a la derecha en GitHub): Pon algo breve como: *"Comprehensive digital management ecosystem for veterinary clinics and livestock production. Built with React, FastAPI, and Flutter."*
->
-> **Topics (Etiquetas):** Agregá etiquetas como `veterinary-software`, `react`, `fastapi`, `flutter`, `snig-uruguay`, `northcode`. Esto ayuda a que el repo se posicione mejor.
-
-# 🧠 Explicación Técnica del Auditor
-
-**Aislamiento de Datos:** Cada servicio de API (api_valeria, api_carlos) apunta a una base de datos distinta dentro del mismo motor PostgreSQL. Esto garantiza que un error en una instancia no comprometa los datos de otra y facilita los backups independientes.
-
-**Inyección por Volúmenes:** En lugar de crear una imagen de Docker por cada cliente, usamos la misma imagen y le "enchufamos" el config.json específico mediante volúmenes de Docker. Esto reduce drásticamente el uso de disco y simplifica el mantenimiento.
-
-**Configuración en Runtime (React):** El desarrollador de React debe entender que el archivo client_info.json en la carpeta public es su única fuente de verdad para el branding. Al cargar la app, un fetch inicial a este archivo local configurará el estado global (Context API o Redux) con los colores y textos del cliente actual.
-
-**Escalabilidad:** Para agregar un nuevo carrito, solo debes crear una nueva base de datos en Postgres y agregar un bloque nuevo al docker-compose.yml con su respectivo JSON de configuración. No se requiere tocar una sola línea de código Python o TypeScript.
+Desarrollado con ❤️ por **[NorthCode](https://northcode-uy.com/)** — Artigas / Salto, Uruguay.
 

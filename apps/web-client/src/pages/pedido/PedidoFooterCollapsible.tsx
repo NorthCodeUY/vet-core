@@ -13,9 +13,11 @@ import {
   Send, // Enviar 
   Truck // Camioneta 
 } from 'lucide-react';
-import companyInfo from '../../data/companyInfo.json'; // Datos de la empresa 
+
+import { useConfig } from '../../context/tenant_context';
 import { usePedidoStore } from '../../context/pedido_context'; // Contexto del pedido 
 
+import type { BankAccountItem } from '../../types/tenant_types';
 
 
 /**
@@ -48,19 +50,25 @@ const PAYMENT_METHODS = [
      */
     getMessage: () => '_Forma de pago: Efectivo (coordinar cambio con el vendedor)_'
   },
+  
   {
     id: 'transferencia',
     label: 'Transferencia',
     description: 'BROU / PREX / Santander',
     icon: Building2,
-    /**
-    * Extrae dinámicamente los datos bancarios del archivo de configuración empresarial
-    * y los formatea como bloque de texto para la transferencia.
-    * @returns {string} Datos bancarios estructurados (Banco, Cuenta, Titular).
-    */
-    getMessage: () => 
-      `*Datos de Transferencia:*\n- Banco: ${companyInfo.bank.name}\n- Cuenta: ${companyInfo.bank.accountNumber}\n- Titular: ${companyInfo.bank.beneficiary}\n_Adjuntaré el comprobante por este medio._`
+    getMessage: (bankAccounts?: Array<{ bank_name: string; account_number: string; beneficiary: string }>) => {
+      if (!bankAccounts || bankAccounts.length === 0) {
+        return '_Forma de pago: Transferencia Bancaria (solicitar datos de cuenta)_';
+      }
+      let text = `*Datos de Transferencia:*`;
+      bankAccounts.forEach((acc) => {
+        text += `\n- *${acc.bank_name}:* N° ${acc.account_number} (${acc.beneficiary})`;
+      });
+      text += `\n_Adjuntaré el comprobante por este medio._`;
+      return text;
+    },
   },
+
   {
     id: 'tarjeta',
     label: 'Tarjeta',
@@ -96,18 +104,12 @@ const PAYMENT_METHODS = [
  * @property {string} selectedMethod - Identificador de la estrategia de pago seleccionada ('efectivo' | 'transferencia' | 'tarjeta' | 'mercadopago').
  * @property {function(string): void} setSelectedMethod - Función de despacho para actualizar el método de pago activo en el estado principal.
  * @property {Object} bankInfo - Objeto con la información bancaria institucional para liquidaciones vía transferencia.
- * @property {string} bankInfo.name - Nombre de la entidad bancaria o fintech (ej: 'PREX', 'BROU').
- * @property {string} bankInfo.accountNumber - Número de cuenta o identificador de destino de fondos.
- * @property {string} bankInfo.beneficiary - Titular registrado de la cuenta bancaria.
- */
+ 
+ * */
 interface PaymentSelectorProps {
   selectedMethod: string;
   setSelectedMethod: (method: string) => void;
-  bankInfo: {
-    name: string;
-    accountNumber: string;
-    beneficiary: string;
-  };
+  bankInfo?: BankAccountItem;
 }
 
 
@@ -214,7 +216,7 @@ const PaymentSelector: React.FC<PaymentSelectorProps> = ({
 
 
       {/* <!> Lo de abajo deveria apuntar a variable no a transferencia texto  */}
-      {selectedMethod === 'transferencia' && (
+       {selectedMethod === 'transferencia' && bankInfo && (
         <div className={`
           /* --- Posición --- */
           p-3
@@ -231,8 +233,8 @@ const PaymentSelector: React.FC<PaymentSelectorProps> = ({
         `}>
           <p className="text-vete-text-light text-xs font-medium leading-tight">
             <span className="font-bold text-vete-primary">Datos Bancarios:</span><br />
-            Banco: {bankInfo.name}<br />
-            Cuenta: {bankInfo.accountNumber}<br />
+            Banco: {bankInfo.bank_name}<br />
+            Cuenta: {bankInfo.account_number}<br />
             Titular: {bankInfo.beneficiary}
           </p>
         </div>
@@ -599,6 +601,8 @@ interface PedidoFooterCollapsibleProps {
 export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = ({ onClearCart }) => {
   const { pedido, total } = usePedidoStore();
 
+  /* 1. Consumo del contexto multi-tenant */
+  const { config } = useConfig();
 
   /* --- Estados Locales de Checkout --- */
   const [isExpanded, setIsExpanded] = useState(false);
@@ -609,9 +613,8 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
   const currentPayment = PAYMENT_METHODS.find(m => m.id === selectedMethod) || PAYMENT_METHODS[0];
   const CurrentIcon = currentPayment.icon;
 
-  /* Manejo de Confirmación y Construcción del WhatsApp */
+/* Manejo de Confirmación y Construcción del WhatsApp */
   const handleConfirmOrder = () => {
-    
     /* Validación: Debe ser 'Retiro en Local' o tener texto ingresado */
     if (address !== 'Retiro en Local' && !address.trim()) {
       alert("Por favor, ingresa una dirección de entrega válida o selecciona 'Retiro en Local'.");
@@ -623,21 +626,27 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
       return;
     }
 
-    const rawPhone = companyInfo.contact.adminPhone;
-    const cleanPhone = rawPhone.startsWith('0') ? rawPhone.substring(1) : rawPhone;
-    const finalPhone = `598${cleanPhone}`;
+    /* 1. Teléfono dinámico del cliente activo */
+    const rawPhone = config?.contact?.admin_phone || '';
+    const countryCode = config?.contact?.whatsapp_country_code || '598';
+    const digitsOnly = rawPhone.replace(/\D/g, '');
+    const cleanPhone = digitsOnly.startsWith('0') ? digitsOnly.slice(1) : digitsOnly;
+    const finalPhone = `${countryCode}${cleanPhone}`;
+
+    const businessName = config?.business_name || 'TIENDA WEB';
+    const prefixMsg = config?.custom_messages?.whatsapp_order_prefix || 'NUEVO PEDIDO';
 
     const now = new Date();
     const dateStr = now.toLocaleDateString('es-UY');
     const timeStr = now.toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' });
     const shareUrl = window.location.href;
 
-    /* --- Construcción Estructurada del Mensaje --- */
-    let message = `*NUEVO PEDIDO - ${companyInfo.name.toUpperCase()}*\n\n`;
+    /* 2. Construcción Estructurada del Mensaje */
+    let message = `*${prefixMsg} - ${businessName.toUpperCase()}*\n\n`;
     message += `📅 *Fecha:* ${dateStr} - ${timeStr} hs\n`;
     message += `📍 *Entrega:* ${address.trim()}\n\n`;
     message += `💳 *Método de Pago:* ${currentPayment.label.toUpperCase()}\n`;
-    message += `${currentPayment.getMessage()}\n\n`;
+    message += `${currentPayment.getMessage(config?.bank_accounts)}\n\n`;
     message += `🛒 *Detalle de la compra:*\n`;
 
     pedido.forEach(item => {
@@ -749,14 +758,14 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
         <PaymentSelector 
           selectedMethod={selectedMethod}
           setSelectedMethod={setSelectedMethod}
-          bankInfo={companyInfo.bank}
+          bankInfo={config?.bank_accounts?.[0]}
         />
 
         {/* Sub-componente Dirección */}
         <DeliveryAddressSection 
           address={address}
           setAddress={setAddress}
-          mapsUrl={companyInfo.location.googleMapsUrl}
+          mapsUrl={config?.contact?.google_maps_url || '#'}
         />
       </div>
 
@@ -773,7 +782,8 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
             text-2xl font-black          /* Tamaño de destaque */
             text-vete-dark-green         /* Color institucional */
           `}>
-            ${total.toLocaleString('es-UY')}
+            {/* Total de pedio */}
+            ${total.toLocaleString('es-UY')} 
           </span>
         </div>
 
@@ -809,17 +819,30 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
             className={`
               /* --- Posición --- */
               flex-1                       /* Toma el ancho restante */
-              flex items-center justify-center gap-2
+              flex                         /* flex no es necesario porque ya es flex-1 */
+              items-center                 /* centra verticalmente */
+              justify-center               /* centra horizontalmente */
+              gap-2                        /* espaciado entre elementos */
               /* --- Dimensiones --- */
-              py-3.5 px-4
+              py-3.5                       /* padding vertical */
+              px-4                         /* padding horizontal */
               /* --- Colores --- */
-              bg-vete-dark-green text-white
+              bg-vete-dark-green           /* color verde oscuro */
+              text-white                     /* color blanco */
               /* --- Texto --- */
-              font-black uppercase tracking-wider text-xs
+              font-black                     /* negrita */
+              uppercase                      /* mayúsculas */
+              tracking-wider                 /* espaciado entre letras */
+              text-xs                        /* tamaño de texto */
               /* --- Estilo --- */
-              rounded-xl shadow-lg shadow-vete-dark-green/20
+              rounded-xl                     /* bordes redondeados */
+              shadow-lg                      /* sombra */
+              shadow-vete-dark-green/20      /* color de la sombra */
               /* --- Animación --- */
-              hover:bg-vete-dark-green/90 active:scale-[0.98] disabled:opacity-40 transition-all
+              hover:bg-vete-dark-green/90    /* color al pasar el mouse */
+              active:scale-[0.98]            /* escala al hacer click */
+              disabled:opacity-40            /* opacidad al estar deshabilitado */
+              transition-all                 /* transición suave */
             `}
           >
             <span>Confirmar Pedido</span>

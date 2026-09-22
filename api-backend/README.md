@@ -352,6 +352,18 @@ Una vez que el servidor esté ejecutándose (localmente o en Docker), puedes exp
 
 ---
 
+## 🧱 Estrategia de Agnostización y Despliegue Multi-Instancia
+
+El backend de **VetCore** está diseñado para ser **100% agnóstico al cliente o comercio final**. Esto significa que una sola base de código Python (FastAPI) atiende a múltiples clientes mediante **despliegues de instancias aisladas en contenedores Docker**:
+
+### 🏢 Modelo por DigitalOcean Droplet / Servidor
+1. **Un Contenedor de PostgreSQL Compartido**: Un único servicio de PostgreSQL en ejecución en el puerto interno de la red Docker (`northcode-net`). Almacena bases de datos independientes por cliente (`vet_db_beltramelli`, `vet_db_cliente2`, etc.).
+2. **Un Contenedor Backend FastAPI por Carrito/Cliente**: Múltiples contenedores basados en `vetcore-backend:latest`. Cada contenedor lee sus variables de entorno (`DB_NAME`, `ALLOWED_ORIGINS`, `SECRET_KEY`, `APP_PORT`) para aislar completamente los datos de cada tienda.
+3. **Persistencia Estática Separada**: Las imágenes subidas por el administrador o cliente se almacenan en carpetas de volúmenes separadas (`./storage/<cliente>/productos:/app/app/static/productos`).
+4. **Portal Administrativo en Flutter**: El backend expone la API REST de forma estándar para que el portal en Flutter (en desarrollo) pueda autenticarse (`/api/auth/login`), listar productos, actualizar precios y gestionar pedidos de cualquier tienda conectándose a la URL base correspondiente.
+
+---
+
 ## ❓ Solución de Problemas Comunes
 
 > [!WARNING]
@@ -365,7 +377,7 @@ Una vez que el servidor esté ejecutándose (localmente o en Docker), puedes exp
 
 > [!NOTE]
 > **CORS / Peticiones bloqueadas desde el Frontend (React)**:
-> Revisa la configuración `origins_list` en `app/config.py` y asegúrate de incluir la URL y puerto de tu frontend React (ej: `http://localhost:5173`).
+> Revisa la configuración `origins_list` en `app/config.py` y asegúrate de incluir la URL y puerto de tu frontend React (ej: `http://localhost:5173` o `https://veterinaria-beltramelli.com`).
 
 ---
 

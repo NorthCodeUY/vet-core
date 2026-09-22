@@ -2,7 +2,7 @@
 
 
 import { ChevronDown, ChevronUp, ShoppingCart } from 'lucide-react';
-import { ProductCard } from './ProductCard';
+import { ProductCard } from './ProductCard/ProductCard';
 import { usePedidoStore } from '../context/pedido_context';
 import { useCategoryProducts } from '../hooks/useProducts';
 

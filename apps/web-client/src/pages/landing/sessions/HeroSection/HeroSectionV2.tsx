@@ -131,7 +131,7 @@ export const HeroSessionV2 = ({ bgColor }: { bgColor: string }) => {
           desktop-vete:w-1/2           /* Mitad del ancho */
         `}>
           <img
-            src="/images/branding/HeroSection.png"
+            src="/tenant/hero.png"
             alt="Mascotas Beltramelli"
             className={`
               /* --- Dimensiones --- */

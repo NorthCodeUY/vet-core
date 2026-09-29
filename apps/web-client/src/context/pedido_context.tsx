@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useMemo } from 'react';
 import type { ApiProduct } from '../types/product_types';
 import type { PedidoItem } from '../types/pedido_types';
-
+  
 /**
  * Interfaz del Contrato de la Fachada.
  * Define qué puede HACER la UI (métodos) y qué puede VER (estado).

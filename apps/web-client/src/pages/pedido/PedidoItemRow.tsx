@@ -149,7 +149,7 @@ export const PedidoItemRow = ({ item }: PedidoItemRowProps) => {
         bg-vete-dark
       `}>
         <img
-        src={item.producto.imagen_principal_url?.img_url || '/images/producto_no_disponible.png'}
+        src={item.producto.imagen_principal_url?.img_url || '/tenant/producto_no_disponible.png'}
         alt={item.producto.imagen_principal_url ? item.producto.prod_nombre : "Imagen no encontrada"}
           className={`
             /* --- Dimensiones --- */

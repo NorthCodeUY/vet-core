@@ -126,6 +126,7 @@ const {  // <!> Esto no lo voy a usar por haora
     confirmButtonColor="red" 
     icon={<Trash2 size={24} />} 
   /> 
+  */}
 
 
 

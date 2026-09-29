@@ -196,7 +196,7 @@ export function ProductCardV2({ producto }: Props) {
         bg-white                     /* Fondo blanco */
       `}>
         <img
-          src={producto.imagen_principal_url?.img_url || '/images/producto_no_disponible.png'}
+          src={producto.imagen_principal_url?.img_url || '/tenant/producto_no_disponible.png'}
           alt={producto.imagen_principal_url ? producto.prod_nombre : "Imagen no encontrada"}
           className={`
             /* --- Dimensiones --- */

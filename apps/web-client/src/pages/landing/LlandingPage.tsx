@@ -68,6 +68,7 @@ export default function LandingPage() {
           {/* Seccion de programas de bienestar animal */}
           <ServicioSession bgColor='bg-vete-secondary' />
         </section>
+        
         <section id="ProgramsSection">
           {/* Seccion de programas de bienestar animal  <!>Anda per agregr ala clase para que qude igual debe estar eredando algo */}
           <PlanSession/>

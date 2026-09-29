@@ -76,7 +76,7 @@ Contenedor maestro lateral (Off-canvas slide-over).
   * `isOpen: boolean`: Controla la visibilidad y animación de deslizamiento.
   * `onClose: () => void`: Callback para cerrar el panel.
 * **Sub-componentes Internos**:
-  * `DrawerHeader`: Renderiza el isotipo y marca corporativa, textura de pasto invertido (`NavPasto.png`), el badge dinámico con el total de ítems (`ShoppingCart`) y el botón circular de cierre (`X`).
+  * `DrawerHeader`: Renderiza el isotipo y marca corporativa, textura de pasto invertido (`nav.png`), el badge dinámico con el total de ítems (`ShoppingCart`) y el botón circular de cierre (`X`).
   * `DrawerContent`: Área scrollable que muestra la lista de `PedidoItemRow` o una pantalla vacía estilizada con el icono `Package` si no hay elementos.
 * **Modales**:
   * Integra `ConfirmationModal` para confirmar la acción de vaciar el carrito por completo.

@@ -9,6 +9,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, ShoppingBag, MapPin, Send, Package, Trash2, Edit, Plus, ChevronDown, ShoppingCart ,Banknote, Building2, Coins, DollarSign} from 'lucide-react';
 import { usePedidoStore } from '../../context/pedido_context';
+import { useConfig } from '../../context/tenant_context';
 import { PedidoItemRow } from './PedidoItemRow';
 import { ConfirmationModal } from '../../components/ConfirmationModal';
 
@@ -51,7 +52,9 @@ interface DrawerHeaderProps {
  * @param {DrawerHeaderProps} props - Propiedades de visualización y control de eventos.
  * @returns {JSX.Element} Encabezado estructurado con fondo decorativo y controles de acción.
  */
-const DrawerHeader: React.FC<DrawerHeaderProps> = ({ itemCount, onClose }) => (
+const DrawerHeader: React.FC<DrawerHeaderProps> = ({ itemCount, onClose }) => {
+  const { config } = useConfig();
+  return (
   <div className={`
     /* --- Posición --- */
     relative                     /* Base para el fondo de pasto absoluto */
@@ -72,7 +75,7 @@ const DrawerHeader: React.FC<DrawerHeaderProps> = ({ itemCount, onClose }) => (
     
     {/* --- FONDO DE PASTO INVERTIDO --- */}
     <img
-      src="/images/branding/NavPasto.png"
+      src="/tenant/nav.png"
       alt=""
       className={`
         /* --- Posición --- */
@@ -98,7 +101,7 @@ const DrawerHeader: React.FC<DrawerHeaderProps> = ({ itemCount, onClose }) => (
     <div className="relative z-10 flex items-center gap-3">
       {/* Logo de la Empresa */}
       <img 
-        src="/logo.png" 
+        src={config?.branding?.logo_url || '/tenant/logo.png'} 
         alt="Logo" 
         className="w-10 h-10 object-contain shrink-0" 
       />
@@ -193,9 +196,9 @@ const DrawerHeader: React.FC<DrawerHeaderProps> = ({ itemCount, onClose }) => (
       */}
       <X size={20} strokeWidth={3} />
     </button>
-
   </div>
-);
+  );
+};
 
 
 /**

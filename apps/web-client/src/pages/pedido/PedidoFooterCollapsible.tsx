@@ -351,7 +351,10 @@ const CheckoutSummaryBar: React.FC<CheckoutSummaryBarProps> = ({
           <MapPin size={13} className="shrink-0" />
           <span className={`
             /* --- Texto --- */
-            text-[11px] font-medium truncate max-w-[130px]
+            text-[11px] 
+            font-medium 
+            truncate
+            max-w-[130px]
           `}>
             {address.trim() || 'Retiro en Local'}
           </span>
@@ -361,7 +364,15 @@ const CheckoutSummaryBar: React.FC<CheckoutSummaryBarProps> = ({
       {/* Flecha indicadora */}
       <button 
         type="button" 
-        className="p-1 text-vete-text-muted hover:text-vete-primary transition-colors"
+        className={`
+          /* --- Dimensiones --- */
+          p-1 
+          /* --- Colores --- */
+          text-vete-text-muted  /* Color por defecto */
+          hover:text-vete-primary /* Color al pasar el mouse */
+          /* --- Animación --- */
+          transition-colors /* Transición suave */
+        `}
         aria-label="Abrir opciones de pago y entrega"
       >
         <ChevronDown size={16} />

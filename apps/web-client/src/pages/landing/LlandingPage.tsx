@@ -80,16 +80,7 @@ export default function LandingPage() {
           topColor="bg-vete-dark"
           bottomColor="text-vete-secondary"
         />
-        <section id="AboutSection">
-          {/* Seccion de quienes somos */}
-          <AboutSection/>
 
-          {/* separador V2*/}
-          <SectionDivider
-            topColor="bg-vete-secondary"
-            bottomColor="text-vete-dark"
-          />
-        </section>
 
         <section id="MapsSection">
           {/* Seccion de mapa */}

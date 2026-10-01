@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 
 import { Menu, X, ShoppingCart, User } from "lucide-react";
 import { usePedidoStore } from '../../../context/pedido_context';
+import { useConfig } from '../../../context/tenant_context';
 import { PedidoDrawer } from '../../pedido/PedidoDrawer';
 
 
@@ -11,6 +12,7 @@ import { Stethoscope, Tag, ShoppingBag, Users, MapPin } from "lucide-react";
 
 /**  
  * Configuración de Navegación Centralizada con Iconos (SVGs)
+ * <!> Creo que esto depende de el clite tedria que ver para serializarlo en versiones futuras 
  */
 const NAV_LINKS = [
   { label: 'Servicios', href: '#ServicioSeccion', icon: Stethoscope },
@@ -213,6 +215,7 @@ const MobileNavigationDrawer = ({
  * Implementa: Sticky behavior, Carrito con contador/total y Perfil de usuario.
  */
 export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
+  const { config } = useConfig();
   const [isScrolled, setIsScrolled] = useState(false); // Detecta el scroll para aplicar el efecto de transparencia/blur, Si es true se aplica el efecto
   const [isCartOpen, setIsCartOpen] = useState(false); // Componente para el menu desplegable del carrito 
   const [isMenuOpen, setIsMenuOpen] = useState(false); // Componente para el menu desplegable del header
@@ -223,11 +226,6 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
     itemCount // Cantidad de productos
   } = usePedidoStore();
 
-  /* --- No Borrar!!!!! <!> Para el usuario, lo ideal es usar un Contexto de Auth Lo voy a usar en el sprin 3  --- */
-  // const { user, isAuthenticated } = useAuth(); 
-  // const user = { isLoggedIn: true, name: "Ary" }; // Mantenlo así hasta que hagamos el AuthContext
-
-
 
   /* Detecta el scroll para aplicar el efecto de transparencia/blur */
   useEffect(() => {
@@ -235,7 +233,7 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
+  // <!> Esto no tengo ide que es 
   const newLocal = `
               /* --- Posición --- */
               absolute                     /* Flota sobre el icono */
@@ -329,11 +327,11 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
         >
           {/* Imagen del Logo */}
           <img
-            src="/logo.png"
+            src={config?.branding?.logo_url || '/tenant/logo.png'}
             className={`
               /* --- Dimensiones --- */
-              w-10                       /* Tamaño más grande en móvil para balancear las 2 líneas */
-              tablet-vete:w-12           /* Un poco más grande en desktop */
+              w-12                       /* Tamaño más grande en móvil para balancear las 2 líneas */
+              tablet-vete:w-14           /* Un poco más grande en desktop */
               shrink-0                   /* Evita que se deforme */
             `}
             alt="Logo Beltramelli"
@@ -359,8 +357,8 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
               tracking-tighter             /* Estilo moderno */
               
               /* --- Tamaño --- */
-              text-[12px]                  /* Tamaño legible para "Veterinaria" */
-              tablet-vete:text-xl          /* Tamaño original en PC */
+              text-[16px]                  /* Tamaño legible para "Veterinaria" */
+              tablet-vete:text-2xl          /* Tamaño original en PC */
 
               /* --- Colores --- */
               text-vete-text-light         /* Color claro */
@@ -378,7 +376,7 @@ export const HeaderSession = ({ bgColor }: { bgColor: string }) => {
               
               /* --- Tamaño --- */
               text-[16px]                  /* <!> Más grande para resaltar la marca en móvil */
-              tablet-vete:text-xl          /* Igual al anterior en PC */
+              tablet-vete:text-2xl          /* Igual al anterior en PC */
 
               /* --- Colores --- */
               text-vete-text-light         /* Color claro */

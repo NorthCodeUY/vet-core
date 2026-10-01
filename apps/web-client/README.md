@@ -1,194 +1,324 @@
-# 🐾 Web Client - Veterinaria Beltramelli (Frontend)
+<!-- apps/web-client/README.md -->
+# 🚀 Web Client - Motor E-commerce & Plataforma Web Agnóstica (White-Label / Multi-Tenant)
 
-Plataforma de Gestión Veterinaria y E-commerce desarrollada para la **Veterinaria Beltramelli** en Salto, Uruguay. Este proyecto utiliza una arquitectura de Monorepo recomendada para escalar desde una Landing Page inicial hasta un ecosistema completo de gestión clínica, catálogo de productos y pedidos.
+Plataforma Web y Motor de E-commerce **multi-tenant agnóstico** (SaaS) desarrollado con **React 19**, **Vite 8**, **TypeScript** y **Tailwind CSS**. 
 
----
-
-## 🚀 Stack Tecnológico (Documentación Oficial)
-
-- **[React 19](https://react.dev/)**: Biblioteca de UI para construir la interfaz declarativa.
-- **[Vite 8](https://vitejs.dev/)**: Herramienta de construcción (build tool) de alta velocidad para desarrollo local y producción.
-- **[TypeScript](https://www.typescriptlang.org/)**: Tipado estático para mayor seguridad y mejor autocompletado en el editor.
-- **[Tailwind CSS v3.4](https://tailwindcss.com/)**: Framework CSS de utilidades para un diseño responsivo "Pixel Perfect".
-- **[React Router DOM v7](https://reactrouter.com/)**: Manejo de rutas SPA (ej. `/` para mantenimiento y `/revision` para pruebas).
-- **[Lucide React](https://lucide.dev/)**: Colección de iconos vectoriales ligeros y consistentes.
-- **[Lottie React](https://airbnb.io/lottie/)**: Renderizador de animaciones JSON para elementos dinámicos interactivos.
+Originalmente diseñado como sistema de gestión y tienda para **Veterinaria Beltramelli**, el proyecto evolucionó hacia una **arquitectura desacoplada en tiempo de ejecución (Zero-Rebuild)**. Esta arquitectura permite desplegar landing pages, catálogos interactivos, servicios y checkouts de pedidos por WhatsApp para cualquier rubro comercial (petshops, ferreterías, clínicas, farmacias, tiendas de retail) **sin necesidad de modificar ni recompilar el código fuente de la aplicación**.
 
 ---
 
-## 🏛️ Arquitectura del Frontend y Flujo de Datos
+## 📖 Sub-Documentaciones Modulares (Vistas Principales)
 
-El frontend sigue el patrón **Fachada (Facade)** en la capa de datos/hooks y una separación limpia entre UI, estado y llamadas HTTP:
+Para mantener una lectura ordenada y enfocada en los módulos de mayor volumen del frontend, la documentación técnica detallada de las dos interfaces principales se encuentra en sus respectivos archivos:
 
-- 📄 **Diagrama de Arquitectura**: [Arquitectura del Frontend](docs/architecture/diagrama_arquitectura_fontend.md)
+* 🏠 **[Módulo Landing Page (`src/pages/landing/README.md`)](src/pages/landing/README.md)**:
+  Explicación paso a paso de [`LlandingPage.tsx`](src/pages/landing/LlandingPage.tsx), orquestación de sub-secciones en `sessions/` ([`HeaderSession`](src/pages/landing/sessions/HederSession.tsx), [`HeroSession`](src/pages/landing/sessions/HeroSession.tsx), [`ProductsSession`](src/pages/landing/sessions/ProductsSession.tsx), [`ServicioSession`](src/pages/landing/sessions/ServicioSession.tsx), `AboutSection`, [`MapsSession`](src/pages/landing/sessions/MapsSession.tsx) y [`FooterSession`](src/pages/landing/sessions/FooterSession.tsx)), divisores SVG animados y control de colores alternados.
 
-### 🔗 Acceso Directo a Archivos de Arquitectura
-
-Para navegar directamente al código desde el repositorio, haz clic en los siguientes enlaces:
-
-- 📄 **Página Principal**: [`LlandingPage.tsx`](src/pages/landing/LlandingPage.tsx)
-  > Punto de entrada principal y orquestador de la web. Es la primera interfaz de impacto para el cliente. Actualmente en proceso de refactorización para extraer componentes y mejorar la modularidad.
-
-- 📄 **Sección de Productos**: [`ProductsSession.tsx`](src/pages/landing/sessions/ProductsSession.tsx)
-  > Módulo central del catálogo. Gestiona la visualización de la mercadería y la lógica inicial del carrito, integrando la respuesta de datos proveniente del backend.
-
-- 📄 **Tarjeta de Producto**: [`ProductCard.tsx`](src/components/ProductCard.tsx)
-  > Componente atómico de interfaz. Recibe propiedades dinámicas de color para integrarse con el diseño de ondas SVG, permitiendo una separación visual estética entre secciones.
-
-- 📄 **Hook de Productos**: [`useProducts.ts`](src/hooks/useProducts.ts)
-  > Fachada de lógica de UI. Este Custom Hook encapsula el estado de los productos, gestionando el mapeo de datos, los filtros por categoría y los criterios de ordenamiento (precio/nombre).
-
-- 📄 **Servicio API Backend**: [`product_service.ts`](src/services/product_service.ts)
-  > Capa de infraestructura. Se encarga exclusivamente de las peticiones HTTP al Backend (FastAPI). Su función es aislar la lógica de comunicación para facilitar el mantenimiento y las pruebas.
-
-- 📄 **Contexto de Pedidos**: [`pedido_context.tsx`](src/context/pedido_context.tsx)
-  > Gestor de Estado Global. Centraliza la información del carrito y los datos del cliente en toda la aplicación. Permite que cualquier componente acceda a la información del pedido actual sin necesidad de pasar *props* manualmente.
+* 🛒 **[Módulo de Pedidos y Carrito (`src/pages/pedido/README.md`)](src/pages/pedido/README.md)**:
+  Documentación del panel lateral Off-Canvas ([`PedidoDrawer.tsx`](src/pages/pedido/PedidoDrawer.tsx)), los controles numéricos editables en [`PedidoItemRow.tsx`](src/pages/pedido/PedidoItemRow.tsx), el acordeón checkout [`PedidoFooterCollapsible.tsx`](src/pages/pedido/PedidoFooterCollapsible.tsx), gestión de pasarelas de pago/bancos y la generación de mensajes estructurados para WhatsApp.
 
 ---
 
-- 📄 **Documentación Técnica**: [Diagrama de Secuencia](docs/architecture/diagrama_secuencia_fronten.md)
+## 🚀 Stack Tecnológico
 
-
-<!--Aca abria que mejorar aclarar -->
-### 🔗 Acceso Directo a los Métodos y Archivos del Flujo
-- 🟢 **Componente Vista**: [ProductsSession.tsx](src/pages/landing/sessions/ProductsSession.tsx)
-<!--Seccion en la landink pague proudcto esta parte tiene sierta logica porque es donde coencta con la logica para interactuar con el bakend est solo teien parte visual pero desde aca llama useProducts pra traer la informacion de los productos-->
-
-- 🟢 **Fachada / Hook**: [useProducts.ts](src/hooks/useProducts.ts)
-<!-- Por lo que entiedo teien logica para el cuadro buacar y la ligica nesesaria para traer los producots de el baked pero no estoy ben segurooo no no esta bien documetada la clase  si el de aajo de encarga de traer el producto  -->
-
-- 🟢 **Cliente HTTP / Endpoints**: [product_service.ts](src/services/product_service.ts)
-<!--  aca se encarga de traer los productos de la categoria y hacer por lo que veo es rma la ruta de los get  de el proeuto supongo qu cuando lo requira aramar los put etc para productos  -->
+- **[React 19](https://react.dev/)**: Biblioteca principal para interfaces declarativas y reactivas basadas en componentes.
+- **[Vite 8](https://vitejs.dev/)**: Entorno de construcción (*build tool*) ultrarrápido para desarrollo y bundles de producción.
+- **[TypeScript](https://www.typescriptlang.org/)**: Tipado estático estricto para seguridad de tipos, interfaces de configuración y mantenibilidad.
+- **[Tailwind CSS v3.4](https://tailwindcss.com/)**: Framework CSS basado en utilidades con variables dinámicas inyectadas en tiempo de ejecución.
+- **[React Router DOM v7](https://reactrouter.com/)**: Manejo de rutas SPA (`/` para Landing Page y `/mantenimiento` para estado de servicio).
+- **[Lucide React](https://lucide.dev/)**: Librería de iconos vectoriales ligeros y configurables por clave de nombre.
+- **[Lottie React](https://airbnb.io/lottie/)**: Renderizado de animaciones vectoriales JSON interactivas.
+- **Node.js (Scripting CLI)**: Automatización de cambio de cliente mediante [`switch-tenant.js`](scripts/switch-tenant.js).
 
 ---
 
-## 🎨 Sistema de Colores y Estilos
+## 🏢 Arquitectura Multi-tenant SaaS (Zero-Rebuild)
 
-El sistema combina variables CSS globales centralizadas con utilidades de Tailwind CSS y divisores vectoriales SVG para intercalar fondos entre secciones:
-
-```mermaid
-graph LR
-    CSS["src/index.css (:root)"] -->|Define Variables CSS| Tailwind["tailwind.config.js"]
-    Tailwind -->|Clases de Utilidad| UI["Componentes React"]
-    SectionDivider["SectionDivider.tsx"] -->|Renderiza Ondas SVG| UI
-```
-
-### 🔗 Acceso Directo a Archivos de Estilos
-- 🎨 **Variables CSS Globales**: [index.css](src/index.css)
-- 🎨 **Configuración de Tailwind**: [tailwind.config.js](tailwind.config.js)
-
-- 🎨 **Divisor SVG Animado**: [SectionDivider.tsx](src/components/SectionDivider.tsx)
-<!--Esto no tiene sentido qeu este aca caps si ponelo junto con los componentes en landing page que es el vector para la terminacion de las divisiones de la landing pate -->
-
----
-
-## 📂 Estructura del Código en `src/`
-
-<!--  Esto estaría genial si fuera algo con macedonio estructura de archivos que fuese linkeable no se si se puede hacer si se puede seria ideal si no sacarlo de aca  y talves ponerlo como un un diagrama aparte -->
+La arquitectura web separa estrictamente la **identidad corporativa** del **código fuente de la aplicación**:
 
 ```text
-apps/web-client/src/
-├── assets/          # Recursos estáticos (animaciones JSON, logos, SVGs)
-│   ├── animations/  # p.ej. maintenance.json (animación de página en construcción)
-│   └── branding/    # Gráficos de marcas y WhatsApp
-├── components/      # UI atómica y componentes independientes de la lógica
-│   ├── CategoryGroupCard.tsx   # Agrupador visual por categorías
-│   ├── PlanCard.tsx            # Tarjeta de presentación de planes
-│   ├── ProductCard.tsx         # Tarjeta de producto individual
-│   ├── SectionDivider.tsx     # Transición ondulatoria SVG con color dinámico
-│   ├── ServiceCard.tsx        # Tarjeta para mostrar servicios ofrecidos
-│   ├── WhatsAppButtonProps.tsx # Tipos y props para los botones principales de contacto y llamada a la veterinaria
-│   └── WhatsAppDynamicButton.tsx # Botón dinámico interactivo para comunicación directa y emergencias por WhatsApp
-├── context/         # Proveedores de estado global (auth_context.tsx, pedido_context.tsx)
-├── hooks/           # Custom Hooks / Fachadas de negocio (useProducts.ts)
-├── mapper/          # Mapeadores de transformación de DTOs a modelos frontend
-├── pages/           # Vistas / Ventanas principales conectadas al Router
-│   ├── landing/     # Landing page principal y sus secciones (sessions/)
-│   ├── maintenance/ # Vista de mantenimiento temporal para el root `/`
-│   ├── pedido/      # [Módulo futuro] Gestión de pedidos
-│   └── cliete/      # [Módulo futuro] Portal para clientes
-├── services/        # Capa HTTP pura (product_service.ts, auth_service.ts, logger.ts)
-├── types/           # Interfaces y tipos TypeScript
-└── App.tsx          # Configuración del enrutador React Router DOM (App.tsx)
-  
+1. [Carpeta de Cliente Host]
+   clientes/valeria/config.json + assets/
+           │
+           ▼ (Sincronizado vía switch-tenant.js o volumen Docker)
+2. [Servidor Web / Público]
+   public/config/client_info.json + public/tenant/
+           │
+           ▼ (fetch('/config/client_info.json') al arrancar)
+3. [TenantProvider (src/context/tenant_context.tsx)]
+   - Descarga client_info.json y remueve comentarios en memoria (stripJsonComments)
+   - Valida la estructura mediante el contrato TypeScript TenantConfig
+   - Actualiza document.title y favicon
+           │
+           ▼
+4. [Inyector de Tema (src/config/theme_config.ts)]
+   - Transforma colores Hexadecimales (#275D9E) a canales RGB ("39 93 158")
+   - Inyecta variables CSS en document.documentElement (:root)
+           │
+           ▼
+5. [Tailwind CSS + UI Componentes]
+   - Las clases semánticas (bg-vete-primary, text-vete-base, etc.) consumen las variables CSS
+   - Los elementos multimedia consumen rutas estándar (/tenant/logo.png, /tenant/hero.png)
 ```
 
-### 🔗 Acceso Directo a los Componentes y Vistas Principales:
-<!--Esto tendria que ir a como se compone landig page dejarlo todo junto no estar desperdigado  -->
-
-- 🧩 **Sección Hero**: [HeroSession.tsx](src/pages/landing/sessions/HeroSession.tsx)
-<!-- Seccion principal de la web es la primera cosa qeu el usario ve al inciar el sistema -->
-
-- 🧩 **Sección Cabecera / Header**: [HederSession.tsx](src/pages/landing/sessions/HederSession.tsx)
-<!-- Barra superior de la web siemrpe presente contiene el logito de carrito y la barra de navegacion junto a el log y el nombre de la empresa Y el boton para acceder a la modalidad de carrito  -->
-
-- 🧩 **Sección Pie de Página**: [FooterSession.tsx](src/pages/landing/sessions/FooterSession.tsx)
-<!-- sECCION INFERIOR DE LA WEB TIENE UNA BARRA SIMPRE PRESENTE CON EFECTO DE PASOT PARA LLAMAR A EMERJENCIA O ADMINSTRACION DE LA BETERINARIA ADEMAS DE LAS PRINCIPALES REDES SOCILES Y UBICACION Y SI ESCROLIAS PARA EL FINAL APARESE EL RESTO DE DATOS DE CONTANTO -->Ç
-
-- 🧩 **Enrutador**: [App.tsx](src/App.tsx)
-<!--aCA SUPONGO QUE ES DONDE GOLPEA AL LEVANTAR EL FOENTE PARA MI ESTA BIEN QUE LO MENSIONE PERO ACA NO ME ARESE CAPS EN ETRUCTURA NO ESTA BIEN UBICADO   -->
 ---
 
-## 🛠️ Configuración de Entorno y Desarrollo Local
+## 🔄 Flujo de Datos y Conexión Frontend-Backend
 
-### 💻 Guía por Sistema Operativo y Optimización de Recursos
+El frontend sigue el patrón **Fachada (Facade)** para la capa de hooks y una separación limpia entre la UI visual, el estado reactivo global del carrito y la infraestructura HTTP:
 
-#### 🪟 En Windows (Recomendado usar WSL2)
-Si trabajas en Windows, **se recomienda encarecidamente utilizar WSL2 (Windows Subsystem for Linux)**, 
-<!-- aCA DEBERIA IR UN LINK A LA INSTLACION DE WSL Y TAMBIEN OTRO A LA DOCUMENTACION OFICIAL  -->
-especialmente en equipos con recursos limitados (ej. procesadores Dual-Core o RAM ajustada):
-1. **Configuración del Entorno**: Clona e instala el proyecto dentro del sistema de archivos de Linux (ej. `~/Documentos/proyect/app/vet-core`) en lugar del sistema de archivos de Windows (`/mnt/c/`). Esto evita sobrecargar la memoria con Docker Desktop.
-2. **Ejecución Directa**: Abre tu terminal WSL2 e instala Node.js (v18+).
+```mermaid
+sequenceDiagram
+    autonumber
+    participant UI as Vista (ProductsSession.tsx)
+    participant Hook as Fachada / Hook (useProducts.ts)
+    participant Service as Cliente HTTP (product_service.ts)
+    participant Mapper as Mapeador (product_mapper.ts)
+    participant API as Backend (FastAPI)
 
-#### 🐧 En Linux (Nativo)
-Asegúrate de contar con Node.js y npm instalados:
-<!--  aca deberia ir un link a la documentacion de instalacion de node y npm -->
+    UI->>Hook: Solicita lista de productos / Filtro de categoría / Buscador
+    Hook->>Service: Llama a fetchProductsByCategory()
+    Service->>API: GET /api/v1/products/
+    API-->>Service: Respuesta JSON DTO
+    Service->>Mapper: Transforma DTO Backend -> ApiProduct Frontend
+    Mapper-->>Service: Objeto ApiProduct formateado
+    Service-->>Hook: Retorna lista de productos
+    Hook-->>UI: Actualiza estado reactivo (Búsqueda, orden y filtros)
+```
+
+1. 🟢 **Componente Vista** ([`ProductsSession.tsx`](src/pages/landing/sessions/ProductsSession.tsx)): Renderiza la interfaz visual del catálogo, el cuadro de búsqueda y botones de filtro. Invoca al hook de fachada `useProducts`.
+2. 🟢 **Fachada / Hook** ([`useProducts.ts`](src/hooks/useProducts.ts)): Encapsula la búsqueda en tiempo real, filtrado por categorías, ordenamiento y manejo de estados de carga y error.
+3. 🟢 **Cliente HTTP** ([`product_service.ts`](src/services/product_service.ts)): Capa de infraestructura de red hacia la API REST en FastAPI.
+4. 🟢 **Mapeador de Modelos** ([`product_mapper.ts`](src/mapper/product_mapper.ts)): Transforma los DTO del backend a los tipos del frontend ([`product_types.ts`](src/types/product_types.ts)).
+5. 🟢 **Contexto de Pedidos** ([`pedido_context.tsx`](src/context/pedido_context.tsx)): Gestor de estado global del carrito. Sincroniza productos seleccionados con el panel lateral ([`PedidoDrawer.tsx`](src/pages/pedido/PedidoDrawer.tsx)).
+
+---
+
+## 🎨 Paleta de Tokens Semánticos (`vete-*`)
+
+Para garantizar que el diseño responda dinámicamente al cliente activo, los componentes utilitarios leen variables CSS semánticas inyectadas por [`theme_config.ts`](src/config/theme_config.ts):
+
+| Clase Tailwind | Propósito y Definición |
+| :--- | :--- |
+| `bg-vete-primary` / `text-vete-primary` | Color principal de marca (Botones CTA, enlaces activos, acentos). |
+| `hover:bg-vete-primary-hover` | Estado hover para elementos interactivos principales. |
+| `bg-vete-secondary` / `text-vete-secondary` | Color secundario (Badges, chips y acentos complementarios). |
+| `bg-vete-tertiary` / `text-vete-tertiary` | Canales de contacto directo (WhatsApp, teléfonos). |
+| `bg-vete-dark` | Fondos oscuros estructurales (Header, Footers, Modales). |
+| `bg-vete-surface` | Fondo para tarjetas de productos y áreas de contenido claro. |
+| `bg-vete-soft` / `text-vete-soft` | Tinte suave de marca para fondos de chips y pasivos. |
+| `bg-vete-overlay` | Fondos con oscurecimiento para backdrops de modales y drawers. |
+| `text-vete-base` | Color tipográfico principal para textos de lectura continua. |
+| `text-vete-muted` | Color tipográfico secundario para subtítulos y placeholders. |
+| `border-vete-subtle` | Bordes suaves y líneas divisorias de contenedores. |
+| `text-vete-error` / `bg-vete-error` | Acciones destructivas (vaciar carrito, eliminar ítems, alertas). |
+
+---
+
+## 📂 Estructura Completa del Proyecto
+
+A continuación se detalla la estructura del cliente web y su integración con el directorio de clientes multi-tenant:
+
+```text
+vet-core/
+├── 📁 clientes/                           # 🏢 Directorio de clientes multi-tenant
+│   ├── 📁 _template/                     # ✅ Plantilla base con config.json documentado y assets de ejemplo
+│   │   ├── 📄 config.json
+│   │   └── 📁 assets/                    # (logo.png, hero.png, mision.png, etc.)
+│   ├── 📁 valeria/                        # Datos e imágenes de cliente real
+│   └── 📁 flavia_esponda/                 # Datos e imágenes de otro cliente real
+│
+└── 📁 apps/web-client/
+    ├── 📄 package.json                    # Dependencias y scripts CLI de tenant
+    ├── 📄 vite.config.ts                  # Configuración de Vite 8 y servidor de desarrollo
+    ├── 📄 tailwind.config.js              # Configuración de Tailwind CSS con colores dinámicos
+    ├── 📄 dockerfile                      # Dockerfile para compilación NGINX SPA
+    ├── 📄 docker-compose.yml              # Despliegue con montaje de volúmenes por cliente
+    │
+    ├── 📁 public/                         # Archivos estáticos servidos dinámicamente
+    │   ├── 📁 config/
+    │   │   └── 📄 client_info.json        # 🔄 Configuración activa del cliente en runtime
+    │   └── 📁 tenant/                     # 🔄 Recursos gráficos activos del cliente (/tenant/logo.png)
+    │
+    ├── 📁 scripts/
+    │   └── 📄 switch-tenant.js            # Script CLI Node.js para alternar cliente activo
+    │
+    └── 📁 src/
+        ├── 📄 App.tsx                     # Enrutador principal (React Router DOM v7)
+        ├── 📄 main.tsx                    # Punto de entrada React 19 / Vite
+        ├── 📄 index.css                   # Directivas Tailwind y variables CSS (:root)
+        │
+        ├── 📁 config/                     # Configuraciones del cliente
+        │   ├── 📄 theme_config.ts         # Inyector dinámico de variables CSS Hex -> RGB
+        │   └── 📄 ui-config.ts            # Constantes y parámetros de UI
+        │
+        ├── 📁 context/                    # Estado Global de React
+        │   ├── 📄 tenant_context.tsx      # Proveedor de configuración del tenant (TenantProvider / useConfig)
+        │   ├── 📄 pedido_context.tsx      # Estado global del carrito de compras
+        │   └── 📄 auth_context.tsx        # Contexto de autenticación
+        │
+        ├── 📁 types/                      # Tipos estricto TypeScript
+        │   ├── 📄 tenant_types.ts         # Contrato e interfaces del archivo config.json (TenantConfig)
+        │   ├── 📄 product_types.ts        # Interfaces de productos y categorías
+        │   ├── 📄 pedido_types.ts         # Estructuras de pedido y carrito
+        │   └── 📄 auth.ts                 # Tipos de sesión de usuario
+        │
+        ├── 📁 pages/                      # Páginas y Vistas Principales
+        │   ├── 📁 landing/                # 🏠 Módulo Landing Page
+        │   │   ├── 📄 LlandingPage.tsx    # Orquestador visual principal
+        │   │   ├── 📄 README.md           # 📖 Documentación detallada del Módulo Landing
+        │   │   └── 📁 sessions/           # Sub-secciones (Header, Hero, Products, Services, Maps, Footer)
+        │   ├── 📁 pedido/                 # 🛒 Módulo Pedidos y Carrito
+        │   │   ├── 📄 PedidoDrawer.tsx    # Drawer lateral de checkout
+        │   │   └── 📄 README.md           # 📖 Documentación detallada del Módulo Pedidos
+        │   └── 📁 maintenance/            # Vista de mantenimiento temporal
+        │
+        ├── 📁 components/                 # Componentes UI reutilizables
+        │   ├── 📁 ProductCard/            # Tarjetas de productos (Variantes V1 y V2)
+        │   ├── 📄 SectionDivider.tsx      # Divisor SVG animado con colores dinámicos
+        │   ├── 📄 ServiceCard.tsx         # Tarjeta genérica de servicios con icono
+        │   ├── 📄 PlanCard.tsx            # Tarjeta de paquetes y promociones
+        │   └── 📄 WhatsAppDynamicButton.tsx # Botón interactivo directo a WhatsApp
+        │
+        ├── 📁 hooks/                      # Custom Hooks / Fachadas de Negocio
+        │   ├── 📄 useProducts.ts          # Búsqueda, filtrado y ordenamiento de catálogo
+        │   └── 📄 useAddressManagement.ts # Gestión de direcciones de entrega
+        │
+        ├── 📁 services/                   # Cliente HTTP e Infraestructura
+        │   ├── 📄 product_service.ts      # Consumo de API REST (FastAPI)
+        │   └── 📄 logger.ts               # Registrador de eventos de sistema
+        │
+        └── 📁 mapper/                     # Mapeador de datos DTO -> Modelos Frontend
+            └── 📄 product_mapper.ts       # Transformación de respuesta API Backend
+```
+
+---
+
+## 🛠️ Guía de Operación Diaria y Comandos CLI
+
+### 1. Ejecución en Desarrollo Local (Vite)
+
 ```bash
-# 1. Entrar a la carpeta del cliente web
+# Entrar a la carpeta del cliente web
 cd apps/web-client
 
-# 2. Instalar dependencias del proyecto
+# Instalar dependencias
 npm install
 
-# 3. Iniciar el servidor de desarrollo en modo local (Vite)
+# Iniciar servidor local (puerto predeterminado Vite)
 npm run dev
 ```
 
-> ⚠️ **Nota sobre el Backend**: Si el backend en FastAPI o los contenedores no están encendidos en ese momento, el cliente web cargará normalmente de todas formas utilizando los datos en caché/mock data. No se romperá la interfaz.
+### 2. Cambiar de Cliente en Tiempo de Desarrollo
+
+Puedes alternar el cliente activo en tu entorno local usando los comandos preconfigurados o pasando el nombre de la carpeta dentro de `clientes/`:
+
+```bash
+# Cambiar al cliente "valeria" y levantar el servidor:
+npm run dev:valeria
+
+# Cambiar al cliente "flavia_esponda" y levantar el servidor:
+npm run dev:flavia
+
+# Cambiar a la plantilla base de pruebas:
+npm run dev:template
+
+# Cambiar a cualquier cliente arbitrario existente en /clientes:
+npm run tenant <nombre_carpeta_cliente>
+```
+
+### 3. Crear un Cliente Nuevo en 3 Pasos
+
+1. Duplica la carpeta `clientes/_template/` y asígnale el nombre del cliente (ej: `clientes/ferreteria_central/`).
+2. Agrega las imágenes del cliente en `clientes/ferreteria_central/assets/` (`logo.png`, `hero.png`, `mision.png`, etc.).
+3. Edita la paleta de colores, textos institucionales y números de teléfono en `clientes/ferreteria_central/config.json`.
+4. Ejecuta la sincronización:
+   ```bash
+   npm run tenant ferreteria_central
+   ```
 
 ---
 
-## 🌐 Pruebas en Red Local (LAN) y Compartición Temporal
+## 🐳 Despliegue en Producción (Docker Multi-Tenant)
 
-### 📱 1. Pruebas en Móviles dentro de la Red Local (LAN)
-Para probar la aplicación directamente desde tu celular o tablet conectado al mismo Wi-Fi:
+En entornos de producción, se compila **una única imagen Docker** de la aplicación React. Cada cliente se despliega como un contenedor independiente montando su configuración y activos como volúmenes de solo lectura (`ro`):
 
-```bash
-# Ejecutar desde apps/web-client
-# 1. Compilar y empaquetar la imagen Docker
-sudo docker build -t vete-celu .
+```yaml
+version: '3.8'
 
-# 2. Detener contenedor de prueba si ya está activo
-sudo docker stop vete-test
+services:
+  web_valeria:
+    image: vetcore-frontend:latest
+    container_name: web_valeria
+    restart: always
+    volumes:
+      - ./clientes/valeria/config.json:/usr/share/nginx/html/config/client_info.json:ro
+      - ./clientes/valeria/assets:/usr/share/nginx/html/tenant:ro
+    ports:
+      - "3001:80"
 
-# 3. Exponer en el puerto 3000
-sudo docker run -it --rm -p 3000:80 --name vete-test vete-celu
+  web_flavia:
+    image: vetcore-frontend:latest
+    container_name: web_flavia
+    restart: always
+    volumes:
+      - ./clientes/flavia_esponda/config.json:/usr/share/nginx/html/config/client_info.json:ro
+      - ./clientes/flavia_esponda/assets:/usr/share/nginx/html/tenant:ro
+    ports:
+      - "3002:80"
 ```
 
-### ⚡ 2. Compartición en Tiempo Real mediante Túnel de Cloudflare (`exponer_entorno_tem.sh`)
-<!--dOCUMETACION OFICIAL DE TUNEL CLOUDFLARE -->
-Para mostrar avances a clientes o compañeros de equipo fuera de tu red local sin necesidad de publicar en producción, el proyecto cuenta con un script automatizado que genera enlaces públicos temporales en segundo plano:
+---
+
+## 🌐 Pruebas en Red Local (LAN) y Túneles Temporales
+
+### 📱 1. Pruebas en Móviles dentro de la Red Local (LAN)
+
+```bash
+# 1. Compilar imagen Docker local
+sudo docker build -t web-client-test .
+
+# 2. Correr el contenedor en el puerto 3000
+sudo docker run -it --rm -p 3000:80 --name web-test web-client-test
+```
+
+### ⚡ 2. Compartición mediante Túnel de Cloudflare
+
+Para exponer el entorno de pruebas de forma segura hacia clientes externos:
 
 ```bash
 # Ejecutar desde la raíz del repositorio /vet-core:
 ./esponer_entorno_tem.sh
 ```
 
-El script ([esponer_entorno_tem.sh](../../esponer_entorno_tem.sh)) se encarga de:
-- Verificar o instalar automáticamente `cloudflared`.
-- Levantar un túnel HTTPS seguro para el **Frontend** (Vite) y otro para el **Backend** (FastAPI).
-- Generar URLs temporales tipo `https://xxxx.trycloudflare.com` listas para compartir.
+El script [`esponer_entorno_tem.sh`](../../esponer_entorno_tem.sh) levantará un túnel HTTPS temporal vía Cloudflare para el frontend y backend.
 
 ---
 
-Desarrollado por **NorthCode**. 🚀 E-commerce & Portal Veterinaria Beltramelli. 🐄 <!-- Aca deberia linkiar a la web de la ermpesa >
+## 💡 Recomendaciones para Completar el Agnosticado del Código (Próximos Pasos)
+
+Para finalizar la conversión de la plataforma en un motor 100% agnóstico y multi-rubro, se recomiendan las siguientes mejoras arquitectónicas:
+
+1. **Resolución Dinámica de Iconos en Servicios y Categorías**:
+   - *Estado actual*: `ServiceCard.tsx` y `categoryHelpers.tsx` poseen un mapa estático (`ICON_MAP`).
+   - *Mejora recomendada*: Implementar un componente `DynamicLucideIcon` que reciba `name: string` (ej. `"ShoppingBag"`, `"Wrench"`, `"Stethoscope"`) y resuelva dinámicamente la propiedad `icon_name` del `config.json`.
+
+2. **Parametrización del Botón y Sección de Contacto Rápido / Urgencias**:
+   - *Estado actual*: El interruptor `has_emergency_button` asume el texto de "Urgencias 24h".
+   - *Mejora recomendada*: Extender `contact` en `config.json` con `emergency_label` (ej: `"Urgencias 24h"`, `"Atención Directa"`, `"Consulta Flash"`), permitiendo que rubros no médicos adapten la llamada a la acción.
+
+3. **Internacionalización de Monedas y Formato de Precios**:
+   - *Estado actual*: El formateador asigna por defecto el signo pesos uruguayos (`$`).
+   - *Mejora recomendada*: Agregar la propiedad `currency_symbol` (`"$"`, `"USD"`, `"ARS"`, `"MXN"`) en la sección de temas/configuración para soporte multi-moneda automático en el carrito y tarjetas.
+
+4. **Abstracción de Datos Fallback**:
+   - *Estado actual*: Los archivos de fallback `productos.json`, `servicios.json` y `companyInfo.json` en `src/data/` contienen información con datos de prueba veterinarios.
+   - *Mejora recomendada*: Mover los datos de prueba predeterminados a `clientes/_template/` para que la carpeta base `src/data/` contenga únicamente plantillas sin sesgo de dominio.
+
+5. **Renombrado Progresivo del Prefijo de Tokens CSS (`vete-*`)**:
+   - *Estado actual*: Los tokens semánticos utilizan el prefijo `vete-primary`, `vete-dark`, etc.
+   - *Mejora recomendada*: Reemplazar progresivamente en la configuración de Tailwind el prefijo `vete-` por `tenant-` (ej. `bg-tenant-primary`, `text-tenant-base`) para desvincular por completo la sintaxis de clases del término veterinario.
+
+---
+
+Desarrollado por **[NorthCode](https://github.com/NorthCodeUY)** 🚀 - Motor Web Agnóstico & Plataforma E-commerce White-Label.

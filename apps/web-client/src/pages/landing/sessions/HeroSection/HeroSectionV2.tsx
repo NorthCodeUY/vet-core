@@ -77,7 +77,7 @@ export const HeroSessionV2 = ({ bgColor }: { bgColor: string }) => {
             text-vete-primary            /* Color verde principal */
           `}>
             <span className="whitespace-nowrap">
-              Cuidamos <span className="text-vete-text-light">a</span>
+              Cuidamos no vA <span className="text-vete-text-light">a</span>
             </span> <br />
             <span className="text-vete-text-light">quienes</span> amas
           </h1>

@@ -62,7 +62,7 @@
   // Contenido de la sección de portada (Hero) con soporte de etiquetas HTML
   "hero": {
     "title_html": "Cuidamos <span class='text-vete-primary'>a</span><br />quienes <span class='text-vete-primary'>amas</span>",
-    "description": "Tu mascota merece la mejor atención médica en un ambiente cálido y profesional."
+    "description": "Tu mascota merece la mejor atención médica en un ambiente cálido y profesional. Contamos con especialistas comprometidos con el bienestar integral de tus compañeros, brindando cuidado, dedicación y confianza en cada etapa de su vida."
   },
 
   // Módulo de Servicios ofrecidos por la veterinaria o comercio
@@ -190,8 +190,18 @@
     "emergency_phone": "096368021",
     "whatsapp_country_code": "598",
     "email": "valeriabeltramelli.vet@gmail.com",
+    
+    
     "address": "Calle 1 N°5657, Barrio Volcán, Salto, Uruguay",
-    "google_maps_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3391.5714443456!2d-57.9625!3d-31.3833!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95ade2f999999999%3A0x9999999999999999!2sSalto%2C%20Uruguay!5e0!3m2!1ses!2suy!4v1710000000000!5m2!1ses!2suy",
+    
+    
+    
+    // 🗺️ URL OFICIAL PARA EL IFRAME (Muestra el cartel oficial de la empresa en el mapa)
+    "google_maps_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3391.385317789498!2d-57.9095582!3d-31.3913822!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95addd9a108eada5%3A0x6ad0891a40c05da3!2sVeterinaria%20Beltramelli!5e0!3m2!1ses!2suy!4v1710000000000!5m2!1ses!2suy",
+
+    // 📍 ENLACE DIRECTO (Abre la ficha completa con fotos, reseñas y horarios como en la imagen 2)
+    "google_maps_direct_url": "https://www.google.com/maps/place/Veterinaria+Beltramelli/@-31.3913822,-57.9095582,17z/data=!3m1!4b1!4m6!3m5!1s0x95addd9a108eada5:0x6ad0891a40c05da3!8m2!3d-31.3913822!4d-57.9069779!16s%2Fg%2F11nw3mj4vv?hl=es-ES",
+    
     "schedule": {
       "weekdays": "Lunes a Sábados: 08:00 – 20:00",
       "saturdays": "Sábados: 08:00 – 12:00"

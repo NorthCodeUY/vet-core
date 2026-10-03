@@ -66,12 +66,16 @@ export default function LandingPage() {
             bottomColor="text-vete-dark"
           />
           {/* Seccion de programas de bienestar animal */}
-          <ServicioSession bgColor='bg-vete-secondary' />
+          <ServicioSession 
+            bgColor='bg-vete-secondary' 
+          />
         </section>
         
         <section id="PlanSession">
           {/* Seccion de programas de bienestar animal  <!>Anda per agregr ala clase para que qude igual debe estar eredando algo */}
-          <PlanSession/>
+          <PlanSession
+            bgColor='bg-vete-secondary'
+          />
 
           {/* separador V1*/}
           <SectionDivider
@@ -80,19 +84,15 @@ export default function LandingPage() {
           />
         </section>
 
-
-
-
-
         <section id="MapsSection">
           {/* Seccion de mapa */}
-          <MapsSession bgColor='bg-vete-secondary' />
+          <MapsSession bgColor='bg-vete-dark' />
         </section>
 
       </main>
 
       {/* Seccion inverior de la web Contacto etc*/}
-      <Footer bgColor='bg-vete-secondary' />
+      <Footer bgColor='bg-vete-dark' />
     </div>
   )
 };

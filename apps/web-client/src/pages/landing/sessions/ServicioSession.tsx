@@ -39,7 +39,6 @@ interface ServicioSessionProps {
  * @returns {JSX.Element} Sección estructurada con encabezado y grilla responsiva de servicios.
  */
 export const ServicioSession: React.FC<ServicioSessionProps> = ({ bgColor }) => {
-  
   /* 1. Consumo del contexto multi-tenant */
   const { config } = useConfig();
 

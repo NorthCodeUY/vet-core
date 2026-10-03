@@ -13,6 +13,9 @@ import { PedidoProvider } from './context/pedido_context';
 import MaintenancePage from './pages/maintenance/MaintenancePage';
 import LandingPage from './pages/landing/LlandingPage';
 
+import { TenantStudioDrawer } from './components/studio/TenantStudioDrawer'; // 👈
+
+
 /**
  * Componente Raíz de la Aplicación (`App`).
  * 
@@ -48,6 +51,9 @@ function App(): React.JSX.Element {
             <Route path="/revision" element={<LandingPage />} />
           </Routes>
         </BrowserRouter>
+
+        {/* 🛠️ Estudio de personalización en vivo (flota sobre la web) */}
+        <TenantStudioDrawer />
       </PedidoProvider>
     </TenantProvider>
   );

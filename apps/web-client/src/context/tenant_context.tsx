@@ -16,17 +16,20 @@ import { injectDynamicTheme } from '../config/theme_config';
  * @property {TenantConfig | null} config - Datos de configuración del cliente activo.
  * @property {boolean} isLoading - Indicador de carga inicial del archivo JSON.
  * @property {string | null} error - Mensaje de error en caso de fallo de lectura.
+ * @property {function} updateConfig - Función para actualizar la configuración.
  */
 export interface TenantContextProps {
   config: TenantConfig | null;
   isLoading: boolean;
   error: string | null;
+  updateConfig: (newConfig: TenantConfig) => void; 
 }
 
 export const TenantContext = createContext<TenantContextProps>({
   config: null,
   isLoading: true,
   error: null,
+  updateConfig: () => {}, 
 });
 
 /**
@@ -53,6 +56,7 @@ const stripJsonComments = (jsonString: string): string => {
  * @returns {JSX.Element} Provider de React con estado de configuración activo.
  */
 export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  
   const [config, setConfig] = useState<TenantConfig | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -99,6 +103,13 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
     loadTenantConfiguration();
   }, []);
+  
+  
+  /* Función para actualizar la configuración y reinyectar colores en vivo */
+  const updateConfig = (newConfig: TenantConfig) => {
+    injectDynamicTheme(newConfig.theme);
+    setConfig({ ...newConfig });
+  };
 
   /* Vista de carga inicial bloqueante para evitar parpadeos de color */
   if (isLoading) {
@@ -130,7 +141,7 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   }
 
   return (
-    <TenantContext.Provider value={{ config, isLoading, error }}>
+    <TenantContext.Provider value={{ config, isLoading, error, updateConfig}}>
       {children}
     </TenantContext.Provider>
   );

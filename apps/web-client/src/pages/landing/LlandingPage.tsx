@@ -69,17 +69,19 @@ export default function LandingPage() {
           <ServicioSession bgColor='bg-vete-secondary' />
         </section>
         
-        <section id="ProgramsSection">
+        <section id="PlanSession">
           {/* Seccion de programas de bienestar animal  <!>Anda per agregr ala clase para que qude igual debe estar eredando algo */}
           <PlanSession/>
+
+          {/* separador V1*/}
+          <SectionDivider
+            topColor="bg-vete-dark"
+            bottomColor="text-vete-secondary"
+          />
         </section>
 
 
-        {/* separador V1*/}
-        <SectionDivider
-          topColor="bg-vete-dark"
-          bottomColor="text-vete-secondary"
-        />
+
 
 
         <section id="MapsSection">

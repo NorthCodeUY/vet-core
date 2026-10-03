@@ -1,0 +1,296 @@
+<!-- clients/_template/preview.html -->
+ 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VetCore — Visualizador de Paleta Multi-tenant</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --vete-primary: 39 93 158;
+      --vete-primary-hover: 30 75 130;
+      --vete-secondary: 118 161 101;
+      --vete-tertiary: 31 175 56;
+      --vete-dark: 0 77 64;
+      --vete-surface: 255 255 255;
+      --vete-soft: 219 236 213;
+      --vete-overlay: 15 23 42;
+      --vete-text-base: 0 0 0;
+      --vete-text-muted: 156 163 175;
+      --vete-border-subtle: 243 244 246;
+      --vete-error: 220 38 38;
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            vete: {
+              primary: 'rgb(var(--vete-primary) / <alpha-value>)',
+              'primary-hover': 'rgb(var(--vete-primary-hover) / <alpha-value>)',
+              secondary: 'rgb(var(--vete-secondary) / <alpha-value>)',
+              tertiary: 'rgb(var(--vete-tertiary) / <alpha-value>)',
+              dark: 'rgb(var(--vete-dark) / <alpha-value>)',
+              surface: 'rgb(var(--vete-surface) / <alpha-value>)',
+              soft: 'rgb(var(--vete-soft) / <alpha-value>)',
+              overlay: 'rgb(var(--vete-overlay) / <alpha-value>)',
+              'text-base': 'rgb(var(--vete-text-base) / <alpha-value>)',
+              'text-muted': 'rgb(var(--vete-text-muted) / <alpha-value>)',
+              'border-subtle': 'rgb(var(--vete-border-subtle) / <alpha-value>)',
+              error: 'rgb(var(--vete-error) / <alpha-value>)',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-6 font-sans">
+
+  <div class="max-w-7xl mx-auto space-y-8">
+    
+    <!-- Encabezado de la Herramienta -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-800 p-6 rounded-2xl border border-slate-700">
+      <div>
+        <h1 class="text-2xl font-black text-white flex items-center gap-2">
+          🎨 VetCore Theme Live Editor
+        </h1>
+        <p class="text-slate-400 text-sm mt-1">
+          Ajusta los colores visualmente y previsualiza cómo reacciona tu web en tiempo real.
+        </p>
+      </div>
+      <button onclick="copyGeneratedJSON()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-sm transition-all shadow-lg">
+        📋 Copiar "theme" para config.json
+      </button>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- PANEL IZQUIERDO: Controles de Color (Pickers) -->
+      <div class="lg:col-span-4 bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-5 h-fit">
+        <h2 class="text-lg font-bold text-white border-b border-slate-700 pb-3">Tokens Semánticos</h2>
+        
+        <div id="controls-container" class="space-y-3.5 text-xs">
+          <!-- Se generan dinámicamente con JS -->
+        </div>
+
+        <div class="pt-4 border-t border-slate-700 space-y-2">
+          <label class="block text-xs font-bold text-slate-300">Pegar config.json para cargar:</label>
+          <textarea id="import-json" rows="3" placeholder='Pega tu {"theme": {...}} aquí' class="w-full bg-slate-950 text-slate-300 p-2.5 rounded-lg border border-slate-700 text-xs font-mono"></textarea>
+          <button onclick="importJSON()" class="w-full py-2 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-lg text-xs transition-colors">
+            📥 Importar Colores desde JSON
+          </button>
+        </div>
+      </div>
+
+      <!-- PANEL DERECHO: Previsualización de Componentes de la Web -->
+      <div class="lg:col-span-8 space-y-6">
+        
+        <!-- 1. Preview Header -->
+        <div class="bg-vete-dark p-4 px-6 rounded-2xl flex items-center justify-between shadow-xl border border-vete-border-subtle/20">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-vete-primary rounded-lg flex items-center justify-center text-white font-black text-sm">
+              VB
+            </div>
+            <span class="font-black text-white text-base tracking-tight">VETERINARIA BELTRAMELLI</span>
+          </div>
+          <div class="flex items-center gap-4 text-xs font-bold text-white/90">
+            <span class="text-vete-primary border-b-2 border-vete-primary pb-0.5">Servicios</span>
+            <span>Promociones</span>
+            <span>Contacto</span>
+            <div class="p-2 bg-vete-primary text-white rounded-full">
+              🛒
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Preview Hero Banner -->
+        <div class="bg-vete-soft/30 p-8 rounded-3xl border border-vete-border-subtle flex flex-col md:flex-row items-center justify-between gap-6">
+          <div class="space-y-4 max-w-md">
+            <div class="inline-block px-3 py-1 bg-vete-primary/10 border border-vete-primary/30 text-vete-primary text-[10px] font-black uppercase rounded-full">
+              ★ Atención Especializada
+            </div>
+            <h3 class="text-3xl font-black text-vete-text-base leading-tight">
+              Cuidamos <span class="text-vete-primary">a quienes</span> amas
+            </h3>
+            <p class="text-vete-text-muted text-sm leading-relaxed">
+              Tu mascota merece la mejor atención médica en un ambiente cálido y profesional.
+            </p>
+            <div class="flex gap-3 pt-2">
+              <button class="px-5 py-2.5 bg-vete-primary hover:bg-vete-primary-hover text-white font-bold text-xs rounded-xl shadow-lg transition-all">
+                Conózcanos
+              </button>
+              <button class="px-5 py-2.5 bg-vete-surface text-vete-text-base border border-vete-border-subtle font-bold text-xs rounded-xl hover:bg-vete-soft/50 transition-colors">
+                Ver Catálogo
+              </button>
+            </div>
+          </div>
+          <div class="w-48 h-48 bg-vete-surface rounded-3xl shadow-xl flex items-center justify-center p-4 border border-vete-border-subtle shrink-0">
+            <div class="text-center space-y-1">
+              <span class="text-4xl">🐶🐱</span>
+              <p class="text-[11px] font-bold text-vete-text-base">Mascotas Felices</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Preview Tarjetas (Servicio y Plan) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Tarjeta de Plan (Destacada) -->
+          <div class="bg-vete-surface p-6 rounded-2xl border-2 border-vete-primary shadow-lg space-y-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-[10px] font-black uppercase px-2.5 py-0.5 bg-vete-primary text-white rounded-full">Más Elegido</span>
+                <h4 class="text-xl font-black text-vete-text-base mt-2">Plan Protección</h4>
+              </div>
+              <span class="text-2xl font-black text-vete-primary">$1.450</span>
+            </div>
+            <p class="text-vete-text-muted text-xs">Cobertura completa para emergencias y chequeos.</p>
+            <div class="space-y-2 text-xs text-vete-text-base">
+              <div class="flex items-center gap-2"><span class="text-vete-primary font-bold">✓</span> Consultas sin costo</div>
+              <div class="flex items-center gap-2"><span class="text-vete-primary font-bold">✓</span> Descuentos en farmacia</div>
+            </div>
+            <button class="w-full py-2.5 bg-vete-primary hover:bg-vete-primary-hover text-white font-bold text-xs rounded-xl transition-all">
+              Solicitar Plan
+            </button>
+          </div>
+
+          <!-- Tarjeta de Servicio / Contacto -->
+          <div class="bg-vete-surface p-6 rounded-2xl border border-vete-border-subtle shadow-sm space-y-4">
+            <div class="w-10 h-10 bg-vete-secondary/30 rounded-xl flex items-center justify-center text-vete-primary font-black">
+              🩺
+            </div>
+            <h4 class="text-lg font-bold text-vete-text-base">Clínica Médica</h4>
+            <p class="text-vete-text-muted text-xs leading-relaxed">
+              Diagnósticos clínicos, cirugías generales y urgencias veterinarias 24h.
+            </p>
+            <div class="p-3 bg-vete-error/10 border border-vete-error/30 rounded-xl flex items-center gap-2.5">
+              <span class="text-vete-error font-black text-xs">🚨 Urgencias:</span>
+              <span class="text-vete-text-base font-bold text-xs">096 368 021</span>
+            </div>
+            <button class="w-full py-2 bg-vete-tertiary text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 hover:opacity-90">
+              <span>💬 Consultar WhatsApp</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    /* Estado actual de colores */
+    let currentTheme = {
+      primary: "#275D9E",
+      primary_hover: "#1E4B82",
+      secondary: "#76A165",
+      tertiary: "#1FAF38",
+      dark: "#004D40",
+      surface: "#FFFFFF",
+      soft: "#DBECD5",
+      overlay: "#0F172A",
+      text_base: "#000000",
+      text_muted: "#9CA3AF",
+      border_subtle: "#F3F4F6",
+      error: "#DC2626"
+    };
+
+    const tokenLabels = {
+      primary: "Color Principal (Botones, Acentos)",
+      primary_hover: "Hover Principal",
+      secondary: "Color Secundario (Badges)",
+      tertiary: "Color Canales (WhatsApp)",
+      dark: "Fondo Oscuro (Header, Modales)",
+      surface: "Fondo Tarjetas (Blanco/Claro)",
+      soft: "Tinte Suave (Fondos sutiles)",
+      overlay: "Backdrop (Oscurecimiento)",
+      text_base: "Texto Principal",
+      text_muted: "Texto Secundario / Muted",
+      border_subtle: "Bordes Suaves",
+      error: "Error / Alertas / Urgencias"
+    };
+
+    function hexToRgbChannels(hex) {
+      let cleanHex = hex.replace('#', '').trim();
+      if (cleanHex.length === 3) cleanHex = cleanHex.split('').map(c => c + c).join('');
+      const num = parseInt(cleanHex, 16);
+      return `${(num >> 16) & 255} ${(num >> 8) & 255} ${num & 255}`;
+    }
+
+    function applyLiveTheme() {
+      const root = document.documentElement;
+      Object.entries(currentTheme).forEach(([key, hexValue]) => {
+        const cssVarKey = key.replace('_', '-');
+        root.style.setProperty(`--vete-${cssVarKey}`, hexToRgbChannels(hexValue));
+      });
+    }
+
+    function renderControls() {
+      const container = document.getElementById('controls-container');
+      container.innerHTML = '';
+
+      Object.entries(currentTheme).forEach(([key, val]) => {
+        const row = document.createElement('div');
+        row.className = "flex items-center justify-between gap-3 p-2 bg-slate-900 rounded-lg border border-slate-800";
+        row.innerHTML = `
+          <div class="flex flex-col">
+            <span class="font-bold text-white uppercase text-[10px] tracking-wider">${key}</span>
+            <span class="text-slate-400 text-[10px] truncate max-w-[180px]">${tokenLabels[key] || ''}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="text" value="${val}" onchange="updateColorText('${key}', this.value)" class="w-16 bg-slate-950 border border-slate-700 text-white font-mono text-[10px] px-1 py-0.5 rounded text-center" />
+            <input type="color" value="${val}" oninput="updateColorPicker('${key}', this.value)" class="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" />
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      applyLiveTheme();
+    }
+
+    function updateColorPicker(key, hex) {
+      currentTheme[key] = hex;
+      renderControls();
+    }
+
+    function updateColorText(key, hex) {
+      if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+        currentTheme[key] = hex;
+        renderControls();
+      }
+    }
+
+    function importJSON() {
+      try {
+        const raw = document.getElementById('import-json').value;
+        const parsed = JSON.parse(raw);
+        const importedTheme = parsed.theme ? parsed.theme : parsed;
+        
+        Object.keys(currentTheme).forEach(k => {
+          if (importedTheme[k]) currentTheme[k] = importedTheme[k];
+        });
+
+        renderControls();
+        alert("✅ Colores importados correctamente.");
+      } catch (err) {
+        alert("❌ Error al parsear el JSON. Asegúrate de que tenga formato válido.");
+      }
+    }
+
+    function copyGeneratedJSON() {
+      const formatted = JSON.stringify({ theme: currentTheme }, null, 2);
+      navigator.clipboard.writeText(formatted).then(() => {
+        alert("📋 Bloque 'theme' copiado al portapapeles. ¡Pégalo directo en tu config.json!");
+      });
+    }
+
+    /* Inicialización */
+    renderControls();
+  </script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VetCore — Generador Visual de Clientes y Assets</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --vete-primary: 39 93 158;
+      --vete-primary-hover: 30 75 130;
+      --vete-secondary: 118 161 101;
+      --vete-tertiary: 31 175 56;
+      --vete-dark: 0 77 64;
+      --vete-surface: 255 255 255;
+      --vete-soft: 219 236 213;
+      --vete-overlay: 15 23 42;
+      --vete-text-base: 0 0 0;
+      --vete-text-muted: 156 163 175;
+      --vete-border-subtle: 243 244 246;
+      --vete-error: 220 38 38;
+    }
+    /* Scrollbar estilizado */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #020617; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            vete: {
+              primary: 'rgb(var(--vete-primary) / <alpha-value>)',
+              'primary-hover': 'rgb(var(--vete-primary-hover) / <alpha-value>)',
+              secondary: 'rgb(var(--vete-secondary) / <alpha-value>)',
+              tertiary: 'rgb(var(--vete-tertiary) / <alpha-value>)',
+              dark: 'rgb(var(--vete-dark) / <alpha-value>)',
+              surface: 'rgb(var(--vete-surface) / <alpha-value>)',
+              soft: 'rgb(var(--vete-soft) / <alpha-value>)',
+              overlay: 'rgb(var(--vete-overlay) / <alpha-value>)',
+              'text-base': 'rgb(var(--vete-text-base) / <alpha-value>)',
+              'text-muted': 'rgb(var(--vete-text-muted) / <alpha-value>)',
+              'border-subtle': 'rgb(var(--vete-border-subtle) / <alpha-value>)',
+              error: 'rgb(var(--vete-error) / <alpha-value>)',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+
+  <!-- CABECERA SUPERIOR DE CONTROL -->
+  <header class="sticky top-0 z-50 bg-slate-900 border-b border-slate-800 px-6 py-3.5 flex flex-col md:flex-row justify-between items-center gap-4 shadow-2xl">
+    <div class="flex items-center gap-3">
+      <div class="p-2 bg-emerald-600/20 text-emerald-400 rounded-xl font-black text-lg">⚡</div>
+      <div>
+        <h1 class="text-sm font-bold text-white leading-tight">VetCore — Suite de Creación de Tenants</h1>
+        <p id="file-status" class="text-[11px] text-slate-400 font-mono">Cargando ./config.json...</p>
+      </div>
+    </div>
+
+    <!-- Botonera de Acción -->
+    <div class="flex items-center gap-2.5">
+      <button onclick="loadConfigFile()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition-all border border-slate-700 flex items-center gap-1.5">
+        🔄 Recargar
+      </button>
+
+      <button onclick="copyGeneratedJSON()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition-all shadow-md flex items-center gap-1.5">
+        📋 Copiar JSON
+      </button>
+
+      <button onclick="downloadJSONFile()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition-all shadow-md flex items-center gap-1.5">
+        💾 Descargar config.json
+      </button>
+    </div>
+  </header>
+
+  <!-- WORKSPACE PRINCIPAL -->
+  <div class="max-w-[1750px] mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- COLUMNA IZQUIERDA: Formulario de Control por Secciones -->
+    <div class="lg:col-span-5 bg-slate-900 p-6 rounded-3xl border border-slate-800 space-y-6 h-[86vh] overflow-y-auto pr-3">
+      
+      <!-- 1. Identidad y Nombre -->
+      <div class="space-y-3 bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
+        <h3 class="text-xs font-black text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+          🏷️ 1. Identidad del Negocio
+        </h3>
+        <div>
+          <label class="text-[11px] text-slate-400 font-medium">Nombre Comercial:</label>
+          <input type="text" id="input-business-name" oninput="updateField('business_name', this.value)" class="w-full bg-slate-900 border border-slate-800 text-white text-xs p-2.5 rounded-xl mt-1 focus:border-emerald-500 outline-none font-bold" />
+        </div>
+      </div>
+
+      <!-- 2. Galería y Carga de Imágenes (Assets) -->
+      <div class="space-y-3 bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xs font-black text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+            🖼️ 2. Gestión de Imágenes y Logos (assets/)
+          </h3>
+          <span class="text-[10px] text-slate-500">Ruta real: ./assets/</span>
+        </div>
+        
+        <div id="assets-manager-container" class="space-y-3">
+          <!-- Inyectado dinámicamente con thumbnails y selectores de archivo -->
+        </div>
+      </div>
+
+      <!-- 3. Paleta de Colores con Pickers -->
+      <div class="space-y-3 bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
+        <h3 class="text-xs font-black text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+          🎨 3. Paleta de Colores Semántica
+        </h3>
+        <div id="theme-controls" class="space-y-2 text-xs">
+          <!-- Inyectado dinámicamente -->
+        </div>
+      </div>
+
+      <!-- 4. Portada (Hero) -->
+      <div class="space-y-3 bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
+        <h3 class="text-xs font-black text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+          ✨ 4. Sección Portada (Hero)
+        </h3>
+        <div>
+          <label class="text-[11px] text-slate-400">Título con HTML:</label>
+          <textarea id="input-hero-title" rows="2" oninput="updateHeroTitle(this.value)" class="w-full bg-slate-900 border border-slate-800 text-white text-xs p-2.5 rounded-xl mt-1 font-mono focus:border-emerald-500 outline-none"></textarea>
+        </div>
+        <div>
+          <label class="text-[11px] text-slate-400">Descripción:</label>
+          <textarea id="input-hero-desc" rows="2" oninput="updateHeroDesc(this.value)" class="w-full bg-slate-900 border border-slate-800 text-white text-xs p-2.5 rounded-xl mt-1 focus:border-emerald-500 outline-none"></textarea>
+        </div>
+      </div>
+
+      <!-- 5. Servicios e Iconos -->
+      <div class="space-y-3 bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
+        <h3 class="text-xs font-black text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+          🩺 5. Servicios del Comercio
+        </h3>
+        <div id="services-manager-container" class="space-y-3">
+          <!-- Inyectado dinámicamente -->
+        </div>
+      </div>
+
+      <!-- 6. Módulos Activos (Features) -->
+      <div class="space-y-3 bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
+        <h3 class="text-xs font-black text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+          ⚙️ 6. Módulos Activos (Features)
+        </h3>
+        <div id="features-controls" class="grid grid-cols-2 gap-2 text-xs">
+          <!-- Inyectado dinámicamente -->
+        </div>
+      </div>
+
+      <!-- 7. Contacto y Teléfonos -->
+      <div class="space-y-3 bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
+        <h3 class="text-xs font-black text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+          📞 7. Canales de Contacto
+        </h3>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[11px] text-slate-400">Teléfono WhatsApp:</label>
+            <input type="text" id="input-phone" oninput="updateContactField('admin_phone', this.value)" class="w-full bg-slate-900 border border-slate-800 text-white text-xs p-2 rounded-xl mt-1" />
+          </div>
+          <div>
+            <label class="text-[11px] text-slate-400">Teléfono Urgencias:</label>
+            <input type="text" id="input-emergency" oninput="updateContactField('emergency_phone', this.value)" class="w-full bg-slate-900 border border-slate-800 text-white text-xs p-2 rounded-xl mt-1" />
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- COLUMNA DERECHA: Live Preview Fidedigno de la Web -->
+    <div class="lg:col-span-7 space-y-6">
+      
+      <!-- 1. PREVIEW: Header -->
+      <div class="bg-vete-dark p-4 px-6 rounded-2xl flex items-center justify-between shadow-xl border border-vete-border-subtle/20 transition-all">
+        <div class="flex items-center gap-3">
+          <img id="preview-logo-img" src="./assets/logo.png" alt="Logo" class="w-10 h-10 object-contain rounded-lg" onerror="this.src='./assets/producto_no_disponible.png'" />
+          <span id="preview-header-title" class="font-black text-white text-base tracking-tight uppercase">
+            VETERINARIA BELTRAMELLI
+          </span>
+        </div>
+        <div class="flex items-center gap-5 text-xs font-bold text-white/90">
+          <span class="text-vete-primary border-b-2 border-vete-primary pb-0.5">Servicios</span>
+          <span>Planes</span>
+          <span>Local</span>
+          <div id="preview-cart-badge" class="p-2.5 bg-vete-primary text-white rounded-full shadow-lg">
+            🛒
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. PREVIEW: Hero Banner con Foto Real -->
+      <div class="bg-vete-soft/30 p-8 rounded-3xl border border-vete-border-subtle flex flex-col md:flex-row items-center justify-between gap-6 transition-all">
+        <div class="space-y-4 max-w-md">
+          <div class="inline-block px-3 py-1 bg-vete-primary/10 border border-vete-primary/30 text-vete-primary text-[10px] font-black uppercase rounded-full">
+            ★ Atención Profesional
+          </div>
+          <h3 id="preview-hero-title" class="text-3xl font-black text-vete-text-base leading-tight">
+            Cuidamos <span class="text-vete-primary">a quienes</span> amas
+          </h3>
+          <p id="preview-hero-desc" class="text-vete-text-muted text-xs leading-relaxed">
+            Tu mascota merece la mejor atención médica en un ambiente cálido y profesional.
+          </p>
+          <div class="flex gap-3 pt-2">
+            <button class="px-5 py-2.5 bg-vete-primary hover:bg-vete-primary-hover text-white font-bold text-xs rounded-xl shadow-lg transition-all">
+              Conózcanos
+            </button>
+            <button class="px-5 py-2.5 bg-vete-surface text-vete-text-base border border-vete-border-subtle font-bold text-xs rounded-xl">
+              Ver Catálogo
+            </button>
+          </div>
+        </div>
+        
+        <!-- Imagen del Hero -->
+        <div class="w-52 h-52 bg-vete-surface rounded-3xl shadow-2xl p-2 border border-vete-border-subtle overflow-hidden shrink-0">
+          <img id="preview-hero-img" src="./assets/hero.png" alt="Hero" class="w-full h-full object-cover rounded-2xl" onerror="this.src='./assets/producto_no_disponible.png'" />
+        </div>
+      </div>
+
+      <!-- 3. PREVIEW: Tarjetas de Servicios Dinámicos -->
+      <div>
+        <h4 class="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Previsualización de Servicios:</h4>
+        <div id="preview-services-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Inyectado dinámicamente -->
+        </div>
+      </div>
+
+      <!-- 4. PREVIEW: Sección Institucional (Misión / Visión) -->
+      <div>
+        <h4 class="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Previsualización Institucional (assets/mision.png):</h4>
+        <div class="bg-vete-surface p-6 rounded-3xl border border-vete-border-subtle shadow-sm flex items-center justify-between gap-6">
+          <div class="space-y-2 max-w-sm">
+            <h5 class="text-lg font-black text-vete-primary">Misión</h5>
+            <p class="text-xs text-vete-text-base leading-relaxed">
+              Brindar atención <strong class="text-vete-primary">veterinaria profesional</strong>, cálida y confiable para cada familia.
+            </p>
+          </div>
+          <img id="preview-mision-img" src="./assets/mision.png" alt="Misión" class="w-32 h-24 object-cover rounded-2xl border border-vete-border-subtle shadow-sm" onerror="this.src='./assets/producto_no_disponible.png'" />
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="./generator.js"></script>
+</body>
+</html>

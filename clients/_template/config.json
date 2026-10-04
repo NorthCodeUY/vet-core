@@ -17,19 +17,19 @@
     "highlight": "Tus Mascotas",
     "suffix": "en Salto"
   },
-  
-  // Paleta de colores inyectada dinámicamente en tiempo de ejecución (variables CSS en :root)
+
+  //  <!> text-vete-text-light Esta clase no la encuentro  Paleta de colores inyectada dinámicamente en tiempo de ejecución (variables CSS en :root)
   "theme": {
     "primary": "#275D9E",         // Color principal de marca (Botones de acción, enlaces activos, iconos)
     "primary_hover": "#1E4B82",   // Color para el estado hover del botón principal
-    "secondary": "#76A165",       // Color secundario (Badges, acentos complementarios)
+    "secondary": "#daebd4",       // #76A165 Color secundario (Badges, acentos complementarios)
     "tertiary": "#1FAF38",        // Color para canales de contacto directo (WhatsApp)
-    "dark": "#004D40",            // Color oscuro para header, footers y modales
+    "dark": "#fdfdf1",            // #004D40 Color oscuro para header, footers y modales
     "surface": "#FFFFFF",         // Fondo para tarjetas de productos y áreas de contenido claro
-    "soft": "#DBECD5",            // Tinte suave de marca para fondos de chips y alertas
+    "soft": "#2a8f05",            //#DBECD5 Tinte suave de marca para fondos de chips y alertas
     "overlay": "#0F172A",         // Fondo con oscurecimiento para backdrops de drawers/modales
     "text_base": "#000000",       // Color tipográfico principal para textos de lectura continua
-    "text_muted": "#9CA3AF",      // Color tipográfico secundario (subtítulos y placeholders)
+    "text_muted": "#000000",      // #9CA3AF Color tipográfico secundario (subtítulos y placeholders)
     "border_subtle": "#F3F4F6",   // Bordes sutiles y líneas divisorias
     "error": "#DC2626"            // Color para acciones destructivas (vaciar carrito, errores)
   },
@@ -61,7 +61,7 @@
 
   // Contenido de la sección de portada (Hero) con soporte de etiquetas HTML
   "hero": {
-    "title_html": "Cuidamos <span class='text-vete-primary'>a</span><br />quienes <span class='text-vete-primary'>amas</span>",
+    "title_html": "<span class='text-vete-primary'>Cuidamos</span> a quienes <span class='text-vete-primary'>amas</span>",
     "description": "Tu mascota merece la mejor atención médica en un ambiente cálido y profesional. Contamos con especialistas comprometidos con el bienestar integral de tus compañeros, brindando cuidado, dedicación y confianza en cada etapa de su vida."
   },
 

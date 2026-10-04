@@ -3,6 +3,7 @@
 import { Search, Loader2 } from 'lucide-react';
 import { CategoryGroupCard } from '../../../components/CategoryGroupCard.tsx';
 import { ProductCard } from '../../../components/ProductCard/ProductCard';
+import { useConfig } from '../../../context/tenant_context';
 
 import { useProducts } from '../../../hooks/useProducts.ts';
 
@@ -22,6 +23,8 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
     filteredResults   // Resultados filtrados 
   } = useProducts();
 
+  const { config } = useConfig();
+  
   /* --- Renderizado de Estado de Carga --- */
   if (loading) {
     return (
@@ -42,7 +45,7 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
         {/* Icono de carga */}
         <Loader2 className="animate-spin text-vete-primary" size={48} />
 
-        {/* Mensaje de carga datos */}
+        {/* Mensaje de carga datos  <!> Esto hay que serializarlo*/}
         <p className="text-vete-primary font-bold italic animate-pulse">
           Cargando catálogo de Salto...
         </p>
@@ -93,7 +96,7 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
             uppercase                    /* Mayúsculas institucionales */
             tracking-tighter             /* Espaciado de letras apretado */
 
-            /* --- Colores --- */
+            /* --- Colores --- <!> Este es lo que me doy cuenta me falta ese color en mi jeson creo */
             text-vete-text-light         /* Color de texto claro */
           `}>
             Lista de <span className="text-vete-primary">Productos</span>

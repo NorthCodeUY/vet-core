@@ -22,7 +22,6 @@ import MapsSession from './sessions/MapsSession.tsx'; // Seccion de productos
 import Footer from './sessions/FooterSession.tsx';
 import ServicioSession from './sessions/ServicioSession.tsx';
 import { PlanSession } from './sessions/PlanSession.tsx';
-import { AboutSection } from './sessions/AboutSection.tsx'; 
 
 export default function LandingPage() {
   return (

@@ -104,7 +104,7 @@ export const HeroSessionV1: React.FC<HeroSessionV1Props> = ({ bgColor = 'bg-tran
               dangerouslySetInnerHTML={{
                 __html:
                   heroData?.title_html ||
-                  '<!> No entro - Cuidamos <span class="text-vete-primary">a</span><br />quienes <span class="text-vete-primary">amas</span>',
+                  'Cuidamos <span class="text-vete-primary">a</span><br />quienes <span class="text-vete-primary">amas</span>',
               }}
               className={`
 

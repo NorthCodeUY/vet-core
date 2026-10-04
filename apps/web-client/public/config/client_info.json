@@ -16,9 +16,9 @@
     "prefix": "Cuidado profesional para",
     "highlight": "Tus Mascotas",
     "suffix": "en Salto"
-               },
-  
-  // Paleta de colores inyectada dinámicamente en tiempo de ejecución (variables CSS en :root)
+  },
+
+  //  <!> text-vete-text-light Esta clase no la encuentro  Paleta de colores inyectada dinámicamente en tiempo de ejecución (variables CSS en :root)
   "theme": {
     "primary": "#275D9E",         // Color principal de marca (Botones de acción, enlaces activos, iconos)
     "primary_hover": "#1E4B82",   // Color para el estado hover del botón principal
@@ -26,7 +26,7 @@
     "tertiary": "#1FAF38",        // Color para canales de contacto directo (WhatsApp)
     "dark": "#fdfdf1",            // #004D40 Color oscuro para header, footers y modales
     "surface": "#FFFFFF",         // Fondo para tarjetas de productos y áreas de contenido claro
-    "soft": "#2a8f05",          //#DBECD5 Tinte suave de marca para fondos de chips y alertas
+    "soft": "#2a8f05",            //#DBECD5 Tinte suave de marca para fondos de chips y alertas
     "overlay": "#0F172A",         // Fondo con oscurecimiento para backdrops de drawers/modales
     "text_base": "#000000",       // Color tipográfico principal para textos de lectura continua
     "text_muted": "#000000",      // #9CA3AF Color tipográfico secundario (subtítulos y placeholders)

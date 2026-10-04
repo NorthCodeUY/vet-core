@@ -1,4 +1,4 @@
-  /* --- apps/web-client/src/pages/landing/sessions/ProductsSession.tsx --- */
+/* --- apps/web-client/src/pages/landing/sessions/ProductsSession.tsx --- */
 
 import { Search, Loader2 } from 'lucide-react';
 import { CategoryGroupCard } from '../../../components/CategoryGroupCard.tsx';
@@ -13,9 +13,9 @@ import { useProducts } from '../../../hooks/useProducts.ts';
  * Gestiona la carga de datos, el filtrado global y la visualización por categorías.
  */
 export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
-  
+
   // El hook useProducts se encarga de toda la logica de productos
-  const { 
+  const {
     searchTerm,       // Guardara lo que escriba el usuario y esto me ayudara a filtrar los resultados  
     setSearchTerm,    // Me va a permitir modificar el searchTerm
     categories,       // Todas las categorias
@@ -24,7 +24,7 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
   } = useProducts();
 
   const { config } = useConfig();
-  
+
   /* --- Renderizado de Estado de Carga --- */
   if (loading) {
     return (
@@ -41,13 +41,20 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
         py-40                        /* Espaciado vertical amplio */
         gap-4                        /*  Espacio entre icono y texto */
       `}>
-        
+
         {/* Icono de carga */}
         <Loader2 className="animate-spin text-vete-primary" size={48} />
 
-        {/* Mensaje de carga datos  <!> Esto hay que serializarlo*/}
-        <p className="text-vete-primary font-bold italic animate-pulse">
-          Cargando catálogo de Salto...
+        {/* Mensaje de carga datos  */}
+        <p className={`
+          /* --- Colores --- */
+          text-vete-primary 
+          /* --- Texto --- */
+          font-bold italic 
+          /* --- Animación --- */
+          animate-pulse
+        `}>
+          Cargando catálogo de {config?.business_name || 'productos'}...
         </p>
       </div>
     );
@@ -96,7 +103,7 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
             uppercase                    /* Mayúsculas institucionales */
             tracking-tighter             /* Espaciado de letras apretado */
 
-            /* --- Colores --- <!> Este es lo que me doy cuenta me falta ese color en mi jeson creo */
+            /* --- Colores --- <!> pARA MI ESTO NO ESTA EN MI ARCHIVO O NO VA O NO SE CREO QUE NO V mI PALETA DE CLOEWS ESTA MEDIO DESORDENADA  */
             text-vete-text-light         /* Color de texto claro */
           `}>
             Lista de <span className="text-vete-primary">Productos</span>
@@ -126,7 +133,7 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
               group-focus-within:text-vete-primary /* Cambia color al escribir */
               transition-colors            /* Transición suave */
             `} size={20} />
-            
+
             <input
               type="text"
               placeholder="¿Qué estás buscando?"
@@ -160,7 +167,7 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
           </div>
         </div>
 
-        {/* Área de Visualización de Contenido  */} 
+        {/* Área de Visualización de Contenido  */}
         <div className="w-full">
           {searchTerm ? (
             /* Vista de Resultados de Búsqueda */
@@ -174,7 +181,7 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
               <h3 className="text-2xl font-bold text-vete-primary mb-8 italic">
                 Resultados para "{searchTerm}"
               </h3>
-              
+
               <div className={`
                 /* --- Posición --- */
                 grid                         /* Sistema de grilla */
@@ -211,11 +218,11 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
               gap-20                       /* Espacio amplio entre categorías */
             `}>
               {categories.map((cat) => (
-                <CategoryGroupCard 
+                <CategoryGroupCard
                   key={cat.cat_id}
-                  title={cat.cat_nombre} 
-                  catId={cat.cat_id} 
-                  initialData={cat.productos} 
+                  title={cat.cat_nombre}
+                  catId={cat.cat_id}
+                  initialData={cat.productos}
                 />
               ))}
             </div>

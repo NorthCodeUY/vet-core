@@ -19,20 +19,68 @@
   },
 
   //  <!> text-vete-text-light Esta clase no la encuentro  Paleta de colores inyectada dinámicamente en tiempo de ejecución (variables CSS en :root)
+  // <!> Sacar 
+  // "theme": {
+  //   "primary": "#275D9E",         // Color principal de marca (Botones de acción, enlaces activos, iconos)
+  //   "primary_hover": "#1E4B82",   // Color para el estado hover del botón principal
+  //   "secondary": "#daebd4",       // #76A165 Color secundario (Badges, acentos complementarios)
+  //   "tertiary": "#1FAF38",        // Color para canales de contacto directo (WhatsApp)
+  //   "dark": "#fdfdf1",            // #004D40 Color oscuro para header, footers y modales
+  //   "surface": "#FFFFFF",         // Fondo para tarjetas de productos y áreas de contenido claro
+  //   "soft": "#2a8f05",            //#DBECD5 Tinte suave de marca para fondos de chips y alertas
+  //   "overlay": "#0F172A",         // Fondo con oscurecimiento para backdrops de drawers/modales
+  //   "text_base": "#000000",       // Color tipográfico principal para textos de lectura continua
+  //   "text_muted": "#000000",      // #9CA3AF Color tipográfico secundario (subtítulos y placeholders)
+  //   "border_subtle": "#F3F4F6",   // Bordes sutiles y líneas divisorias
+  //   "error": "#DC2626"            // Color para acciones destructivas (vaciar carrito, errores)
+  // },
+
+
+
+
+// ===========================================================================
+  // PALETA DE COLORES MULTI-TENANT (Inyectada dinámicamente en :root del DOM)
+  // Valores estrictamente en formato Hexadecimal (#RRGGBB).
+  // ===========================================================================
   "theme": {
-    "primary": "#275D9E",         // Color principal de marca (Botones de acción, enlaces activos, iconos)
-    "primary_hover": "#1E4B82",   // Color para el estado hover del botón principal
-    "secondary": "#daebd4",       // #76A165 Color secundario (Badges, acentos complementarios)
-    "tertiary": "#1FAF38",        // Color para canales de contacto directo (WhatsApp)
-    "dark": "#fdfdf1",            // #004D40 Color oscuro para header, footers y modales
-    "surface": "#FFFFFF",         // Fondo para tarjetas de productos y áreas de contenido claro
-    "soft": "#2a8f05",            //#DBECD5 Tinte suave de marca para fondos de chips y alertas
-    "overlay": "#0F172A",         // Fondo con oscurecimiento para backdrops de drawers/modales
-    "text_base": "#000000",       // Color tipográfico principal para textos de lectura continua
-    "text_muted": "#000000",      // #9CA3AF Color tipográfico secundario (subtítulos y placeholders)
-    "border_subtle": "#F3F4F6",   // Bordes sutiles y líneas divisorias
-    "error": "#DC2626"            // Color para acciones destructivas (vaciar carrito, errores)
-  },
+    // 1. MARCA & LLAMADAS A LA ACCIÓN (CTA)
+    "primary": "#275D9E",         // Botones principales, enlaces activos, iconos destacados
+    "primary_hover": "#1E4B82",   // Estado hover exclusivo del botón principal
+    "secondary": "#76A165",       // Color secundario (Badges, etiquetas, acentos de apoyo)
+    "tertiary": "#1FAF38",        // Color exclusivo para canales de WhatsApp y llamadas
+
+    // 2. FONDOS & ESTRUCTURA VISUAL
+    "dark": "#004D40",            // Fondo estructural oscuro (Header, Footers, modales, draweres)
+    "surface": "#FFFFFF",         // Fondo de tarjetas de producto, inputs y áreas de contenido
+    "soft": "#DBECD5",            // Tinte suave de marca (Fondos de secciones alternadas, chips pasivos)
+    "overlay": "#0F172A",         // Capa oscura para backdrop de modales y menús móviles
+
+    // 3. JERARQUÍA TIPOGRÁFICA (Legibilidad)
+    "text_base": "#0F172A",       // Texto principal de lectura y títulos (Alto contraste)
+    "text_muted": "#64748B",      // Texto secundario, subtítulos, fechas y placeholders
+
+    // 4. BORDES & ALERTAS
+    "border_subtle": "#E2E8F0",   // Líneas divisorias suaves y bordes de tarjetas
+    "error": "#DC2626"            // Acciones destructivas (Vaciar carrito, urgencias 24h, alertas)
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // Rutas estandarizadas de logotipos e iconos servidos desde la carpeta /tenant/
   "branding": {

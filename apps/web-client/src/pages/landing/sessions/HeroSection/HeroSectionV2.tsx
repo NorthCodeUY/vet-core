@@ -77,9 +77,9 @@ export const HeroSessionV2 = ({ bgColor }: { bgColor: string }) => {
             text-vete-primary            /* Color verde principal */
           `}>
             <span className="whitespace-nowrap">
-              Cuidamos no vA <span className="text-vete-text-light">a</span>
+              Cuidamos no vA <span className="text-vete-surface">a</span>
             </span> <br />
-            <span className="text-vete-text-light">quienes</span> amas
+            <span className="text-vete-surface">quienes</span> amas
           </h1>
 
           <p className={`
@@ -93,7 +93,7 @@ export const HeroSessionV2 = ({ bgColor }: { bgColor: string }) => {
             max-w-xl                     /* Límite de ancho para no cansar la vista */
 
             /* --- Colores --- */
-            text-vete-text-light         /* Color claro de la paleta */
+            text-vete-surface            /* Color claro de la paleta */
             opacity-90                   /* Suavizado leve */
           `}>
             Tu mascota merece la mejor atención médica en un ambiente cálido y

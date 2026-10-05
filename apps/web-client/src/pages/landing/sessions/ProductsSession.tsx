@@ -103,8 +103,8 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
             uppercase                    /* Mayúsculas institucionales */
             tracking-tighter             /* Espaciado de letras apretado */
 
-            /* --- Colores --- <!> pARA MI ESTO NO ESTA EN MI ARCHIVO O NO VA O NO SE CREO QUE NO V mI PALETA DE CLOEWS ESTA MEDIO DESORDENADA  */
-            text-vete-text-light         /* Color de texto claro */
+            /* --- Colores --- */
+            text-vete-surface            /* Color de texto claro */
           `}>
             Lista de <span className="text-vete-primary">Productos</span>
           </h2>
@@ -127,7 +127,7 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
               -translate-y-1/2             /* Ajuste fino de centrado */
 
               /* --- Colores --- */
-              text-vete-text-light/50      /* Color tenue por defecto */
+              text-vete-surface/50         /* Color tenue por defecto */
 
               /* --- Animación --- */
               group-focus-within:text-vete-primary /* Cambia color al escribir */
@@ -148,11 +148,11 @@ export const ProductsSession = ({ bgColor }: { bgColor: string }) => {
                 bg-white/10                  /* Fondo traslúcido */
                 border-2                     /* Borde de 2px */
                 border-vete-primary/30       /* Color de borde marca */
-                text-vete-text-light         /* Color de texto */
+                text-vete-surface            /* Color de texto */
 
                 /* --- Estilo --- */
                 rounded-2xl                  /* Bordes redondeados */
-                placeholder:text-vete-text-light/40 /* Color del placeholder */
+                placeholder:text-vete-surface/40 /* Color del placeholder */
                 
                 /* --- Animación --- */
                 focus:outline-none           /* Quita el borde por defecto */

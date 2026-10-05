@@ -20,8 +20,8 @@
   --vete-surface: 255 255 255;
   --vete-soft: 219 236 213;
   --vete-overlay: 15 23 42;
-  --vete-text-base: 0 0 0;
-  --vete-text-muted: 156 163 175;
-  --vete-border-subtle: 243 244 246;
+  --vete-text-base: 15 23 42;
+  --vete-text-muted: 100 116 139;
+  --vete-border-subtle: 226 232 240;
   --vete-error: 220 38 38;
 }

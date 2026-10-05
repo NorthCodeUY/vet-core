@@ -203,7 +203,7 @@ const {  // <!> Esto no lo voy a usar por haora
         /* --- Colores --- */
         text-vete-text-muted         /* Color gris de la paleta */
       `}>
-        <MapPin size={14} className="text-vete-dark-green" />
+        <MapPin size={14} className="text-vete-primary" />
         Dirección de Entrega
       </label>
       
@@ -228,7 +228,7 @@ const {  // <!> Esto no lo voy a usar por haora
                 
                 /* --- Colores --- */
                 bg-vete-dark                 /* Fondo oscuro de la paleta */
-                text-vete-text-light         /* Texto claro */
+                text-vete-surface            /* Texto claro */
                 border-transparent           /* Sin borde inicial */
                 
                 /* --- Estilo --- */
@@ -250,7 +250,7 @@ const {  // <!> Esto no lo voy a usar por haora
                 /* --- Dimensiones --- */
                 w-full py-2.5 pl-4
                 /* --- Colores --- */
-                bg-vete-dark text-vete-text-light border-transparent
+                bg-vete-dark text-vete-surface border-transparent
                 /* --- Estilo --- */
                 rounded-xl border-2 outline-none
                 /* --- Animación --- */
@@ -292,7 +292,7 @@ const {  // <!> Esto no lo voy a usar por haora
                   py-2
                   /* --- Colores --- */
                   border                       /* Borde habilitado */
-                  border-vete-light-border     /* Color de borde suave */
+                  border-vete-border-subtle    /* Color de borde suave */
                   text-vete-text-muted         /* Texto gris */
                   /* --- Estilo --- */
                   rounded-lg
@@ -324,7 +324,7 @@ const {  // <!> Esto no lo voy a usar por haora
             `}>
               <p className={`
                 /* --- Texto --- */
-                text-vete-text-light         /* Color claro */
+                text-vete-surface            /* Color claro */
                 text-sm                      /* Tamaño pequeño */
                 font-medium                  /* Peso medio */
                 truncate                     /* Corta texto largo con ... */
@@ -359,7 +359,7 @@ const {  // <!> Esto no lo voy a usar por haora
                 /* --- Colores --- */
                 bg-vete-dark                 /* Fondo oscuro */
                 border                       /* Borde habilitado */
-                border-vete-light-border     /* Color de borde */
+                border-vete-border-subtle    /* Color de borde */
                 
                 /* --- Estilo --- */
                 rounded-xl                   /* Bordes redondeados */
@@ -374,15 +374,15 @@ const {  // <!> Esto no lo voy a usar por haora
                       /* --- Dimensiones --- */
                       p-3
                       /* --- Colores --- */
-                      border-b border-vete-light-border last:border-b-0
+                      border-b border-vete-border-subtle last:border-b-0
                       /* --- Animación --- */
-                      hover:bg-vete-light-border   /* Feedback al pasar mouse */
+                      hover:bg-vete-border-subtle/20   /* Feedback al pasar mouse */
                       transition-colors
                     `}
                   >
                     <button 
                       onClick={() => onSelect(addr.id)} 
-                      className="flex-1 text-left text-vete-text-light text-sm"
+                      className="flex-1 text-left text-vete-surface text-sm"
                     >
                       <span className="font-bold text-vete-primary">{addr.label}:</span> {addr.addressLine}
                     </button>
@@ -399,7 +399,7 @@ const {  // <!> Esto no lo voy a usar por haora
                     /* --- Texto --- */
                     text-vete-primary font-bold text-sm
                     /* --- Colores --- */
-                    hover:bg-vete-light-border
+                    hover:bg-vete-border-subtle/20
                     /* --- Animación --- */
                     transition-colors
                   `}

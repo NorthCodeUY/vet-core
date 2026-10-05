@@ -124,9 +124,9 @@ export const PedidoItemRow = ({ item }: PedidoItemRowProps) => {
       p-2.5                          /* Padding reducido de p-3 a p-2.5 */
 
       /* --- Colores --- */
-      bg-vete-card-white
+      bg-vete-surface
       border
-      border-vete-light-border
+      border-vete-border-subtle
 
       /* --- Estilo --- */
       rounded-xl                     /* Bordes ligeramente más pequeños */
@@ -173,7 +173,7 @@ export const PedidoItemRow = ({ item }: PedidoItemRowProps) => {
           /* --- Texto --- */
           text-sm
           font-bold
-          text-vete-text-light
+          text-vete-text-base
           truncate
         `}>
           {item.producto.prod_nombre}
@@ -197,7 +197,7 @@ export const PedidoItemRow = ({ item }: PedidoItemRowProps) => {
           /* --- Texto --- */
           text-sm
           font-black
-          text-vete-dark-green
+          text-vete-primary
         `}>
           ${subtotal.toLocaleString('es-UY')}
         </span>
@@ -245,9 +245,9 @@ export const PedidoItemRow = ({ item }: PedidoItemRowProps) => {
               text-center
               text-sm                      /* Tamaño de fuente ligeramente mayor */
               font-bold
-              text-vete-text-light
+              text-vete-surface
               bg-transparent
-              border-y border-vete-light-border /* Borde sutil solo en Y para separar botones */
+              border-y border-vete-border-subtle /* Borde sutil solo en Y para separar botones */
               outline-none
               appearance-none
               [&::-webkit-inner-spin-button]:appearance-none

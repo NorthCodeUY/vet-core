@@ -167,7 +167,7 @@ const PaymentSelector: React.FC<PaymentSelectorProps> = ({
             /* --- Dimensiones --- */
             w-full py-2.5 pl-10 pr-8
             /* --- Colores --- */
-            bg-vete-dark text-vete-text-light border border-vete-light-border/40
+            bg-vete-dark text-vete-surface border border-vete-border-subtle/40
             /* --- Texto --- */
             text-xs font-bold uppercase
             /* --- Estilo --- */
@@ -231,7 +231,7 @@ const PaymentSelector: React.FC<PaymentSelectorProps> = ({
           fade-in 
           duration-200
         `}>
-          <p className="text-vete-text-light text-xs font-medium leading-tight">
+          <p className="text-vete-surface text-xs font-medium leading-tight">
             <span className="font-bold text-vete-primary">Datos Bancarios:</span><br />
             Banco: {bankInfo.bank_name}<br />
             Cuenta: {bankInfo.account_number}<br />
@@ -301,7 +301,7 @@ const CheckoutSummaryBar: React.FC<CheckoutSummaryBarProps> = ({
         /* --- Colores --- */
         bg-vete-dark                 /* Fondo oscuro base */
         border                       /* Borde habilitado */
-        border-vete-light-border/40  /* Borde translúcido suave */
+        border-vete-border-subtle/40 /* Borde translúcido suave */
 
         /* --- Estilo --- */
         rounded-xl                   /* Bordes redondeados consistentes */
@@ -337,7 +337,7 @@ const CheckoutSummaryBar: React.FC<CheckoutSummaryBarProps> = ({
         </div>
 
         {/* Separador vertical */}
-        <div className="h-3 w-px bg-vete-light-border shrink-0" />
+        <div className="h-3 w-px bg-vete-border-subtle shrink-0" />
 
         {/* Preview Dirección de Entrega */}
         <div className={`
@@ -569,7 +569,7 @@ const DeliveryAddressSection: React.FC<DeliveryAddressSectionProps> = ({
               /* --- Dimensiones --- */
               w-full py-2.5 pl-10 pr-4
               /* --- Colores --- */
-              bg-vete-dark text-vete-text-light border border-vete-light-border/40
+              bg-vete-dark text-vete-surface border border-vete-border-subtle/40
               /* --- Texto --- */
               text-xs font-medium placeholder:text-vete-text-muted/50
               /* --- Estilo --- */
@@ -686,26 +686,12 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
       p-5                          /* Padding general */
 
       /* --- Colores --- */
-      bg-vete-card-white           /* Fondo blanco/tarjeta */
+      bg-vete-surface              /* Fondo blanco/tarjeta */
       border-t                     /* Borde superior separador */
-      border-vete-light-border     /* Color de borde institucional */
+      border-vete-border-subtle    /* Color de borde institucional */
       shadow-[0_-10px_25px_rgba(0,0,0,0.05)] /* Sombra sutil superior */
     `}>
       
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       {/* 1. BARRA INTERRUPTORA (Afuera del colapsable) */}
       {!isExpanded ? (
@@ -733,7 +719,7 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
               /* --- Colores --- */
               bg-vete-dark/50 text-vete-text-muted hover:text-vete-primary hover:bg-vete-dark
               /* --- Estilo --- */
-              rounded-full border border-vete-light-border/30 text-[9px] font-bold uppercase tracking-wider
+              rounded-full border border-vete-border-subtle/30 text-[9px] font-bold uppercase tracking-wider
               /* --- Animación --- */
               transition-all duration-200 hover:scale-105
             `}
@@ -742,19 +728,6 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
             <ChevronDown size={13} className="rotate-180 transition-transform" />
           </button>
         </div>
-
-
-        // <button
-        //   type="button"
-        //   onClick={() => setIsExpanded(false)}
-        //   className="flex items-center justify-between w-full py-1.5 px-3 bg-vete-dark/40 text-vete-text-muted hover:text-vete-primary rounded-lg border border-vete-light-border/20 text-[10px] font-bold uppercase tracking-wider transition-colors"
-        // >
-        //   {/* <!> Esto es lo que yo quiero que sea mas chico solo una flecha estetica y cuado estes ensima que te muestre una lejenda si estas un rato parado  */}
-        //   <span>Ocultar Configuración</span>
-        //   <ChevronDown size={14} className="rotate-180 transition-transform" />
-        // </button>
-
-
       )}
 
       {/* 2. CONTENEDOR COLAPSABLE CON SUB-COMPONENTES */}
@@ -783,7 +756,7 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
 
 
       {/* 3. TOTAL PERMANENTE Y BOTONERA */}
-      <div className="flex flex-col gap-3 pt-2 border-t border-vete-light-border/30">
+      <div className="flex flex-col gap-3 pt-2 border-t border-vete-border-subtle/30">
         <div className="flex justify-between items-baseline px-1">
           <span className="text-[10px] font-black uppercase text-vete-text-muted tracking-widest">
             Total a Pagar
@@ -791,7 +764,7 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
           <span className={`
             /* --- Texto --- */
             text-2xl font-black          /* Tamaño de destaque */
-            text-vete-dark-green         /* Color institucional */
+            text-vete-primary            /* Color institucional */
           `}>
             {/* Total de pedio */}
             ${total.toLocaleString('es-UY')} 
@@ -838,7 +811,7 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
               py-3.5                       /* padding vertical */
               px-4                         /* padding horizontal */
               /* --- Colores --- */
-              bg-vete-dark-green           /* color verde oscuro */
+              bg-vete-primary              /* color verde oscuro */
               text-white                     /* color blanco */
               /* --- Texto --- */
               font-black                     /* negrita */
@@ -848,9 +821,9 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
               /* --- Estilo --- */
               rounded-xl                     /* bordes redondeados */
               shadow-lg                      /* sombra */
-              shadow-vete-dark-green/20      /* color de la sombra */
+              shadow-vete-primary/20         /* color de la sombra */
               /* --- Animación --- */
-              hover:bg-vete-dark-green/90    /* color al pasar el mouse */
+              hover:bg-vete-primary-hover    /* color al pasar el mouse */
               active:scale-[0.98]            /* escala al hacer click */
               disabled:opacity-40            /* opacidad al estar deshabilitado */
               transition-all                 /* transición suave */

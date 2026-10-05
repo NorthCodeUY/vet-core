@@ -238,7 +238,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
                   h-1.5                  /* Diámetro de 6px */
 
                   /* --- Colores --- */
-                  bg-vete-muted          /* Color de punto secundario */
+                  bg-vete-text-muted          /* Color de punto secundario */
 
                   /* --- Estilo --- */
                   rounded-full           /* Círculo */

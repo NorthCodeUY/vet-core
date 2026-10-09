@@ -20,23 +20,26 @@
     // 1. MARCA & LLAMADAS A LA ACCIÓN (CTA)
     "primary": "#275D9E", // Botones principales, enlaces activos, iconos destacados
     "primary_hover": "#1E4B82", // Estado hover exclusivo del botón principal
-    "secondary": "#76A165", // Color secundario (Badges, etiquetas, acentos de apoyo)
+    "secondary": "#daebd4", // Color secundario (Badges, etiquetas, acentos de apoyo)
     "tertiary": "#1FAF38", // Color exclusivo para canales de WhatsApp y llamadas
     // 2. FONDOS & ESTRUCTURA VISUAL
-    "dark": "#004D40", // Fondo estructural oscuro (Header, Footers, modales, draweres)
+    "dark": "#fdfdf1", // Fondo estructural oscuro (Header, Footers, modales, draweres)
     "surface": "#FFFFFF", // Fondo de tarjetas de producto, inputs y áreas de contenido
-    "soft": "#DBECD5", // Tinte suave de marca (Fondos de secciones alternadas, chips pasivos)
-    "overlay": "#0F172A", // Capa oscura para backdrop de modales y menús móviles
+    "soft": "#649353", //  #DBECD5 Tinte suave de marca (Fondos de secciones alternadas, chips pasivos)
+    "overlay": "#000000", // Capa oscura para backdrop de modales y menús móviles
     // 3. JERARQUÍA TIPOGRÁFICA (Legibilidad)
-    "text_base": "#0F172A", // Texto principal de lectura y títulos (Alto contraste)
-    "text_muted": "#64748B", // Texto secundario, subtítulos, fechas y placeholders
+    "text_base": "#000000", // Texto principal de lectura y títulos (Alto contraste)
+    "text_muted": "#000000", // Texto secundario, subtítulos, fechas y placeholders
     // 4. BORDES & ALERTAS
     "border_subtle": "#E2E8F0", // Líneas divisorias suaves y bordes de tarjetas
-    "error": "#DC2626" // Acciones destructivas (Vaciar carrito, urgencias 24h, alertas)
+    "error": "#DC2626" // Acciones destructivas (Vaciar carrito, urgencias 24h, alertas)  
   },
+
   // Rutas estandarizadas de logotipos e iconos servidos desde la carpeta /tenant/
   "branding": {
-    "logo_url": "/tenant/logo.png" // Icono de la empresa 
+    "logo_url": "/tenant/logo.png", // Icono de la empresa 
+    "hero_animation_url": "/tenant/animations/hero_animation.json" // Lottie del heroe 
+
     // <!> Yo tengo el disneio del logo en png si sire para cosas en espesifico lo agrego  
     // "favicon_url": "/tenant/favicon.ico" // <!> Por haora no lo uso luevo voe para agregarlo cmo deberia eser de reosolucion 
   },
@@ -50,18 +53,27 @@
   // Interruptores de activación/desactivación de módulos en la interfaz
   "features": {
     "has_cart": true, // true: activa el carrito y drawer de pedidos | false: solo catálogo informativo
-    "has_appointments": false, // true: muestra botón y formulario de reserva de turnos | false: oculta reservas
+    "has_products": true, // true: activa la sección de productos | false: oculta la sección
+    "has_appointments": false, // <!> ni idea cual es este formulario / true: muestra botón y formulario de reserva de turnos | false: oculta reservas
     "has_health_plans": true, // true: muestra la sección de planes/suscripciones | false: oculta la sección
     "has_services": true, // true: muestra la sección de servicios ofrecidos | false: oculta la sección
-    "has_emergency_button": true // true: activa el botón flotante de urgencias 24h en pantalla y en seccion mapas 
+    "has_emergency_button": true, // <!> Terminar de configurar true: activa el botón flotante de urgencias 24h en pantalla y en seccion mapas 
+    "has_locations": true, // true: muestra la sección de ubicacion 
+    "has_hero": true, // true: muestra la sección del hero | false: oculta la sección
+    "has_navbar_floating": true, // <!> no lo programe true: muestra la barra de navegación flotante | false: oculta la barra de navegación flotante
+    "has_dividers": true // <!> no lo programe true: muestra los divisores | false: oculta los divisores
+
   },
   // Contenido de la sección de portada (Hero) con soporte de etiquetas HTML
   "hero": {
+    "title_image_url": "/tenant/hero-title1.png", // <!> Agregar una imagen en .png o .svg para el titulo del hero, se ubica arriba del titulo de texto "Cuidamos a quienes am".
     "title_html": "<span class='text-vete-primary'>Cuidamos</span> a quienes <span class='text-vete-primary'>amas</span>",
-    "description": "Tu mascota merece la mejor atención médica en un ambiente cálido y profesional. Contamos con especialistas comprometidos con el bienestar integral de tus compañeros, brindando cuidado, dedicación y confianza en cada etapa de su vida."
+    "description": "Tu mascota merece la mejor atención médica en un ambiente cálido y profesional. Contamos con especialistas comprometidos con el bienestar integral de tus compañeros, brindando cuidado, dedicación y confianza en cada etapa de su vida.",
+    "has_section_dividers": false // Determina si dejo visivel el divisor
   },
   // Módulo de Servicios ofrecidos por la veterinaria o comercio
   "services_section": {
+    "title_image_url": "/tenant/services-title1.png", // <!> Agregar una imagen en .png o .svg para el titulo del hero, se ubica arriba del titulo de texto "Nuestros ".
     "title_html": "Nuestros <span class='text-vete-primary'>Servicios</span>",
     "description": "Atención médica integral, diagnósticos precisos y cuidados preventivos para cada etapa de vida.",
     "items": [
@@ -119,8 +131,10 @@
   },
   // Sección de Planes, Suscripciones o Paquetes Promocionales
   "plans_section": {
+    "title_image_url": "/tenant/plans-title1.png", // <!> Agregar una imagen en .png o .svg para el titulo del hero, se ubica arriba del titulo de texto "Programas de ".
     "title_html": "Programas de <span class='text-vete-primary'>Bienestar Animal</span>",
     "description": "Planes diseñados para asegurar la salud preventiva de tus animales a lo largo de toda su vida.",
+    "has_section_dividers": true, // Determina si dejo visivel el divisor
     "items": [
       {
         "id": "salud-preventiva",
@@ -227,6 +241,7 @@
   },
   // Datos para la seccion Maps en landig page 
   "location_section": {
+    "title_image_url": "/tenant/location-title1.png", // <!> Agregar una imagen en .png o .svg para el titulo del hero, se ubica arriba del titulo de texto "¿Dónde estamos?".
     "title_html": "¿<span class='text-vete-text-base'> Dónde estamos</span>?",
     "description_html": "Te esperamos con <span class='font-bold'>instalaciones de primera</span>, atención personalizada y equipamiento especializado."
   }

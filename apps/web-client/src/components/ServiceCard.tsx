@@ -154,7 +154,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
             mb-6                         /* Margen inferior */
 
             /* --- Colores --- */
-            bg-vete-secondary            /* Color secundario institucional */
+            bg-vete-secondary            /* <!> eSTO CREO QUE LO VOY A SACAR Color secundario institucional */
 
             /* --- Estilo --- */
             rounded-[10px]               /* Bordes redondeados sutiles */

@@ -141,8 +141,9 @@ export const HeroSessionV1: React.FC<HeroSessionV1Props> = ({ bgColor = 'bg-tran
               font-medium            /* Grosor medio (500) */
 
             `}>
+              {/* <!> Deberia ser mas agnostico el emnsaje poruqe no se sbe que cliete va a utiliazr esta seccio  */}
               {heroData?.description ||
-                '<!> No entro - Tu mascota merece la mejor atención médica en un ambiente cálido y profesional. Contamos con especialistas comprometidos con el bienestar integral de tus compañeros.'}
+                ' Tu mascota merece la mejor atención médica en un ambiente cálido y profesional. Contamos con especialistas comprometidos con el bienestar integral de tus compañeros.'}
             </p>
 
             {/* Botonera de Acción: "Conózcanos" */}

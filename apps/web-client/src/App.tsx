@@ -52,7 +52,7 @@ function App(): React.JSX.Element {
           </Routes>
         </BrowserRouter>
 
-        {/* 🛠️ Estudio de personalización en vivo (flota sobre la web) */}
+        {/* <!> Esto tengo que cambiarlo que solo entre cuado ago algo tipo /Setign pero que jamas se pueda abrir si esta setiado en .env como produccion en el l.env bakend si lo tengo pero fonte no se 🛠️ Estudio de personalización en vivo (flota sobre la web) */}
         <TenantStudioDrawer />
       </PedidoProvider>
     </TenantProvider>

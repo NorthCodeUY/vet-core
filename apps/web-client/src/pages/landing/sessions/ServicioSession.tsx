@@ -84,11 +84,6 @@ export const ServicioSession: React.FC<ServicioSessionProps> = ({ bgColor }) => 
         gap-16                       /* Espacio amplio entre título y grilla */
       `}>
 
-
-
-
-
-
         {/* Bloque de Título y Subtítulo */}
         <div className={`
           /* --- Posición --- */

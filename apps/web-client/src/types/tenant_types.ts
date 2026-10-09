@@ -56,10 +56,12 @@ export interface SloganConfig {
  * @interface BrandingConfig
  * @property {string} logo_url - Ruta relativa al logo institucional en /tenant/.
  * @property {string} [favicon_url] - Ruta relativa al favicon institucional.
- */
+ * @property {string} [hero_animation_url] - Ruta relativa a la animación del hero seccion.
+*/
 export interface BrandingConfig {
   logo_url: string;
   favicon_url?: string;
+  hero_animation_url?: string;
 }
 
 /**
@@ -83,17 +85,27 @@ export interface UIVariantsConfig {
  * 
  * @interface FeaturesConfig
  * @property {boolean} has_cart - Habilita el carrito y drawer de pedidos.
- * @property {boolean} has_appointments - Habilita el módulo de reservas.
- * @property {boolean} has_health_plans - Habilita la sección de planes/suscripciones.
+ * @property {boolean} has_appointments - <!> esto aun no lo programe Habilita el módulo de reservas.
+ * @property {boolean} has_health_plans - <!> Esto tampoco lo programe  Habilita la sección de planes/suscripciones.
  * @property {boolean} has_services - Habilita la sección de servicios ofrecidos.
  * @property {boolean} has_emergency_button - Habilita el botón flotante de urgencias 24h.
- */
+ * @property {boolean} has_products - Habilita la sección de productos.
+ * @property {boolean} has_locations - Habilita la sección de ubicación.
+ * @property {boolean} has_navbarFloating - Habilita la barra de navegación flotante. Flotante <!> Esto no lo programe 
+ * @property {boolean} has_hero - Habilita la sección del hero. <!> Esto no lo programe 
+ * @property {boolean} has_dividers - Habilita los divisores. <!> Esto no lo programe
+*/
 export interface FeaturesConfig {
   has_cart: boolean;
-  has_appointments: boolean;
-  has_health_plans: boolean;
+  has_appointments: boolean; // <!> esto aun no lo programe
+  has_health_plans: boolean; // <!> esto aun no lo programe
   has_services: boolean;
   has_emergency_button: boolean;
+  has_products: boolean;
+  has_locations: boolean;
+  has_navbarFloating: boolean; 
+  has_hero: boolean; // <!> Esto no lo programe
+  has_dividers: boolean; // <!> Esto no lo programe
 }
 
 /**
@@ -102,10 +114,12 @@ export interface FeaturesConfig {
  * @interface HeroSectionConfig
  * @property {string} title_html - Encabezado enriquecido con soporte de etiquetas HTML.
  * @property {string} description - Bajada explicativa institucional.
+ * @property {string} [title_image_url] - Ruta relativa a la imagen del título del hero.
  */
 export interface HeroSectionConfig {
   title_html: string;
   description: string;
+  title_image_url?: string;
 }
 
 /**
@@ -136,11 +150,14 @@ export interface ServiceItem {
  * @interface ServicesSectionConfig
  * @property {string} title_html - Título con soporte de etiquetas HTML.
  * @property {string} description - Resumen explicativo de los servicios.
+ * @property {string} [title_image_url] - Ruta relativa a la imagen del título de servicios.
  * @property {ServiceItem[]} items - Lista de servicios disponibles.
  */
 export interface ServicesSectionConfig {
   title_html: string;
   description: string;
+    // NUEVO: Ruta opcional a un SVG o PNG para el título de servicios
+  title_image_url?: string;
   items: ServiceItem[];
 }
 
@@ -198,13 +215,41 @@ export interface PlanItem {
  * @interface PlansSectionConfig
  * @property {string} title_html - Título principal con soporte de etiquetas HTML.
  * @property {string} description - Texto secundario o bajada.
+ * @property {string} [title_image_url] - Ruta relativa a la imagen del título de servicios.
  * @property {PlanItem[]} items - Lista de planes a renderizar.
  */
 export interface PlansSectionConfig {
   title_html: string;
   description: string;
+  title_image_url?: string;
   items: PlanItem[];
 }
+
+/**
+ * Configuración de la sección de productos.
+ * 
+ * @interface ProductsSectionConfig
+ * @property {string} title_html - Título principal con soporte de etiquetas HTML.
+ * @property {string} description - Texto secundario o bajada.
+ * @property {string} [title_image_url] - Ruta relativa a la imagen del título de productos.
+ */
+export interface ProductsSectionConfig {
+  title_html: string;
+  description: string;
+  title_image_url?: string;
+}
+
+
+// <!>  SUPUESTAMENTE NO LO USO 
+// export interface ProductItem {
+  // id: string;
+  // title: string;
+  // description: string;
+  // benefits: string[];
+  // is_featured: boolean;
+  // whatsapp_message: string;
+// }
+
 
 /**
  * Horarios de apertura comercial.
@@ -300,17 +345,41 @@ export interface CustomMessagesConfig {
  * @interface LocationSectionConfig
  * @property {string} title_html - Título con soporte HTML.
  * @property {string} description_html - Bajada explicativa enriquecida.
+ * @property {string} [title_image_url] - Ruta relativa a la imagen del título de servicios.
  */
 export interface LocationSectionConfig {
   title_html: string;
   description_html: string;
+  title_image_url?: string;
+
 }
 
 /**
  * Estructura raíz completa del archivo `client_info.json`.
  * 
  * @interface TenantConfig
- */
+ * @property {string} _version - Versión del archivo de configuración.
+ * @property {string} id - Identificador único del tenant.
+ * @property {string} business_name - Nombre comercial principal del tenant.
+ * @property {SloganConfig} slogan - Configuración del eslogan.
+ * @property {ThemeColors} theme - Configuración de colores del tema.
+ * @property {BrandingConfig} branding - Configuración de marca.
+ * @property {UIVariantsConfig} ui_variants - Configuración de variantes de UI.
+ * @property {FeaturesConfig} features - Configuración de características.
+ * @property {HeroSectionConfig} hero - Configuración de la sección hero.
+ * @property {ProductsSectionConfig} product_section - Configuración de la sección de productos.
+ * @property {ServicesSectionConfig} services_section - Configuración de la sección de servicios.
+ * @property {InstitutionalConfig} institutional - Configuración de la sección institucional.
+ * @property {PlansSectionConfig} plans_section - Configuración de la sección de planes.
+ * @property {ContactConfig} contact - Configuración de contacto.
+ * @property {BankAccountItem[]} bank_accounts - Cuentas bancarias para liquidación.
+ * @property {PaymentMethodsConfig} payment_methods - Métodos de pago habilitados.
+ * @property {CustomMessagesConfig} custom_messages - Mensajes personalizados para WhatsApp.
+ * @property {LocationSectionConfig} location_section - Configuración de la sección de ubicación.
+ * @property {ScheduleConfig} schedule - Horarios de atención.
+ * @property {SocialNetworksConfig} social_networks - Redes sociales.
+ * 
+*/
 export interface TenantConfig {
   _version: string;
   id: string;
@@ -321,9 +390,10 @@ export interface TenantConfig {
   ui_variants: UIVariantsConfig;
   features: FeaturesConfig;
   hero: HeroSectionConfig;
-  services_section: ServicesSectionConfig;
-  institutional: InstitutionalConfig;
-  plans_section: PlansSectionConfig;
+  products_section?: ProductsSectionConfig;
+  services_section?: ServicesSectionConfig;
+  institutional?: InstitutionalConfig;
+  plans_section?: PlansSectionConfig;
   contact: ContactConfig;
   bank_accounts: BankAccountItem[];
   payment_methods: PaymentMethodsConfig;

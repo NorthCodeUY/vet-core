@@ -62,6 +62,7 @@ export interface BrandingConfig {
   logo_url: string;
   favicon_url?: string;
   hero_animation_url?: string;
+  background_animation_url?: string; /* 👈 Ruta al video WebM transparente en /tenant/ */
 }
 
 /**
@@ -106,6 +107,7 @@ export interface FeaturesConfig {
   has_navbarFloating: boolean; 
   has_hero: boolean; // <!> Esto no lo programe
   has_dividers: boolean; // <!> Esto no lo programe
+  has_background_animation: boolean; /* 👈 Activa o desactiva la animación ambiental de fondo */
 }
 
 /**

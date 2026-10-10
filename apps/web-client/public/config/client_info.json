@@ -43,7 +43,9 @@
   // Rutas estandarizadas de activos servidos desde la carpeta /tenant/
   "branding": {
     "logo_url": "/tenant/logo.png",
-    "hero_animation_url": "/tenant/animations/hero_animation.json"
+    "hero_animation_url": "/tenant/animations/hero_animation.json",
+    "background_animation_url": "/tenant/assets/barber_pole.webm"
+
   },
 
   // Selector de variantes de diseño para componentes modulares
@@ -65,7 +67,8 @@
     "has_locations": true,        // true: muestra la ubicación y mapa del estudio
     "has_hero": true,             // true: muestra la portada principal
     "has_navbar_floating": false, // false: menú fijo tradicional
-    "has_dividers": false         // false: diseño plano moderno sin ondas de pasto
+    "has_dividers": false,         // false: diseño plano moderno sin ondas de pasto
+    "has_background_animation": true  // 👈 true: activa el cartel de fondo reactivo al scroll
   },
 
   // Contenido de la sección de portada (Hero)

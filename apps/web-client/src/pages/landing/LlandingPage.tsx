@@ -11,7 +11,7 @@ import { useConfig } from '../../context/tenant_context';
 /* --- Componentes Visuales y Divisores --- */
 import { SectionDivider } from '../../components/SectionDivider';
 /* Importaciones para 3D*/
-import { ScrollReactiveBarberPole } from '../../components/animations/ScrollReactiveBarberPole';
+import { AmbientScrollAnimation } from '../../components/animations/AmbientScrollAnimation';
 
 
 /* --- Secciones Modulares de la Landing --- */
@@ -73,27 +73,13 @@ export default function LandingPage(): React.JSX.Element {
   
 
   return (
-    <div
-      className={`
-        /* --- Posición --- */
-        relative                     /* Contexto de apilamiento */
-        overflow-x-hidden            /* Previene barras de scroll horizontal */
 
-        /* --- Dimensiones --- */
-        w-full                       /* Ancho completo */
-        min-h-screen                 /* Ocupa como mínimo el alto de pantalla */
-        m-0                          /* Sin margen exterior */
-        p-0                          /* Sin padding exterior */
 
-        /* --- Colores --- */
-        bg-vete-dark                 /* Fondo base institucional */
-        text-vete-text-base          /* Color tipográfico principal */
+      <div className="bg-vete-dark min-h-screen font-sans text-vete-text-base overflow-x-hidden w-full relative border-0 m-0 p-0">
 
-        /* --- Texto --- */
-        font-sans                    /* Familia tipográfica predeterminada */
+            {/* 🚀 Animación 3D Ambiental de Fondo (Se mueve con el scroll detrás de todo) */}
+      <AmbientScrollAnimation />
 
-      `}
-    >
       {/* CABECERA PRINCIPAL (Navbar Fijo) */}
       <HeaderSession bgColor="bg-vete-secondary" />
 

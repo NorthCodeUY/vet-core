@@ -143,7 +143,7 @@ const InputField: React.FC<InputFieldProps> = ({
 
 interface SectionHeaderEditorProps {
   sectionName: string;
-  titleHtml: string;
+  titleHtml?: string;
   titleImageUrl?: string;
   description?: string;
   onUpdateTitleHtml: (val: string) => void;
@@ -268,7 +268,7 @@ export const TenantStudioDrawer: React.FC = () => {
   const getSanitizedConfig = (): TenantConfig => {
     const clean: TenantConfig = JSON.parse(JSON.stringify(config));
     if (clean.branding.logo_url.startsWith('blob:')) clean.branding.logo_url = '/tenant/logo.png';
-    clean.institutional.sections.forEach((s) => {
+    clean.institutional?.sections.forEach((s) => {
       if (s.image_url.startsWith('blob:')) s.image_url = `/tenant/${s.id}.png`;
     });
     return clean;
@@ -439,34 +439,52 @@ export const TenantStudioDrawer: React.FC = () => {
               {/* 1. Hero Section */}
               <SectionHeaderEditor
                 sectionName="Hero"
-                titleHtml={config.hero.title_html}
-                titleImageUrl={config.hero.title_image_url}
-                description={config.hero.description}
-                onUpdateTitleHtml={(val) => updateNestedConfig((d) => { d.hero.title_html = val; })}
-                onUpdateTitleImage={(val) => updateNestedConfig((d) => { d.hero.title_image_url = val; })}
-                onUpdateDescription={(val) => updateNestedConfig((d) => { d.hero.description = val; })}
+                titleHtml={config.hero.title_html || ''}
+                titleImageUrl={config.hero.title_image_url || ''}
+                description={config.hero.description || ''}
+                onUpdateTitleHtml={(val) => updateNestedConfig((d) => { 
+                  d.hero.title_html = val; 
+                })}
+                onUpdateTitleImage={(val) => updateNestedConfig((d) => { 
+                  d.hero.title_image_url = val; 
+                })}
+                onUpdateDescription={(val) => updateNestedConfig((d) => { 
+                  d.hero.description = val; 
+                })}
               />
 
               {/* 2. Servicios */}
               <SectionHeaderEditor
                 sectionName="Servicios"
-                titleHtml={config.services_section.title_html}
-                titleImageUrl={config.services_section.title_image_url}
-                description={config.services_section.description}
-                onUpdateTitleHtml={(val) => updateNestedConfig((d) => { d.services_section.title_html = val; })}
-                onUpdateTitleImage={(val) => updateNestedConfig((d) => { d.services_section.title_image_url = val; })}
-                onUpdateDescription={(val) => updateNestedConfig((d) => { d.services_section.description = val; })}
+                titleHtml={config.services_section?.title_html || ''}
+                titleImageUrl={config.services_section?.title_image_url || ''}
+                description={config.services_section?.description || ''}
+                onUpdateTitleHtml={(val) => updateNestedConfig((d) => { 
+                  if (d.services_section) d.services_section.title_html = val; 
+                })}
+                onUpdateTitleImage={(val) => updateNestedConfig((d) => { 
+                  if (d.services_section) d.services_section.title_image_url = val; 
+                })}
+                onUpdateDescription={(val) => updateNestedConfig((d) => { 
+                  if (d.services_section) d.services_section.description = val; 
+                })}
               />
 
               {/* 3. Planes / Promociones */}
               <SectionHeaderEditor
                 sectionName="Planes"
-                titleHtml={config.plans_section.title_html}
-                titleImageUrl={config.plans_section.title_image_url}
-                description={config.plans_section.description}
-                onUpdateTitleHtml={(val) => updateNestedConfig((d) => { d.plans_section.title_html = val; })}
-                onUpdateTitleImage={(val) => updateNestedConfig((d) => { d.plans_section.title_image_url = val; })}
-                onUpdateDescription={(val) => updateNestedConfig((d) => { d.plans_section.description = val; })}
+                titleHtml={config.plans_section?.title_html || ''}
+                titleImageUrl={config.plans_section?.title_image_url || ''}
+                description={config.plans_section?.description || ''}
+                onUpdateTitleHtml={(val) => updateNestedConfig((d) => { 
+                  if (d.plans_section) d.plans_section.title_html = val; 
+                })}
+                onUpdateTitleImage={(val) => updateNestedConfig((d) => { 
+                  if (d.plans_section) d.plans_section.title_image_url = val; 
+                })}
+                onUpdateDescription={(val) => updateNestedConfig((d) => { 
+                  if (d.plans_section) d.plans_section.description = val; 
+                })}
               />
 
               {/* 4. Ubicación / Dónde Estamos */}

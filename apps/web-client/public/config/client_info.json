@@ -44,7 +44,7 @@
   "branding": {
     "logo_url": "/tenant/logo.png",
     "hero_animation_url": "/tenant/animations/hero_animation.json",
-    "background_animation_url": "/tenant/assets/barber_pole.webm"
+    "background_animation_url": "/tenant/barber_pole.webm"
 
   },
 

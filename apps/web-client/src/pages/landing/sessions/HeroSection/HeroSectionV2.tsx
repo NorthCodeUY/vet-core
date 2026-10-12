@@ -1,3 +1,5 @@
+// apps/web-client/src/pages/landing/sessions/HeroSession/HeroSectionV2.tsx
+
 /* =============================================================================
    COMPONENTE: HERO VARIANTE 2 INVERTIDO (Imagen a la Izquierda / Texto a la Derecha)
    ============================================================================= */
@@ -170,30 +172,33 @@ export const HeroSessionV2: React.FC<HeroSessionV2Props> = ({ bgColor = 'bg-tran
         {/* ===================================================================
            2. COLUMNA DE TEXTOS Y BOTÓN (Derecha en PC / Abajo en Celular)
            =================================================================== */}
-        <div
+         <div
           className={`
             /* --- Posición --- */
+            relative                 /* Contexto z-index */
+            z-30                     /* CAPA SUPERIOR: Por encima de la animación */
             flex                     /* Layout flexible */
-            flex-col                 /* Disposición en columna */
-            items-center             /* Centrado en móviles */
-            lg:items-start           /* Alineado a la izquierda en escritorio */
+            flex-col                 /* Disposición vertical */
+            items-center             /* Centrado en móvil */
+            lg:items-start           /* A la izquierda en escritorio */
 
             /* --- Dimensiones --- */
-            w-full                   /* Ancho completo en móvil */
-            lg:w-1/2                 /* 50% de ancho en escritorio */
+            w-full                   /* Ancho completo móvil */
+            lg:w-1/2                 /* 50% en escritorio */
+            max-w-xl                 /* Límite de ancho para no desbordar */
             gap-6                    /* Separación vertical */
 
             /* --- Colores --- */
 
             /* --- Texto --- */
-            text-center              /* Texto centrado en móvil */
-            lg:text-left             /* Texto a la izquierda en escritorio */
+            text-center              /* Centrado en móvil */
+            lg:text-left             /* Izquierda en desktop */
 
             /* --- Animación --- */
-          `}
-        >
+          `}>   
 
           {/* Título: Soporta Imagen SVG o Texto con Formato HTML */}
+
           {heroData?.title_image_url ? (
             <img
               src={heroData.title_image_url}
@@ -207,6 +212,10 @@ export const HeroSessionV2: React.FC<HeroSessionV2Props> = ({ bgColor = 'bg-tran
                 h-auto               /* Mantiene proporción */
                 mb-2                 /* Margen inferior */
 
+                /* --- Colores --- */
+                filter               /* Habilita filtros */
+                drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] /* Sombra negra que separa el título del fondo */
+
                 /* --- Estilo --- */
                 object-contain       /* Ajuste proporcional */
 
@@ -214,6 +223,7 @@ export const HeroSessionV2: React.FC<HeroSessionV2Props> = ({ bgColor = 'bg-tran
               `}
             />
           ) : (
+
             <h1
               dangerouslySetInnerHTML={{
                 __html:
@@ -243,21 +253,30 @@ export const HeroSessionV2: React.FC<HeroSessionV2Props> = ({ bgColor = 'bg-tran
           )}
 
           {/* Bajada Descriptiva */}
+{/* Bajada Descriptiva con Fondo Compacto (Sin cortes en letras descendentes) */}
           <p
             className={`
               /* --- Posición --- */
 
               /* --- Dimensiones --- */
-              max-w-xl               /* Ancho de lectura óptimo */
+              w-fit                  /* Se ajusta exactamente al ancho del texto */
+              max-w-lg               /* Límite cómodo de lectura */
+              px-4                   /* Padding horizontal suave */
+              py-3                   /* Padding vertical uniforme */
 
               /* --- Colores --- */
-              text-vete-text-muted   /* Color secundario atenuado */
+              bg-vete-dark/95        /* TAPA 100% la animación con el fondo del tema */
+              text-vete-text-muted   /* Color tipográfico secundario legible */
+              shadow-2xl             /* Sombra profunda que despega el texto */
+
+              /* --- Estilo --- */
+              rounded-2xl            /* Bordes redondeados continuos */
 
               /* --- Texto --- */
               text-base              /* Tamaño estándar */
-              md:text-xl             /* Tamaño destacado en escritorio */
-              leading-relaxed        /* Altura de línea cómoda */
-              font-normal            /* Grosor regular */
+              md:text-lg             /* Tamaño destacado */
+              leading-relaxed        /* Altura de línea natural (no corta la 'g' ni la 'p') */
+              font-medium            /* Grosor medio (500) */
 
               /* --- Animación --- */
             `}
@@ -265,6 +284,10 @@ export const HeroSessionV2: React.FC<HeroSessionV2Props> = ({ bgColor = 'bg-tran
             {heroData?.description ||
               'Servicios especializados y atención personalizada diseñados para tu total satisfacción.'}
           </p>
+
+
+
+
 
           {/* Botonera de Acción */}
           <div
@@ -274,13 +297,8 @@ export const HeroSessionV2: React.FC<HeroSessionV2Props> = ({ bgColor = 'bg-tran
               items-center           /* Centrado vertical */
 
               /* --- Dimensiones --- */
-              pt-4                   /* Margen superior */
+              pt-2                   /* Margen superior */
 
-              /* --- Colores --- */
-
-              /* --- Texto --- */
-
-              /* --- Animación --- */
             `}
           >
             <button

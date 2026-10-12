@@ -1,3 +1,5 @@
+/* apps/web-client/src/components/animations/AmbientScrollAnimation.tsx */
+
 /* =============================================================================
    COMPONENTE: ANIMACIÓN AMBIENTAL DE FONDO REACTIVA AL SCROLL (AmbientScrollAnimation)
    ============================================================================= */
@@ -50,31 +52,31 @@ export const AmbientScrollAnimation: React.FC<AmbientAnimationProps> = ({ videoS
   }
 
   return (
-    <div
+<div
       aria-hidden="true"
       className={`
         /* --- Posición --- */
-        fixed                        /* Fijo sobre toda la ventana gráfica */
-        z-0                          /* Capa inferior detrás de todas las secciones */
-        pointer-events-none          /* Cero interferencia: todos los clics pasan a la web */
+        fixed                        /* Flotante sobre la pantalla */
+        z-10                         /* CAPA 2: Por encima de fondos y ondas, debajo de textos */
+        pointer-events-none          /* Todos los clics pasan directo a los botones */
         flex                         /* Flexbox */
         items-center                 /* Centrado vertical */
         justify-center               /* Centrado horizontal */
 
-        /* --- Dimensiones Dinámicas según Scroll --- */
+        /* --- Dimensiones según Scroll --- */
         ${isScrolled
-          ? 'top-1/2 right-0 translate-x-[25%] -translate-y-1/2 w-[280px] sm:w-[380px] lg:w-[480px] h-[550px] lg:h-[700px] opacity-25 lg:opacity-35 scale-90' // Modo Lateral Ambiental
-          : 'top-20 lg:top-16 right-4 sm:right-12 lg:right-24 -translate-y-0 w-[340px] sm:w-[480px] lg:w-[620px] h-[480px] sm:h-[620px] lg:h-[760px] opacity-85 lg:opacity-95 scale-100' // Modo Hero Protagónico
+          ? 'top-1/2 right-0 translate-x-[30%] -translate-y-1/2 w-[280px] sm:w-[380px] lg:w-[460px] h-[550px] lg:h-[700px] opacity-25 lg:opacity-35 scale-90' // Modo Scroll: Asistente lateral discreto
+          : 'top-20 lg:top-14 right-2 sm:right-6 lg:-right-[100px] xl:-right-[150px] w-[320px] sm:w-[440px] lg:w-[540px] xl:w-[600px] h-[480px] sm:h-[600px] lg:h-[720px] opacity-90 lg:opacity-100 scale-100' // Modo Hero: Pegado al extremo derecho en PC
         }
 
         /* --- Colores --- */
-        filter                       /* Habilita filtros CSS */
-        drop-shadow-[0_0_60px_rgba(var(--vete-primary),0.3)] /* Resplandor neón suave */
+        filter                       /* Filtros CSS */
+        drop-shadow-[0_0_50px_rgba(var(--vete-primary),0.35)] /* Resplandor neón */
 
         /* --- Animación --- */
-        transition-all               /* Transición fluida de posición, opacidad y escala */
-        duration-1000                /* 1 segundo de amortiguación cinematográfica */
-        ease-out                     /* Curva de desaceleración suave */
+        transition-all               /* Transición fluida */
+        duration-1000                /* 1 segundo suave */
+        ease-out                     /* Desaceleración suave */
       `}
     >
       <video

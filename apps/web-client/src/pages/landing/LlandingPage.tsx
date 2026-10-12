@@ -95,72 +95,86 @@ export default function LandingPage(): React.JSX.Element {
 
         `}
       >
-        {/* SECCIÓN 1: Portada Principal (Hero) */}
+        {/* SECCIÓN 1: Hero */}
         {hasHeroSession && (
-          <section id="HeroSession">
-            <HeroSession bgColor="bg-vete-secondary" />
+          <section id="HeroSession" className="relative z-20">
+            <HeroSession bgColor="bg-transparent" />
           </section>
         )}
 
-        {/* SECCIÓN 2: Catálogo de Productos y Buscador */}
+        {/* SECCIÓN 2: Productos (Fondo Oscuro) */}
         {hasProductsSession && (
-          <section id="ProductsSession">
+          <section id="ProductsSession" className="relative">
+            {/* Divisor en Capa 1 (z-0): el video pasa por encima */}
             {hasDividers && (
-              <SectionDivider
-                topColor="bg-vete-secondary"
-                bottomColor="text-vete-dark"
-              />
+              <div className="relative z-0">
+                <SectionDivider
+                  topColor="bg-vete-secondary"
+                  bottomColor="text-vete-dark"
+                />
+              </div>
             )}
-            <ProductsSession bgColor="bg-vete-dark" />
+            {/* Contenido en Capa 3 (z-20): los textos pasan por encima del video */}
+            <div className="relative z-20">
+              <ProductsSession bgColor="bg-transparent" />
+            </div>
           </section>
         )}
 
-        {/* <!> aco no se si esta bien pero abira que verlo visualmente SECCIÓN 3: Módulo de Servicios (Condicional por Feature Flag) */}
+        {/* SECCIÓN 3: Servicios (Fondo Secundario) */}
         {hasServicesSession && (
-          <section id="ServicioSession">
+          <section id="ServicioSession" className="relative">
             {hasDividers && (
-              <SectionDivider
-                topColor="bg-vete-dark"
-                bottomColor="text-vete-secondary"
-              />
+              <div className="relative z-0">
+                <SectionDivider
+                  topColor="bg-vete-dark"
+                  bottomColor="text-vete-secondary"
+                />
+              </div>
             )}
-            <ServicioSession bgColor="bg-vete-secondary" />
+            <div className="relative z-20">
+              <ServicioSession bgColor="bg-transparent" />
+            </div>
           </section>
         )}
 
-        {/* SECCIÓN 4: Módulo de Planes / Suscripciones (Condicional) */}
+        {/* SECCIÓN 4: Planes / Membresías */}
         {hasPlansSessions && (
-          <section id="PlanSession">
-            {/* Si no hubo sección de servicios previa, la onda viene desde fondo oscuro */}
+          <section id="PlanSession" className="relative">
             {hasDividers && (
-              <SectionDivider
-                topColor="bg-vete-dark"
-                bottomColor="text-vete-secondary"
-              />
+              <div className="relative z-0">
+                <SectionDivider
+                  topColor="bg-vete-secondary"
+                  bottomColor="text-vete-dark"
+                />
+              </div>
             )}
-            <PlanSession bgColor="bg-vete-secondary" />
+            <div className="relative z-20">
+              <PlanSession bgColor="bg-transparent" />
+            </div>
           </section>
         )}
 
-        {/* SECCIÓN 5: Ubicación Física y Google Maps */}
+        {/* SECCIÓN 5: Ubicación y Mapas */}
         {hasMapsSession && (
-          <section id="MapsSection">
-            {/* Si hubo servicios o planes (fondo secundario), dibuja la onda hacia fondo oscuro */}
+          <section id="MapsSection" className="relative">
             {hasDividers && (
-              <SectionDivider
-                topColor="bg-vete-secondary"
-                bottomColor="text-vete-dark"
-              />
+              <div className="relative z-0">
+                <SectionDivider
+                  topColor="bg-vete-dark"
+                  bottomColor="text-vete-secondary"
+                />
+              </div>
             )}
-            <MapsSession bgColor="bg-vete-dark" />
+            <div className="relative z-20">
+              <MapsSession bgColor="bg-transparent" />
+            </div>
           </section>
-        )}
-        {/* aca me faltan ver las secciones que faltan que son la de pregunta o consultas y la de testimonios */}
+        )}gh 
+
       </main>
 
-      {/* ===================================================================
-         6. PIE DE PÁGINA Y CRÉDITOS
-         =================================================================== */}
+      {/* Footer */}
       <Footer bgColor="bg-vete-dark" />
     </div>
   );

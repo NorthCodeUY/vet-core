@@ -24,7 +24,9 @@ export interface TenantContextProps {
   error: string | null;
   updateConfig: (newConfig: TenantConfig) => void; 
 }
-
+/**
+ *  Contexto para el tenant, se encarga de cargar la configuración del tenant.
+ */
 export const TenantContext = createContext<TenantContextProps>({
   config: null,
   isLoading: true,

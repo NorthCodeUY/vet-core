@@ -117,11 +117,13 @@ export interface FeaturesConfig {
  * @property {string} title_html - Encabezado enriquecido con soporte de etiquetas HTML.
  * @property {string} description - Bajada explicativa institucional.
  * @property {string} [title_image_url] - Ruta relativa a la imagen del título del hero.
+ * @property {string} [icon_image_url] - Ruta relativa a la imagen del icono del hero.
  */
 export interface HeroSectionConfig {
   title_html: string;
   description: string;
   title_image_url?: string;
+  icon_image_url?: string;  // <--- NUEVO: Ruta a un SVG/PNG que reemplaza los íconos de los servicios
 }
 
 /**
@@ -153,13 +155,14 @@ export interface ServiceItem {
  * @property {string} title_html - Título con soporte de etiquetas HTML.
  * @property {string} description - Resumen explicativo de los servicios.
  * @property {string} [title_image_url] - Ruta relativa a la imagen del título de servicios.
+ * @property {string} [icon_image_url] - Ruta relativa a la imagen del icono de servicios.
  * @property {ServiceItem[]} items - Lista de servicios disponibles.
  */
 export interface ServicesSectionConfig {
   title_html: string;
   description: string;
-    // NUEVO: Ruta opcional a un SVG o PNG para el título de servicios
   title_image_url?: string;
+  icon_image_url?: string;  
   items: ServiceItem[];
 }
 
@@ -218,12 +221,14 @@ export interface PlanItem {
  * @property {string} title_html - Título principal con soporte de etiquetas HTML.
  * @property {string} description - Texto secundario o bajada.
  * @property {string} [title_image_url] - Ruta relativa a la imagen del título de servicios.
+ * @property {string} [icon_image_url] - Ruta relativa a la imagen del icono de servicios.
  * @property {PlanItem[]} items - Lista de planes a renderizar.
  */
 export interface PlansSectionConfig {
   title_html: string;
   description: string;
   title_image_url?: string;
+  icon_image_url?: string;  
   items: PlanItem[];
 }
 
@@ -234,23 +239,14 @@ export interface PlansSectionConfig {
  * @property {string} title_html - Título principal con soporte de etiquetas HTML.
  * @property {string} description - Texto secundario o bajada.
  * @property {string} [title_image_url] - Ruta relativa a la imagen del título de productos.
+ * @property {string} [icon_image_url] - Ruta relativa a la imagen del icono de productos.
  */
 export interface ProductsSectionConfig {
   title_html: string;
   description: string;
   title_image_url?: string;
+  icon_image_url?: string;  
 }
-
-
-// <!>  SUPUESTAMENTE NO LO USO 
-// export interface ProductItem {
-  // id: string;
-  // title: string;
-  // description: string;
-  // benefits: string[];
-  // is_featured: boolean;
-  // whatsapp_message: string;
-// }
 
 
 /**
@@ -348,12 +344,13 @@ export interface CustomMessagesConfig {
  * @property {string} title_html - Título con soporte HTML.
  * @property {string} description_html - Bajada explicativa enriquecida.
  * @property {string} [title_image_url] - Ruta relativa a la imagen del título de servicios.
+ * @property {string} [icon_image_url] - Ruta relativa a la imagen del icono de servicios.
  */
 export interface LocationSectionConfig {
   title_html: string;
   description_html: string;
   title_image_url?: string;
-
+  icon_image_url?: string;  
 }
 
 /**

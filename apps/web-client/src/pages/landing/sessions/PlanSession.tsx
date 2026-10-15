@@ -52,6 +52,9 @@ export const PlanSession: React.FC<PlanSessionProps> = ({ bgColor = 'bg-vete-sof
       id="PlanSession"
       className={`
         /* --- Posición --- */
+
+        relative                     /*  Agregado */
+        z-20                         /*  Por encima de la animación z-10 */
         relative                     /* Contexto de posicionamiento */
         flex                         /* Layout flexible */
         flex-col                     /* Organización en columna */

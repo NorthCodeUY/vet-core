@@ -35,7 +35,7 @@ export const AmbientScrollAnimation: React.FC<AmbientAnimationProps> = ({ videoS
       className={`
         /* --- Posición --- */
         fixed                        /* Flotante en viewport */
-        z-[10]                       /* Permanece visible sobre fondos y footer */
+        z-10                         /* CAPA 1: Por encima de fondos (z-0), debajo de textos (z-20) y footer (z-30) */*/
         pointer-events-none          /* Todos los clics pasan a botones y textos */
         flex
         items-center

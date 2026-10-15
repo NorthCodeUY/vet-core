@@ -1,3 +1,5 @@
+// /apps/web-client/src/pages/landing/LlandingPage.tsx
+
 /* =============================================================================
    PÁGINA PRINCIPAL: ORQUESTADOR DE LANDING PAGE MULTI-TENANT
    ============================================================================= */
@@ -106,9 +108,7 @@ export default function LandingPage(): React.JSX.Element {
          sin cortarse en mobile, permitiendo hacer clic en cualquier enlace del footer
          ===================================================================== */}
       {config?.features?.has_background_animation && (
-        <div className="relative z-[45] pointer-events-none">
-          <AmbientScrollAnimation />
-        </div>
+        <AmbientScrollAnimation />
       )}
 
       {/* CAPA 6 (z-50): HEADER FIJO */}
@@ -148,16 +148,8 @@ export default function LandingPage(): React.JSX.Element {
         })}
       </main>
 
-      {/* =====================================================================
-         CAPA 3 (z-30): BARRA FLOTANTE DE ACCESOS RÁPIDOS
-        <!> aca esta mal esta barra tenria que ir por delate de todo tambien de la animacion 
-         ===================================================================== */}
-      <FloatingBottomBar />
+      <FloatingBottomBar/>
 
-      {/* =====================================================================
-         CAPA 4 (z-40): FOOTER INSTITUCIONAL
-          Tapa la barra flotante (z-30), mientras el video (z-[45]) flota encima
-         ===================================================================== */}
       <FooterSession bgColor="bg-vete-dark" />
     </div>
   );

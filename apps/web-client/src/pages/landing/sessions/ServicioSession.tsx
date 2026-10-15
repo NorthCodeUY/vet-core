@@ -74,6 +74,8 @@ export const ServicioSession: React.FC<ServicioSessionProps> = ({ bgColor }) => 
     >
       <div className={`
         /* --- Posición --- */
+        relative                     
+        z-20                         /*  Por encima de la animación z-10 */
         flex                         /* Contenedor flexible interno */
         flex-col                     /* Organización en columna */
         items-center                 /* Centrado de hijos */

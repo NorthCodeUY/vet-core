@@ -70,7 +70,11 @@ export const MapsSession: React.FC<MapsSessionProps> = ({ bgColor = 'bg-transpar
     `}>
       {/* CONTENEDOR PRINCIPAL: Tarjeta Panorámica que contiene Ambas Columnas */}
       <div className={`
+
         /* --- Posición --- */
+        relative                     /*  Contexto de elevación */
+        z-20                         /*  Por encima de la animación z-10 */
+        
         flex                         /* Layout flexible */
         flex-col                     /* Columna en móvil */
         lg:flex-row                  /* Fila en pantallas grandes */

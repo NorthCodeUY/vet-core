@@ -238,7 +238,7 @@ export const FooterSession: React.FC<FooterSessionProps> = ({ bgColor = 'bg-vete
       className={`
         /* --- Posición --- */
         relative                     /* Contexto de apilamiento */
-        z-40                       /*<Esto no queda por ensima de > */
+        z-0                       
 
         /* --- Dimensiones --- */
         w-full                       /* Ancho completo */

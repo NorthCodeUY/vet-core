@@ -280,7 +280,8 @@ export interface ContactConfig {
   whatsapp_country_code: string;
   email: string;
   address: string;
-  google_maps_url: string;
+  google_maps_url?: string;
+  google_maps_direct_url?: string;
   schedule?: ScheduleConfig;
   social_networks?: {
     instagram?: string;
@@ -325,12 +326,14 @@ export interface PaymentMethodsConfig {
  * Textos para la construcción del mensaje de WhatsApp.
  * 
  * @interface CustomMessagesConfig
+ * @property {string} whatsapp_contact_label - Etiqueta para el botón de contacto.
  * @property {string} whatsapp_order_prefix - Encabezado del mensaje.
  * @property {string} cash_payment_note - Instrucción para pago en efectivo.
  * @property {string} pos_payment_note - Instrucción para pago con tarjeta en puerta.
  * @property {string} transfer_note - Instrucción de transferencia bancaria.
  */
 export interface CustomMessagesConfig {
+  whatsapp_contact_label: string;
   whatsapp_order_prefix: string;
   cash_payment_note: string;
   pos_payment_note: string;

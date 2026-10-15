@@ -1,22 +1,24 @@
+
+// /apps/web-client/src/pages/landing/sessions/FooterSession.tsx
 /* =============================================================================
-   COMPONENTE: PIE DE PÁGINA Y BARRA FLOTANTE REACTIVA (Footer)
+   COMPONENTE: PIE DE PÁGINA INSTITUCIONAL (FooterSession)
    ============================================================================= */
 
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import { MapPin, Facebook, Instagram, Phone, Mail } from 'lucide-react';
-import { WhatsAppButton } from '../../../components/WhatsAppButtonProps';
 import { useConfig } from '../../../context/tenant_context';
 
 /**
- * Plataformas sociales soportadas por la plataforma.
+ * Representa un ítem individual de información de contacto.
+ * 
+ * @interface ContactInfoItem
+ * @property {React.ReactNode} icon - Componente vectorial identificatorio.
+ * @property {string} label - Título semántico (ej: 'Teléfono', 'Email').
+ * @property {string} value - Valor textual legible.
+ * @property {string} [href] - Enlace hipervínculo (tel:, mailto: o URL externa).
+ * @property {boolean} [isExternal] - Determina si debe abrirse en nueva pestaña.
  */
-type SocialPlatform = 'facebook' | 'instagram' | 'tiktok';
-
-/**
- * Elemento individual de contacto.
- * @interface ContactItem
- */
-interface ContactItem {
+interface ContactInfoItem {
   icon: React.ReactNode;
   label: string;
   value: string;
@@ -25,476 +27,371 @@ interface ContactItem {
 }
 
 /**
- * Elemento estructurado de horario comercial.
- * @interface ScheduleItem
+ * Segmento estructurado de horario para presentación en grilla.
+ * 
+ * @interface ScheduleDisplayItem
+ * @property {string} day - Rango de días (ej: 'Lunes a Viernes', 'Sábados').
+ * @property {string} hours - Franja horaria formateada o 'Cerrado'.
  */
-interface ScheduleItem {
+interface ScheduleDisplayItem {
   day: string;
   hours: string;
 }
 
 /**
- * Datos validados de contacto.
- * @interface SafeContactInfo
+ * Intervalo horario numérico en minutos transcurridos desde las 00:00 hs.
+ * 
+ * @interface TimeRangeInMinutes
+ * @property {number} startMinutes - Minuto de apertura.
+ * @property {number} endMinutes - Minuto de cierre.
  */
-interface SafeContactInfo {
-  phone: string;
-  email: string;
-  city: string;
-  country: string;
-  mapsUrl: string;
+interface TimeRangeInMinutes {
+  startMinutes: number;
+  endMinutes: number;
 }
 
 /**
- * URLs validadas de redes sociales.
- * @interface SafeSocials
+ * Propiedades del componente `FooterSession`.
+ * 
+ * @interface FooterSessionProps
+ * @property {string} [bgColor] - Clase Tailwind del color estructural de fondo.
  */
-interface SafeSocials {
-  facebook: string;
-  instagram: string;
-  tiktok: string;
-}
-
-/**
- * Propiedades del componente `Footer`.
- * @interface FooterProps
- */
-export interface FooterProps {
+export interface FooterSessionProps {
   bgColor?: string;
 }
 
 /**
- * Extrae las horas de apertura y cierre de un string formateado.
+ * Isotipo vectorial oficial de TikTok.
+ */
+const TikTokIcon: React.FC<{ size?: number; className?: string }> = ({ size = 16, className = '' }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+  </svg>
+);
+
+/**
+ * Extrae todos los intervalos horarios de una cadena admitiendo turnos fraccionados.
  * 
- * @param {string} scheduleString - Texto con rango horario (ej: "08:00 – 20:00").
- * @returns {{ openHour: number, closeHour: number } | null}
+ * Soporta separadores estándar (`-`, `–`, `—`), símbolos de división (`|`, `/`)
+ * y sufijos de hora (`hs`).
+ * 
+ * @param {string} text - Cadena cruda (ej: "09:00 - 12:00 | 14:00 - 21:00 hs").
+ * @returns {TimeRangeInMinutes[]} Matriz de intervalos en minutos.
  */
-const parseScheduleTime = (scheduleString: string): { openHour: number; closeHour: number } | null => {
-  const timeMatch = scheduleString.match(/(\d{2}):(\d{2})\s*–\s*(\d{2}):(\d{2})/);
-  if (!timeMatch) return null;
+const parseTimeIntervals = (text: string): TimeRangeInMinutes[] => {
+  const intervals: TimeRangeInMinutes[] = [];
+  const regex = /(\d{1,2}):(\d{2})\s*[-–—]\s*(\d{1,2}):(\d{2})/g;
+  let match: RegExpExecArray | null;
 
-  const [, openHourStr, , closeHourStr] = timeMatch;
-  return {
-    openHour: Number(openHourStr),
-    closeHour: Number(closeHourStr),
-  };
+  while ((match = regex.exec(text)) !== null) {
+    const startMinutes = Number(match[1]) * 60 + Number(match[2]);
+    const endMinutes = Number(match[3]) * 60 + Number(match[4]);
+    intervals.push({ startMinutes, endMinutes });
+  }
+
+  return intervals;
 };
 
 /**
- * Hook para evaluar reactivamente si el local comercial se encuentra abierto.
+ * Evalúa reactivamente si el local comercial se encuentra en horario operativo.
+ * 
+ * Discrimina entre días hábiles (Lunes a Viernes), Sábados y Domingos según la
+ * configuración del cliente.
+ * 
+ * @param {ReturnType<typeof useConfig>['config']} config - Configuración activa del tenant.
+ * @returns {boolean} True si la hora del sistema coincide con un horario de apertura.
  */
-const useIsOpen = (scheduleString: string): boolean => {
+const useIsBusinessOpen = (config: ReturnType<typeof useConfig>['config']): boolean => {
   return useMemo(() => {
+    const schedule = config?.contact?.schedule;
+    if (!schedule) return false;
+
     const now = new Date();
-    const currentHour = now.getHours();
-    const dayOfWeek = now.getDay();
+    const currentDay = now.getDay(); // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-    if (dayOfWeek === 0) return false;
+    let dayString = '';
 
-    const times = parseScheduleTime(scheduleString);
-    if (!times) return false;
+    if (currentDay === 0) {
+      // Domingo: solo evalúa si se mencionó explícitamente en weekdays
+      dayString = schedule.weekdays?.toLowerCase().includes('domingo') ? schedule.weekdays : '';
+    } else if (currentDay === 6) {
+      // Sábado
+      dayString = schedule.saturdays || schedule.weekdays || '';
+    } else {
+      // Lunes a Viernes
+      dayString = schedule.weekdays || '';
+    }
 
-    const { openHour, closeHour } = times;
-    return currentHour >= openHour && currentHour < closeHour;
-  }, [scheduleString]);
+    if (!dayString || dayString.toLowerCase().includes('cerrado')) {
+      return false;
+    }
+
+    const intervals = parseTimeIntervals(dayString);
+    if (intervals.length === 0) return false;
+
+    return intervals.some(
+      ({ startMinutes, endMinutes }) => currentMinutes >= startMinutes && currentMinutes < endMinutes
+    );
+  }, [config]);
 };
 
 /**
- * Hook que extrae datos seguros de contacto desde el contexto activo.
+ * Transforma la estructura de horarios del JSON en una lista visualmente ordenada.
+ * 
+ * @param {ReturnType<typeof useConfig>['config']} config - Configuración activa del tenant.
+ * @returns {ScheduleDisplayItem[]} Lista formateada para renderizado en columna.
  */
-const useSafeContactInfo = (config: ReturnType<typeof useConfig>['config']): SafeContactInfo => {
-  return useMemo(() => ({
-    phone: config?.contact?.admin_phone || 'No disponible',
-    email: config?.contact?.email || 'No disponible',
-    city: config?.contact?.address || '',
-    country: config?.contact?.address || '',//<!> Esto no estoy muy seguro es lo mas pareseido que tenia e el archivo de configuraicon no se para que sirve 
-    mapsUrl: config?.contact?.google_maps_url || '#',
-  }), [config]);
+const useFormattedSchedule = (config: ReturnType<typeof useConfig>['config']): ScheduleDisplayItem[] => {
+  return useMemo(() => {
+    const schedule = config?.contact?.schedule;
+    const items: ScheduleDisplayItem[] = [];
+
+    // 1. Días hábiles
+    if (schedule?.weekdays) {
+      const parts = schedule.weekdays.split(':');
+      items.push({
+        day: parts.length > 1 ? parts[0].trim() : 'Lunes a Viernes',
+        hours: parts.slice(1).join(':').trim(),
+      });
+    }
+
+    // 2. Sábados
+    if (schedule?.saturdays) {
+      const parts = schedule.saturdays.split(':');
+      items.push({
+        day: parts.length > 1 ? parts[0].trim() : 'Sábados',
+        hours: parts.slice(1).join(':').trim(),
+      });
+    } else {
+      items.push({ day: 'Sábados', hours: 'Cerrado' });
+    }
+
+    // 3. Domingos (Default administrativo seguro)
+    items.push({ day: 'Domingos', hours: 'Cerrado' });
+
+    return items;
+  }, [config]);
 };
 
 /**
- * Hook que extrae enlaces seguros a redes sociales.
+ * Pie de página estructural con información corporativa, horarios y redes (`FooterSession`).
+ * 
+ * Opera en Capa z-40 para deslizarse por encima de la barra flotante (z-30) al finalizar el scroll.
+ *
+ * @component
+ * @param {FooterSessionProps} props - Propiedades visuales.
+ * @returns {JSX.Element}
  */
-const useSafeSocials = (config: ReturnType<typeof useConfig>['config']): SafeSocials => {
-  return useMemo(() => ({
+export const FooterSession: React.FC<FooterSessionProps> = ({ bgColor = 'bg-vete-dark' }) => {
+  const { config } = useConfig();
+  const currentYear = new Date().getFullYear();
+
+  const isOpen = useIsBusinessOpen(config);
+  const scheduleItems = useFormattedSchedule(config);
+
+  const phone = config?.contact?.admin_phone || '';
+  const email = config?.contact?.email || '';
+  const address = config?.contact?.address || '';
+  const mapsUrl = config?.contact?.google_maps_url || '#';
+
+  const socials = {
     facebook: config?.contact?.social_networks?.facebook || '#',
     instagram: config?.contact?.social_networks?.instagram || '#',
     tiktok: config?.contact?.social_networks?.tiktok || '#',
-  }), [config]);
-};
+  };
 
-/**
- * Hook que genera el listado de horarios formateados.
- */
-const useSafeSchedule = (weekdays?: string): ScheduleItem[] => {
-  return useMemo(() => {
-    const weekdaysSchedule = weekdays || 'Lunes a Sábados: 08:00 – 20:00';
-    const daysMatch = weekdaysSchedule.match(/^([^:]+):\s*/);
-    const weekdaysLabel = daysMatch ? daysMatch[1] : 'Lunes a Sábados';
-    
-    return [
-      {
-        day: weekdaysLabel,
-        hours: weekdaysSchedule.split(':').slice(1).join(':').trim(),
-      },
-      {
-        day: 'Domingos',
-        hours: 'Cerrado',
-      },
-    ];
-  }, [weekdays]);
-};
-
-/**
- * Pie de página institucional y barra flotante de accesos rápidos (`Footer`).
- * 
- * @component
- * @param {FooterProps} props - Propiedades de configuración.
- * @returns {JSX.Element} Footer completo con enlaces, mapa y botones WhatsApp dinámicos.
- */
-export const Footer: React.FC<FooterProps> = ({ bgColor = 'bg-vete-dark' }) => {
-  const { config } = useConfig();
-  const currentYear = new Date().getFullYear();
-  const weekdaysSchedule = config?.contact?.schedule?.weekdays || '';
-
-  const safeContactInfo = useSafeContactInfo(config);
-  const safeSocials = useSafeSocials(config);
-  const safeSchedule = useSafeSchedule(weekdaysSchedule);
-  const isOpen = useIsOpen(weekdaysSchedule);
-
-  /* Evaluación de presencia real de botón de emergencias */
-  const hasEmergency = Boolean(
-    config?.features?.has_emergency_button && 
-    config?.contact?.emergency_phone && 
-    config?.contact?.emergency_phone.trim() !== '' &&
-    config?.contact?.emergency_phone !== '#'
-  );
-
-  const contactItems: ContactItem[] = useMemo(() => [
+  const contactList: ContactInfoItem[] = useMemo(() => [
     {
       icon: <Phone size={16} className="text-vete-primary/70" strokeWidth={2.5} />,
       label: 'Teléfono',
-      value: safeContactInfo.phone,
-      href: `tel:${safeContactInfo.phone.replace(/\s+/g, '')}`,
+      value: phone,
+      href: `tel:${phone.replace(/\s+/g, '')}`,
     },
     {
       icon: <Mail size={16} className="text-vete-primary/70" strokeWidth={2.5} />,
       label: 'Email',
-      value: safeContactInfo.email,
-      href: `mailto:${safeContactInfo.email}`,
+      value: email,
+      href: `mailto:${email}`,
     },
     {
       icon: <MapPin size={16} className="text-vete-primary/70" strokeWidth={2.5} />,
       label: 'Ubicación',
-      value: `${safeContactInfo.city}`,
-      href: safeContactInfo.mapsUrl,
+      value: address,
+      href: mapsUrl,
       isExternal: true,
     },
-  ], [safeContactInfo]);
-
-  const handleSocialClick = useCallback((platform: SocialPlatform) => {
-    console.debug(`Click en red social: ${platform}`);
-  }, []);
+  ], [phone, email, address, mapsUrl]);
 
   return (
-    <>
-      {/* =====================================================================
-         1. BARRA FLOTANTE INFERIOR: TEXTURA DE PASTO + ACCESOS RÁPIDOS
-         ===================================================================== */}
-      <div
-        className={`
-          /* --- Posición --- */
-          fixed                      /* Fijo en pantalla */
-          bottom-0                   /* Anclado abajo */
-          left-0                     /* Anclado a la izquierda */
-          z-[40]                     /* Capa por encima del contenido */
-          flex                       /* Layout flexible */
-          items-end                  /* Alineado al fondo */
-          justify-between            /* Distribución a los extremos */
+    <footer
+      className={`
+        /* --- Posición --- */
+        relative                     /* Contexto de apilamiento */
+        z-40                       /*<Esto no queda por ensima de > */
 
-          /* --- Dimensiones --- */
-          w-full                     /* Ancho completo */
-          h-24                       /* Altura de 6rem */
-          px-4                       /* Padding lateral móvil */
-          md:px-16                   /* Padding lateral escritorio */
-          pb-4                       /* Separación inferior */
+        /* --- Dimensiones --- */
+        w-full                       /* Ancho completo */
+        px-6                         /* Padding lateral móvil */
+        md:px-16                     /* Padding lateral escritorio */
+        lg:px-24                     /* Padding lateral pantallas grandes */
+        py-12                        /* Padding vertical */
+        mt-32                        /* Separación superior */
 
-          /* --- Interacción --- */
-          pointer-events-none        /* Clics pasan al fondo en áreas vacías */
-        `}
-      >
-        {/* Fondo de pasto opcional montado desde /tenant/ */}
-        <img
-          src="/tenant/nav.png"
-          alt=""
-          className={`
-            /* --- Posición --- */
-            absolute                 /* Flotante detrás */
-            bottom-0                 /* Anclado al fondo */
-            left-0                   /* Anclado a la izquierda */
-            z-0                      /* Capa trasera */
-            pointer-events-none      /* Sin interferencia de clics */
-
-            /* --- Dimensiones --- */
-            w-full                   /* Ancho completo */
-            h-full                   /* Altura completa */
-
-            /* --- Colores --- */
-            opacity-35               /* Transparencia sutil */
-
-            /* --- Estilo --- */
-            object-cover             /* Sin deformación */
-            object-top               /* Anclado arriba */
-          `}
-        />
-
-        {/* LADO IZQUIERDO: Solo muestra botón de Administración si existe emergencia a la derecha */}
-        <div className="pointer-events-auto z-30">
-          {hasEmergency && (
-            <div className="transition-all duration-300 hover:-translate-y-1 hover:scale-105">
-              <WhatsAppButton
-                label="Administración"
-                phone={safeContactInfo.phone}
-                bgColor="bg-vete-tertiary"
-              />
+        /* --- Colores --- */
+        ${bgColor}                   /* Fondo institucional inyectado */
+        border-t                     /* Borde superior */
+        border-vete-border-subtle/30 /* Tinte sutil */
+        shadow-2xl                   /* Elevación contra el contenido superior */
+      `}
+    >
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-8">
+          
+          {/* SECCIÓN 1: Identidad Corporativa */}
+          <div className="flex flex-col items-center md:items-start gap-2.5">
+            <img
+              src={config?.branding?.logo_url || '/tenant/logo.png'}
+              className="w-14 h-14 object-contain hover:scale-105 transition-transform duration-300 filter drop-shadow-sm"
+              alt={`Logo ${config?.business_name || 'Comercio'}`}
+            />
+            <div className="text-center md:text-left">
+              <h3 className="font-black text-base text-vete-text-base leading-tight uppercase">
+                {config?.business_name}
+              </h3>
+              <p className="mt-1 text-vete-primary text-[11px] font-bold tracking-wider">
+                {config?.slogan?.prefix}{' '}
+                <span className="text-vete-text-muted font-normal">
+                  {config?.slogan?.highlight} {config?.slogan?.suffix}
+                </span>
+              </p>
             </div>
-          )}
-        </div>
+          </div>
 
-        {/* BARRA CENTRAL: Accesos Rápidos a Redes Sociales y Ubicación */}
-        <div
-          className={`
-            /* --- Posición --- */
-            absolute                 /* Centrado absoluto */
-            bottom-4                 /* Elevado del fondo */
-            left-1/2                 /* Centrado horizontal */
-            -translate-x-1/2         /* Ajuste de eje */
-            z-30                     /* Capa superior */
-            flex                     /* Flexbox */
-            items-center             /* Centrado vertical */
-            gap-3.5                  /* Espaciado entre iconos */
-            pointer-events-auto      /* Clickeable */
-          `}
-        >
-          {/* Facebook */}
-          {safeSocials.facebook !== '#' && (
-            <a 
-              href={safeSocials.facebook} 
-              target="_blank" 
-              rel="noreferrer"
-              onClick={() => handleSocialClick('facebook')}
-              className="p-3 bg-black/60 backdrop-blur-md rounded-full border border-white/10 hover:bg-vete-primary transition-all shadow-lg text-white hover:scale-110"
-              title="Síguenos en Facebook"
-              aria-label="Facebook"
-            >
-              <Facebook size={18} />
-            </a>
-          )}
-
-          {/* Acceso Directo a Mapa */}
-          <a 
-            href={safeContactInfo.mapsUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="p-3 bg-black/60 backdrop-blur-md rounded-full border border-white/20 hover:bg-vete-primary transition-all shadow-xl text-white hover:scale-125 group"
-            title="Ver ubicación en Google Maps"
-            aria-label="Google Maps"
-          >
-            <MapPin size={22} className="group-hover:text-white transition-colors" />
-          </a>
-
-          {/* Instagram */}
-          {safeSocials.instagram !== '#' && (
-            <a 
-              href={safeSocials.instagram} 
-              target="_blank" 
-              rel="noreferrer"
-              onClick={() => handleSocialClick('instagram')}
-              className="p-3 bg-black/60 backdrop-blur-md rounded-full border border-white/10 hover:bg-vete-primary transition-all shadow-lg text-white hover:scale-110"
-              title="Síguenos en Instagram"
-              aria-label="Instagram"
-            >
-              <Instagram size={18} />
-            </a>
-          )}
-        </div>
-
-        {/* LADO DERECHO: Prioridad móvil. Si hay emergencia va en rojo; si no hay emergencia, pasa aquí el contacto en verde */}
-        <div className="pointer-events-auto z-30">
-          {hasEmergency ? (
-            <div className="transition-all duration-300 hover:-translate-y-1 hover:scale-105">
-              <WhatsAppButton
-                label="Emergencia"
-                phone={config?.contact?.emergency_phone || '#'}
-                bgColor="bg-vete-error"
-                isReversed={true}
-              />
-            </div>
-          ) : (
-            <div className="transition-all duration-300 hover:-translate-y-1 hover:scale-105">
-              <WhatsAppButton
-                label="Contactenos"  // <!> Esto capas lo deberia aser agnostico por si quiero cmabiarlo 
-                phone={safeContactInfo.phone}
-                bgColor="bg-vete-tertiary"
-                isReversed={true}
-              />
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* =====================================================================
-         2. FOOTER ESTRUCTURADO Y CRÉDITOS
-         ===================================================================== */}
-      <footer
-        className={`
-          /* --- Posición --- */
-          relative                   /* Contexto relativo */
-          z-20                       /* Capa base sobre el fondo */
-
-          /* --- Dimensiones --- */
-          w-full                     /* Ancho completo */
-          px-6                       /* Padding lateral móvil */
-          md:px-16                   /* Padding lateral escritorio */
-          lg:px-24                   /* Padding lateral pantallas grandes */
-          py-12                      /* Padding vertical */
-          mt-32                      /* Margen superior */
-
-          /* --- Colores --- */
-          ${bgColor}                 /* Fondo del tema inyectado */
-          border-t                   /* Línea superior */
-          border-vete-border-subtle/30 /* Borde sutil */
-          shadow-lg                  /* Sombra suave */
-
-        `}
-      >
-        <div className="max-w-7xl mx-auto">
-          {/* GRID PRINCIPAL */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-8">
-            {/* SECCIÓN 1: Identidad y Marca */}
-            <div className="flex flex-col items-center md:items-start gap-2.5">
-              <img
-                src={config?.branding?.logo_url || '/tenant/logo.png'}
-                className="w-14 h-14 object-contain hover:scale-105 transition-transform duration-300 filter drop-shadow-sm"
-                alt={`Logo ${config?.business_name || 'Comercio'}`}
-              />
-              <div className="text-center md:text-left">
-                <h3 className="font-black text-base text-vete-text-base leading-tight uppercase">
-                  {config?.business_name}
-                </h3>
-                <p className="mt-1 text-vete-primary text-[11px] font-bold tracking-wider">
-                  {config?.slogan?.prefix}{' '}
-                  <span className="text-vete-text-muted font-normal">
-                    {config?.slogan?.highlight} {config?.slogan?.suffix}
-                  </span>
-                </p>
-              </div>
-            </div>
-
-            {/* SECCIÓN 2: Contacto */}
-            <div className="flex flex-col gap-3">
-              <h4 className="text-xs font-black text-vete-primary uppercase tracking-widest">Contacto</h4>
-              <div className="space-y-2.5">
-                {contactItems.map((item, idx) => (
-                  <a
-                    key={idx}
-                    href={item.href || '#'}
-                    target={item.isExternal ? '_blank' : undefined}
-                    rel={item.isExternal ? 'noreferrer' : undefined}
-                    className="group flex items-start gap-2.5 text-xs text-vete-text-base hover:text-vete-primary transition-colors duration-200"
-                    aria-label={item.label}
-                  >
-                    <div className="mt-0.5 group-hover:scale-110 transition-transform">{item.icon}</div>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[9px] font-bold text-vete-text-muted uppercase tracking-wider">
-                        {item.label}
-                      </span>
-                      <span className="font-medium group-hover:underline">
-                        {item.value}
-                      </span>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            {/* SECCIÓN 3: Horarios de Atención */}
-            <div className="flex flex-col gap-3">
-              <h4 className="text-xs font-black text-vete-primary uppercase tracking-widest">Horarios</h4>
-              <div className="space-y-2">
-                {safeSchedule.map((item, idx) => (
-                  <div key={idx} className="flex flex-col gap-0.5">
+          {/* SECCIÓN 2: Contacto Directo */}
+          <div className="flex flex-col gap-3">
+            <h4 className="text-xs font-black text-vete-primary uppercase tracking-widest">Contacto</h4>
+            <div className="space-y-2.5">
+              {contactList.map((item, idx) => (
+                <a
+                  key={idx}
+                  href={item.href || '#'}
+                  target={item.isExternal ? '_blank' : undefined}
+                  rel={item.isExternal ? 'noreferrer' : undefined}
+                  className="group flex items-start gap-2.5 text-xs text-vete-text-base hover:text-vete-primary transition-colors duration-200"
+                  aria-label={item.label}
+                >
+                  <div className="mt-0.5 group-hover:scale-110 transition-transform">{item.icon}</div>
+                  <div className="flex flex-col gap-0.5">
                     <span className="text-[9px] font-bold text-vete-text-muted uppercase tracking-wider">
-                      {item.day}
+                      {item.label}
                     </span>
-                    <span className="text-xs font-medium text-vete-text-base">
-                      {item.hours}
+                    <span className="font-medium group-hover:underline">
+                      {item.value}
                     </span>
                   </div>
-                ))}
-                <div className="mt-2 pt-2 border-t border-vete-border-subtle flex items-center gap-2">
-                  <span className={`relative flex h-2 w-2 shrink-0 ${isOpen ? 'animate-pulse' : ''}`}>
-                    <span className={`absolute inset-0 rounded-full opacity-75 ${isOpen ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
-                    <span className={`relative h-2 w-2 rounded-full ${isOpen ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* SECCIÓN 3: Horarios de Atención Dinámicos */}
+          <div className="flex flex-col gap-3">
+            <h4 className="text-xs font-black text-vete-primary uppercase tracking-widest">Horarios</h4>
+            <div className="space-y-2">
+              {scheduleItems.map((item, idx) => (
+                <div key={idx} className="flex flex-col gap-0.5">
+                  <span className="text-[9px] font-bold text-vete-text-muted uppercase tracking-wider">
+                    {item.day}
                   </span>
-                  <span className="text-xs font-bold text-vete-text-base">
-                    {isOpen ? 'Abierto Ahora' : 'Cerrado Actualmente'}
+                  <span className="text-xs font-medium text-vete-text-base">
+                    {item.hours}
                   </span>
                 </div>
-              </div>
-            </div>
-
-            {/* SECCIÓN 4: Redes Sociales */}
-            <div className="flex flex-col gap-3">
-              <h4 className="text-xs font-black text-vete-primary uppercase tracking-widest">Síguenos</h4>
-              <div className="flex items-center gap-2.5">
-                {safeSocials.facebook !== '#' && (
-                  <a
-                    href={safeSocials.facebook}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="p-2.5 bg-vete-surface border border-vete-border-subtle rounded-xl shadow-sm hover:bg-[#1877F2] hover:text-white transition-all text-vete-primary"
-                    title="Facebook"
-                    aria-label="Facebook"
-                  >
-                    <Facebook size={16} />
-                  </a>
-                )}
-                {safeSocials.instagram !== '#' && (
-                  <a
-                    href={safeSocials.instagram}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="p-2.5 bg-vete-surface border border-vete-border-subtle rounded-xl shadow-sm hover:bg-gradient-to-br hover:from-[#5B51D8] hover:via-[#E1306C] hover:to-[#F77737] hover:text-white transition-all text-vete-primary"
-                    title="Instagram"
-                    aria-label="Instagram"
-                  >
-                    <Instagram size={16} />
-                  </a>
-                )}
+              ))}
+              
+              <div className="mt-2 pt-2 border-t border-vete-border-subtle flex items-center gap-2">
+                <span className={`relative flex h-2 w-2 shrink-0 ${isOpen ? 'animate-pulse' : ''}`}>
+                  <span className={`absolute inset-0 rounded-full opacity-75 ${isOpen ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
+                  <span className={`relative h-2 w-2 rounded-full ${isOpen ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                </span>
+                <span className="text-xs font-bold text-vete-text-base">
+                  {isOpen ? 'Abierto Ahora' : 'Cerrado Actualmente'}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* DIVISOR DE CRÉDITOS */}
-          <div className="h-px bg-vete-border-subtle/50 my-6" />
-
-          {/* CRÉDITOS INFERIORES */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-vete-text-muted font-medium">
-            <span>© {currentYear} {config?.business_name}. Todos los derechos reservados.</span>
-            <a
-              href="https://northcode-uy.com/"
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-vete-primary transition-colors duration-200"
-            >
-              Tecnología e Infraestructura por <strong>NorthCode</strong>
-            </a>
+          {/* SECCIÓN 4: Canales Sociales */}
+          <div className="flex flex-col gap-3">
+            <h4 className="text-xs font-black text-vete-primary uppercase tracking-widest">Síguenos</h4>
+            <div className="flex items-center gap-2.5">
+              {socials.facebook !== '#' && (
+                <a
+                  href={socials.facebook}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-2.5 bg-vete-surface border border-vete-border-subtle rounded-xl shadow-sm hover:border-vete-primary text-vete-text-base hover:text-vete-primary transition-all"
+                  title="Facebook"
+                  aria-label="Facebook"
+                >
+                  <Facebook size={16} />
+                </a>
+              )}
+              {socials.instagram !== '#' && (
+                <a
+                  href={socials.instagram}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-2.5 bg-vete-surface border border-vete-border-subtle rounded-xl shadow-sm hover:border-vete-primary text-vete-text-base hover:text-vete-primary transition-all"
+                  title="Instagram"
+                  aria-label="Instagram"
+                >
+                  <Instagram size={16} />
+                </a>
+              )}
+              {socials.tiktok !== '#' && (
+                <a
+                  href={socials.tiktok}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-2.5 bg-vete-surface border border-vete-border-subtle rounded-xl shadow-sm hover:border-vete-primary text-vete-text-base hover:text-vete-primary transition-all"
+                  title="TikTok"
+                  aria-label="TikTok"
+                >
+                  <TikTokIcon size={16} />
+                </a>
+              )}
+            </div>
           </div>
         </div>
-      </footer>
-    </>
+
+        {/* Créditos */}
+        <div className="h-px bg-vete-border-subtle/50 my-6" />
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-vete-text-muted font-medium">
+          <span>© {currentYear} {config?.business_name}. Todos los derechos reservados.</span>
+          <a
+            href="https://northcode-uy.com/"
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-vete-primary transition-colors duration-200"
+          >
+            Tecnología e Infraestructura por <strong>NorthCode</strong>
+          </a>
+        </div>
+      </div>
+    </footer>
   );
 };
 
-export default Footer;
+export default FooterSession;

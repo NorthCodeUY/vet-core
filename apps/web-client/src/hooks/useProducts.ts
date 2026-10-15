@@ -7,6 +7,7 @@ import type { ApiCategory, ApiProduct } from '../types/product_types';
 import type { PedidoItem } from '../types/pedido_types';
 
 /**
+ * <!> Mejorar los comentarios la documetacion 
  * Hook para manejar el estado global de los productos
  */
 export const useProducts = () => {

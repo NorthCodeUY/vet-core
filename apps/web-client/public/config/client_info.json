@@ -60,8 +60,8 @@
   "features": {
     "has_cart": false,            // false: oculta carrito y pedidos (vitrina institucional)
     "has_products": false,        // false: oculta el catálogo de productos
-    "has_services": true,         // true: muestra la sección de servicios de barbería
-    "has_health_plans": true,     // true: muestra las membresías y packs mensuales
+    "has_services": false,         // false: oculta la sección de servicios de barbería
+    "has_health_plans": false,     // false: oculta las membresías y packs mensuales
     "has_appointments": false,    // false: turnos directos por WhatsApp (sin módulo complejo)
     "has_emergency_button": false,// false: apaga botón de urgencias médicas
     "has_locations": true,        // true: muestra la ubicación y mapa del estudio
@@ -186,25 +186,24 @@
 
   // Datos de contacto, horarios y geolocalización en Artigas
   "contact": {
-    "admin_phone": "099112233",
-    "emergency_phone": "099112233",
+    "admin_phone": "098396070",
+    "emergency_phone": "096368021",
     "whatsapp_country_code": "598",
-    "email": "contacto@malandrobarber.com",
-    "address": "Av. Lecueder 1234, Artigas, Uruguay",
-    "google_maps_url": "https://maps.google.com/maps?q=Artigas,+Uruguay&t=&z=16&ie=UTF8&iwloc=&output=embed",
-    "google_maps_direct_url": "https://maps.google.com/?q=Artigas,+Uruguay",
-    "schedule": {
-      "weekdays": "Lunes a Sábados: 09:00 – 20:00",
-      "saturdays": "Sábados: 09:00 – 20:00"
+    "address": "Tomas Berreta 54, Artigas, Uruguay",
+    "google_maps_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3434.629235777121!2d-56.4634916!3d-30.3977087!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95ab098f9cd98801%3A0xa3cc5316b6206c2d!2sMalandro%20Barber!5e0!3m2!1ses!2suy!4v1710000000000!5m2!1ses!2suy", // 🗺️ URL OFICIAL PARA EL IFRAME (Permanente, con ficha comercial, reseñas y cartel oficial)
+    "google_maps_direct_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3434.629235777121!2d-56.4634916!3d-30.3977087!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95ab098f9cd98801%3A0xa3cc5316b6206c2d!2sMalandro%20Barber!5e0!3m2!1ses!2suy!4v1710000000000!5m2!1ses!2suy", // 📍 ENLACE DIRECTO (Abre la app de Google Maps en el celular directo al negocio) 
+    "schedule": { 
+      "weekdays": "Lunes a Viernes: 09:00 - 12:00 | 14:00 - 21:00 hs",
+      "saturdays": "Sábados: 09:00 – 12:00"
     },
     "social_networks": {
-      "instagram": "https://instagram.com/malandrobarber",
-      "facebook": "https://facebook.com/malandrobarber",
-      "tiktok": "https://tiktok.com/@malandrobarber"
+      "instagram": "https://www.instagram.com/malandrobarber/",
+      "facebook": "https://www.facebook.com/p/Malandro-Barber-61580341351412/",
+      "tiktok": "https://www.tiktok.com/@malandro.barber7"
     }
   },
 
-  // Cuentas bancarias para señas o pagos por transferencia
+  // Cuentas bancarias para señas o pagos por transferencia <!> Tengo que conseguir numero de cueta 
   "bank_accounts": [
     {
       "bank_name": "PREX",
@@ -230,6 +229,7 @@
 
   // Plantillas de texto para mensajes directos de WhatsApp
   "custom_messages": {
+    "whatsapp_contact_label": "Agendar Turno",
     "whatsapp_order_prefix": "RESERVA MALANDRO BARBER",
     "cash_payment_note": "Pago en efectivo en el local",
     "pos_payment_note": "Aceptamos tarjetas de débito/crédito",

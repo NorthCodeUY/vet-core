@@ -1,21 +1,49 @@
 # /apps/web-client/docker-compose.yml
 
-# Contenedor de Docker del frontend React 
+networks:
+  northcode-net:
+    external: true
+
+# Configuración base de construcción local
+x-frontend-base: &frontend-build
+  build:
+    context: .
+    dockerfile: dockerfile
+  image: vetcore-web-client:latest
 
 services:
-  web-client:
-    build: . # Construye la imagen desde el Dockerfile en el directorio actual (./)
-    container_name: nc-web-valeria # Nombre del contenedor
-    restart: unless-stopped # Reinicia el contenedor si se cae
-    # Estos puertos hay que comentarlos en produccion
+  # ===========================================================================
+  # CLIENTE 1: Valeria Beltramelli (Frontend + Backend activo)
+  # ===========================================================================
+  front-valeria:
+    <<: *frontend-build
+    container_name: nc-web-valeria
+    restart: unless-stopped
     ports:
-      - "80:80" # Mapeo de puertos
+      - "8081:80"
     environment:
-      - VITE_BACKEND_PORT=8000 # Puerto Backend 
+      - BACKEND_HOST=backend-vet-bel:8000
+    volumes:
+      # <!> Corregido a 'clientes'
+      - ../../clientes/valeria_beltramelli/config.json:/usr/share/nginx/html/config/client_info.json:ro
+      - ../../clientes/valeria_beltramelli/assets:/usr/share/nginx/html/tenant:ro
     networks:
       - northcode-net
 
-
-networks:
-  northcode-net:
-    external: true 
+  # ===========================================================================
+  # CLIENTE 2: Malandro Barer (Frontend Standalone / Sin Backend)
+  # ===========================================================================
+  front-malandrobarber:
+    <<: *frontend-build
+    container_name: nc-web-malandrobarber
+    restart: unless-stopped
+    ports:
+      - "8082:80"
+    environment:
+      - BACKEND_HOST=127.0.0.1:80
+    volumes:
+      # <!> Corregido a 'cliente'
+      - ../../clients/malandrobarber/config.json:/usr/share/nginx/html/config/client_info.json:ro
+      - ../../clients/malandrobarber/assets:/usr/share/nginx/html/tenant:ro
+    networks:
+      - northcode-net

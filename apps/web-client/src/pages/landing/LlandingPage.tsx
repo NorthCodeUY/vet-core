@@ -1,181 +1,164 @@
-// apps/web-client/src/pages/landing/LlandingPage.tsx
-
-
 /* =============================================================================
-   PÁGINA PRINCIPAL: ORQUESTADOR DE LANDING PAGE (LlandingPage)
+   PÁGINA PRINCIPAL: ORQUESTADOR DE LANDING PAGE MULTI-TENANT
    ============================================================================= */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useConfig } from '../../context/tenant_context';
 
-/* --- Componentes Visuales y Divisores --- */
+/* --- Componentes de Infraestructura Visual --- */
 import { SectionDivider } from '../../components/SectionDivider';
-/* Importaciones para 3D*/
 import { AmbientScrollAnimation } from '../../components/animations/AmbientScrollAnimation';
+import { FloatingBottomBar } from '../../components/FloatingBottomBar';
 
-
-/* --- Secciones Modulares de la Landing --- */
+/* --- Módulos Seccionales de la Landing --- */
 import HeaderSession from './sessions/HederSession';
 import HeroSession from './sessions/HeroSession';
 import ProductsSession from './sessions/ProductsSession';
 import ServicioSession from './sessions/ServicioSession';
 import { PlanSession } from './sessions/PlanSession';
 import MapsSession from './sessions/MapsSession';
-import Footer from './sessions/FooterSession';
+import FooterSession from './sessions/FooterSession';
 
-/**
- * Página de Aterrizaje Principal Multi-tenant (`LandingPage`).
- * 
- * Orquesta secuencialmente las secciones de la plataforma, alternando contrastes
- * de color de fondo y evaluando los feature flags del cliente activo (`has_services`,
- * `has_health_plans`) para renderizar únicamente los módulos habilitados junto
- * con sus respectivas transiciones ondulatorias SVG.
- *
- * @component
- * @returns {JSX.Element} Estructura completa de la landing page.
- */
+interface ActiveSectionDefinition {
+  id: string;
+  renderComponent: (bgColor: string) => React.ReactNode;
+  groupWithPrevious?: boolean;
+}
+
+type SectionThemeVariant = 'secondary' | 'dark';
+
+interface ProcessedSection extends ActiveSectionDefinition {
+  currentTheme: SectionThemeVariant;
+  previousTheme: SectionThemeVariant;
+  isFirst: boolean;
+}
+
 export default function LandingPage(): React.JSX.Element {
-  /* ---------------------------------------------------------------------------
-     1. CONSUMO DEL CONTEXTO MULTI-TENANT
-     --------------------------------------------------------------------------- */
   const { config } = useConfig();
 
-  /* ---------------------------------------------------------------------------
-     2. Traigo la configuracion de la landing page que muestro y que no dependei de configs/config.json
-     --------------------------------------------------------------------------- */
-  
-  
-  const hasProductsSession = Boolean( // Determina si se muestra la sección de productos
-    config?.features?.has_products
-  );
-  
-  const hasServicesSession = Boolean( // Determina si se muestra la sección de servicios
-    config?.features?.has_services // Si esta en true, se muestra la sección de servicios
-    && config?.services_section?.items?.length // Si hay servicios cargados
-  );
+  const hasHero = Boolean(config?.features?.has_hero);
+  const hasProducts = Boolean(config?.features?.has_products);
+  const hasServices = Boolean(config?.features?.has_services && config?.services_section?.items?.length);
+  const hasPlans = Boolean(config?.features?.has_health_plans && config?.plans_section?.items?.length);
+  const hasMaps = Boolean(config?.features?.has_locations);
+  const hasDividers = Boolean(config?.features?.has_dividers);
 
-  const hasPlansSessions = Boolean( // Determina si se muestra la sección de planes
-    config?.features?.has_health_plans // Determina si se setio la condicion de oculatr planes en config.json
-    && config?.plans_section?.items?.length // Determina si hay planes cargados
-  );
-  
-  const hasMapsSession = Boolean( // Determina si se muestra la sección de mapas
-    config?.features?.has_locations // Determina si se setio la condicion de oculatr mapas en config.json
-  );
+  /* Pipeline de secciones activas */
+  const activeSectionsPipeline = useMemo<ActiveSectionDefinition[]>(() => {
+    const pipeline: ActiveSectionDefinition[] = [];
 
-  const hasHeroSession = Boolean( // Determina si se muestra la sección de heroe
-    config?.features?.has_hero
-  )
+    if (hasHero) pipeline.push({ id: 'HeroSession', renderComponent: (bg) => <HeroSession bgColor={bg} /> });
+    if (hasProducts) pipeline.push({ id: 'ProductsSession', renderComponent: (bg) => <ProductsSession bgColor={bg} /> });
+    if (hasServices) pipeline.push({ id: 'ServicioSession', renderComponent: (bg) => <ServicioSession bgColor={bg} /> });
+    if (hasPlans) {
+      pipeline.push({
+        id: 'PlanSession',
+        renderComponent: (bg) => <PlanSession bgColor={bg} />,
+        groupWithPrevious: hasServices,
+      });
+    }
+    if (hasMaps) pipeline.push({ id: 'MapsSection', renderComponent: (bg) => <MapsSession bgColor={bg} /> });
 
-  const hasDividers = Boolean( // Determina si se muestran los divisores decorativo
-   config?.features?.has_dividers 
-  )
-  
+    return pipeline;
+  }, [hasHero, hasProducts, hasServices, hasPlans, hasMaps]);
+
+  /* Alternador dinámico de contrastes */
+  const renderedSections = useMemo<ProcessedSection[]>(() => {
+    let activeColor: SectionThemeVariant = 'secondary';
+
+    return activeSectionsPipeline.map((section, index) => {
+      const isFirst = index === 0;
+
+      if (!isFirst && !section.groupWithPrevious) {
+        activeColor = activeColor === 'secondary' ? 'dark' : 'secondary';
+      }
+
+      const previousColor: SectionThemeVariant =
+        activeColor === 'secondary' ? 'dark' : 'secondary';
+
+      return {
+        ...section,
+        currentTheme: activeColor,
+        previousTheme: previousColor,
+        isFirst,
+      };
+    });
+  }, [activeSectionsPipeline]);
 
   return (
+    <div
+      className={`
+        /* --- Posición --- */
+        relative
+        w-full
+        min-h-screen
+        m-0
+        p-0
+        bg-vete-dark
+        text-vete-text-base
+        font-sans
+        overflow-x-hidden
+      `}
+    >
+      {/* =====================================================================
+         CAPA 5 (z-[45]): ANIMACIÓN AMBIENTAL VOLUMÉTRICA
+          z-[45] con pointer-events-none: Flota por encima del Footer (z-40) 
+         sin cortarse en mobile, permitiendo hacer clic en cualquier enlace del footer
+         ===================================================================== */}
+      {config?.features?.has_background_animation && (
+        <div className="relative z-[45] pointer-events-none">
+          <AmbientScrollAnimation />
+        </div>
+      )}
 
-
-      <div className="bg-vete-dark min-h-screen font-sans text-vete-text-base overflow-x-hidden w-full relative border-0 m-0 p-0">
-
-            {/* 🚀 Animación 3D Ambiental de Fondo (Se mueve con el scroll detrás de todo) */}
-      <AmbientScrollAnimation />
-
-      {/* CABECERA PRINCIPAL (Navbar Fijo) */}
+      {/* CAPA 6 (z-50): HEADER FIJO */}
       <HeaderSession bgColor="bg-vete-secondary" />
 
-      {/* CUERPO PRINCIPAL (Main con compensación de altura del Header) */}      
-      <main
-        className={`
-          /* --- Posición --- */
-          relative                   /* Flujo normal del documento */
+      {/* CUERPO PRINCIPAL */}
+      <main className="relative w-full pt-24">
+        {renderedSections.map((sec) => {
+          const isCurrentSecondary = sec.currentTheme === 'secondary';
+          const isPreviousSecondary = sec.previousTheme === 'secondary';
 
-          /* --- Dimensiones --- */
-          w-full                     /* Ancho completo */
-          pt-24                      /* Compensa los 96px (h-24) del header fixed */
+          const currentBgClass = isCurrentSecondary ? 'bg-vete-secondary' : 'bg-vete-dark';
+          const dividerTopColor = isPreviousSecondary ? 'bg-vete-secondary' : 'bg-vete-dark';
+          const dividerBottomColor = isCurrentSecondary ? 'text-vete-secondary' : 'text-vete-dark';
 
-        `}
-      >
-        {/* SECCIÓN 1: Hero */}
-        {hasHeroSession && (
-          <section id="HeroSession" className="relative z-20">
-            <HeroSession bgColor="bg-transparent" />
-          </section>
-        )}
+          return (
+            <section
+              key={sec.id}
+              id={sec.id}
+              className={`relative w-full ${currentBgClass}`}
+            >
+              {hasDividers && !sec.isFirst && !sec.groupWithPrevious && (
+                <div className="relative z-0">
+                  <SectionDivider
+                    topColor={dividerTopColor}
+                    bottomColor={dividerBottomColor}
+                    isReversed={true}
+                  />
+                </div>
+              )}
 
-        {/* SECCIÓN 2: Productos (Fondo Oscuro) */}
-        {hasProductsSession && (
-          <section id="ProductsSession" className="relative">
-            {/* Divisor en Capa 1 (z-0): el video pasa por encima */}
-            {hasDividers && (
-              <div className="relative z-0">
-                <SectionDivider
-                  topColor="bg-vete-secondary"
-                  bottomColor="text-vete-dark"
-                />
+              <div className="relative z-20">
+                {sec.renderComponent('bg-transparent')}
               </div>
-            )}
-            {/* Contenido en Capa 3 (z-20): los textos pasan por encima del video */}
-            <div className="relative z-20">
-              <ProductsSession bgColor="bg-transparent" />
-            </div>
-          </section>
-        )}
-
-        {/* SECCIÓN 3: Servicios (Fondo Secundario) */}
-        {hasServicesSession && (
-          <section id="ServicioSession" className="relative">
-            {hasDividers && (
-              <div className="relative z-0">
-                <SectionDivider
-                  topColor="bg-vete-dark"
-                  bottomColor="text-vete-secondary"
-                />
-              </div>
-            )}
-            <div className="relative z-20">
-              <ServicioSession bgColor="bg-transparent" />
-            </div>
-          </section>
-        )}
-
-        {/* SECCIÓN 4: Planes / Membresías */}
-        {hasPlansSessions && (
-          <section id="PlanSession" className="relative">
-            {hasDividers && (
-              <div className="relative z-0">
-                <SectionDivider
-                  topColor="bg-vete-secondary"
-                  bottomColor="text-vete-dark"
-                />
-              </div>
-            )}
-            <div className="relative z-20">
-              <PlanSession bgColor="bg-transparent" />
-            </div>
-          </section>
-        )}
-
-        {/* SECCIÓN 5: Ubicación y Mapas */}
-        {hasMapsSession && (
-          <section id="MapsSection" className="relative">
-            {hasDividers && (
-              <div className="relative z-0">
-                <SectionDivider
-                  topColor="bg-vete-dark"
-                  bottomColor="text-vete-secondary"
-                />
-              </div>
-            )}
-            <div className="relative z-20">
-              <MapsSession bgColor="bg-transparent" />
-            </div>
-          </section>
-        )}gh 
-
+            </section>
+          );
+        })}
       </main>
 
-      {/* Footer */}
-      <Footer bgColor="bg-vete-dark" />
+      {/* =====================================================================
+         CAPA 3 (z-30): BARRA FLOTANTE DE ACCESOS RÁPIDOS
+        <!> aca esta mal esta barra tenria que ir por delate de todo tambien de la animacion 
+         ===================================================================== */}
+      <FloatingBottomBar />
+
+      {/* =====================================================================
+         CAPA 4 (z-40): FOOTER INSTITUCIONAL
+          Tapa la barra flotante (z-30), mientras el video (z-[45]) flota encima
+         ===================================================================== */}
+      <FooterSession bgColor="bg-vete-dark" />
     </div>
   );
 }

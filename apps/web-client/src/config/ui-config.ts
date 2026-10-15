@@ -1,5 +1,6 @@
 // app/web-client/src/config/ui-config.ts
 /* =============================================================================
+<!> Mejorar los cometarios y la documetacion 
    REGISTRO CENTRAL DE VARIANTES VISUALES (UI Component Strategy Registry)
    ============================================================================= */
 

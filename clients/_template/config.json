@@ -234,6 +234,7 @@
   },
   // Plantillas de texto para la generación de mensajes de WhatsApp
   "custom_messages": {
+    "whatsapp_contact_label": "Agendar Turno",
     "whatsapp_order_prefix": "NUEVO PEDIDO WEB",
     "cash_payment_note": "Pago en mano al recibir (coordinar cambio con el vendedor)",
     "pos_payment_note": "Pago con débito/crédito al entregar (solicitar POS)",

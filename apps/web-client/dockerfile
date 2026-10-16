@@ -26,7 +26,7 @@ COPY --from=build-step /app/dist /usr/share/nginx/html
 # Crear directorios de montaje
 RUN mkdir -p /usr/share/nginx/html/config /usr/share/nginx/html/tenant /etc/nginx/templates
 
-# <!> INYECCIÓN LIMPIA: Copiar la plantilla directamente
+# INYECCIÓN LIMPIA: Copiar la plantilla directamente
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
 EXPOSE 80

@@ -9,6 +9,7 @@
     "dev:veterinariabeltrameli": "node scripts/switch-tenant.js veterinariabeltrameli && vite --host 0.0.0.0",
     "dev:template": "node scripts/switch-tenant.js _template && vite --host 0.0.0.0",
     "dev:malandrobarber": "node scripts/switch-tenant.js malandrobarber && vite --host 0.0.0.0",
+    "dev:flordeloto": "node scripts/switch-tenant.js flordeloto && vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

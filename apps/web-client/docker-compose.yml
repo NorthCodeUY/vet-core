@@ -47,3 +47,20 @@ services:
       - ../../clients/malandrobarber/assets:/usr/share/nginx/html/tenant:ro
     networks:
       - northcode-net
+
+  # ===========================================================================
+  # CLIENTE 3: Flor de loto (Frontend Standalone / Backend Activo)
+  # ===========================================================================
+  front-flordeloto:
+  <<: *frontend-build
+  container_name: nc-web-flordeloto
+  restart: unless-stopped
+  ports:
+    - "8083:80"
+  environment:
+    - BACKEND_HOST=127.0.0.1:80
+  volumes:
+    - ../../clieºnts/flor_de_loto/config.json:/usr/share/nginx/html/config/client_info.json:ro
+    - ../../clients/flor_de_loto/assets:/usr/share/nginx/html/tenant:ro
+  networks:
+    - northcode-net

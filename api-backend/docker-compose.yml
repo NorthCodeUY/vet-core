@@ -1,61 +1,58 @@
-# /api-backend/docker-compose.yml
-
-# Levanta Backend FastAPI y PostgreSQL y PGAdmin 
-
+# api-backend/docker-compose.yml
 services:
-  db-vet_bel:
-    image: postgres:15 # Contenedor de PostgreSQL
-    container_name: vet_db_bel # Nombre del contenedor
-    restart: always # Reinicia el contenedor si se cae
+  postgres-cluster:
+    image: postgres:15
+    container_name: vetcore_postgres_cluster
+    restart: always
     environment:
-      # Variables de entorno
-      POSTGRES_USER: ${DB_USER} # Usuario de la base de datos
-      POSTGRES_PASSWORD: ${DB_PASSWORD} # Contraseña de la base de datos
-      POSTGRES_DB: ${DB_NAME} # Nombre de la base de datos
-    # Estos puertos hay que comentarlos en produccion
+      POSTGRES_USER: ary
+      POSTGRES_PASSWORD: hmq7381
+      POSTGRES_DB: default_db
+      POSTGRES_MULTIPLE_DATABASES: vet_beltramelli_db,flor_de_loto_db
     ports:
-      # Mapeo de puertos
-      - "${DB_PORT}:5432" # El puerto 5432 de tu máquina se conecta al 5432 del contenedor
+      - "5432:5432"
     volumes:
-      # Volúmenes
-      - postgres_data_vet_bel:/var/lib/postgresql/data
+      - postgres_cluster_data:/var/lib/postgresql/data
+      - ./init-scripts/init-multi-db.sh:/docker-entrypoint-initdb.d/init-multi-db.sh:ro
     networks:
       - northcode-net
 
-  backend-vet-bel:
-    build: . # Construye la imagen desde el Dockerfile en el directorio actual (./)
-    container_name: vet_core_backend # Nombre del contenedor
-    restart: always # Reinicia el contenedor si se cae
-    # Estos puertos hay que comentarlos en produccion
+  backend-veterinaria:
+    build: .
+    container_name: backend_vet_beltramelli
+    restart: always
     ports:
-      - "8000:8000" # El puerto 8000 de tu máquina se conecta al 8000 del contenedor
-    environment:
-      # Variables de entorno
-      # FastAPI leerá esto a través de pydantic-settings
-      - IS_DOCKER=true # <--- Esta variable hace que database.py use "db"
-      - APP_PORT=8000 # Puerto del backend
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
-      # <!> Probar pero creo que este tengo que borrarlo 
-      # - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db-vet:5432/${DB_NAME} # <!> creo que esto no va 
+      - "8001:8001"
+    env_file:
+      - .env.veterinaria
     depends_on:
-      # Dependencia de servicios
-      - db-vet_bel # Espera a que el servicio 'db' esté listo antes de iniciar
+      - postgres-cluster
     volumes:
-      # Volúmenes
-      - ./app:/app/app # Sincroniza tu código local con el contenedor
-      # En produccion comentar 
-      - ./app/static:/app/app/static # Sincroniza tus imágenes (muy importante)
+      - ./app:/app/app
+      - ./static/veterinaria:/app/static
     networks:
       - northcode-net
 
-# Declaramos la red como externa para que Docker no la cree, sino que use la que ya creaste
+  backend-flordeloto:
+    build: .
+    container_name: backend_vestimenta_flordeloto
+    restart: always
+    ports:
+      - "8002:8002"
+    env_file:
+      - .env.flordeloto
+    depends_on:
+      - postgres-cluster
+    volumes:
+      - ./app:/app/app
+      - ./static/flordeloto:/app/static
+    networks:
+      - northcode-net
+
 networks:
   northcode-net:
     external: true
 
-# Volúmenes se usa para guardar la informacion en el host 
-# <!> para evitar perdida de informacion en produccion volumen como external: true si quieres que Docker nunca intente crearlo solo, sino que use uno que tú ya creaste manualmente.
 volumes:
-  postgres_data_vet_bel: # Persistencia de la base de datos
+  postgres_cluster_data:
+    external: true

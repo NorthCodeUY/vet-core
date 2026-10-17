@@ -24,14 +24,13 @@ services:
     environment:
       - BACKEND_HOST=backend-vet-bel:8000
     volumes:
-      # <!> Corregido a 'clientes'
-      - ../../clientes/valeria_beltramelli/config.json:/usr/share/nginx/html/config/client_info.json:ro
-      - ../../clientes/valeria_beltramelli/assets:/usr/share/nginx/html/tenant:ro
+      - ../../clients/valeria_beltramelli/config.json:/usr/share/nginx/html/config/client_info.json:ro
+      - ../../clients/valeria_beltramelli/assets:/usr/share/nginx/html/tenant:ro
     networks:
       - northcode-net
 
   # ===========================================================================
-  # CLIENTE 2: Malandro Barer (Frontend Standalone / Sin Backend)
+  # CLIENTE 2: Malandro Barber (Frontend Standalone / Sin Backend)
   # ===========================================================================
   front-malandrobarber:
     <<: *frontend-build
@@ -42,25 +41,25 @@ services:
     environment:
       - BACKEND_HOST=127.0.0.1:80
     volumes:
-      # <!> Corregido a 'cliente'
       - ../../clients/malandrobarber/config.json:/usr/share/nginx/html/config/client_info.json:ro
       - ../../clients/malandrobarber/assets:/usr/share/nginx/html/tenant:ro
     networks:
       - northcode-net
 
   # ===========================================================================
-  # CLIENTE 3: Flor de loto (Frontend Standalone / Backend Activo)
+  # CLIENTE 3: Flor de Loto (Frontend Standalone / Tienda)
   # ===========================================================================
   front-flordeloto:
-  <<: *frontend-build
-  container_name: nc-web-flordeloto
-  restart: unless-stopped
-  ports:
-    - "8083:80"
-  environment:
-    - BACKEND_HOST=127.0.0.1:80
-  volumes:
-    - ../../clieºnts/flor_de_loto/config.json:/usr/share/nginx/html/config/client_info.json:ro
-    - ../../clients/flor_de_loto/assets:/usr/share/nginx/html/tenant:ro
-  networks:
-    - northcode-net
+    <<: *frontend-build
+    container_name: nc-web-flordeloto
+    restart: unless-stopped
+    ports:
+      - "8083:80"
+    environment:
+      - BACKEND_HOST=127.0.0.1:80
+    volumes:
+      # Sangría corregida y carácter 'º' eliminado
+      - ../../clients/flordeloto/config.json:/usr/share/nginx/html/config/client_info.json:ro
+      - ../../clients/flordeloto/assets:/usr/share/nginx/html/tenant:ro
+    networks:
+      - northcode-net

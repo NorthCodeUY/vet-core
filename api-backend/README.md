@@ -1,384 +1,244 @@
-# ⚙️ VetCore API Backend (FastAPI)
-
 <!-- api-backend/README.md -->
 
-> **Núcleo de Servicios REST, Gestión de Inventario, Autenticación y Persistencia de VetCore**
+> **Motor Central Agnóstico: Catálogo de Productos, Gestión de Pedidos, Facturación y Módulos de Dominio (Veterinaria / Retail / Servicios)**
 
-El módulo **API Backend** de VetCore proporciona una arquitectura sólida, escalable y desacoplada basada en **FastAPI**, **SQLAlchemy ORM** y **PostgreSQL**. Está diseñado siguiendo un patrón de arquitectura en capas (Routers -> Schemas -> Services -> Repositories -> Models) que garantiza mantenibilidad, validación estricta de datos y separación clara de responsabilidades.
+El backend de **VetCore** está estructurado bajo una **Arquitectura en Capas Desacoplada** (Routers -> Schemas -> Services -> Repositories -> Models) sobre un modelo de infraestructura **Container-per-Tenant**. Un único código base (una sola imagen Docker) abastece a múltiples clientes y tipos de negocio (Clínicas Veterinarias, Tiendas de Ropa, Barberías) aislando datos a nivel de base de datos y activando funcionalidades mediante *Feature Flags*.
 
 ---
 
-## 🛠 Tecnologías Utilizadas
+## 🛠 Tecnologías Principales
 
-A continuación se detallan las principales tecnologías y librerías que conforman la pila técnica del backend, junto a sus enlaces directos a la documentación oficial:
-
-- 🚀 **[FastAPI](https://fastapi.tiangolo.com/)**: Framework web moderno de alto rendimiento para construir APIs REST en Python basadas en tipos estandarizados.
-- 🗄️ **[SQLAlchemy 2.0](https://docs.sqlalchemy.org/en/20/)**: ORM (Object-Relational Mapping) y toolkit SQL para la interacción type-safe con la base de datos PostgreSQL.
-- 🛡️ **[Pydantic v2](https://docs.pydantic.dev/latest/)**: Librería para la validación estricta de datos de entrada/salida y gestión de configuraciones mediante `pydantic-settings`.
-- ⚡ **[Uvicorn](https://www.uvicorn.org/)**: Servidor web ASGI de ultra-alta velocidad utilizado para ejecutar la aplicación FastAPI en entornos de desarrollo y producción.
-- 🐘 **[PostgreSQL](https://www.postgresql.org/docs/)**: Sistema de gestión de bases de datos relacional de clase empresarial para persistencia de transacciones e inventario.
-- 🔑 **[Python-JOSE](https://python-jose.readthedocs.io/) / [PyJWT](https://pyjwt.readthedocs.io/)**: Implementación de JSON Web Tokens (JWT) para autenticación stateless y seguridad de endpoints.
-- 🔐 **[Passlib (Bcrypt)](https://passlib.readthedocs.io/)**: Algoritmo de hashing de contraseñas de alta seguridad para la protección de credenciales de usuario.
-- 📊 **[Pandas](https://pandas.pydata.org/docs/) & [OpenPyXL](https://openpyxl.readthedocs.io/)**: Herramientas de procesamiento y manipulación de datos para la importación masiva de productos desde planillas de Excel.
-- 🐳 **[Docker](https://docs.docker.com/) & [Docker Compose](https://docs.docker.com/compose/)**: Plataforma de contenedorización y orquestación para despliegues consistentes y aislados.
+- 🚀 **[FastAPI](https://fastapi.tiangolo.com/)**: Framework asíncrono para contratos API estrictos.
+- 🗄️ **[SQLAlchemy 2.0](https://docs.sqlalchemy.org/en/20/)**: Persistencia relacional orientada a objetos (Queries tipadas vía `select()`).
+- 🛡️ **[Pydantic v2](https://docs.pydantic.dev/latest/)**: Validación estricta en tiempo de ejecución (`SettingsConfigDict`, `@field_validator`).
+- ⚡ **[Uvicorn](https://www.uvicorn.org/)**: Servidor ASGI de alto rendimiento.
+- 🐘 **[PostgreSQL 15](https://www.postgresql.org/docs/)**: Clúster de bases de datos relacionales independientes por tenant.
+- 🔑 **[PyJWT / Passlib (Bcrypt)](https://passlib.readthedocs.io/)**: Autenticación RBAC y hashing seguro.
+- 🐳 **[Docker & Compose V2](https://docs.docker.com/)**: Aislamiento, empaquetado multi-tenant y orquestación.
 
 ---
 
 ## 📦 Estructura del Proyecto
 
-A continuación se presenta la estructura de directorios del backend. El diseño modular mantiene separados los modelos relacionales, la validación de contratos API, la lógica de negocio y el acceso a datos.
-
 ```text
 api-backend/
-├── Dockerfile                 # Configuración de la imagen Docker del backend
-├── docker-compose.yml         # Orquestación de contenedores (FastAPI + PostgreSQL)
-├── requirements.txt           # Lista de dependencias del proyecto Python
-├── run_desarollo.py           # Script para ejecutar la API en desarrollo con Uvicorn
-├── .env.example               # Plantilla con variables de entorno requeridas
-├── .env                       # Configuración de variables de entorno locales (git-ignored)
+├── Dockerfile                      # Imagen base de producción agnóstica
+├── docker-compose.yml              # Orquestador del clúster de base de datos y contenedores backend
+├── requirements.txt                # Dependencias fijadas con versiones exactas
+├── run_desarrollo.py               # CLI runner para levantar entornos locales por tenant
+├── .env.veterinaria                # Variables de entorno: Tenant Veterinaria Beltramelli
+├── .env.flordeloto                 # Variables de entorno: Tenant Tienda Ropa Flor de Loto
+├── init-scripts/
+│   └── init-multi-db.sh            # Script bash para inicializar múltiples DBs en PostgreSQL
 └── app/
     ├── __init__.py
-    ├── main.py                # Punto de entrada principal (FastAPI, CORS, Routers, Static Files)
-    ├── config.py              # Carga y validación de variables de entorno con Pydantic Settings
-    ├── database.py            # Configuración de SQLAlchemy, Engine, SessionLocal y Base Declarativa
-    ├── security.py            # Funciones de hashing de contraseñas (Bcrypt) y creación/verificación de JWT
-    ├── models/                # Modelos ORM de Base de Datos (SQLAlchemy)
-    │   ├── __init__.py        # Exposición centralizada de los modelos
-    │   ├── user_model.py      # Usuarios administradores y credenciales del sistema
-    │   ├── cliente_model.py   # Registro y datos de clientes
-    │   ├── funcionario_model.py # Personal veterinario y funcionarios
-    │   ├── categoria_model.py # Categorías principales de productos
-    │   ├── subcategoria_model.py # Subcategorías del catálogo
-    │   ├── producto_model.py  # Productos, stock, precios e inventario
-    │   ├── producto_subcategoria_model.py # Tabla relacional M:N entre Productos y Subcategorías
-    │   ├── imagen_url_model.py # URLs de imágenes asociadas a productos
-    │   ├── pedido_model.py    # Cabecera de pedidos y estados de venta
-    │   ├── pedido_detalle_model.py # Detalle e items individuales por pedido
-    │   └── pago_model.py      # Transacciones y registro de pagos
-    ├── repositories/          # Capa de Acceso a Datos (Repository Pattern)
+    ├── main.py                     # Entrypoint: Inyección de middlewares y feature gating de routers
+    ├── config.py                   # Pydantic Settings: parseo de variables y feature flags
+    ├── database.py                 # Conexión SQLAlchemy, pool de sesiones y Base declarativa
+    ├── security.py                 # Criptografía: Hashing bcrypt y encode/decode de JWT
+    ├── models/                     # Entidades ORM (SQLAlchemy 2.0)
     │   ├── __init__.py
-    │   └── product_repo.py    # Consultas y operaciones CRUD de productos en base de datos
-    ├── router/                # Endpoints de la API REST (Controladores HTTP)
+    │   ├── categoria_model.py
+    │   ├── cliente_model.py
+    │   ├── funcionario_model.py
+    │   ├── imagen_url_model.py
+    │   ├── pago_model.py
+    │   ├── pedido_detalle_model.py # Invariante: Congelamiento de precio de venta
+    │   ├── pedido_model.py
+    │   ├── producto_model.py
+    │   ├── producto_subcategoria_model.py # Relación N:M
+    │   ├── subcategoria_model.py
+    │   └── user_model.py
+    ├── repositories/               # Capa de Persistencia (Queries puras)
     │   ├── __init__.py
-    │   ├── auth_router.py     # Endpoints de autenticación, login y tokens (/api/auth)
-    │   ├── pedido_route.py    # Endpoints de gestión y flujo de pedidos (/api/pedidos)
-    │   └── producto_router.py # Endpoints de catálogo e inventario (/api/productos)
-    ├── schemas/               # Validación de Datos y DTOs (Pydantic Schemas)
+    │   └── product_repo.py
+    ├── router/                     # Controllers / Endpoints REST
     │   ├── __init__.py
-    │   ├── producto_schema.py # Schemas para creación, edición y respuesta de productos
-    │   └── user_schema.py     # Schemas para usuarios, login, registro y tokens JWT
-    ├── services/              # Lógica de Negocio e Integraciones Externas
-    │   ├── import_excel.py    # Servicio de importación e ingesta de productos desde Excel (.xlsx)
-    │   ├── product_service.py # Servicio de negocio para catálogo, precios y gestión de stock
-    │   ├── qr_generator.py    # Generación de códigos QR para verificación de pedidos
-    │   ├── token_service.py   # Servicio auxiliar para validez de tokens
-    │   └── whatsapp_service.py# Integración para notificaciones automáticas por WhatsApp
-    └── static/                # Archivos estáticos servidos públicamente
-        ├── productos/         # Almacenamiento local de imágenes de productos subidas
-        └── productos.csv      # Archivo base de productos para importación
+    │   ├── auth_router.py
+    │   ├── pedido_route.py
+    │   ├── producto_router.py
+    │   └── agenda_router.py        # Módulo cargado condicionalmente
+    ├── schemas/                    # DTOs y Contratos de Entrada/Salida (Pydantic v2)
+    │   ├── __init__.py
+    │   ├── producto_schema.py
+    │   └── user_schema.py
+    ├── services/                   # Lógica de Negocio y Casos de Uso
+    │   ├── __init__.py
+    │   ├── import_excel.py         # Ingesta masiva de inventario
+    │   ├── product_service.py
+    │   ├── qr_generator.py         # Generación QR para validación de pedidos
+    │   ├── token_service.py
+    │   └── whatsapp_service.py     # Disparo de notificaciones
+    └── static/                     # Assets persistidos localmente por tenant
+        ├── veterinaria/
+        └── flordeloto/
 ```
 
 ---
 
-## 📊 Arquitectura y Diagramas de Flujo
+## 🏛 Arquitectura Multi-Tenant
 
-### 1. Arquitectura en Capas (Layered Pattern)
-
-El sistema procesa cada petición a través de un flujo unidireccional desacoplado:
+El sistema implementa una separación **Database-per-Tenant** sobre una infraestructura compartida:
 
 ```mermaid
-flowchart TD
-    Client([📱 Cliente Web / Mobile / App]) -->|Petición HTTP / JSON| Router[🌐 Routers FastAPI /app/router]
-    Router -->|Validación DTO| Schema[🛡️ Pydantic Schemas /app/schemas]
-    Schema -->|Datos Validados| Service[⚙️ Servicios de Negocio /app/services]
-    Service -->|Operaciones CRUD| Repo[🗄️ Repositorios /app/repositories]
-    Repo -->|ORM Queries| Model[📦 Modelos SQLAlchemy /app/models]
-    Model -->|SQL Queries| DB[(🐘 Base de Datos PostgreSQL)]
-    DB -->|Resultados| Model
-    Model -->|Entidades| Repo
-    Repo -->|Data Context| Service
-    Service -->|Model / Response| Router
-    Router -->|Respuesta JSON| Client
-```
-
----
-
-### 2. Modelo de Entidad-Relación (ERD)
-
-A continuación se detalla la estructura relacional de la base de datos implementada a través de SQLAlchemy:
-
-```mermaid
-erDiagram
-    USUARIOS ||--o{ FUNCIONARIOS : "asociado_a"
-    CLIENTES ||--o{ PEDIDOS : "realiza"
-    PEDIDOS ||--|{ PEDIDO_DETALLE : "contiene"
-    PRODUCTOS ||--|{ PEDIDO_DETALLE : "incluido_en"
-    CATEGORIAS ||--o{ SUBCATEGORIAS : "pertenece"
-    PRODUCTOS ||--o{ PRODUCTO_SUBCATEGORIA : "clasificado_en"
-    SUBCATEGORIAS ||--o{ PRODUCTO_SUBCATEGORIA : "pertenece_a"
-    PRODUCTOS ||--o{ IMAGENES_URL : "posee"
-    PEDIDOS ||--o| PAGOS : "registra"
-
-    USUARIOS {
-        int id PK
-        string email UK
-        string hashed_password
-        boolean is_active
-        boolean is_admin
-        datetime created_at
-    }
-
-    CLIENTES {
-        int cli_id PK
-        string cli_nombre
-        string cli_whatsapp
-        string cli_direccion
-        string cli_token
-    }
-
-    PRODUCTOS {
-        int prod_id PK
-        string prod_nombre
-        string prod_descripcion
-        float prod_precio
-        int prod_stock
-        string prod_categoria_nombre
-    }
-
-    SUBCATEGORIAS {
-        int subc_id PK
-        string subc_nombre UK
-    }
-
-    PRODUCTO_SUBCATEGORIA {
-        int producto_id PK, FK
-        int subc_id PK, FK
-    }
-
-    PEDIDOS {
-        int ped_id PK
-        int ped_cli_id FK
-        datetime ped_fecha_emision
-        string ped_codigo_qr
-        string ped_estado
-        float ped_total
-        boolean ped_pagado
-    }
-
-    PEDIDO_DETALLE {
-        int pedido_id PK, FK
-        int producto_id PK, FK
-        int pd_cantidad
-        float pd_precio_venta
-    }
-
-    PAGOS {
-        int pag_id PK
-        int ped_id FK
-        datetime pag_fecha
-        string pag_detalle
-        float pag_monto
-    }
-```
-
----
-
-### 3. Flujo de Autenticación y Seguridad (JWT)
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as 👤 Usuario / Cliente
-    participant Router as 🌐 Auth Router (/api/auth)
-    participant Security as 🔐 Security Module
-    participant DB as 🐘 PostgreSQL DB
-    participant Endpoint as 🔒 Endpoint Protegido
-
-    User->>Router: POST /api/auth/login (email, password)
-    Router->>DB: Consultar usuario por email
-    DB-->>Router: Datos de usuario y hash de contraseña
-    Router->>Security: verify_password(plain, hashed)
-    alt Contraseña Incorrecta
-        Security-->>Router: False
-        Router-->>User: HTTP 401 Unauthorized ("Credenciales inválidas")
-    else Contraseña Correcta
-        Security-->>Router: True
-        Router->>Security: create_access_token(data)
-        Security-->>Router: JWT Bearer Token string
-        Router-->>User: HTTP 200 OK { access_token, token_type: "bearer" }
+graph TD
+    subgraph Internet / Clientes
+        C1[Cliente Veterinaria] -->|Puerto 8001| BV[Backend: Veterinaria Beltramelli]
+        C2[Cliente Retail] -->|Puerto 8002| BF[Backend: Flor de Loto]
     end
 
-    Note over User, Endpoint: Peticiones subsecuentes a endpoints protegidos
-    User->>Endpoint: GET /api/pedidos (Header: Authorization: Bearer <token>)
-    Endpoint->>Security: decode_access_token(token)
-    alt Token Válido y Vigente
-        Security-->>Endpoint: Payload con datos de usuario
-        Endpoint->>DB: Obtener datos requeridos
-        DB-->>Endpoint: Registros
-        Endpoint-->>User: HTTP 200 OK (Data JSON)
-    else Token Inválido o Expirado
-        Security-->>Endpoint: Error de Decodificación
-        Endpoint-->>User: HTTP 401 Unauthorized ("Token no válido o expirado")
+    subgraph Docker Network: northcode-net
+        BV -->|TENANT_TYPE=VET<br/>ENABLE_AGENDA=true| PG[(PostgreSQL Cluster)]
+        BF -->|TENANT_TYPE=RETAIL<br/>ENABLE_AGENDA=false| PG
+
+        PG -->|Persistencia Aislada| DB1[(vet_beltramelli_db)]
+        PG -->|Persistencia Aislada| DB2[(flor_de_loto_db)]
     end
 ```
 
----
-
-## 🚀 Guía de Instalación y Configuración
-
-### Requisitos Previos
-- **Python 3.10+** (Recomendado 3.12)
-- **Docker** y **Docker Compose V2**
-- **Git**
+### Invariantes de Aislamiento:
+1. **Agnosticismo de Código:** No existen forks de código ni repositorios paralelos. Todo cambio en el Core beneficia a todos los tenants.
+2. **Feature Gating:** Módulos opcionales (ej. `Agenda`) no registran rutas en memoria si `ENABLE_AGENDA=false`.
+3. **Snapshot Histórico:** `pedido_detalle.pd_precio_venta` almacena el valor monetario inmutable en el instante de la transacción, mitigando variaciones de precio en catálogo.
 
 ---
 
-### Opción 1: Desarrollo Local (Virtualenv)
+## 💻 Entorno de Desarrollo Local
 
-1. **Clonar el repositorio y entrar a la carpeta del backend**:
+### 1. Requisitos Previos
+- Python 3.12+
+- Motor Docker y Compose V2 activos
+- Entorno virtual activado (`venv`)
+
+### 2. Instalación de Dependencias
+```bash
+python3 -m venv venv
+source venv/bin/activate  # En Windows: .\venv\Scripts\activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 3. Ejecución por Tenant (Sin levantar contenedores de backend)
+Asegúrate de tener el contenedor de PostgreSQL encendido y ejecuta el runner específico:
+
+```bash
+# Terminal 1: Backend Veterinaria (Puerto 8001)
+python run_desarrollo.py veterinaria
+
+# Terminal 2: Backend Flor de Loto (Puerto 8002)
+python run_desarrollo.py flordeloto
+```
+
+---
+
+## 🚀 Guía de Despliegue y Lanzamiento (Runbook de Producción)
+
+Sigue este procedimiento operativo estándar para poner en marcha la infraestructura desde cero o agregar un nuevo cliente.
+
+### Paso 1: Preparar la Infraestructura Base de Docker
+
+El clúster requiere una red externa compartida y un volumen persistente que resista comandos destructivos de recreación:
+
+```bash
+# 1. Crear la red interna
+docker network create northcode-net
+
+# 2. Crear el volumen externo de datos para PostgreSQL
+docker volume create postgres_cluster_data
+```
+
+### Paso 2: Configuración de Variables del Entorno
+
+Asegúrate de que cada cliente tenga su archivo de configuración con credenciales y llaves criptográficas únicas:
+
+- `.env.veterinaria`
+- `.env.flordeloto`
+
+> **Importante:** La variable `SECRET_KEY` de cada tenant debe ser generada de manera criptográfica e independiente:
+> ```bash
+> openssl rand -hex 32
+> ```
+
+### Paso 3: Inicialización del Clúster y Despliegue
+
+Ejecuta el ciclo de construcción y levantamiento en segundo plano:
+
+```bash
+docker compose up -d --build
+```
+
+El script `init-scripts/init-multi-db.sh` se ejecutará automáticamente en el arranque inicial de PostgreSQL creando las bases de datos `vet_beltramelli_db` y `flor_de_loto_db` sin intervención manual.
+
+### Paso 4: Carga y Siembra de Datos Iniciales (Seeders / Excel)
+
+Para poblar el catálogo de un tenant específico mediante su archivo Excel:
+
+<!-- <!> Esto no esta progrmador tengo que probarlo -->
+```bash
+# Para poblar Veterinaria Beltramelli
+TENANT_ENV=.env.veterinaria python -m app.services.import_excel
+
+# Para poblar Flor de Loto
+TENANT_ENV=.env.flordeloto python -m app.services.import_excel
+```
+
+---
+
+## ➕ Procedimiento para Agregar un Nuevo Cliente (Tenant)
+
+Para incorporar un tercer comercio (ej. `Barbería Deluxe`):
+
+1. **Crear su base de datos en el clúster:**
+   - Agrega el nombre `barberia_deluxe_db` a la variable `POSTGRES_MULTIPLE_DATABASES` en `docker-compose.yml`.
+2. **Crear su archivo de configuración:**
+   - Duplica una plantilla como `.env.barberia` definiendo su propio `APP_PORT=8003`, `DB_NAME=barberia_deluxe_db` y sus llaves secretas.
+3. **Declarar el servicio en `docker-compose.yml`:**
+   ```yaml
+   backend-barberia:
+     build: .
+     container_name: backend_barberia_deluxe
+     restart: always
+     ports:
+       - "8003:8003"
+     env_file:
+       - .env.barberia
+     depends_on:
+       - postgres-cluster
+     volumes:
+       - ./app:/app/app
+       - ./static/barberia:/app/static
+     networks:
+       - northcode-net
+   ```
+4. **Actualizar el runner local (`run_desarrollo.py`):**
+   - Agrega `"barberia": ".env.barberia"` al diccionario `TENANTS`.
+5. **Aplicar los cambios:**
    ```bash
-   cd api-backend
+   docker compose up -d --build backend-barberia
    ```
 
-2. **Crear y activar un entorno virtual**:
-   - En Linux/macOS:
+---
+
+## 📖 Documentación de Endpoints por Tenant
+
+Cada backend expone su propia documentación interactiva y OpenAPI Schema según sus módulos habilitados:
+
+- **Veterinaria Beltramelli:** [http://localhost:8001/docs](http://localhost:8001/docs)
+- **Flor de Loto:** [http://localhost:8002/docs](http://localhost:8002/docs)
+
+---
+
+## ⚠️ Diagnóstico y Resolución de Problemas
+
+1. **Error: `database "<nombre>" does not exist` al arrancar el backend:**
+   - El contenedor PostgreSQL ya se había inicializado antes de registrar la nueva base de datos en el script.
+   - **Solución:** Entra al contenedor y créala manualmente sin destruir el volumen:
      ```bash
-     python3 -m venv venv
-     source venv/bin/activate
-     ```
-   - En Windows (PowerShell):
-     ```powershell
-     python -m venv venv
-     .\venv\Scripts\Activate.ps1
+     docker exec -it vetcore_postgres_cluster psql -U ary -c "CREATE DATABASE nuevo_tenant_db;"
      ```
 
-3. **Instalar dependencias**:
-   ```bash
-   pip install --upgrade pip
-   pip install -r requirements.txt
-   ```
+2. **Error CORS origin bloqueado al conectar el Frontend:**
+   - Verifica el archivo `.env.<tenant>` del backend correspondiente y confirma que el puerto del frontend esté listado en `ALLOWED_ORIGINS`.
 
-4. **Configurar el archivo de entorno (`.env`)**:
-   Copia el archivo de plantilla `.env.example` y renómbralo a `.env`:
-   ```bash
-   cp .env.example .env
-   ```
-   Asegúrate de ajustar los valores correspondientes:
-   ```env
-   DB_USER=postgres
-   DB_PASSWORD=tu_password
-   DB_HOST=localhost
-   DB_PORT=5432
-   DB_NAME=vet_core_db
-   SECRET_KEY=tu_clave_secreta_jwt
-   ```
-
-5. **Iniciar la aplicación en modo desarrollo**:
-   ```bash
-   python run_desarollo.py
-   ```
-   O alternativamente usando Uvicorn directamente:
-   ```bash
-   uvicorn app.main:app --reload --port 8000
-   ```
-
----
-
-### Opción 2: Despliegue con Docker y Docker Compose
-
-1. **Crear la red externa necesaria para los contenedores**:
-   > [!IMPORTANT]
-   > El archivo `docker-compose.yml` requiere la red externa `northcode-net`. Si no existe, créala antes de iniciar:
-   ```bash
-   docker network create northcode-net
-   ```
-
-2. **Construir y levantar los servicios**:
-   ```bash
-   docker-compose up -d --build
-   ```
-   Esto levantará automáticamente:
-   - Contenedor de **PostgreSQL** (`vet_db_bel`) en la red `northcode-net`.
-   - Contenedor del **API Backend** (`vet_core_backend`) expuesto en el puerto `8000`.
-
-3. **Verificar el estado de los contenedores**:
-   ```bash
-   docker-compose ps
-   ```
-
-4. **Ver los logs en tiempo real**:
-   ```bash
-   docker-compose logs -f backend-vet-bel
-   ```
-
----
-
-### Importación de Datos y Estándar de Entorno
-
-Luego de haber instalado todo lo necesario y haber puesto en marcha el servidor, queda agregar los productos a la base de datos.
-Estos vienen en un archivo en formato Excel, el cual hay que ejecutar y automaticamente se agregan a su base de datos
-
-1. **Si no has activado venv**:
-   > [!IMPORTANT]
-   > Es necesario activarlo para poder poner en funcionamiento este proyecto, teniendo en cuenta que estas en la raiz del mismo, ejecuta lo siguiente en la terminal en Windows:
-   ```powershell
-   cd api-backend
-   .\venv\Scripts\Activate.ps1
-   ```
-   > [!IMPORTANT]
-   > De lo contrario si estas en Linux o Mac ejecuta lo siguiente:
-   ```bash
-   cd api-backend
-   source venv/bin/activate
-   ```
-
-2. **Agregar datos a la base**:
-   > [!IMPORTANT]
-   > Ejecuta este script en la terminal luego de haber activado (venv) y estar en la carpeta api-backend:
-   ```bash
-   python -m app.services.import_excel
-   ```
-Te deberia de aparecer un mensaje como: ¡Carga completada con éxito!
-
----
-
-## 📖 Documentación Interactiva de la API
-
-Una vez que el servidor esté ejecutándose (localmente o en Docker), puedes explorar y probar los endpoints interactivos desde el navegador:
-
-- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
-- **Verificación de Salud (Health Check)**: [http://localhost:8000/](http://localhost:8000/)
-
----
-
-## 🧱 Estrategia de Agnostización y Despliegue Multi-Instancia
-
-El backend de **VetCore** está diseñado para ser **100% agnóstico al cliente o comercio final**. Esto significa que una sola base de código Python (FastAPI) atiende a múltiples clientes mediante **despliegues de instancias aisladas en contenedores Docker**:
-
-### 🏢 Modelo por DigitalOcean Droplet / Servidor
-1. **Un Contenedor de PostgreSQL Compartido**: Un único servicio de PostgreSQL en ejecución en el puerto interno de la red Docker (`northcode-net`). Almacena bases de datos independientes por cliente (`vet_db_beltramelli`, `vet_db_cliente2`, etc.).
-2. **Un Contenedor Backend FastAPI por Carrito/Cliente**: Múltiples contenedores basados en `vetcore-backend:latest`. Cada contenedor lee sus variables de entorno (`DB_NAME`, `ALLOWED_ORIGINS`, `SECRET_KEY`, `APP_PORT`) para aislar completamente los datos de cada tienda.
-3. **Persistencia Estática Separada**: Las imágenes subidas por el administrador o cliente se almacenan en carpetas de volúmenes separadas (`./storage/<cliente>/productos:/app/app/static/productos`).
-4. **Portal Administrativo en Flutter**: El backend expone la API REST de forma estándar para que el portal en Flutter (en desarrollo) pueda autenticarse (`/api/auth/login`), listar productos, actualizar precios y gestionar pedidos de cualquier tienda conectándose a la URL base correspondiente.
-
----
-
-## ❓ Solución de Problemas Comunes
-
-> [!WARNING]
-> **Error `network northcode-net declared as external, but could not be found`**:
-> Ocurre cuando se intenta ejecutar `docker-compose up` sin haber creado la red externa de Docker previa.
-> **Solución**: Ejecuta `docker network create northcode-net`.
-
-> [!WARNING]
-> **Error de conexión a PostgreSQL (`psycopg2.OperationalError`)**:
-> Verifica que el servicio de PostgreSQL esté iniciado y que las credenciales en el archivo `.env` (`DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_HOST`) coincidan con tu base de datos. Si usas Docker, la variable `IS_DOCKER=true` configura automáticamente el host a la base de datos dentro del contenedor.
-
-> [!NOTE]
-> **CORS / Peticiones bloqueadas desde el Frontend (React)**:
-> Revisa la configuración `origins_list` en `app/config.py` y asegúrate de incluir la URL y puerto de tu frontend React (ej: `http://localhost:5173` o `https://veterinaria-beltramelli.com`).
-
----
-
- Desarrollado por **NorthCode** para el ecosistema **VetCore**.
+3. **Imágenes cruzadas entre tiendas:**
+   - Revisa el mapeo de volúmenes en `docker-compose.yml`. Cada servicio backend debe apuntar a una subcarpeta estática aislada (`./static/<tenant>:/app/static`).

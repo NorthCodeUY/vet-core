@@ -105,8 +105,9 @@ export interface FeaturesConfig {
   has_products: boolean;
   has_locations: boolean;
   has_navbarFloating: boolean; 
-  has_hero: boolean; // <!> Esto no lo programe
-  has_dividers: boolean; // <!> Esto no lo programe
+  has_hero: boolean; 
+  has_dividers: boolean; 
+  has_floating_bottom_bar: boolean; /* 👈 Activa o desactiva el botón flotante de abajo */
   has_background_animation: boolean; /* 👈 Activa o desactiva la animación ambiental de fondo */
 }
 
@@ -401,4 +402,5 @@ export interface TenantConfig {
   payment_methods: PaymentMethodsConfig;
   custom_messages: CustomMessagesConfig;
   location_section: LocationSectionConfig;
+  
 }

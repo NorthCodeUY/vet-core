@@ -60,9 +60,27 @@
     "has_emergency_button": true, // <!> Terminar de configurar true: activa el botón flotante de urgencias 24h en pantalla y en seccion mapas 
     "has_locations": true, // true: muestra la sección de ubicacion 
     "has_hero": true, // true: muestra la sección del hero | false: oculta la sección
-    "has_navbar_floating": true, // <!> no lo programe true: muestra la barra de navegación flotante | false: oculta la barra de navegación flotante
+    "has_floating_bottom_bar": true, // <!> no lo programe true: muestra la barra de navegación flotante | false: oculta la barra de navegación flotante
     "has_dividers": true // <!> no lo programe true: muestra los divisores | false: oculta los divisores
 
+    /* <!> mEJORAR COMENTARIOS 
+    
+      // Interruptores de Módulos (Sin servicios ni planes, con catálogo y mapa)
+  "features": {
+    "has_cart": true,             // Carrito de compras y pedidos activo
+    "has_products": true,         // Catálogo de indumentaria visible
+    "has_services": false,        // ❌ Desactivado para tienda de ropa
+    "has_health_plans": false,    // ❌ Desactivado para tienda de ropa
+    "has_appointments": false,    // ❌ Sin reservas de turnos
+    "has_emergency_button": false,// ❌ Sin botón de urgencias médicas
+    "has_locations": true,        // ✅ Ubicación y mapa del local físico
+    "has_hero": true,             // ✅ Portada principal activa
+    "has_floating_bottom_bar": false, // ❌ Desactivado Menú tradicional
+    "has_dividers": false,        // Diseño limpio sin ondas decorativas
+    "has_background_animation": false // Sin animación 3D de fondo
+  },
+
+    */ 
   },
   // Contenido de la sección de portada (Hero) con soporte de etiquetas HTML
   "hero": {

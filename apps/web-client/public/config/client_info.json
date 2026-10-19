@@ -55,7 +55,7 @@
     "has_emergency_button": false,// ❌ Sin botón de urgencias médicas
     "has_locations": true,        // ✅ Ubicación y mapa del local físico
     "has_hero": true,             // ✅ Portada principal activa
-    "has_navbar_floating": false, // ❌ Desactivado Menú tradicional
+    "has_floating_bottom_bar": false, // ❌ Desactivado Menú tradicional
     "has_dividers": false,        // Diseño limpio sin ondas decorativas
     "has_background_animation": false // Sin animación 3D de fondo
   },

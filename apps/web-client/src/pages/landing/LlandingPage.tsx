@@ -44,6 +44,7 @@ export default function LandingPage(): React.JSX.Element {
   const hasPlans = Boolean(config?.features?.has_health_plans && config?.plans_section?.items?.length);
   const hasMaps = Boolean(config?.features?.has_locations);
   const hasDividers = Boolean(config?.features?.has_dividers);
+  const hasFloatingBottomBar = Boolean(config?.features?.has_floating_bottom_bar);
 
   /* Pipeline de secciones activas */
   const activeSectionsPipeline = useMemo<ActiveSectionDefinition[]>(() => {
@@ -148,7 +149,11 @@ export default function LandingPage(): React.JSX.Element {
         })}
       </main>
 
-      <FloatingBottomBar/>
+
+      {/* Me falata el selector <!> Si no esta por defecto tiene que apareser */}
+      { hasFloatingBottomBar && (
+        <FloatingBottomBar/>
+      )}
 
       <FooterSession bgColor="bg-vete-dark" />
     </div>

@@ -39,7 +39,6 @@ interface ServicioSessionProps {
  * @returns {JSX.Element} Sección estructurada con encabezado y grilla responsiva de servicios.
  */
 export const ServicioSession: React.FC<ServicioSessionProps> = ({ bgColor }) => {
-  
   /* 1. Consumo del contexto multi-tenant */
   const { config } = useConfig();
 
@@ -75,6 +74,8 @@ export const ServicioSession: React.FC<ServicioSessionProps> = ({ bgColor }) => 
     >
       <div className={`
         /* --- Posición --- */
+        relative                     
+        z-20                         /*  Por encima de la animación z-10 */
         flex                         /* Contenedor flexible interno */
         flex-col                     /* Organización en columna */
         items-center                 /* Centrado de hijos */
@@ -84,11 +85,6 @@ export const ServicioSession: React.FC<ServicioSessionProps> = ({ bgColor }) => 
         w-full                       /* Ocupa el ancho disponible */
         gap-16                       /* Espacio amplio entre título y grilla */
       `}>
-
-
-
-
-
 
         {/* Bloque de Título y Subtítulo */}
         <div className={`

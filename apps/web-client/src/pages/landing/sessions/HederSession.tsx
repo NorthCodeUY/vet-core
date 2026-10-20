@@ -1,64 +1,77 @@
-/* --- apps/web-client/src/pages/landing/sessions/HeaderSession.tsx --- */
+// app/web-client/src/pages/landing/sessions/HederSession.tsx
+
 /* =============================================================================
-   COMPONENTE: CABECERA PRINCIPAL Y NAVEGACIÓN (HeaderSession)
+   COMPONENTE: CABECERA DINÁMICA CON ICONOGRAFÍA AGNÓSTICA (HeaderSession)
    ============================================================================= */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Menu, 
   X, 
   ShoppingCart, 
-  Stethoscope, 
   Tag, 
   ShoppingBag, 
-  Users, 
-  MapPin 
+  Layers, 
+  MapPin, 
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 
+import type { LucideIcon } from 'lucide-react';
 import { usePedidoStore } from '../../../context/pedido_context';
 import { useConfig } from '../../../context/tenant_context';
 import { PedidoDrawer } from '../../pedido/PedidoDrawer';
 
 /**
- * Enlace individual del menú de navegación.
+ * Contrato de definición para un enlace individual de navegación.
+ * 
  * @interface NavigationLinkItem
+ * @property {string} label - Texto visible del enlace.
+ * @property {string} href - Identificador de ancla de destino en la página (ej: '#ServicioSession').
+ * @property {string} [iconImageUrl] - Ruta relativa a un icono SVG/PNG personalizado inyectado por tenant.
+ * @property {LucideIcon} [fallbackIcon] - Icono genérico de Lucide utilizado como respaldo si no hay SVG.
  */
-interface NavigationLinkItem {
+export interface NavigationLinkItem {
   label: string;
   href: string;
-  icon: LucideIcon;
+  iconImageUrl?: string;
+  fallbackIcon?: LucideIcon;
 }
 
-/**
- * Catálogo centralizado de enlaces de navegación con sus respectivos iconos.
- */
-const NAV_LINKS: NavigationLinkItem[] = [
-  { label: 'Tienda', href: '#ProductsSession', icon: ShoppingBag },
-  { label: 'Servicios', href: '#ServicioSession', icon: Stethoscope },
-  { label: 'Promociones', href: '#PlanSession', icon: Tag },
-  { label: 'Local', href: '#MapsSection', icon: MapPin },
-];
-
 /* =============================================================================
-   SUB-COMPONENTE: ENLACE INDIVIDUAL (NavLink)
+   SUB-COMPONENTE: ENLACE INDIVIDUAL CON SOPORTE DE ICONO HÍBRIDO (NavLink)
    ============================================================================= */
 
-interface NavLinkProps {
+/**
+ * Propiedades del componente `NavLink`.
+ * 
+ * @interface NavLinkProps
+ * @property {string} href - Ruta o ancla a la que apunta el hipervínculo.
+ * @property {string} label - Texto descriptivo del enlace.
+ * @property {string} [iconImageUrl] - URL del icono gráfico personalizado.
+ * @property {LucideIcon} [fallbackIcon] - Componente de icono vectorial estándar.
+ * @property {function(): void} [onClick] - Función callback disparada al hacer clic.
+ * @property {string} [className=''] - Clases adicionales de Tailwind para sobreescritura.
+ */
+export interface NavLinkProps {
   href: string;
   label: string;
-  icon?: LucideIcon;
+  iconImageUrl?: string;
+  fallbackIcon?: LucideIcon;
   onClick?: () => void;
   className?: string;
 }
 
 /**
- * Enlace atómico de navegación con icono interactivo (`NavLink`).
+ * Enlace atómico de navegación con soporte para imágenes SVG personalizadas o iconos Lucide (`NavLink`).
+ *
+ * @component
+ * @param {NavLinkProps} props - Propiedades de control y diseño.
+ * @returns {JSX.Element} Enlace estilizado con transición y microinteracción visual.
  */
 const NavLink: React.FC<NavLinkProps> = ({
   href,
   label,
-  icon: Icon,
+  iconImageUrl,
+  fallbackIcon: FallbackIcon,
   onClick,
   className = '',
 }) => (
@@ -67,41 +80,63 @@ const NavLink: React.FC<NavLinkProps> = ({
     onClick={onClick}
     className={`
       /* --- Posición --- */
-      flex                         /* Layout flexible */
+      flex                         /* Layout flexible en línea */
       items-center                 /* Centrado vertical */
-      gap-2.5                      /* Separación icono-texto */
+      gap-2.5                      /* Separación entre icono y etiqueta */
 
       /* --- Dimensiones --- */
 
       /* --- Colores --- */
       text-vete-text-base          /* Color tipográfico principal */
-      hover:text-vete-primary      /* Resalta con color de marca */
+      hover:text-vete-primary      /* Resalta con color de marca en hover */
 
       /* --- Texto --- */
-      font-bold                    /* Grosor 700 */
-      text-sm                      /* Tamaño estándar */
+      font-bold                    /* Grosor tipográfico en 700 */
+      text-sm                      /* Tamaño estándar de navegación */
 
       /* --- Animación --- */
-      transition-colors            /* Transición suave */
-      duration-200                 /* 200ms */
-      group                        /* Permite animar el icono hijo */
+      transition-colors            /* Transición fluida de color */
+      duration-200                 /* Velocidad de respuesta de 200ms */
+      group                        /* Agrupador para sincronizar hover en hijos */
       ${className}
     `}
   >
-    {Icon && (
-      <Icon
+    {/* 1. Prioridad: Icono SVG/PNG personalizado provisto por el cliente */}
+    {iconImageUrl ? (
+      <img
+        src={iconImageUrl}
+        alt={label}
+        className={`
+          /* --- Dimensiones --- */
+          w-4.5                        /* Ancho fijo de 1.125rem */
+          h-4.5                        /* Alto fijo de 1.125rem */
+          shrink-0                     /* Evita deformación */
+
+          /* --- Estilo --- */
+          object-contain               /* Ajuste proporcional */
+
+          /* --- Animación --- */
+          opacity-80                   /* Atenuación en reposo */
+          group-hover:opacity-100      /* Opacidad completa en hover */
+          transition-opacity           /* Suavizado */
+        `}
+      />
+    ) : FallbackIcon ? (
+      /* 2. Respaldo: Icono estándar de Lucide */
+      <FallbackIcon
         size={18}
         className={`
           /* --- Colores --- */
-          text-vete-primary/70     /* Tinte suave de marca */
-          group-hover:text-vete-primary /* Opacidad completa en hover */
+          text-vete-primary/70         /* Tinte institucional atenuado */
+          group-hover:text-vete-primary /* Color pleno de marca en hover */
 
           /* --- Animación --- */
-          transition-colors        /* Transición */
-          duration-200             /* 200ms */
+          transition-colors            /* Transición suave */
+          duration-200                 /* Tiempo de 200ms */
         `}
       />
-    )}
+    ) : null}
+
     <span>{label}</span>
   </a>
 );
@@ -110,28 +145,41 @@ const NavLink: React.FC<NavLinkProps> = ({
    SUB-COMPONENTE: MENÚ LATERAL MÓVIL (MobileNavigationDrawer)
    ============================================================================= */
 
-interface MobileDrawerProps {
+/**
+ * Propiedades del componente `MobileNavigationDrawer`.
+ * 
+ * @interface MobileDrawerProps
+ * @property {boolean} isOpen - Estado de apertura del panel lateral.
+ * @property {function(): void} onClose - Despachador para cerrar el panel y remover backdrop.
+ * @property {NavigationLinkItem[]} links - Colección de enlaces activos filtrados por configuración.
+ */
+export interface MobileDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  links: NavigationLinkItem[];
 }
 
 /**
- * Cajón desplegable de navegación para dispositivos móviles y tablets.
+ * Cajón desplegable de navegación adaptable para dispositivos móviles (`MobileNavigationDrawer`).
+ *
+ * @component
+ * @param {MobileDrawerProps} props - Propiedades de control y listado de enlaces.
+ * @returns {JSX.Element} Panel flotante con fondo difuminado y lista de rutas.
  */
-const MobileNavigationDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) => (
+const MobileNavigationDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose, links }) => (
   <>
-    {/* Backdrop oscurecido */}
+    {/* Fondo oscurecido táctil (Backdrop) */}
     <div
       onClick={onClose}
       className={`
         /* --- Posición --- */
-        fixed                        /* Fijo sobre la ventana */
-        inset-0                      /* 100% alto y ancho */
-        z-[80]                       /* Capa inferior al drawer */
+        fixed                        /* Fijo sobre toda la ventana */
+        inset-0                      /* 100% de alto y ancho */
+        z-[80]                       /* Capa inmediatamente inferior al cajón */
 
         /* --- Colores --- */
-        bg-vete-overlay/40           /* Fondo oscurecido */
-        backdrop-blur-sm             /* Desenfoque */
+        bg-vete-overlay/40           /* Fondo oscurecido con opacidad */
+        backdrop-blur-sm             /* Desenfoque de fondo */
 
         /* --- Animación --- */
         transition-opacity           /* Transición de opacidad */
@@ -140,45 +188,45 @@ const MobileNavigationDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }
       `}
     />
 
-    {/* Panel Desplegable Lateral */}
+    {/* Cajón de Enlaces */}
     <div
       className={`
         /* --- Posición --- */
-        fixed                        /* Flotante */
-        top-24                       /* Justo debajo del header */
-        left-0                       /* Anclado a la izquierda */
+        fixed                        /* Posición fija flotante */
+        top-24                       /* Anclado debajo de la cabecera */
+        left-0                       /* Anclado al borde izquierdo */
         z-[90]                       /* Por encima del backdrop */
 
         /* --- Dimensiones --- */
-        w-[85%]                      /* 85% del ancho de pantalla */
-        max-w-[300px]                /* Límite máximo */
-        h-auto                       /* Altura adaptativa */
+        w-[85%]                      /* 85% de la pantalla */
+        max-w-[300px]                /* Límite máximo de ancho */
+        h-auto                       /* Altura adaptativa al contenido */
         p-6                          /* Padding interno */
 
         /* --- Colores --- */
-        bg-vete-surface              /* Fondo blanco/tarjeta del tema */
+        bg-vete-surface              /* Fondo de tarjeta configurado en el tema */
         border-r                     /* Borde lateral derecho */
         border-b                     /* Borde inferior */
-        border-vete-border-subtle    /* Color de borde suave */
+        border-vete-border-subtle    /* Borde suave institucional */
         shadow-2xl                   /* Sombra profunda */
 
         /* --- Estilo --- */
-        rounded-br-[2.5rem]          /* Esquina inferior derecha redondeada */
+        rounded-br-[2.5rem]          /* Esquina inferior redondeada */
 
         /* --- Animación --- */
-        transition-all               /* Transición fluida */
+        transition-all               /* Desplazamiento y opacidad */
         duration-300                 /* 300ms */
-        ease-in-out                  /* Aceleración suave */
+        ease-in-out                  /* Curva de aceleración suave */
         ${isOpen ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0 pointer-events-none'}
       `}
     >
       <nav className={`
         /* --- Posición --- */
         flex                         /* Layout flexible */
-        flex-col                     /* Columna vertical */
-        gap-5                        /* Separación entre enlaces */
+        flex-col                     /* Organización en columna */
+        gap-5                        /* Separación entre ítems */
       `}>
-        {NAV_LINKS.map((link) => (
+        {links.map((link) => (
           <NavLink
             key={link.href}
             {...link}
@@ -187,7 +235,7 @@ const MobileNavigationDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }
           />
         ))}
 
-        {/* Línea decorativa institucional */}
+        {/* Separador Visual de Marca */}
         <div className={`
           /* --- Dimensiones --- */
           w-10                       /* Ancho de la barra */
@@ -198,7 +246,7 @@ const MobileNavigationDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }
           bg-vete-primary            /* Color principal de marca */
 
           /* --- Estilo --- */
-          rounded-full               /* Píldora */
+          rounded-full               /* Forma de píldora */
         `} />
       </nav>
     </div>
@@ -206,22 +254,28 @@ const MobileNavigationDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }
 );
 
 /* =============================================================================
-   COMPONENTE PRINCIPAL: HEADER Y ACCESOS RÁPIDOS
+   COMPONENTE PRINCIPAL: HEADER Y RESOLUCIÓN DINÁMICA DE ENLACES
    ============================================================================= */
 
-interface HeaderSessionProps {
+/**
+ * Propiedades del componente `HeaderSession`.
+ * 
+ * @interface HeaderSessionProps
+ * @property {string} [bgColor='bg-transparent'] - Clase de color de fondo inicial de Tailwind.
+ */
+export interface HeaderSessionProps {
   bgColor?: string;
 }
 
 /**
- * Barra de navegación principal (`HeaderSession`).
+ * Barra superior de navegación y anclas dinámicas (`HeaderSession`).
  * 
- * Gestiona el comportamiento pegajoso (`sticky/fixed`), la transición visual de desenfoque
- * al hacer scroll, el selector de menú móvil y el acceso al drawer del carrito de compras.
+ * Filtra los enlaces de navegación según las banderas de activación (`features`) del cliente
+ * e inyecta la iconografía personalizada en SVG configurada para cada sección.
  *
  * @component
  * @param {HeaderSessionProps} props - Propiedades de configuración.
- * @returns {JSX.Element} Cabecera institucional fija.
+ * @returns {JSX.Element} Barra de navegación completa.
  */
 export const HeaderSession: React.FC<HeaderSessionProps> = ({ bgColor = 'bg-transparent' }) => {
   /* ---------------------------------------------------------------------------
@@ -233,18 +287,67 @@ export const HeaderSession: React.FC<HeaderSessionProps> = ({ bgColor = 'bg-tran
   /* ---------------------------------------------------------------------------
      2. ESTADOS LOCALES DE INTERACCIÓN
      --------------------------------------------------------------------------- */
-  const [isScrolled, setIsScrolled] = useState<boolean>(false); // Estado para detectar el scroll y aplicar el efecto de desenfoque
-  const [isCartOpen, setIsCartOpen] = useState<boolean>(false); // Estado para detectar el estado del drawer del carrito
-  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false); // Estado para detectar el estado del menu navegacion
+  const [isScrolled, setIsScrolled] = useState<boolean>(false); // Detecta el desplazamiento vertical para aplicar efecto vidrio
+  const [isCartOpen, setIsCartOpen] = useState<boolean>(false); // Detecta si el carrito está abierto
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false); // Detecta si el menú está abierto
 
   /* Detecta el desplazamiento vertical para aplicar efecto vidrio */
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 40); // Se activa a partir de los 40px de scroll
-    window.addEventListener('scroll', handleScroll); // Añade el event listener de scroll
-    return () => window.removeEventListener('scroll', handleScroll); // Remueve el event listener de scroll
+    const handleScroll = () => setIsScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const hasCart = config?.features?.has_cart ?? true; // Feature flag para habilitar el carrito
+  /* ---------------------------------------------------------------------------
+     3. FILTRADO DINÁMICO DE ENLACES CON ICONOS AGNÓSTICOS
+     --------------------------------------------------------------------------- */
+  const activeNavLinks = useMemo((): NavigationLinkItem[] => {
+    const links: NavigationLinkItem[] = [];
+
+    // 1. Tienda / Catálogo
+    if (config?.features?.has_products) {
+      links.push({
+        label: 'Tienda',
+        href: '#ProductsSession',
+        iconImageUrl: config.products_section?.icon_image_url,
+        fallbackIcon: ShoppingBag,
+      });
+    }
+
+    // 2. Servicios
+    if (config?.features?.has_services && config.services_section?.items?.length) {
+      links.push({
+        label: 'Servicios',
+        href: '#ServicioSession',
+        iconImageUrl: config.services_section?.icon_image_url,
+        fallbackIcon: Layers,
+      });
+    }
+
+    // 3. Promociones / Planes / Membresías
+    if (config?.features?.has_health_plans && config.plans_section?.items?.length) {
+      links.push({
+        label: 'Promociones',
+        href: '#PlanSession',
+        iconImageUrl: config.plans_section?.icon_image_url,
+        fallbackIcon: Tag,
+      });
+    }
+
+    // 4. Ubicación / Estudio
+    if (config?.features?.has_locations) {
+      links.push({
+        label: 'Local',
+        href: '#MapsSection',
+        iconImageUrl: config.location_section?.icon_image_url,
+        fallbackIcon: MapPin,
+      });
+    }
+
+    return links;
+  }, [config]);
+
+  const hasCart = config?.features?.has_cart ?? true;
 
   return (
     <>
@@ -276,31 +379,35 @@ export const HeaderSession: React.FC<HeaderSessionProps> = ({ bgColor = 'bg-tran
         duration-300                 /* Tiempo de 300ms */
       `}>
         
-        {/* BOTÓN HAMBURGUESA: Visible solo en Móvil/Tablet (<1024px) */}
-        <button
-          type="button"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className={`
-            /* --- Posición --- */
-            flex                     /* Visible en pantallas pequeñas */
-            lg:hidden                /* Oculto en escritorio */
-            items-center             /* Centrado vertical */
+        {/* BOTÓN HAMBURGUESA MÓVIL */}
+        {activeNavLinks.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className={`
+              /* --- Posición --- */
+              flex                   /* Visible en pantallas pequeñas */
+              lg:hidden              /* Oculto en escritorio */
+              items-center           /* Centrado vertical */
 
-            /* --- Dimensiones --- */
-            p-1.5                    /* Padding táctil */
+              /* --- Dimensiones --- */
+              p-1.5                  /* Padding táctil */
 
-            /* --- Colores --- */
-            text-vete-primary        /* Color de marca */
+              /* --- Colores --- */
+              text-vete-primary      /* Color de marca */
 
-            /* --- Animación --- */
-            transition-transform     /* Transición suave */
-            active:scale-90          /* Pulsación */
-          `}
-          title="Abrir menú de navegación"
-          aria-label="Abrir menú de navegación"
-        >
-          {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
-        </button>
+              /* --- Animación --- */
+              transition-transform   /* Transición suave */
+              active:scale-90        /* Pulsación */
+            `}
+            title="Abrir menú de navegación"
+            aria-label="Abrir menú de navegación"
+          >
+            {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
+        ) : (
+          <div className="lg:hidden w-7" />
+        )}
 
         {/* LOGO E IDENTIDAD CORPORATIVA DINÁMICA */}
         <a
@@ -316,7 +423,6 @@ export const HeaderSession: React.FC<HeaderSessionProps> = ({ bgColor = 'bg-tran
             group                    /* Agrupador para hover */
           `}
         >
-          {/* Logo del Comercio montado en /tenant/ */}
           <img
             src={config?.branding?.logo_url || '/tenant/logo.png'}
             alt={`Logo ${config?.business_name || 'Comercio'}`}
@@ -324,7 +430,7 @@ export const HeaderSession: React.FC<HeaderSessionProps> = ({ bgColor = 'bg-tran
               /* --- Dimensiones --- */
               w-10                   /* Tamaño móvil */
               md:w-12                /* Tamaño escritorio */
-              h-auto                 /* Mantiene proporciones */
+              h-auto                 /* Proporcional */
               object-contain         /* Sin deformación */
 
               /* --- Animación --- */
@@ -333,12 +439,7 @@ export const HeaderSession: React.FC<HeaderSessionProps> = ({ bgColor = 'bg-tran
             `}
           />
 
-          {/* Nombre Comercial Dinámico */}
           <span className={`
-            /* --- Posición --- */
-
-            /* --- Dimensiones --- */
-
             /* --- Colores --- */
             text-vete-text-base      /* Color principal de lectura */
             group-hover:text-vete-primary /* Cambio de color al pasar el cursor */
@@ -354,25 +455,24 @@ export const HeaderSession: React.FC<HeaderSessionProps> = ({ bgColor = 'bg-tran
             transition-colors        /* Transición de color */
             duration-200             /* 200ms */
           `}>
-            {config?.business_name || 'Veterinaria'}
+            {config?.business_name || 'Comercio'}
           </span>
         </a>
 
-        {/* NAVEGACIÓN DESKTOP: Visible solo en Escritorio (>=1024px) */}
+        {/* NAVEGACIÓN DESKTOP: Enlaces dinámicos */}
         <nav className={`
           /* --- Posición --- */
           hidden                     /* Oculto en móvil y tablet */
           lg:flex                    /* Visible en escritorio */
           items-center               /* Centrado vertical */
-          gap-8                      /* Espaciado holgado entre enlaces */
-
+          gap-8                      /* Espaciado entre enlaces */
         `}>
-          {NAV_LINKS.map((link) => (
+          {activeNavLinks.map((link) => (
             <NavLink key={link.href} {...link} />
           ))}
         </nav>
 
-        {/* ACCESO AL CARRITO CON TOTAL Y BADGE (Condicional por Feature Flag) */}
+        {/* BOTÓN DEL CARRITO CON CONTADOR */}
         {hasCart ? (
           <div
             onClick={() => setIsCartOpen(true)}
@@ -393,7 +493,7 @@ export const HeaderSession: React.FC<HeaderSessionProps> = ({ bgColor = 'bg-tran
               group                  /* Agrupador de animación */
             `}
           >
-            {/* Visualización del Gasto Acumulado */}
+            {/* Visualización de Total Acumulado */}
             <div className={`
               /* --- Posición --- */
               hidden                 /* Oculto en móviles muy pequeños */
@@ -422,7 +522,7 @@ export const HeaderSession: React.FC<HeaderSessionProps> = ({ bgColor = 'bg-tran
               </span>
             </div>
 
-            {/* Botón Circular con Badge Contador */}
+            {/* Icono Circular de Carrito */}
             <div className={`
               /* --- Posición --- */
               relative               /* Contexto para el badge absoluto */
@@ -448,7 +548,7 @@ export const HeaderSession: React.FC<HeaderSessionProps> = ({ bgColor = 'bg-tran
             `}>
               <ShoppingCart size={18} />
 
-              {/* Badge Numérico Flotante Cantidad de Compras*/}
+              {/* Badge Numérico Flotante */}
               {itemCount > 0 && (
                 <span className={`
                   /* --- Posición --- */
@@ -490,7 +590,7 @@ export const HeaderSession: React.FC<HeaderSessionProps> = ({ bgColor = 'bg-tran
         )}
       </header>
 
-      {/* Drawer Desplegable de Carrito */}
+      {/* Drawer Desplegable del Carrito */}
       {hasCart && (
         <PedidoDrawer
           isOpen={isCartOpen}
@@ -498,10 +598,11 @@ export const HeaderSession: React.FC<HeaderSessionProps> = ({ bgColor = 'bg-tran
         />
       )}
 
-      {/* Menú Lateral Móvil */}
+      {/* Menú Lateral Móvil con Enlaces e Iconos Dinámicos */}
       <MobileNavigationDrawer
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
+        links={activeNavLinks}
       />
     </>
   );

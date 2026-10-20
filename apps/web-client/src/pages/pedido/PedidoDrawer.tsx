@@ -114,7 +114,7 @@ const DrawerHeader: React.FC<DrawerHeaderProps> = ({ itemCount, onClose }) => {
           flex     /* Flexbox */
           flex-col /* Columna */
           leading-[0.85] /* Altura de linea */
-          text-vete-text-light                  /* Texto base blanco */
+          text-vete-surface                  /* Texto base blanco */
         `}>
         <span className={`
           /* --- Dimensiones --- */
@@ -176,7 +176,7 @@ const DrawerHeader: React.FC<DrawerHeaderProps> = ({ itemCount, onClose }) => {
 
         /* --- Colores --- */
         bg-vete-secondary            /* Fondo azul (mismo color que el badge del carrito) */
-        text-vete-text-light                  /* Color de la cruz para máximo contraste */
+        text-vete-surface            /* Color de la cruz para máximo contraste */
         
         /* --- Estilo --- */
         rounded-full                 /* Forma circular */
@@ -272,17 +272,13 @@ export const PedidoDrawer = ({ isOpen, onClose }: PedidoDrawerProps) => {
   const [isClearCartModalOpen, setIsClearCartModalOpen] = useState(false);     /* Visibilidad del modal para vaciar carrito */
   const [isDeleteAddressModalOpen, setIsDeleteAddressModalOpen] = useState(false); /* Visibilidad del modal para borrar dirección */
   const [addressIdToDelete, setAddressIdToDelete] = useState<string | null>(null); /* Referencia temporal del ID a eliminar */
-
-
-
-
-
+  
 
   return ( // Retorno Componente --------------------------------------------------------------------------------------
     <>
       <div onClick={onClose} className={`fixed inset-0 z-[150] bg-vete-overlay/60 backdrop-blur-sm transition-opacity ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`} />
       
-      <aside className={`fixed top-0 right-0 z-[160] flex flex-col h-full w-full max-w-md bg-vete-card-white shadow-2xl transition-transform duration-500 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <aside className={`fixed top-0 right-0 z-[160] flex flex-col h-full w-full max-w-md bg-vete-surface shadow-2xl transition-transform duration-500 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         
         {/* Menu superior de la interface */}
         <DrawerHeader itemCount={itemCount} onClose={onClose} />

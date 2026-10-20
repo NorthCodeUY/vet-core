@@ -41,9 +41,9 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
   /* Clases CSS dinámicas para el botón de confirmación según el color */
   const confirmButtonClasses = {
-    red: 'bg-vete-error text-vete-card-white hover:bg-vete-error/90 shadow-red-500/20',
-    green: 'bg-vete-tertiary text-vete-card-white hover:bg-vete-tertiary/90 shadow-green-500/20',
-    blue: 'bg-vete-primary text-vete-card-white hover:bg-vete-primary/90 shadow-blue-500/20',
+    red: 'bg-vete-error text-vete-surface hover:bg-vete-error/90 shadow-red-500/20',
+    green: 'bg-vete-tertiary text-vete-surface hover:bg-vete-tertiary/90 shadow-green-500/20',
+    blue: 'bg-vete-primary text-vete-surface hover:bg-vete-primary/90 shadow-blue-500/20',
   };
 
   return (
@@ -69,18 +69,18 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         `}
       >
         <div className={`
-          bg-vete-card-white rounded-2xl shadow-xl max-w-sm w-full p-6
+          bg-vete-surface rounded-2xl shadow-xl max-w-sm w-full p-6
           flex flex-col gap-5
         `}>
           {/* Encabezado del modal */}
-          <div className="flex justify-between items-center pb-3 border-b border-vete-light-border">
-            <h3 id="modal-title" className="text-xl font-bold text-vete-text-light flex items-center gap-2">
+          <div className="flex justify-between items-center pb-3 border-b border-vete-border-subtle">
+            <h3 id="modal-title" className="text-xl font-bold text-vete-text-base flex items-center gap-2">
               {icon && <span className="text-vete-text-muted">{icon}</span>}
               {title}
             </h3>
             <button
               onClick={onClose}
-              className="p-1 rounded-full hover:bg-vete-light-border transition-colors focus:outline-none focus:ring-2 focus:ring-vete-primary"
+              className="p-1 rounded-full hover:bg-vete-border-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-vete-primary"
               aria-label="Cerrar modal"
             >
               <X size={20} className="text-vete-text-muted" />
@@ -88,17 +88,17 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           </div>
 
           {/* Cuerpo del mensaje */}
-          <div className="text-vete-text-light text-base leading-relaxed">
+          <div className="text-vete-text-base text-base leading-relaxed">
             {message}
           </div>
 
           {/* Botones de acción */}
-          <div className="flex justify-end gap-3 pt-3 border-t border-vete-light-border">
+          <div className="flex justify-end gap-3 pt-3 border-t border-vete-border-subtle">
             <button
               onClick={onClose}
               className={`
                 px-5 py-2 rounded-xl text-vete-text-muted font-semibold
-                hover:bg-vete-light-border transition-colors
+                hover:bg-vete-border-subtle transition-colors
                 focus:outline-none focus:ring-2 focus:ring-vete-primary
               `}
               aria-label={cancelButtonText}

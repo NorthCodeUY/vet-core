@@ -1,62 +1,77 @@
-
-/* --- apps/web-client/src/pages/pedido/PedidoFooterCollapsible.tsx--- */
-
-import React, { useState } from 'react';
-import { 
-  Banknote,  // Dinero en mano osea al recibir el pedido
-  Building2, // Banco 
-  CreditCard, // Tarjeta 
-  QrCode, // Codigo QR 
-  MapPin, // Direccion 
-  ChevronDown, // Desplegable 
-  Trash2,  // Basura  
-  Send, // Enviar 
-  Truck // Camioneta 
-} from 'lucide-react';
-
-import { useConfig } from '../../context/tenant_context';
-import { usePedidoStore } from '../../context/pedido_context'; // Contexto del pedido 
-
-import type { BankAccountItem } from '../../types/tenant_types';
-
+/* --- apps/web-client/src/pages/pedido/PedidoFooterCollapsible.tsx --- */
 
 /**
- * Catálogo de configuración de métodos de pago soportados por la plataforma.
+ * @fileoverview Pie de Página Colapsable del Carrito y Orquestador de Checkout (PedidoFooterCollapsible)
  * 
- * Centraliza la definición visual (etiquetas, descripciones e iconografía de Lucide)
- * y la lógica de generación de mensajes dinámicos para WhatsApp. Permite desacoplar
- * la regla de negocio de cada pasarela/método respecto al componente de interfaz.
- *
- * @constant
- * @type {Array<{
- *   id: string,
- *   label: string,
- *   description: string,
- *   icon: React.ComponentType<{ size?: number, className?: string }>,
- *   getMessage: () => string
- * }>}
+ * Centraliza la selección de medios de pago, la logística de entrega/retiro,
+ * el cálculo de totales y la construcción del mensaje estructurado para WhatsApp.
+ * Implementa un selector interactivo enriquecido con iconografía dinámica.
  * 
- * <!> Yo para mi tengo que camiar esto y mejorar el icono en el cado de los item desplegables 
+ * @module pages/pedido/PedidoFooterCollapsible
  */
-const PAYMENT_METHODS = [
+
+import React, { useState } from 'react';
+// --- Iconografía Lucide ---
+import { 
+  Banknote,
+  Building2,
+  CreditCard,
+  QrCode,
+  MapPin,
+  ChevronDown,
+  Trash2,
+  Send,
+  Truck,
+  Check
+} from 'lucide-react';
+
+// --- Contextos y Modelos Globales ---
+import { useConfig } from '../../context/tenant_context';
+import { usePedidoStore } from '../../context/pedido_context';
+import type { BankAccountItem } from '../../types/tenant_types';
+
+/* =============================================================================
+   CONSTANTES Y MODELO DE ESTRATEGIAS DE PAGO
+   ============================================================================= */
+
+/**
+ * Identificadores inmutables de métodos de pago para evitar strings mágicos.
+ * <!> Se reemplazan comparaciones duras de texto por constantes tipadas.
+ */
+export const PAYMENT_METHOD_IDS = {
+  EFECTIVO: 'efectivo',
+  TRANSFERENCIA: 'transferencia',
+  TARJETA: 'tarjeta',
+  MERCADOPAGO: 'mercadopago',
+} as const;
+
+export type PaymentMethodType = typeof PAYMENT_METHOD_IDS[keyof typeof PAYMENT_METHOD_IDS];
+
+/**
+ * Catálogo de estrategias de cobro soportadas por la plataforma.
+ */
+interface PaymentStrategy {
+  id: PaymentMethodType;
+  label: string;
+  description: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  getMessage: (bankAccounts?: BankAccountItem[]) => string;
+}
+
+const PAYMENT_METHODS: PaymentStrategy[] = [
   {
-    id: 'efectivo',
+    id: PAYMENT_METHOD_IDS.EFECTIVO,
     label: 'Efectivo',
     description: 'Pago en mano al recibir',
     icon: Banknote,
-    /**
-     * Genera la instrucción de cobro en efectivo para el mensaje de WhatsApp.
-     * @returns {string} Nota informativa sobre coordinación de cambio.
-     */
-    getMessage: () => '_Forma de pago: Efectivo (coordinar cambio con el vendedor)_'
+    getMessage: () => '_Forma de pago: Efectivo (coordinar cambio con el vendedor)_',
   },
-  
   {
-    id: 'transferencia',
+    id: PAYMENT_METHOD_IDS.TRANSFERENCIA,
     label: 'Transferencia',
     description: 'BROU / PREX / Santander',
     icon: Building2,
-    getMessage: (bankAccounts?: Array<{ bank_name: string; account_number: string; beneficiary: string }>) => {
+    getMessage: (bankAccounts) => {
       if (!bankAccounts || bankAccounts.length === 0) {
         return '_Forma de pago: Transferencia Bancaria (solicitar datos de cuenta)_';
       }
@@ -68,174 +83,276 @@ const PAYMENT_METHODS = [
       return text;
     },
   },
-
   {
-    id: 'tarjeta',
+    id: PAYMENT_METHOD_IDS.TARJETA,
     label: 'Tarjeta',
     description: 'Débito o Crédito al entregar',
     icon: CreditCard,
-    /**
-     * Genera la instrucción para coordinar el POS inalámbrico al momento del delivery.
-     * @returns {string} Nota informativa para llevar el terminal POS.
-     */
-    getMessage: () => '_Forma de pago: Tarjeta de Débito/Crédito (coordinar pos con el vendedor)_'
+    getMessage: () => '_Forma de pago: Tarjeta de Débito/Crédito (solicitar POS inalámbrico)_',
   },
   {
-    id: 'mercadopago',
+    id: PAYMENT_METHOD_IDS.MERCADOPAGO,
     label: 'Mercado Pago',
     description: 'Link de pago / Código QR',
     icon: QrCode,
-    /**
-     * Solicita la generación de un link de pago digital o código QR dinámico.
-     * @returns {string} Solicitud de pasarela de pago digital.
-     */
-    getMessage: () => '_Forma de pago: Mercado Pago (solicito link de pago / QR)_'
-  }
+    getMessage: () => '_Forma de pago: Mercado Pago (solicito link de pago / QR)_',
+  },
 ];
 
 /* =============================================================================
-   SUB-COMPONENTE: SELECTOR Y DETALLE DE MÉTODO DE PAGO
+   SUB-COMPONENTE: SELECTOR ENRIQUECIDO DE MÉTODO DE PAGO
    ============================================================================= */
 
-/**
- * Propiedades para el sub-componente `PaymentSelector`.
- * 
- * @interface PaymentSelectorProps
- * @property {string} selectedMethod - Identificador de la estrategia de pago seleccionada ('efectivo' | 'transferencia' | 'tarjeta' | 'mercadopago').
- * @property {function(string): void} setSelectedMethod - Función de despacho para actualizar el método de pago activo en el estado principal.
- * @property {Object} bankInfo - Objeto con la información bancaria institucional para liquidaciones vía transferencia.
- 
- * */
 interface PaymentSelectorProps {
   selectedMethod: string;
   setSelectedMethod: (method: string) => void;
   bankInfo?: BankAccountItem;
 }
 
-
 /**
- * Sub-componente de selección de método de pago (`PaymentSelector`).
+ * Selector desplegable con iconografía personalizada para métodos de pago (`PaymentSelector`).
+ * <!> Se reemplaza el select nativo por un menú interactivo con íconos vectoriales visibles en cada ítem.
  * 
- * Renderiza un menú desplegable (combobox) estilizado para elegir la modalidad
- * de liquidación del pedido. Si el método seleccionado es transferencia bancaria,
- * despliega reactivamente una tarjeta informativa con los datos de cuenta y titular
- * extraídos del archivo de configuración corporativa.
- *
  * @component
- * @param {PaymentSelectorProps} props - Propiedades de configuración y control de selección.
- * @returns {JSX.Element} Control interactivo de selección de pago y panel condicional de datos bancarios.
  */
 const PaymentSelector: React.FC<PaymentSelectorProps> = ({ 
   selectedMethod, 
   setSelectedMethod,
   bankInfo 
 }) => {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const currentPayment = PAYMENT_METHODS.find(m => m.id === selectedMethod) || PAYMENT_METHODS[0];
   const CurrentIcon = currentPayment.icon;
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className={`
+      /* --- Posición --- */
+      flex
+      flex-col
+      relative
+
+      /* --- Dimensiones --- */
+      gap-1.5
+    `}>
       <label className={`
-        /* --- Texto --- */
-        text-[10px] font-black uppercase tracking-widest ml-1
+        /* --- Posición --- */
+        ml-1
+
         /* --- Colores --- */
         text-vete-text-muted
+
+        /* --- Texto --- */
+        text-[10px]
+        font-black
+        uppercase
+        tracking-widest
       `}>
         Método de Pago
       </label>
 
-
-
-
-      <div className="relative">
-        {/* Icono del metodo de pago */}
-        <CurrentIcon size={16} className={`
+      {/* Botón Disparador del Menú Desplegable Enriquecido */}
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`
           /* --- Posición --- */
-          absolute 
-          left-3.5 
-          top-1/2 
-          -translate-y-1/2 
-          text-vete-primary 
-          pointer-events-none
-        `}
-        />
-        {/* Desplegable con los metodos de pago */}
-        <select
-          value={selectedMethod}
-          onChange={(e) => setSelectedMethod(e.target.value)}
-          className={`
-            /* --- Dimensiones --- */
-            w-full py-2.5 pl-10 pr-8
-            /* --- Colores --- */
-            bg-vete-dark text-vete-text-light border border-vete-light-border/40
-            /* --- Texto --- */
-            text-xs font-bold uppercase
-            /* --- Estilo --- */
-            rounded-xl outline-none appearance-none cursor-pointer
-            focus:border-vete-primary transition-colors
-          `}
-        >
-          {/* Opciones de los metodos de pago */}
-          {PAYMENT_METHODS.map((pm) => (  
+          flex
+          items-center
+          justify-between
+          relative
 
-            
-            // <!> Esto quiero mejorarlo en el menu anterior mostraba los logitos y se veia mejor la lista desplebalbe 
-            <option key={pm.id} value={pm.id} className="bg-slate-900 text-white">
-              {pm.label} — {pm.description}
-            </option>
-          ))}
-        </select>
-        {/* Icono de desplegable */}
-        <ChevronDown size={14} className={`
-          /* --- Posición --- */
-          absolute 
-          right-3.5 
-          top-1/2 
-          -translate-y-1/2 
+          /* --- Dimensiones --- */
+          w-full
+          py-2.5
+          px-3.5
+
           /* --- Colores --- */
-          text-vete-text-muted 
-          /* --- Comportamiento --- */
-          pointer-events-none
-        `}/>
-      </div>
+          bg-vete-dark
+          border
+          border-vete-border-subtle/40
+          text-vete-text-base
 
+          /* --- Estilo --- */
+          rounded-xl
+          outline-none
+          cursor-pointer
 
-
-
-
-      {/* 
-        Datos Bancarios condicionales 
-        Cuadro que aparese en caso de seleccionar transferencia bancaria
-        Se utiliza para mostrar los datos de la cuenta de manera visual 
-      */}
-
-
-
-
-
-
-
-      {/* <!> Lo de abajo deveria apuntar a variable no a transferencia texto  */}
-       {selectedMethod === 'transferencia' && bankInfo && (
+          /* --- Animación --- */
+          transition-colors
+          duration-150
+          hover:border-vete-primary/60
+          focus:border-vete-primary
+        `}
+      >
         <div className={`
           /* --- Posición --- */
-          p-3
+          flex
+          items-center
+          gap-2.5
+        `}>
+          <CurrentIcon size={16} className="text-vete-primary shrink-0" />
+          <span className={`
+            /* --- Texto --- */
+            text-xs
+            font-bold
+            uppercase
+            tracking-wide
+          `}>
+            {currentPayment.label} — <span className="text-[11px] font-normal text-vete-text-muted lowercase">{currentPayment.description}</span>
+          </span>
+        </div>
+
+        <ChevronDown 
+          size={14} 
+          className={`
+            /* --- Colores --- */
+            text-vete-text-muted
+
+            /* --- Animación --- */
+            transition-transform
+            duration-200
+            ${isOpen ? 'rotate-180' : ''}
+          `}
+        />
+      </button>
+
+      {/* Menú Desplegable con Iconos Visibles en Cada Opción */}
+      {isOpen && (
+        <div className={`
+          /* --- Posición --- */
+          absolute
+          top-full
+          left-0
+          z-50
+
+          /* --- Dimensiones --- */
+          w-full
+          mt-1
+          p-1.5
+
           /* --- Colores --- */
-          bg-vete-primary/10 
-          border 
-          border-dashed 
-          border-vete-primary/40
+          bg-vete-surface
+          border
+          border-vete-border-subtle
+          shadow-2xl
+
           /* --- Estilo --- */
-          rounded-xl 
-          animate-in 
-          fade-in 
+          rounded-2xl
+
+          /* --- Animación --- */
+          animate-in
+          fade-in
+          zoom-in-95
+          duration-150
+        `}>
+          {PAYMENT_METHODS.map((pm) => {
+            const Icon = pm.icon;
+            const isSelected = pm.id === selectedMethod;
+
+            return (
+              <div
+                key={pm.id}
+                onClick={() => {
+                  setSelectedMethod(pm.id);
+                  setIsOpen(false);
+                }}
+                className={`
+                  /* --- Posición --- */
+                  flex
+                  items-center
+                  justify-between
+                  cursor-pointer
+
+                  /* --- Dimensiones --- */
+                  p-2.5
+                  rounded-xl
+
+                  /* --- Colores --- */
+                  ${isSelected ? 'bg-vete-primary/10 text-vete-primary' : 'text-vete-text-base hover:bg-vete-dark/5'}
+
+                  /* --- Animación --- */
+                  transition-colors
+                  duration-150
+                `}
+              >
+                <div className={`
+                  /* --- Posición --- */
+                  flex
+                  items-center
+                  gap-2.5
+                `}>
+                  <div className={`
+                    /* --- Posición --- */
+                    p-1.5
+                    rounded-lg
+
+                    /* --- Colores --- */
+                    ${isSelected ? 'bg-vete-primary text-white' : 'bg-vete-dark/5 text-vete-primary'}
+                  `}>
+                    <Icon size={14} />
+                  </div>
+                  <div className="flex flex-col leading-tight">
+                    <span className="text-xs font-bold uppercase">{pm.label}</span>
+                    <span className="text-[10px] text-vete-text-muted">{pm.description}</span>
+                  </div>
+                </div>
+
+                {isSelected && <Check size={14} className="text-vete-primary" />}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Panel Informativo Condicional para Transferencias Bancarias */}
+      {selectedMethod === PAYMENT_METHOD_IDS.TRANSFERENCIA && bankInfo && (
+        <div className={`
+          /* --- Posición --- */
+          flex
+          flex-col
+
+          /* --- Dimensiones --- */
+          p-3
+          gap-1
+
+          /* --- Colores --- */
+          bg-vete-primary/10
+          border
+          border-dashed
+          border-vete-primary/40
+
+          /* --- Estilo --- */
+          rounded-xl
+
+          /* --- Animación --- */
+          animate-in
+          fade-in
           duration-200
         `}>
-          <p className="text-vete-text-light text-xs font-medium leading-tight">
-            <span className="font-bold text-vete-primary">Datos Bancarios:</span><br />
-            Banco: {bankInfo.bank_name}<br />
-            Cuenta: {bankInfo.account_number}<br />
-            Titular: {bankInfo.beneficiary}
+          <span className={`
+            /* --- Colores --- */
+            text-vete-primary
+
+            /* --- Texto --- */
+            text-[11px]
+            font-black
+            uppercase
+            tracking-wider
+          `}>
+            Datos Bancarios del Comercio
+          </span>
+          <p className={`
+            /* --- Colores --- */
+            text-vete-text-base
+
+            /* --- Texto --- */
+            text-xs
+            font-medium
+            leading-relaxed
+          `}>
+            <strong>Entidad:</strong> {bankInfo.bank_name}<br />
+            <strong>N° Cuenta:</strong> {bankInfo.account_number} ({bankInfo.currency})<br />
+            <strong>Titular:</strong> {bankInfo.beneficiary}
           </p>
         </div>
       )}
@@ -243,22 +360,10 @@ const PaymentSelector: React.FC<PaymentSelectorProps> = ({
   );
 };
 
-
-
-
 /* =============================================================================
-   SUB-COMPONENTE: BARRA RESUMEN / GATILLO DEL ACORDEÓN
+   SUB-COMPONENTE: BARRA RESUMEN COMPACTA (CheckoutSummaryBar)
    ============================================================================= */
 
-/**
- * Propiedades para el sub-componente `CheckoutSummaryBar`.
- * 
- * @interface CheckoutSummaryBarProps
- * @property {string} paymentLabel - Nombre del método de pago actual (ej: 'Efectivo', 'Transferencia').
- * @property {React.ComponentType<{ size?: number, className?: string }>} PaymentIcon - Componente de icono de Lucide correspondiente al pago.
- * @property {string} address - Dirección de entrega seleccionada o texto por defecto ('Retiro en Local').
- * @property {function(): void} onExpand - Callback que activa el estado de expansión en el componente padre.
- */
 interface CheckoutSummaryBarProps {
   paymentLabel: string;
   PaymentIcon: React.ComponentType<{ size?: number; className?: string }>;
@@ -266,18 +371,6 @@ interface CheckoutSummaryBarProps {
   onExpand: () => void;
 }
 
-
-/**
- * Barra compacta de resumen de checkout (`CheckoutSummaryBar`).
- * 
- * Se muestra cuando el panel de configuración está colapsado. Resume de forma
- * horizontal el método de pago y la dirección elegida en un botón interactivo
- * de bajo perfil vertical para no tapar los productos del carrito.
- *
- * @component
- * @param {CheckoutSummaryBarProps} props - Propiedades recibidas del orquestador.
- * @returns {JSX.Element} Barra interactiva con datos resumidos y botón de despliegue.
- */
 const CheckoutSummaryBar: React.FC<CheckoutSummaryBarProps> = ({
   paymentLabel,
   PaymentIcon,
@@ -289,89 +382,106 @@ const CheckoutSummaryBar: React.FC<CheckoutSummaryBarProps> = ({
       onClick={onExpand}
       className={`
         /* --- Posición --- */
-        flex                         /* Contenedor flexible */
-        items-center                 /* Centrado vertical */
-        justify-between              /* Distribución a los extremos */
-        cursor-pointer               /* Cursor interactivo */
-        select-none                  /* Evita selección accidental de texto */
+        flex
+        items-center
+        justify-between
+        cursor-pointer
+        select-none
 
         /* --- Dimensiones --- */
-        p-3                          /* Padding interno cómodo */
+        p-3
 
         /* --- Colores --- */
-        bg-vete-dark                 /* Fondo oscuro base */
-        border                       /* Borde habilitado */
-        border-vete-light-border/40  /* Borde translúcido suave */
+        bg-vete-dark
+        border
+        border-vete-border-subtle/40
 
         /* --- Estilo --- */
-        rounded-xl                   /* Bordes redondeados consistentes */
+        rounded-xl
 
         /* --- Animación --- */
-        hover:bg-vete-dark/80        /* Feedback visual en hover */
-        transition-all               /* Suaviza transiciones */
+        transition-all
+        duration-200
+        hover:border-vete-primary/50
       `}
     >
       <div className={`
         /* --- Posición --- */
-        flex                         /* Contenedor en línea */
-        items-center                 /* Centrado */
-        gap-3                        /* Separación entre método y dirección */
-        overflow-hidden              /* Corta textos excesivos */
+        flex
+        items-center
+        overflow-hidden
+
+        /* --- Dimensiones --- */
+        gap-3
       `}>
-        {/* Preview Método de Pago */}
+        {/* Método de Pago Activo */}
         <div className={`
           /* --- Posición --- */
-          flex items-center gap-1.5
+          flex
+          items-center
+          shrink-0
+
+          /* --- Dimensiones --- */
+          gap-1.5
+
           /* --- Colores --- */
           text-vete-primary
-          /* --- Dimensiones --- */
-          shrink-0                   /* No se achica */
         `}>
-          <PaymentIcon size={16} /> 
+          <PaymentIcon size={15} /> 
           <span className={`
             /* --- Texto --- */
-            text-[10px] font-black uppercase tracking-wider
+            text-[10px]
+            font-black
+            uppercase
+            tracking-wider
           `}>
             Pago: <span className="font-bold">{paymentLabel}</span>
           </span>
         </div>
 
-        {/* Separador vertical */}
-        <div className="h-3 w-px bg-vete-light-border shrink-0" />
+        {/* Separador */}
+        <div className="h-3 w-px bg-vete-border-subtle shrink-0" />
 
-        {/* Preview Dirección de Entrega */}
+        {/* Dirección Resumida */}
         <div className={`
           /* --- Posición --- */
-          flex items-center gap-1.5
+          flex
+          items-center
+          truncate
+
+          /* --- Dimensiones --- */
+          gap-1.5
+
           /* --- Colores --- */
           text-vete-text-muted
-          /* --- Estilo --- */
-          truncate                   /* Puntos suspensivos si no entra */
         `}>
           <MapPin size={13} className="shrink-0" />
           <span className={`
-            /* --- Texto --- */
-            text-[11px] 
-            font-medium 
-            truncate
+            /* --- Dimensiones --- */
             max-w-[130px]
+
+            /* --- Texto --- */
+            text-[11px]
+            font-medium
+            truncate
           `}>
             {address.trim() || 'Retiro en Local'}
           </span>
         </div>
       </div>
 
-      {/* Flecha indicadora */}
       <button 
         type="button" 
         className={`
           /* --- Dimensiones --- */
-          p-1 
+          p-1
+
           /* --- Colores --- */
-          text-vete-text-muted  /* Color por defecto */
-          hover:text-vete-primary /* Color al pasar el mouse */
+          text-vete-text-muted
+          hover:text-vete-primary
+
           /* --- Animación --- */
-          transition-colors /* Transición suave */
+          transition-colors
         `}
         aria-label="Abrir opciones de pago y entrega"
       >
@@ -381,68 +491,52 @@ const CheckoutSummaryBar: React.FC<CheckoutSummaryBarProps> = ({
   );
 };
 
-
-
 /* =============================================================================
-   SUB-COMPONENTE: LOGÍSTICA DE ENTREGA Y RETIRO
+   SUB-COMPONENTE: LOGÍSTICA DE ENTREGA (DeliveryAddressSection)
    ============================================================================= */
 
-
-/**
- * Propiedades para el sub-componente `DeliveryAddressSection`.
- * 
- * @interface DeliveryAddressSectionProps
- * @property {string} address - Cadena reactiva con la dirección de destino o el estado especial "Retiro en Local".
- * @property {function(string): void} setAddress - Función de despacho para actualizar la dirección de entrega en el estado padre.
- * @property {string} mapsUrl - URL externa a Google Maps configurada en la información corporativa para geolocalización.
- */
 interface DeliveryAddressSectionProps {
   address: string;
   setAddress: (addr: string) => void;
   mapsUrl: string;
 }
 
-
-/**
- * Sub-componente de selección de modalidad de entrega (`DeliveryAddressSection`).
- * 
- * Gestiona la logística del pedido ofreciendo dos caminos de despacho:
- * 1. **Retiro en Local:** Estado por defecto, minimiza la UI ocultando entradas de texto.
- * 2. **Envío a Domicilio:** Despliega reactivamente un campo de texto asistido para dirección manual.
- * 
- * Integra acceso directo a Google Maps para verificación de la ubicación del local comercial.
- *
- * @component
- * @param {DeliveryAddressSectionProps} props - Propiedades de configuración y setters de estado.
- * @returns {JSX.Element} Panel de opciones de entrega con selector binario y entrada de texto condicional. 
- */
 const DeliveryAddressSection: React.FC<DeliveryAddressSectionProps> = ({
   address,
   setAddress,
   mapsUrl
 }) => {
   const isRetiro = address === "Retiro en Local";
+
   return (
     <div className={`
       /* --- Posición --- */
-      flex                         /* Contenedor flexible */
-      flex-col                     /* Organización vertical */
-      gap-2                        /* Espaciado interno */
+      flex
+      flex-col
+
+      /* --- Dimensiones --- */
+      gap-2
     `}>
       <div className={`
         /* --- Posición --- */
-        flex                         /* Alineación horizontal */
-        justify-between              /* Extremos */
-        items-center                 /* Centrado vertical */
-        px-1                         /* Padding lateral */
+        flex
+        justify-between
+        items-center
+
+        /* --- Dimensiones --- */
+        px-1
       `}>
         <label className={`
-          /* --- Texto --- */
-          text-[10px] font-black uppercase tracking-widest
           /* --- Colores --- */
           text-vete-text-muted
+
+          /* --- Texto --- */
+          text-[10px]
+          font-black
+          uppercase
+          tracking-widest
         `}>
-          Método de Entrega
+          Modalidad de Entrega
         </label>
 
         <a 
@@ -450,65 +544,72 @@ const DeliveryAddressSection: React.FC<DeliveryAddressSectionProps> = ({
           target="_blank" 
           rel="noreferrer"
           className={`
-            /* --- Texto --- */
-            text-[9px] font-bold uppercase underline
             /* --- Colores --- */
-            text-vete-primary hover:opacity-80
+            text-vete-primary
+            hover:text-vete-primary-hover
+
+            /* --- Texto --- */
+            text-[9px]
+            font-bold
+            uppercase
+            underline
+
             /* --- Animación --- */
-            transition-opacity
+            transition-colors
           `}
         >
           Ver Local en Maps
         </a>
       </div>
 
-      {/* Botón Selector: Retiro en Local vs Envío a Domicilio */}
+      {/* <!> Selector Binario Agnóstico: Eliminación de clases fijas bg-slate-* por tokens semánticos */}
       <div className={`
         /* --- Posición --- */
-        grid                         /* Sistema de grilla */
-        grid-cols-2                  /* 2 columnas iguales */
-        gap-2                        /* Espaciado entre botones */
-      `}>
+        grid
+        grid-cols-2
 
-        {/* 1. Botón para Retiro en Local */}
+        /* --- Dimensiones --- */
+        gap-2
+      `}>
+        {/* Opción 1: Retiro en Local */}
         <button
           type="button"
           onClick={() => setAddress("Retiro en Local")}
           className={`
             /* --- Posición --- */
-            flex                         /* Contenedor flexible */
-            items-center                 /* Centrado vertical */
-            justify-center               /* Centrado horizontal */
-            gap-1.5                      /* Espacio icono-texto */
+            flex
+            items-center
+            justify-center
 
             /* --- Dimensiones --- */
-            py-2.5                       /* Altura de botón cómoda */
-            px-3                         /* Padding lateral */
+            py-2.5
+            px-3
+            gap-1.5
 
-            /* --- Texto --- */
-            text-xs                      /* Tamaño estándar */
-            font-bold                    /* Negrita */
-
-            /* --- Estilo --- */
-            rounded-xl                   /* Bordes redondeados */
-            border-2                     /* Borde visible de 2px */
-
-            /* --- Colores Dinámicos --- */
+            /* --- Colores --- */
             ${isRetiro 
               ? 'bg-vete-primary text-white border-vete-primary shadow-md' 
-              : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-vete-secondary'}
+              : 'bg-vete-dark text-vete-text-base border-vete-border-subtle/50 hover:border-vete-primary/40'}
+            border-2
+
+            /* --- Texto --- */
+            text-xs
+            font-bold
+
+            /* --- Estilo --- */
+            rounded-xl
 
             /* --- Animación --- */
-            transition-all               /* Transición suave */
-            duration-200                 /* Velocidad de cambio */
-            active:scale-95              /* Efecto de pulsación */
+            transition-all
+            duration-150
+            active:scale-95
           `}
         >
           <MapPin size={14} className={isRetiro ? "text-white" : "text-vete-primary"} />
           <span>Retiro en Local</span>
         </button>
-        
-        {/* 2. Botón para Envío a Domicilio (Corregido) */}
+
+        {/* Opción 2: Envío a Domicilio */}
         <button
           type="button"
           onClick={() => {
@@ -516,32 +617,32 @@ const DeliveryAddressSection: React.FC<DeliveryAddressSectionProps> = ({
           }}
           className={`
             /* --- Posición --- */
-            flex                         /* Contenedor flexible */
-            items-center                 /* Centrado vertical */
-            justify-center               /* Centrado horizontal */
-            gap-1.5                      /* Espacio icono-texto */
+            flex
+            items-center
+            justify-center
 
             /* --- Dimensiones --- */
-            py-2.5                       /* Altura de botón cómoda */
-            px-3                         /* Padding lateral */
+            py-2.5
+            px-3
+            gap-1.5
 
-            /* --- Texto --- */
-            text-xs                      /* Tamaño estándar */
-            font-bold                    /* Negrita */
-
-            /* --- Estilo --- */
-            rounded-xl                   /* Bordes redondeados */
-            border-2                     /* Borde visible de 2px */
-
-            /* --- Colores Dinámicos --- */
+            /* --- Colores --- */
             ${!isRetiro 
               ? 'bg-vete-primary text-white border-vete-primary shadow-md' 
-              : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-vete-secondary'}
+              : 'bg-vete-dark text-vete-text-base border-vete-border-subtle/50 hover:border-vete-primary/40'}
+            border-2
+
+            /* --- Texto --- */
+            text-xs
+            font-bold
+
+            /* --- Estilo --- */
+            rounded-xl
 
             /* --- Animación --- */
-            transition-all               /* Transición suave */
-            duration-200                 /* Velocidad de cambio */
-            active:scale-95              /* Efecto de pulsación */
+            transition-all
+            duration-150
+            active:scale-95
           `}
         >
           <Truck size={14} className={!isRetiro ? "text-white" : "text-vete-primary"} />
@@ -549,31 +650,51 @@ const DeliveryAddressSection: React.FC<DeliveryAddressSectionProps> = ({
         </button>
       </div>
 
-      {/* Input Manual: Solo se muestra si NO es retiro en local */}
+      {/* Input de Dirección Asistida */}
       {!isRetiro && (
         <div className={`
           /* --- Posición --- */
           relative
+
           /* --- Animación --- */
-          animate-in fade-in slide-in-from-top-2 duration-200
+          animate-in
+          fade-in
+          slide-in-from-top-2
+          duration-200
         `}>
           <MapPin size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-vete-text-muted pointer-events-none" />
           <input 
             type="text"
             required
             autoFocus
-            placeholder="Ingresa calle, número y esquina..."
+            placeholder="Calle, número de puerta y esquina..."
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             className={`
               /* --- Dimensiones --- */
-              w-full py-2.5 pl-10 pr-4
+              w-full
+              py-2.5
+              pl-10
+              pr-4
+
               /* --- Colores --- */
-              bg-vete-dark text-vete-text-light border border-vete-light-border/40
+              bg-vete-dark
+              text-vete-text-base
+              border
+              border-vete-border-subtle/60
+              focus:border-vete-primary
+
               /* --- Texto --- */
-              text-xs font-medium placeholder:text-vete-text-muted/50
+              text-xs
+              font-medium
+              placeholder:text-vete-text-muted/60
+
               /* --- Estilo --- */
-              rounded-xl outline-none focus:border-vete-primary transition-all
+              rounded-xl
+              outline-none
+
+              /* --- Animación --- */
+              transition-all
             `}
           />
         </div>
@@ -583,50 +704,25 @@ const DeliveryAddressSection: React.FC<DeliveryAddressSectionProps> = ({
 };
 
 /* =============================================================================
-   COMPONENTE-Principal: 
+   COMPONENTE PRINCIPAL: PIE COLAPSABLE DE CHECKOUT
    ============================================================================= */
 
-/**
- * Propiedades del componente `PedidoFooterCollapsible`.
- * 
- * @interface PedidoFooterCollapsibleProps
- * @property {function(): void} onClearCart - Callback disparado al presionar el botón de vaciado de carrito (abre modal de confirmación en el padre).
- */
 interface PedidoFooterCollapsibleProps {
   onClearCart: () => void;
 }
 
-
-/**
- * Pie de página interactivo y colapsable del Drawer de Pedidos (`PedidoFooterCollapsible`).
- * 
- * Optimiza el espacio vertical mediante un panel tipo acordeón que resume el método de 
- * pago y la dirección de entrega en una sola línea compacta, permitiendo expandir los controles 
- * para su edición. Administra la construcción del mensaje de WhatsApp con formato enriquecido 
- * y la persistencia de estado del carrito vía URL.
- *
- * @component
- * @param {PedidoFooterCollapsibleProps} props - Propiedades recibidas del contenedor padre.
- * @returns {JSX.Element} Panel de control de checkout fijo en la base del drawer.
- */
 export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = ({ onClearCart }) => {
   const { pedido, total } = usePedidoStore();
-
-  /* 1. Consumo del contexto multi-tenant */
   const { config } = useConfig();
 
-  /* --- Estados Locales de Checkout --- */
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState('efectivo');
-  const [address, setAddress] = useState('Retiro en Local');  /* --- Estado inicial para dirección de entrega --- */
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [selectedMethod, setSelectedMethod] = useState<string>(PAYMENT_METHOD_IDS.EFECTIVO);
+  const [address, setAddress] = useState<string>('Retiro en Local');
 
-  /* Obtener el método de pago activo */
   const currentPayment = PAYMENT_METHODS.find(m => m.id === selectedMethod) || PAYMENT_METHODS[0];
   const CurrentIcon = currentPayment.icon;
 
-/* Manejo de Confirmación y Construcción del WhatsApp */
-  const handleConfirmOrder = () => {
-    /* Validación: Debe ser 'Retiro en Local' o tener texto ingresado */
+  const handleConfirmOrder = (): void => {
     if (address !== 'Retiro en Local' && !address.trim()) {
       alert("Por favor, ingresa una dirección de entrega válida o selecciona 'Retiro en Local'.");
       return;
@@ -637,7 +733,6 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
       return;
     }
 
-    /* 1. Teléfono dinámico del cliente activo */
     const rawPhone = config?.contact?.admin_phone || '';
     const countryCode = config?.contact?.whatsapp_country_code || '598';
     const digitsOnly = rawPhone.replace(/\D/g, '');
@@ -652,7 +747,6 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
     const timeStr = now.toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' });
     const shareUrl = window.location.href;
 
-    /* 2. Construcción Estructurada del Mensaje */
     let message = `*${prefixMsg} - ${businessName.toUpperCase()}*\n\n`;
     message += `📅 *Fecha:* ${dateStr} - ${timeStr} hs\n`;
     message += `📍 *Entrega:* ${address.trim()}\n\n`;
@@ -672,42 +766,26 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
     window.open(`https://wa.me/${finalPhone}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
-  return ( // Retorno componente ---------------------------------------------------------------------------
+  return (
     <div className={`
       /* --- Posición --- */
-      sticky                       /* Se fija en la base del drawer */
-      bottom-0                     /* Anclado abajo */
-      z-20                         /* Por encima de la lista de scroll */
-      flex                         /* Contenedor flexible */
-      flex-col                     /* Dirección vertical */
-      gap-4                        /* Espaciado interno entre filas */
+      sticky
+      bottom-0
+      z-20
+      flex
+      flex-col
 
       /* --- Dimensiones --- */
-      p-5                          /* Padding general */
+      p-5
+      gap-4
 
       /* --- Colores --- */
-      bg-vete-card-white           /* Fondo blanco/tarjeta */
-      border-t                     /* Borde superior separador */
-      border-vete-light-border     /* Color de borde institucional */
-      shadow-[0_-10px_25px_rgba(0,0,0,0.05)] /* Sombra sutil superior */
+      bg-vete-surface
+      border-t
+      border-vete-border-subtle
+      shadow-[0_-10px_25px_rgba(0,0,0,0.05)]
     `}>
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      {/* 1. BARRA INTERRUPTORA (Afuera del colapsable) */}
+      {/* 1. Barra Interruptora de Resumen */}
       {!isExpanded ? (
         <CheckoutSummaryBar 
           paymentLabel={currentPayment.label}
@@ -716,9 +794,6 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
           onExpand={() => setIsExpanded(true)}
         />
       ) : (
-
-
-        /* Botón fino centrado (Recuadro Rojo) */
         <div className="flex justify-center w-full py-0.5">
           <button
             type="button"
@@ -727,52 +802,65 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
             aria-label="Plegar menú"
             className={`
               /* --- Posición --- */
-              flex items-center justify-center gap-1
+              flex
+              items-center
+              justify-center
+
               /* --- Dimensiones --- */
-              px-4 py-1
+              px-4
+              py-1
+              gap-1
+
               /* --- Colores --- */
-              bg-vete-dark/50 text-vete-text-muted hover:text-vete-primary hover:bg-vete-dark
+              bg-vete-dark/50
+              text-vete-text-muted
+              border
+              border-vete-border-subtle/30
+              hover:text-vete-primary
+              hover:bg-vete-dark
+
+              /* --- Texto --- */
+              text-[9px]
+              font-bold
+              uppercase
+              tracking-wider
+
               /* --- Estilo --- */
-              rounded-full border border-vete-light-border/30 text-[9px] font-bold uppercase tracking-wider
+              rounded-full
+
               /* --- Animación --- */
-              transition-all duration-200 hover:scale-105
+              transition-all
+              duration-150
+              hover:scale-105
             `}
           >
             <span>Plegar</span>
             <ChevronDown size={13} className="rotate-180 transition-transform" />
           </button>
         </div>
-
-
-        // <button
-        //   type="button"
-        //   onClick={() => setIsExpanded(false)}
-        //   className="flex items-center justify-between w-full py-1.5 px-3 bg-vete-dark/40 text-vete-text-muted hover:text-vete-primary rounded-lg border border-vete-light-border/20 text-[10px] font-bold uppercase tracking-wider transition-colors"
-        // >
-        //   {/* <!> Esto es lo que yo quiero que sea mas chico solo una flecha estetica y cuado estes ensima que te muestre una lejenda si estas un rato parado  */}
-        //   <span>Ocultar Configuración</span>
-        //   <ChevronDown size={14} className="rotate-180 transition-transform" />
-        // </button>
-
-
       )}
 
-      {/* 2. CONTENEDOR COLAPSABLE CON SUB-COMPONENTES */}
+      {/* 2. Contenedor Colapsable */}
       <div className={`
         /* --- Posición --- */
-        flex flex-col gap-4 overflow-hidden
+        flex
+        flex-col
+        overflow-hidden
+
+        /* --- Dimensiones --- */
+        gap-4
+
         /* --- Animación --- */
-        transition-all duration-300
+        transition-all
+        duration-300
         ${isExpanded ? 'max-h-[500px] opacity-100 pt-1' : 'max-h-0 opacity-0 pointer-events-none'}
       `}>
-        {/* Sub-componente Pago */}
         <PaymentSelector 
           selectedMethod={selectedMethod}
           setSelectedMethod={setSelectedMethod}
           bankInfo={config?.bank_accounts?.[0]}
         />
 
-        {/* Sub-componente Dirección */}
         <DeliveryAddressSection 
           address={address}
           setAddress={setAddress}
@@ -780,41 +868,74 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
         />
       </div>
 
+      {/* 3. Total y Acciones Finales */}
+      <div className={`
+        /* --- Posición --- */
+        flex
+        flex-col
 
+        /* --- Dimensiones --- */
+        pt-2
+        gap-3
 
-      {/* 3. TOTAL PERMANENTE Y BOTONERA */}
-      <div className="flex flex-col gap-3 pt-2 border-t border-vete-light-border/30">
+        /* --- Colores --- */
+        border-t
+        border-vete-border-subtle/30
+      `}>
         <div className="flex justify-between items-baseline px-1">
-          <span className="text-[10px] font-black uppercase text-vete-text-muted tracking-widest">
+          <span className={`
+            /* --- Colores --- */
+            text-vete-text-muted
+
+            /* --- Texto --- */
+            text-[10px]
+            font-black
+            uppercase
+            tracking-widest
+          `}>
             Total a Pagar
           </span>
           <span className={`
+            /* --- Colores --- */
+            text-vete-primary
+
             /* --- Texto --- */
-            text-2xl font-black          /* Tamaño de destaque */
-            text-vete-dark-green         /* Color institucional */
+            text-2xl
+            font-black
           `}>
-            {/* Total de pedio */}
-            ${total.toLocaleString('es-UY')} 
+            ${total.toLocaleString('es-UY')}
           </span>
         </div>
 
         <div className="flex items-center gap-2.5 w-full">
-          {/* Botón Vaciar */}
+          {/* Vaciar Carrito */}
           <button 
             type="button"
             onClick={onClearCart} 
             disabled={pedido.length === 0}
             className={`
               /* --- Posición --- */
-              flex items-center justify-center
+              flex
+              items-center
+              justify-center
+
               /* --- Dimensiones --- */
               p-3.5
+
               /* --- Colores --- */
-              bg-transparent text-vete-error border-2 border-vete-error/30
+              bg-transparent
+              text-vete-error
+              border-2
+              border-vete-error/30
+              hover:bg-vete-error/10
+
               /* --- Estilo --- */
               rounded-xl
+
               /* --- Animación --- */
-              hover:bg-vete-error/10 active:scale-95 disabled:opacity-30 transition-all
+              transition-all
+              active:scale-95
+              disabled:opacity-30
             `}
             title="Vaciar Carrito"
             aria-label="Vaciar Carrito"
@@ -822,38 +943,43 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
             <Trash2 size={18} />
           </button>
 
-          {/* Botón WhatsApp Principal */}
+          {/* Confirmar Pedido WhatsApp */}
           <button
             type="button"
             onClick={handleConfirmOrder}
             disabled={pedido.length === 0}
             className={`
               /* --- Posición --- */
-              flex-1                       /* Toma el ancho restante */
-              flex                         /* flex no es necesario porque ya es flex-1 */
-              items-center                 /* centra verticalmente */
-              justify-center               /* centra horizontalmente */
-              gap-2                        /* espaciado entre elementos */
+              flex-1
+              flex
+              items-center
+              justify-center
+
               /* --- Dimensiones --- */
-              py-3.5                       /* padding vertical */
-              px-4                         /* padding horizontal */
+              py-3.5
+              px-4
+              gap-2
+
               /* --- Colores --- */
-              bg-vete-dark-green           /* color verde oscuro */
-              text-white                     /* color blanco */
+              bg-vete-primary
+              text-white
+              hover:bg-vete-primary-hover
+              shadow-lg
+              shadow-vete-primary/20
+
               /* --- Texto --- */
-              font-black                     /* negrita */
-              uppercase                      /* mayúsculas */
-              tracking-wider                 /* espaciado entre letras */
-              text-xs                        /* tamaño de texto */
+              text-xs
+              font-black
+              uppercase
+              tracking-wider
+
               /* --- Estilo --- */
-              rounded-xl                     /* bordes redondeados */
-              shadow-lg                      /* sombra */
-              shadow-vete-dark-green/20      /* color de la sombra */
+              rounded-xl
+
               /* --- Animación --- */
-              hover:bg-vete-dark-green/90    /* color al pasar el mouse */
-              active:scale-[0.98]            /* escala al hacer click */
-              disabled:opacity-40            /* opacidad al estar deshabilitado */
-              transition-all                 /* transición suave */
+              transition-all
+              active:scale-[0.98]
+              disabled:opacity-40
             `}
           >
             <span>Confirmar Pedido</span>
@@ -861,7 +987,6 @@ export const PedidoFooterCollapsible: React.FC<PedidoFooterCollapsibleProps> = (
           </button>
         </div>
       </div>
-
     </div>
   );
 };

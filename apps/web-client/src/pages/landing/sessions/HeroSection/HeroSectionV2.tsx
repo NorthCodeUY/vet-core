@@ -1,174 +1,350 @@
-/* --- apps/web-client/src/pages/landing/sessions/HeroSession.tsx --- */
+// apps/web-client/src/pages/landing/sessions/HeroSession/HeroSectionV2.tsx
 
+/* =============================================================================
+   COMPONENTE: HERO VARIANTE 2 INVERTIDO (Imagen a la Izquierda / Texto a la Derecha)
+   ============================================================================= */
 
+import React from 'react';
+import { Calendar, Sparkles } from 'lucide-react';
+import { useConfig } from '../../../../context/tenant_context';
 
 /**
- * Sección Principal (Hero) de la web.
- * Optimizada para llenar mejor el espacio en resoluciones grandes y 
- * mantener la legibilidad extrema mediante el formato multilínea.
+ * Propiedades del componente `HeroSessionV2`.
+ * 
+ * @interface HeroSessionV2Props
+ * @property {string} [bgColor='bg-transparent'] - Clase opcional de Tailwind para el fondo exterior.
  */
-export const HeroSessionV2 = ({ bgColor }: { bgColor: string }) => {
-  return (
-    <section className={`
-      /* --- Posición --- */
-      relative                     /* Base para elementos decorativos absolutos */
-      
-      /* --- Dimensiones --- */
-      w-full                       /* Ocupa todo el ancho disponible */
-      min-h-[80vh]                 /* Altura mínima para impacto visual */
-      flex                         /* Contenedor flexible */
-      items-center                 /* Centrado vertical del contenido */
+export interface HeroSessionV2Props {
+  bgColor?: string;
+}
 
-      /* --- Colores --- */
-      ${bgColor}                   /* Fondo dinámico recibido por props */
-      overflow-hidden              /* Evita que sombras o imágenes desborden */
-    `}>
-      
-      <div className={`
+/**
+ * Portada editorial invertida (`HeroSessionV2`).
+ * 
+ * Despliega la imagen institucional a la izquierda (o arriba en móviles) y el bloque
+ * de textos con llamada directa a la acción a la derecha (abajo en móviles).
+ * Soporta títulos gráficos vectoriales en SVG o tipografía masiva en HTML.
+ *
+ * @component
+ * @param {HeroSessionV2Props} props - Propiedades de configuración visual.
+ * @returns {JSX.Element} Sección Hero con disposición invertida.
+ */
+export const HeroSessionV2: React.FC<HeroSessionV2Props> = ({ bgColor = 'bg-transparent' }) => {
+  /* ---------------------------------------------------------------------------
+     1. CONSUMO DEL CONTEXTO MULTI-TENANT
+     --------------------------------------------------------------------------- */
+  const { config } = useConfig();
+  const heroData = config?.hero;
+
+  /* ---------------------------------------------------------------------------
+     2. MANEJADOR DE WHATSAPP DIRECTO
+     --------------------------------------------------------------------------- */
+  const phone = config?.contact?.admin_phone || '';
+  const cleanPhone = phone.replace(/\D/g, '');
+
+  const handleBookingClick = () => {
+    const msg = `¡Hola ${config?.business_name || ''}! Me gustaría coordinar un turno.`;
+    window.open(`https://wa.me/598${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
+  };
+
+  return (
+    <section
+      id="HeroSession"
+      className={`
         /* --- Posición --- */
-        relative                     /* Contexto para el z-index */
-        z-10                         /* Por encima de posibles fondos */
-        flex                         /* Contenedor flexible */
-        flex-col                     /* Dirección vertical en móviles */
-        
-        /*Responsive a desktop-vete*/ 
-        desktop-vete:flex-row        /* Dirección horizontal en pantallas grandes */
-        items-center                 /* Centrado de los bloques */
-        mx-auto                      /* Centrado horizontal del contenedor */
+        relative                     /* Contexto para elementos flotantes */
+        flex                         /* Layout flexible */
+        items-center                 /* Centrado vertical */
+        overflow-hidden              /* Contiene sombras y halos */
 
         /* --- Dimensiones --- */
-        max-w-[1400px]               /* Aumentado de 1200 a 1400 para llenar el desktop */
-        w-full                       /* Ocupa el ancho disponible */
-        px-6                         /* Padding lateral móvil */
-        md:px-16                     /* Padding lateral desktop */
-        py-20                        /* Espaciado vertical generoso */
-        gap-12                       /* Espacio entre texto e imagen */
-      `}>
+        w-full                       /* Ocupa el 100% del ancho */
+        min-h-[85vh]                 /* Altura de impacto visual */
 
-        {/* Bloque de Texto */}
-        <div className={`
+        /* --- Colores --- */
+        ${bgColor}                   /* Fondo dinámico recibido por props */
+      `}
+    >
+      <div
+        className={`
           /* --- Posición --- */
-          flex                         /* Contenedor flexible */
-          flex-col                     /* Alineación vertical */
-          items-center                 /* Centrado en móvil */
-          desktop-vete:items-start     /* Alineado a la izquierda en desktop */
-          
-          /* --- Dimensiones --- */
-          w-full                       /* Ancho total en móvil */
-          desktop-vete:w-1/2           /* Mitad del ancho en desktop */
-
-          /* --- Texto --- */
-          text-center                  /* Texto centrado en móvil */
-          desktop-vete:text-left       /* Texto a la izquierda en desktop */
-        `}>
-          
-          <h1 className={`
-            /* --- Texto --- */
-            text-6xl                     /* Tamaño masivo en móvil */
-            md:text-8xl                  /* Tamaño gigante en desktop para evitar vacío */
-            font-black                   /* Peso máximo de fuente */
-            leading-[0.95]               /* Altura de línea muy compacta y moderna */
-            tracking-tighter             /* Letras apretadas para estilo editorial */
-            
-            /* --- Dimensiones --- */
-            mb-8                         /* Margen inferior */
-
-            /* --- Colores --- */
-            text-vete-primary            /* Color verde principal */
-          `}>
-            <span className="whitespace-nowrap">
-              Cuidamos no vA <span className="text-vete-text-light">a</span>
-            </span> <br />
-            <span className="text-vete-text-light">quienes</span> amas
-          </h1>
-
-          <p className={`
-            /* --- Texto --- */
-            text-xl                      /* Tamaño de fuente legible */
-            md:text-2xl                  /* Más grande en desktop para llenar espacio */
-            leading-relaxed              /* Altura de línea cómoda para lectura */
-            font-medium                  /* Peso medio */
-            
-            /* --- Dimensiones --- */
-            max-w-xl                     /* Límite de ancho para no cansar la vista */
-
-            /* --- Colores --- */
-            text-vete-text-light         /* Color claro de la paleta */
-            opacity-90                   /* Suavizado leve */
-          `}>
-            Tu mascota merece la mejor atención médica en un ambiente cálido y
-            profesional. Contamos con especialistas comprometidos con el bienestar
-            integral de tus compañeros.
-          </p>
-
-          {/* Botones de Acción (Opcional, para mejorar el CTA) <!> Esto me gusta pero tendria que agregarle una accion y mejorar el boton */}
-          <div className="flex gap-4 mt-10">
-             <button className={`
-                /* --- Dimensiones --- */
-                px-8 py-4
-                /* --- Colores --- */
-                bg-vete-primary text-white
-                /* --- Estilo --- */
-                rounded-2xl font-bold shadow-xl
-                /* --- Animación --- */
-                hover:scale-105 transition-transform
-             `}>
-                Agendar Cita
-             </button>
-          </div>
-        </div>
-
-        {/* Bloque de Imagen */}
-        <div className={`
-          /* --- Posición --- */
-          hidden                       /* Oculto en móviles */
-          desktop-vete:flex            /* Visible solo en desktop */
-          justify-end                  /* Alineado al extremo derecho */
-          relative                     /* Para efectos decorativos */
+          relative                   /* Contexto para z-index */
+          z-10                       /* Por encima de fondos */
+          flex                       /* Layout flexible */
+          flex-col                   /* Columna en móvil (Imagen arriba, texto abajo) */
+          lg:flex-row                /* Fila en escritorio (Imagen izquierda, texto derecha) */
+          items-center               /* Centrado vertical */
+          justify-between            /* Distribución a los extremos */
+          mx-auto                    /* Centrado horizontal automático */
 
           /* --- Dimensiones --- */
-          w-full                       /* Ancho total */
-          desktop-vete:w-1/2           /* Mitad del ancho */
-        `}>
-          <img
-            src="/tenant/hero.png"
-            alt="Mascotas Beltramelli"
+          max-w-[1400px]             /* Límite de ancho para monitores amplios */
+          w-full                     /* Ocupa el ancho disponible */
+          px-6                       /* Padding lateral móvil */
+          md:px-16                   /* Padding lateral escritorio */
+          py-16                      /* Espaciado vertical */
+          gap-12                     /* Separación uniforme entre columnas */
+
+        `}
+      >
+        {/* ===================================================================
+           1. COLUMNA DE IMAGEN (Izquierda en PC / Arriba en Celular)
+           =================================================================== */}
+        <div
+          className={`
+            /* --- Posición --- */
+            relative                 /* Contexto interno para el resplandor */
+            flex                     /* Centrado flexbox */
+            items-center             /* Centrado vertical */
+            justify-center           /* Centrado en móvil */
+            lg:justify-start         /* Pegado a la izquierda en escritorio */
+
+            /* --- Dimensiones --- */
+            w-full                   /* Ancho completo en móvil */
+            lg:w-1/2                 /* 50% del ancho en escritorio */
+
+          `}
+        >
+          {/* Marco Editorial de la Imagen */}
+          <div
             className={`
+              /* --- Posición --- */
+              relative               /* Contexto */
+
               /* --- Dimensiones --- */
-              w-full                   /* Ocupa el ancho del contenedor */
-              max-w-[650px]            /* Límite para que no sea gigante */
-              h-auto                   /* Mantiene proporción */
-              max-h-[800px]            /* Límite de altura */
+              w-full                 /* Ancho adaptativo */
+              max-w-[340px]          /* Tamaño controlado en móvil */
+              sm:max-w-[420px]       /* Tamaño en tablets */
+              lg:max-w-[620px]       /* Gran escala en escritorio */
+              h-auto                 /* Proporcional */
 
               /* --- Estilo --- */
-              rounded-[4rem]           /* Bordes muy redondeados (Figma style) */
-              shadow-2xl               /* Sombra profunda para dar relieve */
-              object-cover             /* Asegura que la imagen llene el espacio */
-              border-[12px]            /* Marco grueso */
-              border-white/10          /* Color del marco traslúcido */
+              overflow-hidden        /* Contiene la imagen */
+
+            `}
+          >
+            <img
+              src="/tenant/hero.png"
+              alt={`Portada ${config?.business_name || 'Comercio'}`}
+              className={`
+
+                /* --- Dimensiones --- */
+                w-full               /* Ocupa todo el marco */
+                h-auto               /* Altura automática */
+                max-h-[750px]        /* Límite de altura */
+
+                /* --- Estilo --- */
+                object-cover         /* Sin deformación */
+
+                /* --- Animación --- */
+                hover:scale-105      /* Zoom sutil al pasar el cursor */
+                transition-transform /* Transición fluida */
+                duration-500         /* 500ms */
+              `}
+            />
+          </div>
+
+          {/* Resplandor Neón Decorativo de Fondo */}
+          <div
+            className={`
+              /* --- Posición --- */
+              absolute               /* Flotante */
+              -bottom-6              /* Posición inferior */
+              -left-6                /* Posición izquierda */
+              z-[-1]                 /* Detrás de la imagen */
+
+              /* --- Dimensiones --- */
+              w-64                   /* Ancho de 16rem */
+              h-64                   /* Alto de 16rem */
+
+              /* --- Colores --- */
+              bg-vete-primary/20     /* Color de resplandor de marca */
+
+              /* --- Estilo --- */
+              rounded-full           /* Círculo */
+              blur-3xl               /* Difuminado suave */
+
+              /* --- Animación --- */
             `}
           />
-          
-          {/* Elemento decorativo para llenar el vacío */}
-          <div className={`
-            /* --- Posición --- */
-            absolute -bottom-6 -left-6
-            z-[-1]
-            /* --- Dimensiones --- */
-            w-64 h-64
-            /* --- Colores --- */
-            bg-vete-primary/20
-            /* --- Estilo --- */
-            rounded-full blur-3xl
-          `} />
         </div>
 
+        {/* ===================================================================
+           2. COLUMNA DE TEXTOS Y BOTÓN (Derecha en PC / Abajo en Celular)
+           =================================================================== */}
+         <div
+          className={`
+            /* --- Posición --- */
+            relative                 /* Contexto z-index */
+            z-30                     /* CAPA SUPERIOR: Por encima de la animación */
+            flex                     /* Layout flexible */
+            flex-col                 /* Disposición vertical */
+            items-center             /* Centrado en móvil */
+            lg:items-start           /* A la izquierda en escritorio */
+
+            /* --- Dimensiones --- */
+            w-full                   /* Ancho completo móvil */
+            lg:w-1/2                 /* 50% en escritorio */
+            max-w-xl                 /* Límite de ancho para no desbordar */
+            gap-6                    /* Separación vertical */
+
+            /* --- Colores --- */
+
+            /* --- Texto --- */
+            text-center              /* Centrado en móvil */
+            lg:text-left             /* Izquierda en desktop */
+
+            /* --- Animación --- */
+          `}>   
+
+          {/* Título: Soporta Imagen SVG o Texto con Formato HTML */}
+
+          {heroData?.title_image_url ? (
+            <img
+              src={heroData.title_image_url}
+              alt={config?.business_name || 'Título'}
+              className={`
+                /* --- Posición --- */
+
+                /* --- Dimensiones --- */
+                w-full               /* Ancho adaptativo */
+                max-w-md             /* Límite de ancho */
+                h-auto               /* Mantiene proporción */
+                mb-2                 /* Margen inferior */
+
+                /* --- Colores --- */
+                filter               /* Habilita filtros */
+                drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] /* Sombra negra que separa el título del fondo */
+
+                /* --- Estilo --- */
+                object-contain       /* Ajuste proporcional */
+
+                /* --- Animación --- */
+              `}
+            />
+          ) : (
+
+            <h1
+              dangerouslySetInnerHTML={{
+                __html:
+                  heroData?.title_html ||
+                  'Cuidamos <span class="text-vete-primary">a quienes</span> amas',
+              }}
+              className={`
+                /* --- Posición --- */
+
+                /* --- Dimensiones --- */
+                mb-2                 /* Margen inferior */
+
+                /* --- Colores --- */
+                text-vete-text-base  /* Color tipográfico principal */
+
+                /* --- Texto --- */
+                text-4xl             /* Tamaño móvil */
+                sm:text-6xl          /* Tamaño intermedio */
+                lg:text-7xl          /* Tamaño gigante en escritorio */
+                font-black           /* Grosor 900 */
+                leading-[0.98]       /* Altura de línea compacta */
+                tracking-tight       /* Espaciado cerrado */
+
+                /* --- Animación --- */
+              `}
+            />
+          )}
+
+          {/* Bajada Descriptiva */}
+{/* Bajada Descriptiva con Fondo Compacto (Sin cortes en letras descendentes) */}
+          <p
+            className={`
+              /* --- Posición --- */
+
+              /* --- Dimensiones --- */
+              w-fit                  /* Se ajusta exactamente al ancho del texto */
+              max-w-lg               /* Límite cómodo de lectura */
+              px-4                   /* Padding horizontal suave */
+              py-3                   /* Padding vertical uniforme */
+
+              /* --- Colores --- */
+              bg-vete-dark/95        /* TAPA 100% la animación con el fondo del tema */
+              text-vete-text-muted   /* Color tipográfico secundario legible */
+              shadow-2xl             /* Sombra profunda que despega el texto */
+
+              /* --- Estilo --- */
+              rounded-2xl            /* Bordes redondeados continuos */
+
+              /* --- Texto --- */
+              text-base              /* Tamaño estándar */
+              md:text-lg             /* Tamaño destacado */
+              leading-relaxed        /* Altura de línea natural (no corta la 'g' ni la 'p') */
+              font-medium            /* Grosor medio (500) */
+
+              /* --- Animación --- */
+            `}
+          >
+            {heroData?.description ||
+              'Servicios especializados y atención personalizada diseñados para tu total satisfacción.'}
+          </p>
+
+
+
+
+
+          {/* Botonera de Acción */}
+          <div
+            className={`
+              /* --- Posición --- */
+              flex                   /* Layout flexible */
+              items-center           /* Centrado vertical */
+
+              /* --- Dimensiones --- */
+              pt-2                   /* Margen superior */
+
+            `}
+          >
+            <button
+              type="button"
+              onClick={handleBookingClick}
+              className={`
+                /* --- Posición --- */
+                flex                 /* Flexbox */
+                items-center         /* Centrado vertical */
+                gap-3                /* Espacio icono-texto */
+
+                /* --- Dimensiones --- */
+                px-8                 /* Padding horizontal amplio */
+                py-4                 /* Padding vertical cómodo */
+
+                /* --- Colores --- */
+                bg-vete-primary      /* Fondo de marca */
+                hover:bg-vete-primary-hover /* Oscurecimiento en hover */
+                text-white           /* Texto blanco en contraste */
+                shadow-xl            /* Sombra profunda */
+                shadow-vete-primary/25 /* Resplandor institucional */
+
+                /* --- Texto --- */
+                text-xs              /* Tamaño compacto */
+                font-black           /* Grosor 900 */
+                uppercase            /* Mayúsculas */
+                tracking-wider       /* Espaciado de letras */
+
+                /* --- Estilo --- */
+                rounded-2xl          /* Bordes redondeados */
+
+                /* --- Animación --- */
+                transition-all       /* Transición suave */
+                duration-200         /* 200ms */
+                hover:scale-105      /* Elevación sutil */
+                active:scale-95      /* Pulsación táctil */
+              `}
+            >
+              <Calendar size={18} />
+              <span>Agendar Cita</span>
+            </button>
+          </div>
+        </div>
       </div>
     </section>
   );
 };
 
 export default HeroSessionV2;
-
-
-

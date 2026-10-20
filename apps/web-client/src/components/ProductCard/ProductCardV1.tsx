@@ -240,7 +240,7 @@ export function ProductCardV1({ producto }: Props) {
       {/* Descripcion del producto (Con Scroll Interno sin desaparecer) */}
       <p className={`
         /* --- Texto --- */
-        text-vete-text-light        /* Color oscuro para legibilidad */
+        text-vete-text-base        /* Color oscuro para legibilidad */
         text-xs sm:text-sm          /* Tamaño de fuente pequeño */
         
         /* --- Scroll Interno --- */

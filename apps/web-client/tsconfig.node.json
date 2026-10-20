@@ -1,31 +1,83 @@
-// apps/web-client/tsconfig.node.json
-
 /**
- *  Configura cómo se compila tu código de TypeScript en archivos de configuración de Vite (.ts) 
-*/
+ * @fileoverview Configuración del Compilador TypeScript para Entorno Node.js (tsconfig.node.json)
+ * 
+ * Este archivo aísla el contexto tipográfico del entorno de desarrollo y construcción
+ * (herramientas que se ejecutan sobre Node.js, como `vite.config.ts`), separándolo 
+ * intencionalmente del código fuente que corre en el navegador (`tsconfig.app.json`).
+ * 
+ * @see https://www.typescriptlang.org/tsconfig
+ */
 {
   "compilerOptions": {
+    /* =========================================================================
+       1. ENTORNO DE EJECUCIÓN Y CACHÉ INCREMENTAL
+       ========================================================================= */
+
+    // Ruta donde se almacena la caché de compilación incremental para acelerar builds
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+
+    // Versión de JavaScript de destino adaptada a runtimes modernos de Node.js (Node 20+)
     "target": "ES2023",
+
+    // Bibliotecas globales disponibles en el entorno (excluye el DOM del navegador)
     "lib": ["ES2023"],
+
+    // Sistema de módulos nativo ECMAScript (import / export)
     "module": "ESNext",
+
+    // Inyecta exclusivamente los tipos globales del ecosistema Node.js (process, __dirname, Buffer)
     "types": ["node"],
+
+    // Omite la comprobación exhaustiva de tipos en archivos .d.ts de node_modules para optimizar velocidad
     "skipLibCheck": true,
 
-    /* Bundler mode */
+    /* =========================================================================
+       2. MODO EMPAQUETADOR (Vite / Esbuild Resolution)
+       ========================================================================= */
+
+    // Estrategia de resolución de módulos optimizada para empaquetadores modernos (Vite/Rollup)
     "moduleResolution": "bundler",
+
+    // Permite importar archivos especificando extensiones TypeScript explícitas (.ts/.tsx)
     "allowImportingTsExtensions": true,
+
+    // Exige 'import type' para importaciones que solo usan tipos, evitando que lleguen al runtime
     "verbatimModuleSyntax": true,
+
+    // Fuerza a que todo archivo sea tratado como un módulo ESM independiente
     "moduleDetection": "force",
+
+    // TypeScript solo analiza y valida tipos; no emite archivos .js (la transpilación la hace Vite)
     "noEmit": true,
 
-    /* Linting */
+    /* =========================================================================
+       3. REGLAS ESTRICTAS DE CALIDAD Y ANÁLISIS ESTÁTICO (Linting)
+       ========================================================================= */
+
+    // Activa todas las verificaciones estrictas de tipado (garantiza cero 'any' implícitos)
     "strict": true,
+
+    // Emite error si detecta variables locales declaradas pero nunca utilizadas
     "noUnusedLocals": true,
+
+    // Emite error si una función recibe parámetros que no se leen en su cuerpo
     "noUnusedParameters": true,
+
+    // Asegura que solo se use sintaxis de TypeScript que pueda borrarse limpiamente en runtime
     "erasableSyntaxOnly": true,
+
+    // Evita la caída accidental entre casos ('case') de un bloque 'switch' sin break o return
     "noFallthroughCasesInSwitch": true,
+
+    // Valida que las importaciones por efectos secundarios (ej: import './config') apunten a archivos reales
     "noUncheckedSideEffectImports": true
   },
-  "include": ["vite.config.ts"]
+
+  /* ===========================================================================
+     4. ALCANCE DE ARCHIVOS (Scope)
+     =========================================================================== */
+  // Limita esta configuración estrictamente al archivo de construcción de Vite
+  "include": [
+    "vite.config.ts"
+  ]
 }

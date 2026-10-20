@@ -1,98 +1,161 @@
-// apps/web-client/src/pages/landing/LlandingPage.tsx
+// /apps/web-client/src/pages/landing/LlandingPage.tsx
 
+/* =============================================================================
+   PÁGINA PRINCIPAL: ORQUESTADOR DE LANDING PAGE MULTI-TENANT
+   ============================================================================= */
 
-import { ServiceCard } from '../../components/ServiceCard.tsx';
+import React, { useMemo } from 'react';
+import { useConfig } from '../../context/tenant_context';
 
-import { PlanCard } from '../../components/PlanCard.tsx';
-import { SectionDivider } from '../../components/SectionDivider.tsx';
-import { WhatsAppButton } from '../../components/WhatsAppButtonProps.tsx';
+/* --- Componentes de Infraestructura Visual --- */
+import { SectionDivider } from '../../components/SectionDivider';
+import { AmbientScrollAnimation } from '../../components/animations/AmbientScrollAnimation';
+import { FloatingBottomBar } from '../../components/FloatingBottomBar';
 
+/* --- Módulos Seccionales de la Landing --- */
+import HeaderSession from './sessions/HederSession';
+import HeroSession from './sessions/HeroSession';
+import ProductsSession from './sessions/ProductsSession';
+import ServicioSession from './sessions/ServicioSession';
+import { PlanSession } from './sessions/PlanSession';
+import MapsSession from './sessions/MapsSession';
+import FooterSession from './sessions/FooterSession';
 
+interface ActiveSectionDefinition {
+  id: string;
+  renderComponent: (bgColor: string) => React.ReactNode;
+  groupWithPrevious?: boolean;
+}
 
-// <!> Esto creo que no va aca 
-// import { PedidoProvider } from '../../context/pedido_context.tsx'; // Importa el proveedor
+type SectionThemeVariant = 'secondary' | 'dark';
 
-import { Clock, Stethoscope, Mail, MapPin, Phone, Instagram, Facebook } from 'lucide-react';
+interface ProcessedSection extends ActiveSectionDefinition {
+  currentTheme: SectionThemeVariant;
+  previousTheme: SectionThemeVariant;
+  isFirst: boolean;
+}
 
-// Secciones de la web
-import ProductsSession from './sessions/ProductsSession.tsx'; // Seccion de productos
-import HeaderSession from './sessions/HederSession.tsx'; // Seccion de productos
-import HeroSession from './sessions/HeroSession.tsx';
-import MapsSession from './sessions/MapsSession.tsx'; // Seccion de productos
-import Footer from './sessions/FooterSession.tsx';
-import ServicioSession from './sessions/ServicioSession.tsx';
-import { PlanSession } from './sessions/PlanSession.tsx';
-import { AboutSection } from './sessions/AboutSection.tsx'; 
+export default function LandingPage(): React.JSX.Element {
+  const { config } = useConfig();
 
-export default function LandingPage() {
+  const hasHero = Boolean(config?.features?.has_hero);
+  const hasProducts = Boolean(config?.features?.has_products);
+  const hasServices = Boolean(config?.features?.has_services && config?.services_section?.items?.length);
+  const hasPlans = Boolean(config?.features?.has_health_plans && config?.plans_section?.items?.length);
+  const hasMaps = Boolean(config?.features?.has_locations);
+  const hasDividers = Boolean(config?.features?.has_dividers);
+  const hasFloatingBottomBar = Boolean(config?.features?.has_floating_bottom_bar);
+
+  /* Pipeline de secciones activas */
+  const activeSectionsPipeline = useMemo<ActiveSectionDefinition[]>(() => {
+    const pipeline: ActiveSectionDefinition[] = [];
+
+    if (hasHero) pipeline.push({ id: 'HeroSession', renderComponent: (bg) => <HeroSession bgColor={bg} /> });
+    if (hasProducts) pipeline.push({ id: 'ProductsSession', renderComponent: (bg) => <ProductsSession bgColor={bg} /> });
+    if (hasServices) pipeline.push({ id: 'ServicioSession', renderComponent: (bg) => <ServicioSession bgColor={bg} /> });
+    if (hasPlans) {
+      pipeline.push({
+        id: 'PlanSession',
+        renderComponent: (bg) => <PlanSession bgColor={bg} />,
+        groupWithPrevious: hasServices,
+      });
+    }
+    if (hasMaps) pipeline.push({ id: 'MapsSection', renderComponent: (bg) => <MapsSession bgColor={bg} /> });
+
+    return pipeline;
+  }, [hasHero, hasProducts, hasServices, hasPlans, hasMaps]);
+
+  /* Alternador dinámico de contrastes */
+  const renderedSections = useMemo<ProcessedSection[]>(() => {
+    let activeColor: SectionThemeVariant = 'secondary';
+
+    return activeSectionsPipeline.map((section, index) => {
+      const isFirst = index === 0;
+
+      if (!isFirst && !section.groupWithPrevious) {
+        activeColor = activeColor === 'secondary' ? 'dark' : 'secondary';
+      }
+
+      const previousColor: SectionThemeVariant =
+        activeColor === 'secondary' ? 'dark' : 'secondary';
+
+      return {
+        ...section,
+        currentTheme: activeColor,
+        previousTheme: previousColor,
+        isFirst,
+      };
+    });
+  }, [activeSectionsPipeline]);
+
   return (
-    /* Agregamos overflow-x-hidden para evitar la franja lateral */
-    <div className="bg-vete-dark min-h-screen font-sans text-vete-text-light overflow-x-hidden w-full relative border-0 m-0 p-0">
-
-      {/* --- 1. Componente de Header --- */}
-      <HeaderSession bgColor='bg-vete-secondary' />
-
-      <main className={`
-        /* <!> Esto tendria que mejorarlo queda demaciado espacio para con el heder
-        si lo dejo a pt a 4 me gusta pero a una resolucion de 767 de anco se parte lo dejo asi asi avansao */
+    <div
+      className={`
         /* --- Posición --- */
-        relative                     /* Mantiene el flujo del documento */
+        relative
+        w-full
+        min-h-screen
+        m-0
+        p-0
+        bg-vete-dark
+        text-vete-text-base
+        font-sans
+        overflow-x-hidden
+      `}
+    >
+      {/* =====================================================================
+         CAPA 5 (z-[45]): ANIMACIÓN AMBIENTAL VOLUMÉTRICA
+          z-[45] con pointer-events-none: Flota por encima del Footer (z-40) 
+         sin cortarse en mobile, permitiendo hacer clic en cualquier enlace del footer
+         ===================================================================== */}
+      {config?.features?.has_background_animation && (
+        <AmbientScrollAnimation />
+      )}
 
-        /* --- Dimensiones --- */
-        pt-24                        /* FIX: Compensa los 96px (h-24) del Header fixed */
-        md:pt-24                    /* FIX: Compensa los 96px (h-24) del Header fixed */
-   
-        `}>
+      {/* CAPA 6 (z-50): HEADER FIJO */}
+      <HeaderSession bgColor="bg-vete-secondary" />
 
+      {/* CUERPO PRINCIPAL */}
+      <main className="relative w-full pt-24">
+        {renderedSections.map((sec) => {
+          const isCurrentSecondary = sec.currentTheme === 'secondary';
+          const isPreviousSecondary = sec.previousTheme === 'secondary';
 
-        <section id="HeroSession">
-          <HeroSession bgColor='bg-vete-secondary' />
-        </section>
+          const currentBgClass = isCurrentSecondary ? 'bg-vete-secondary' : 'bg-vete-dark';
+          const dividerTopColor = isPreviousSecondary ? 'bg-vete-secondary' : 'bg-vete-dark';
+          const dividerBottomColor = isCurrentSecondary ? 'text-vete-secondary' : 'text-vete-dark';
 
-        <section id="ProductsSession">
-          {/* separador V1*/}
-          <SectionDivider
-            topColor="bg-vete-dark"
-            bottomColor="text-vete-secondary"
-          />
-          {/* Productos */}
-          <ProductsSession bgColor='bg-vete-dark' />
-        </section>
+          return (
+            <section
+              key={sec.id}
+              id={sec.id}
+              className={`relative w-full ${currentBgClass}`}
+            >
+              {hasDividers && !sec.isFirst && !sec.groupWithPrevious && (
+                <div className="relative z-0">
+                  <SectionDivider
+                    topColor={dividerTopColor}
+                    bottomColor={dividerBottomColor}
+                    isReversed={true}
+                  />
+                </div>
+              )}
 
-        <section id="ServicioSeccion">
-          {/* separador V2*/}
-          <SectionDivider
-            topColor="bg-vete-secondary"
-            bottomColor="text-vete-dark"
-          />
-          {/* Seccion de programas de bienestar animal */}
-          <ServicioSession bgColor='bg-vete-secondary' />
-        </section>
-        
-        <section id="PlanSession">
-          {/* Seccion de programas de bienestar animal  <!>Anda per agregr ala clase para que qude igual debe estar eredando algo */}
-          <PlanSession/>
-
-          {/* separador V1*/}
-          <SectionDivider
-            topColor="bg-vete-dark"
-            bottomColor="text-vete-secondary"
-          />
-        </section>
-
-
-
-
-
-        <section id="MapsSection">
-          {/* Seccion de mapa */}
-          <MapsSession bgColor='bg-vete-secondary' />
-        </section>
-
+              <div className="relative z-20">
+                {sec.renderComponent('bg-transparent')}
+              </div>
+            </section>
+          );
+        })}
       </main>
 
-      {/* Seccion inverior de la web Contacto etc*/}
-      <Footer bgColor='bg-vete-secondary' />
+
+      {/* Me falata el selector <!> Si no esta por defecto tiene que apareser */}
+      { hasFloatingBottomBar && (
+        <FloatingBottomBar/>
+      )}
+
+      <FooterSession bgColor="bg-vete-dark" />
     </div>
-  )
-};
+  );
+}

@@ -29,9 +29,40 @@ apps/web-client/src/pages/landing/
     ├── FooterSession.tsx        # Pie de página corporativo con contacto y barra de emergencia
     └── descarteSession.tsx      # [Borrador/Auxiliar] Sección de pruebas temporales
 ```
+<!-- <!> Ahay que actializar la estructura superior -->
 
 ---
+<!--. config.json (Tenants) 
+   │
+   ▼
+2. activeSectionsPipeline[] 
+   └── Filtra sólo lo que está en 'true' en features.
+   │
+   ▼
+3. renderedSections[] (Máquina de color)
+   ├── Sección 0: Hero      ──> secondary (Verde)
+   ├── Sección 1: Productos ──> dark (Crema)   [Onda: Verde arriba -> Crema abajo]
+   ├── Sección 2: Servicios ──> secondary (Verde) [Onda: Crema arriba -> Verde abajo]
+   ├── Sección 3: Planes    ──> secondary (Verde) [Sin onda: groupWithPrevious=true]
+   └── Sección 4: Mapas     ──> dark (Crema)   [Onda: Verde arriba -> Crema abajo]
+   │
+   ▼
 
+   ┌────────────────────────────────────────────────────────┐
+ │ Header Fijo                ──> z-[60] (Arriba de todo) │
+ │ Footer                     ──> z-[55] (Tapa la barra)  │
+ │ Barra Flotante (WhatsApp)  ──> z-[50] (Sobre el 3D)   │ ◄── [CORREGIDO]
+ │ Animación 3D Ambiental     ──> z-[40] (Bajo la barra)  │ ◄── [CORREGIDO]
+ │ Textos y Botones de Página ──> z-20                    │
+ │ Fondos y Divisores SVG     ──> z-0                     │
+ └────────────────────────────────────────────────────────┘
+4. Render en el DOM
+   - Cada sección dibuja su onda de entrada correcta antes de sus tarjetas.
+   
+   Esto esta bueno para agrearlo la coninacion de colores ademas hayu que empesar a documetar la parte de la agnosticacion
+   
+   
+    -->
 ## 📐 Arquitectura de Componentes y Flujo de Secciones
 
 El componente maestro [`LlandingPage.tsx`](LlandingPage.tsx) ensambla verticalmente cada sección dentro de un contenedor principal, inyectando propiedades de color (`bgColor`) y divisores estilizados:

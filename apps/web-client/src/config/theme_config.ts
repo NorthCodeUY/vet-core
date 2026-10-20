@@ -1,5 +1,8 @@
 // apps/web-client/src/config/theme_config.ts
 
+
+// <!> Mejorar documentacion 
+
 // <!> Por lo que entendi utiliso los que traje de type_tenatd  para 
 // pasalo a las variables de colores y impotar la paleta de el carrito 
 // Mejoralo como cometiario de paquete para saber par que se destina este

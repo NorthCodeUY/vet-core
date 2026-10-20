@@ -120,64 +120,118 @@ Para garantizar que el diseño responda dinámicamente al cliente activo, los co
 A continuación se detalla la estructura del cliente web y su integración con el directorio de clientes multi-tenant:
 
 ```text
+
 vet-core/
 ├── 📁 clientes/                           # 🏢 Directorio de clientes multi-tenant
-│   ├── 📁 _template/                     # ✅ Plantilla base con config.json documentado y assets de ejemplo
-│   │   ├── 📄 config.json
-│   │   └── 📁 assets/                    # (logo.png, hero.png, mision.png, etc.)
-│   ├── 📁 valeria/                        # Datos e imágenes de cliente real
-│   └── 📁 flavia_esponda/                 # Datos e imágenes de otro cliente real
-│
+│   ├── 📁 _template/                     # ✅ Plantilla base con config.json y assets
 └── 📁 apps/web-client/
     ├── 📄 package.json                    # Dependencias y scripts CLI de tenant
-    ├── 📄 vite.config.ts                  # Configuración de Vite 8 y servidor de desarrollo
+    ├── 📄 vite.config.ts                  # Configuración de Vite y servidor de desarrollo
     ├── 📄 tailwind.config.js              # Configuración de Tailwind CSS con colores dinámicos
     ├── 📄 dockerfile                      # Dockerfile para compilación NGINX SPA
     ├── 📄 docker-compose.yml              # Despliegue con montaje de volúmenes por cliente
-    │
     ├── 📁 public/                         # Archivos estáticos servidos dinámicamente
     │   ├── 📁 config/
-    │   │   └── 📄 client_info.json        # 🔄 Configuración activa del cliente en runtime
-    │   └── 📁 tenant/                     # 🔄 Recursos gráficos activos del cliente (/tenant/logo.png)
-    │
+    │   │   └── 📄 client_info.json        # Configuración activa del cliente en runtime
+    │   ├── 📁 tenant/                     # Recursos gráficos activos del cliente
+    │   └── 📁 assets/                     # 🎨 Recursos globales y branding compartidos
+    │       ├── 📁 animations/
+    │       │   └── 📄 maintenance.json
+    │       ├── 📁 branding/
+    │       │   ├── 📄 caballo.svg
+    │       │   ├── 📄 guella.svg
+    │       │   ├── 📄 SeccionPrincipalFondo.svg
+    │       │   ├── 📄 terminacionInferior.svg
+    │       │   └── 📄 WhatSapp_Cuadrado.svg
+    │       └── 📄 producto_no_disponible.png
     ├── 📁 scripts/
     │   └── 📄 switch-tenant.js            # Script CLI Node.js para alternar cliente activo
-    │
     └── 📁 src/
         ├── 📄 App.tsx                     # Enrutador principal (React Router DOM v7)
-        ├── 📄 main.tsx                    # Punto de entrada React 19 / Vite
+        ├── 📄 main.tsx                    # Punto de entrada React / Vite
         ├── 📄 index.css                   # Directivas Tailwind y variables CSS (:root)
-        │
+        ├── 📄 vite-env.d.ts               # Tipado global de Vite
         ├── 📁 config/                     # Configuraciones del cliente
         │   ├── 📄 theme_config.ts         # Inyector dinámico de variables CSS Hex -> RGB
         │   └── 📄 ui-config.ts            # Constantes y parámetros de UI
-        │
         ├── 📁 context/                    # Estado Global de React
-        │   ├── 📄 tenant_context.tsx      # Proveedor de configuración del tenant (TenantProvider / useConfig)
+        │   ├── 📄 tenant_context.tsx      # Proveedor de configuración del tenant
         │   ├── 📄 pedido_context.tsx      # Estado global del carrito de compras
         │   └── 📄 auth_context.tsx        # Contexto de autenticación
+        ├── 📁 types/                      # Tipos estrictos TypeScript
+        │   ├── 📄 useProducts.ts          # Búsqueda, filtrado y ordenamiento de catálogo
+        │   └── 📄 useAddressManagement.ts # Gestión de direcciones de entrega
         │
-        ├── 📁 types/                      # Tipos estricto TypeScript
-        │   ├── 📄 tenant_types.ts         # Contrato e interfaces del archivo config.json (TenantConfig)
+        ├── 📁 services/                   # Cliente HTTP e Infraestructura
+        │   ├── 📄 useProducts.ts          # Búsqueda, filtrado y ordenamiento de catálogo
+        │   └── 📄 useAddressManagement.ts # Gestión de direcciones de entrega
+        │
+        ├── 📁 services/                   # Cliente HTTP e Infraestructura
+        │   ├── 📄 product_service.ts      # Consumo de API REST (FastAPI)
+        │   ├── 📄 auth_service.ts         # Servicios de autenticación y tokens
+        │   └── 📄 logger.ts               # Registrador de eventos de sistema
+        │
+        ├── 📁 mapper/                     # Mapeador de datos DTO -> Modelos Frontend
+        │   └── 📄 product_mapper.ts       # Transformación de respuesta API Backend
+        │
+        └── 📁 utils/                      # Utilidades y funciones auxiliares
+            └── 📄 categoryHelpers.tsx     # Ayudantes para filtrado y manejo de categorías
+  ├── 📄 product_service.ts      # Consumo de API REST (FastAPI)
+        │   ├── 📄 auth_service.ts         # Servicios de autenticación y tokens
+        │   └── 📄 logger.ts               # Registrador de eventos de sistema
+        │
+        ├── 📁 mapper/                     # Mapeador de datos DTO -> Modelos Frontend
+        │   └── 📄 product_mapper.ts       # Transformación de respuesta API Backend
+        │
+        └── 📁 utils/                      # Utilidades y funciones auxiliares
+            └── 📄 categoryHelpers.tsx     # Ayudantes para filtrado y manejo de categorías
+  ├── 📄 tenant_types.ts         # Contrato e interfaces de config.json
         │   ├── 📄 product_types.ts        # Interfaces de productos y categorías
         │   ├── 📄 pedido_types.ts         # Estructuras de pedido y carrito
+        │   ├── 📄 payment_types.ts        # Tipos de pasarela y métodos de pago
         │   └── 📄 auth.ts                 # Tipos de sesión de usuario
         │
         ├── 📁 pages/                      # Páginas y Vistas Principales
         │   ├── 📁 landing/                # 🏠 Módulo Landing Page
         │   │   ├── 📄 LlandingPage.tsx    # Orquestador visual principal
-        │   │   ├── 📄 README.md           # 📖 Documentación detallada del Módulo Landing
-        │   │   └── 📁 sessions/           # Sub-secciones (Header, Hero, Products, Services, Maps, Footer)
+        │   │   ├── 📄 README.md           # Documentación del Módulo Landing
+        │   │   └── 📁 sessions/           # Sub-secciones modulares
+        │   │       ├── 📄 AboutSection.tsx
+        │   │       ├── 📄 HeaderSession.tsx
+        │   │       ├── 📄 HeroSection/    # Variantes de Hero (V1, V2, V3, V4)
+        │   │       │   ├── 📄 HeroSectionV1.tsx
+        │   │       │   ├── 📄 HeroSectionV2.tsx
+        │   │       │   ├── 📄 HeroSectionV3.tsx
+        │   │       │   └── 📄 HeroSectionV4.tsx
+        │   │       ├── 📄 MapsSession.tsx
+        │   │       ├── 📄 PlanSession.tsx
+        │   │       ├── 📄 ProductsSession.tsx
+        │   │       └── 📄 ServicioSession.tsx
         │   ├── 📁 pedido/                 # 🛒 Módulo Pedidos y Carrito
         │   │   ├── 📄 PedidoDrawer.tsx    # Drawer lateral de checkout
-        │   │   └── 📄 README.md           # 📖 Documentación detallada del Módulo Pedidos
+        │   │   ├── 📄 PedidoItemRow.tsx   # Fila de producto en el carrito
+        │   │   ├── 📄 PedidoFooterCollapsible.tsx # Pie de carrito colapsable
+        │   │   └── 📄 README.md           # Documentación del Módulo Pedidos
+        │   ├── 📁 cliente/                # 👤 Módulo de Gestión de Clientes
+        │   │   └── 📄 register_cliente.tsx# Registro y alta de clientes finales
         │   └── 📁 maintenance/            # Vista de mantenimiento temporal
+        │       └── 📄 MaintenancePage.tsx
         │
         ├── 📁 components/                 # Componentes UI reutilizables
+        │   ├── 📁 animations/             # Componentes de efectos visuales y scroll
+        │   │   └── 📄 AmbientScrollAnimation.tsx
         │   ├── 📁 ProductCard/            # Tarjetas de productos (Variantes V1 y V2)
+        │   │   ├── 📄 ProductCard.tsx
+        │   │   ├── 📄 ProductCardV1.tsx
+        │   │   └── 📄 ProductCardV2.tsx
+        │   ├── 📁 studio/                 # Panel flotante de configuración interna / Studio
+        │   │   └── 📄 TenantStudioDrawer.tsx
+        │   ├── 📄 CategoryGroupCard.tsx   # Tarjeta de agrupación por categorías
+        │   ├── 📄 ConfirmationModal.tsx   # Modal genérico de confirmación
         │   ├── 📄 SectionDivider.tsx      # Divisor SVG animado con colores dinámicos
         │   ├── 📄 ServiceCard.tsx         # Tarjeta genérica de servicios con icono
         │   ├── 📄 PlanCard.tsx            # Tarjeta de paquetes y promociones
+        │   ├── 📄 WhatsAppButtonProps.tsx # Tipado/Interfaces para botones de WhatsApp
         │   └── 📄 WhatsAppDynamicButton.tsx # Botón interactivo directo a WhatsApp
         │
         ├── 📁 hooks/                      # Custom Hooks / Fachadas de Negocio
@@ -186,10 +240,39 @@ vet-core/
         │
         ├── 📁 services/                   # Cliente HTTP e Infraestructura
         │   ├── 📄 product_service.ts      # Consumo de API REST (FastAPI)
+        │   ├── 📄 auth_service.ts         # Servicios de autenticación y tokens
         │   └── 📄 logger.ts               # Registrador de eventos de sistema
         │
-        └── 📁 mapper/                     # Mapeador de datos DTO -> Modelos Frontend
-            └── 📄 product_mapper.ts       # Transformación de respuesta API Backend
+        ├── 📁 mapper/                     # Mapeador de datos DTO -> Modelos Frontend
+        │   └── 📄 product_mapper.ts       # Transformación de respuesta API Backend
+        │
+        └── 📁 utils/                      # Utilidades y funciones auxiliares
+            └── 📄 categoryHelpers.tsx     # Ayudantes para filtrado y manejo de categorías
+
+
+<!> Agregalo a las estructuras. de la documetnacion 
+
+/clients/_template 
+.
+├── assets
+│   ├── animations
+│   │   └── hero_animation.json
+│   ├── carrito.svg
+│   ├── hero.png
+│   ├── logo.png
+│   ├── logo.svg
+│   ├── mision.png
+│   ├── nav.png
+│   ├── producto_no_disponible.png
+│   ├── valores.png
+│   └── vision.png
+├── config.json
+├── generator.html
+├── generator.js
+├── PaletaColores.svg
+└── preview copy.html
+
+
 ```
 
 ---

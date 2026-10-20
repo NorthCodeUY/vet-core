@@ -1,10 +1,26 @@
-# /apps/web-client/docker-compose.yml
+# =============================================================================
+# ORQUESTACIÓN MULTI-TENANT DE FRONTEND (Silo Architecture)
+# =============================================================================
+# Archivo: apps/web-client/docker-compose.yml
+# 
+# Despliega instancias independientes de la aplicación React 19 empaquetada
+# bajo NGINX. Implementa el patrón "Zero-Rebuild": una única imagen inmutable 
+# ('vetcore-web-client:latest') sirve a múltiples clientes inyectando su 
+# configuración ('config.json') y recursos multimedia ('assets/') en caliente 
+# mediante volúmenes de solo lectura (:ro).
+# =============================================================================
 
 networks:
+  # Red puente externa compartida para enlazar con NGINX Proxy Manager,
+  # túneles de Cloudflare y los contenedores de backend transaccional.
   northcode-net:
     external: true
 
-# Configuración base de construcción local
+# -----------------------------------------------------------------------------
+# PLANTILLA DE CONSTRUCCIÓN COMPARTIDA (YAML Anchor)
+# -----------------------------------------------------------------------------
+# Compila la imagen base de React una única vez en local. Las instancias de los 
+# clientes reutilizan la imagen compilada sin generar overhead de almacenamiento.
 x-frontend-base: &frontend-build
   build:
     context: .
@@ -13,8 +29,10 @@ x-frontend-base: &frontend-build
 
 services:
   # ===========================================================================
-  # CLIENTE 1: Valeria Beltramelli (Frontend + Backend activo)
+  # CLIENTE 1: Veterinaria Beltramelli (Clínica Veterinaria / Con Backend Activo)
   # ===========================================================================
+  # Puerto Host: 8081 -> Enrutado por Proxy Reverso hacia 'veterinaria.dominio.com'
+  # Perfil: Catálogo dinámico con sincronización de stock y base de datos propia.
   front-valeria:
     <<: *frontend-build
     container_name: nc-web-valeria
@@ -22,16 +40,21 @@ services:
     ports:
       - "8081:80"
     environment:
+      # Nombre del servicio/contenedor backend exclusivo de Valeria en la red Docker
       - BACKEND_HOST=backend-vet-bel:8000
     volumes:
-      - ../../clients/valeria_beltramelli/config.json:/usr/share/nginx/html/config/client_info.json:ro
-      - ../../clients/valeria_beltramelli/assets:/usr/share/nginx/html/tenant:ro
+      # Inyección en Runtime de Identidad y Paleta Semántica
+      - ../../clients/veterinariabeltrameli/config.json:/usr/share/nginx/html/config/client_info.json:ro
+      # Inyección de Logotipos, Banners y Recursos Multimedia
+      - ../../clients/veterinariabeltrameli/assets:/usr/share/nginx/html/tenant:ro
     networks:
       - northcode-net
 
   # ===========================================================================
-  # CLIENTE 2: Malandro Barber (Frontend Standalone / Sin Backend)
+  # CLIENTE 2: Malandro Barber (Estudio de Barbería / Modo Standalone)
   # ===========================================================================
+  # Puerto Host: 8082 -> Enrutado por Proxy Reverso hacia 'barber.dominio.com'
+  # Perfil: Vitrina institucional con turnos vía WhatsApp (Cero consumo de DB/RAM).
   front-malandrobarber:
     <<: *frontend-build
     container_name: nc-web-malandrobarber
@@ -39,16 +62,21 @@ services:
     ports:
       - "8082:80"
     environment:
+      # Host loopback seguro: Deshabilita el proxy de API al no requerir backend
       - BACKEND_HOST=127.0.0.1:80
     volumes:
+      # Inyección de configuración temática oscura/roja
       - ../../clients/malandrobarber/config.json:/usr/share/nginx/html/config/client_info.json:ro
+      # Assets de barbería (Videos WebM transparentes y logotipos)
       - ../../clients/malandrobarber/assets:/usr/share/nginx/html/tenant:ro
     networks:
       - northcode-net
 
   # ===========================================================================
-  # CLIENTE 3: Flor de Loto (Frontend Standalone / Tienda)
+  # CLIENTE 3: Flor de Loto (Boutique de Indumentaria / Modo Standalone)
   # ===========================================================================
+  # Puerto Host: 8083 -> Enrutado por Proxy Reverso hacia 'flordeloto.dominio.com'
+  # Perfil: Catálogo de prendas y checkout de pedidos directos a WhatsApp.
   front-flordeloto:
     <<: *frontend-build
     container_name: nc-web-flordeloto
@@ -56,10 +84,12 @@ services:
     ports:
       - "8083:80"
     environment:
+      # Host loopback seguro: Pedidos procesados en cliente vía WhatsApp
       - BACKEND_HOST=127.0.0.1:80
     volumes:
-      # Sangría corregida y carácter 'º' eliminado
+      # Inyección de configuración temática rosa pastel / magenta
       - ../../clients/flordeloto/config.json:/usr/share/nginx/html/config/client_info.json:ro
+      # Assets de indumentaria y catálogo gráfico
       - ../../clients/flordeloto/assets:/usr/share/nginx/html/tenant:ro
     networks:
       - northcode-net

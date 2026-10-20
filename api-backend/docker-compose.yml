@@ -1,58 +1,62 @@
 # api-backend/docker-compose.yml
-services:
-  postgres-cluster:
-    image: postgres:15
-    container_name: vetcore_postgres_cluster
-    restart: always
-    environment:
-      POSTGRES_USER: ary
-      POSTGRES_PASSWORD: hmq7381
-      POSTGRES_DB: default_db
-      POSTGRES_MULTIPLE_DATABASES: vet_beltramelli_db,flor_de_loto_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_cluster_data:/var/lib/postgresql/data
-      - ./init-scripts/init-multi-db.sh:/docker-entrypoint-initdb.d/init-multi-db.sh:ro
-    networks:
-      - northcode-net
 
+# Definición de la versión de especificación de servicios Docker
+services:
+
+  # ---------------------------------------------------------------------------
+  # TENANT 1: BACKEND VETERINARIA BELTRAMELLI
+  # ---------------------------------------------------------------------------
   backend-veterinaria:
+    # Contexto de construcción: usa el Dockerfile ubicado en la raíz actual
     build: .
+    # Asigna un nombre estático y legible al contenedor en Docker
     container_name: backend_vet_beltramelli
+    # Reinicia automáticamente el contenedor si el proceso falla o se reinicia el servidor
     restart: always
     ports:
+      # Mapeo de puertos: Host (8001) -> Contenedor (8001)
       - "8001:8001"
     env_file:
+      # Inyecta las variables de entorno específicas de este cliente
       - .env.veterinaria
-    depends_on:
-      - postgres-cluster
     volumes:
+      # Sincroniza el código fuente local con el contenedor (desarrollo/hot-reload)
       - ./app:/app/app
+      # Monta la carpeta física de imágenes aislada para Veterinaria
       - ./static/veterinaria:/app/static
     networks:
+      # Conecta el contenedor a la red compartida donde ya vive tu base de datos
       - northcode-net
 
+  # ---------------------------------------------------------------------------
+  # TENANT 2: BACKEND VESTIMENTA FLOR DE LOTO
+  # ---------------------------------------------------------------------------
   backend-flordeloto:
+    # Reutiliza exactamente la misma imagen base / Dockerfile
     build: .
+    # Asigna nombre unívoco para el segundo tenant
     container_name: backend_vestimenta_flordeloto
+    # Política de alta disponibilidad en caso de caídas
     restart: always
     ports:
+      # Mapeo de puertos: Host (8002) -> Contenedor (8002)
       - "8002:8002"
     env_file:
+      # Inyecta las variables de entorno de la tienda de ropa
       - .env.flordeloto
-    depends_on:
-      - postgres-cluster
     volumes:
+      # Comparte la misma base de código Python
       - ./app:/app/app
+      # Monta la carpeta física de imágenes aislada para Flor de Loto
       - ./static/flordeloto:/app/static
     networks:
+      # Ambos backends conviven en la misma red privada de Docker
       - northcode-net
 
+# -----------------------------------------------------------------------------
+# RED PRIVADA EXISTENTE
+# -----------------------------------------------------------------------------
 networks:
   northcode-net:
-    external: true
-
-volumes:
-  postgres_cluster_data:
+    # Indica que la red ya existe en tu sistema y Docker no debe intentar crearla
     external: true

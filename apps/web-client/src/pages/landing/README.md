@@ -29,7 +29,30 @@ apps/web-client/src/pages/landing/
     ├── FooterSession.tsx        # Pie de página corporativo con contacto y barra de emergencia
     └── descarteSession.tsx      # [Borrador/Auxiliar] Sección de pruebas temporales
 ```
-<!-- <!> Ahay que actializar la estructura superior -->
+<!-- 
+
+
+Real Y agregale comentario a cada modulo 
+.
+├── LlandingPage.tsx
+├── README.md
+└── sessions
+    ├── AboutSection.tsx
+    ├── FooterSession.tsx
+    ├── HederSession.tsx
+    ├── HeroSection
+    │   ├── HeroSectionV1.tsx
+    │   ├── HeroSectionV2.tsx
+    │   ├── HeroSectionV3.tsx
+    │   └── HeroSectionV4.tsx
+    ├── HeroSession.tsx
+    ├── MapsSession.tsx
+    ├── PlanSession.tsx
+    ├── ProductsSession.tsx
+    └── ServicioSession.tsx
+
+
+<!> Ahay que actializar la estructura superior -->
 
 ---
 <!--. config.json (Tenants) 

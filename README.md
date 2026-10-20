@@ -1,9 +1,9 @@
 <!-- README.MD -->
 # VetCore & NorthCode SaaS Engine
 
-🐾 **Ecosistema Agnóstico Multi-Rubro by [NorthCode](https://northcode-uy.com/)**
+ **Ecosistema Agnóstico Multi-Rubro by [NorthCode](https://northcode-uy.com/)**
 
-> **<!> NOTA DE EVOLUCIÓN ARQUITECTÓNICA:**  
+> **NOTA DE EVOLUCIÓN ARQUITECTÓNICA:**  
 > Aunque la plataforma nació originalmente para la gestión clínica y e-commerce veterinario (**Veterinaria Beltramelli**), el sistema evolucionó hacia un **Motor Agnóstico Multi-Rubro White-Label**. Permite desplegar sitios web, catálogos interactivos, listas de servicios y carritos de compra con cierre de pedido por WhatsApp para **cualquier tipo de comercio o rubro** (clínicas, petshops, ferreterías, tiendas de retail, etc.).
 
 ---
@@ -20,7 +20,7 @@
 ## 🚀 Características Principales
 
 ### Fase 1: Identidad & Presencia Digital Multi-Cliente (Agnóstica)
-- **Landing Page High-Performance**: Desarrollada en React 19 + Tailwind CSS con tematización dinámica en tiempo de ejecución (Zero-Rebuild).
+- **Landing Page High-Performance**: Desarrollada en **React 19 + Tailwind CSS** con tematización dinámica en tiempo de ejecución (Zero-Rebuild).
 - **Catálogo Dinámico & Servicios**: Visualización de productos y servicios configurable por JSON para cualquier rubro comercial.
 - **Módulo de Contacto Directo & WhatsApp**: Conversión inmediata con atención directa configurada por cliente.
 
@@ -40,7 +40,7 @@
 
 - **Frontend Cliente**: React 19 + TypeScript + Tailwind CSS (Inyección de branding en runtime vía JSON).
 - **Backend API**: FastAPI (Python 3.12) + SQLAlchemy 2.0 + Pydantic v2.
-- **Portal Administrativo**: Flutter (Dart) — *<!> En desarrollo futuro para administración centralizada multi-tienda*.
+- **Portal Administrativo**: Flutter (Dart)
 - **Infraestructura**: Docker, Docker Compose, Nginx Proxy Manager, PostgreSQL.
 - **Comunicación**: WhatsApp Business API.
 
@@ -53,6 +53,7 @@
 ├── apps/
 │   └── web-client/            # Frontend React (E-commerce y Portal Clientes)
 ├── api-backend/               # Backend FastAPI (REST API, SQLAlchemy, Pydantic)
+├── admin-dashboard/           # Portal Administrativo (Flutter / En desarrollo)
 ├── clients/                   # Plantillas y datos de configuración por cliente (Zero-Rebuild)
 │   ├── _template/             # Estructura base para nuevos clientes (config.json + assets)
 │   └── valeria/               # Assets y marcas de cliente específico
@@ -110,32 +111,6 @@ flowchart TD
 2. **Un Contenedor Backend por Carrito/Cliente**: Se reutiliza la **misma imagen de Docker** (`vetcore-backend:latest`), configurada vía variables de entorno (`DB_NAME`, `SECRET_KEY`, `ALLOWED_ORIGINS`, `APP_PORT`).
 3. **Un Contenedor Frontend Web por Carrito/Cliente**: Se reutiliza la **misma imagen de Docker** (`vetcore-frontend:latest`), inyectando el `config.json` y los assets por volumen de Docker.
 4. **Portal Administrativo Unificado en Flutter**: Desarrollado independientemente en Flutter para la gestión central de catálogo, stock y pedidos.
-
----
-
-## 🧠 Guía Paso a Paso para Agnostizar el Backend (Comentarios <!> para Desarrollador)
-
-Para terminar de agnostizar el backend sin modificar el código Python existente, sigue esta lista de tareas:
-
-<!-- <!> PUNTOS DE VERIFICACIÓN Y AGNOSTIZACIÓN BACKEND -->
-
-- [ ] **<!> Paso 1: Configurar Variables de Entorno por Instancia (`.env`)**  
-  Asegurar que cada contenedor tenga su `DB_NAME` propia (ej: `vet_db_beltramelli`), clave `SECRET_KEY` única y `ALLOWED_ORIGINS` configurado con los dominios permitidos.
-
-- [ ] **<!> Paso 2: Aislar Carpetas de Imágenes Estáticas**  
-  Mapear en `docker-compose.yml` el volumen `./storage/<cliente>/productos:/app/app/static/productos` para que los archivos multimedia subidos no se mezclen entre tiendas.
-
-- [ ] **<!> Paso 3: Ingesta de Catálogo Inicial por Comercio**  
-  Cargar la plantilla Excel específica del cliente mediante el comando:
-  ```bash
-  docker exec -it backend-vet-beltramelli python -m app.services.import_excel
-  ```
-
-- [ ] **<!> Paso 4: Ajustar Nginx Proxy Manager / SSL**  
-  Redirigir las solicitudes públicas HTTPS desde el dominio del cliente (ej: `veterinaria-beltramelli.com`) hacia el puerto del contenedor frontend correspondiente.
-
-- [ ] **<!> Paso 5: Desarrollar e Integrar el Portal Admin en Flutter**  
-  Construir la app en Flutter para autenticarse contra `/api/auth/login` y gestionar productos y pedidos consumiendo la URL base de cada cliente.
 
 ---
 
@@ -198,6 +173,7 @@ networks:
 volumes:
   postgres_data_droplet:
 ```
+<!-- <!> Estaria buejno que esto linkee y que muestre nuestro codigo real no se si se puede aser que una ventama muiestre en ese frmtao pero linkiado estaria bueno  -->
 
 ---
 

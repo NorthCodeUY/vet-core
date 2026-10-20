@@ -271,32 +271,6 @@ Queda prohibido el uso de nombres de colores fijos de Tailwind (`bg-blue-600`, `
 ---
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## 🛠️ Guía de Operación Diaria y Comandos CLI
 
 ### 1. Ejecución en Desarrollo Local (Vite)

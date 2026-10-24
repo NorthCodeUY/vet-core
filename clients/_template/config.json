@@ -1,97 +1,159 @@
-// clientes/_template/config.json
 {
   // Control de versión del esquema de configuración (para futuras migraciones de plataforma)
   "_version": "1.0.0",
-  // Identificador único del cliente (usado para logs, cabeceras de API y analítica)
+
+  // Identificador único del cliente (usado para logs, cabeceras de API y Docker)
   "id": "valeria_beltramelli",
+
   // Nombre comercial que se muestra en títulos de pestaña, header y pie de página
   "business_name": "Veterinaria Beltramelli",
+
   // Eslogan institucional con formato segmentado (útil para cabeceras y meta tags de SEO)
   "slogan": {
     "prefix": "Cuidado profesional para",
     "highlight": "Tus Mascotas",
     "suffix": "en Salto"
   },
+
   // ===========================================================================
   // PALETA DE COLORES MULTI-TENANT (Inyectada dinámicamente en :root del DOM)
   // Valores estrictamente en formato Hexadecimal (#RRGGBB).
   // ===========================================================================
   "theme": {
     // 1. MARCA & LLAMADAS A LA ACCIÓN (CTA)
-    "primary": "#275D9E", // Botones principales, enlaces activos, iconos destacados
-    "primary_hover": "#1E4B82", // Estado hover exclusivo del botón principal
-    "secondary": "#daebd4", // Color secundario (Badges, etiquetas, acentos de apoyo)
-    "tertiary": "#1FAF38", // Color exclusivo para canales de WhatsApp y llamadas
+    "primary": "#275D9E",         // Botones principales, enlaces activos, iconos destacados
+    "primary_hover": "#1E4B82",   // Estado hover exclusivo del botón principal
+    "secondary": "#daebd4",       // Color secundario (Badges, etiquetas, acentos de apoyo)
+    "tertiary": "#1FAF38",        // Color exclusivo para canales de WhatsApp y llamadas
     // 2. FONDOS & ESTRUCTURA VISUAL
-    "dark": "#fdfdf1", // Fondo estructural oscuro (Header, Footers, modales, draweres)
-    "surface": "#FFFFFF", // Fondo de tarjetas de producto, inputs y áreas de contenido
-    "soft": "#649353", //  #DBECD5 Tinte suave de marca (Fondos de secciones alternadas, chips pasivos)
-    "overlay": "#000000", // Capa oscura para backdrop de modales y menús móviles
+    "dark": "#004D40",            // Fondo estructural oscuro (Header, Footers, modales, draweres)
+    "surface": "#FFFFFF",         // Fondo de tarjetas de producto, inputs y áreas de contenido
+    "soft": "#DBECD5",            // Tinte suave de marca (Fondos de secciones alternadas, chips pasivos)
+    "overlay": "#000000",         // Capa oscura para backdrop de modales y menús móviles
     // 3. JERARQUÍA TIPOGRÁFICA (Legibilidad)
-    "text_base": "#000000", // Texto principal de lectura y títulos (Alto contraste)
-    "text_muted": "#000000", // Texto secundario, subtítulos, fechas y placeholders
+    "text_base": "#000000",       // Texto principal de lectura y títulos (Alto contraste)
+    "text_muted": "#64748B",      // Texto secundario, subtítulos, fechas y placeholders
     // 4. BORDES & ALERTAS
-    "border_subtle": "#E2E8F0", // Líneas divisorias suaves y bordes de tarjetas
-    "error": "#DC2626" // Acciones destructivas (Vaciar carrito, urgencias 24h, alertas)  
+    "border_subtle": "#E2E8F0",   // Líneas divisorias suaves y bordes de tarjetas
+    "error": "#DC2626"            // Acciones destructivas (Vaciar carrito, urgencias 24h, alertas)  
   },
 
   // Rutas estandarizadas de logotipos e iconos servidos desde la carpeta /tenant/
   "branding": {
-    "logo_url": "/tenant/logo.png", // Icono de la empresa 
-    "hero_animation_url": "/tenant/animations/hero_animation.json" // Lottie del heroe 
-
-    // <!> Yo tengo el disneio del logo en png si sire para cosas en espesifico lo agrego  
-    // "favicon_url": "/tenant/favicon.ico" // <!> Por haora no lo uso luevo voe para agregarlo cmo deberia eser de reosolucion 
+    "logo_url": "/tenant/logo.png",
+    "hero_animation_url": "/tenant/animations/hero_animation.json",
+    "background_animation_url": "/tenant/barber_pole.webm"
   },
+
   // Selector de variantes de diseño para componentes modulares
   "ui_variants": {
-    "header": "v1", // Variante visual de la barra de navegación superior
-    "footer": "v1", // Variante visual del pie de página
-    "product_card": "v2", // Variante visual de la tarjeta de producto en el catálogo
-    "hero": "v1" // Variante visual de la portada principal
-  },
-  // Interruptores de activación/desactivación de módulos en la interfaz
-  "features": {
-    "has_cart": true, // true: activa el carrito y drawer de pedidos | false: solo catálogo informativo
-    "has_products": true, // true: activa la sección de productos | false: oculta la sección
-    "has_appointments": false, // <!> ni idea cual es este formulario / true: muestra botón y formulario de reserva de turnos | false: oculta reservas
-    "has_health_plans": true, // true: muestra la sección de planes/suscripciones | false: oculta la sección
-    "has_services": true, // true: muestra la sección de servicios ofrecidos | false: oculta la sección
-    "has_emergency_button": true, // <!> Terminar de configurar true: activa el botón flotante de urgencias 24h en pantalla y en seccion mapas 
-    "has_locations": true, // true: muestra la sección de ubicacion 
-    "has_hero": true, // true: muestra la sección del hero | false: oculta la sección
-    "has_floating_bottom_bar": true, // <!> no lo programe true: muestra la barra de navegación flotante | false: oculta la barra de navegación flotante
-    "has_dividers": true // <!> no lo programe true: muestra los divisores | false: oculta los divisores
-
-    /* <!> mEJORAR COMENTARIOS 
-    
-      // Interruptores de Módulos (Sin servicios ni planes, con catálogo y mapa)
-  "features": {
-    "has_cart": true,             // Carrito de compras y pedidos activo
-    "has_products": true,         // Catálogo de indumentaria visible
-    "has_services": false,        // ❌ Desactivado para tienda de ropa
-    "has_health_plans": false,    // ❌ Desactivado para tienda de ropa
-    "has_appointments": false,    // ❌ Sin reservas de turnos
-    "has_emergency_button": false,// ❌ Sin botón de urgencias médicas
-    "has_locations": true,        // ✅ Ubicación y mapa del local físico
-    "has_hero": true,             // ✅ Portada principal activa
-    "has_floating_bottom_bar": false, // ❌ Desactivado Menú tradicional
-    "has_dividers": false,        // Diseño limpio sin ondas decorativas
-    "has_background_animation": false // Sin animación 3D de fondo
+    "header": "v1",               // Variante visual de la barra de navegación superior
+    "footer": "v1",               // Variante visual del pie de página
+    "product_card": "v2",         // Variante visual de la tarjeta de producto en el catálogo
+    "hero": "v1",                 // Variante visual de la portada principal (v1: foto/modal, v2: cita, v3: lottie, v4: video 3D)
+    "portfolio_card": "v1"        // Variante visual para tarjetas de galería o portafolio
   },
 
-    */ 
+  // Interruptores de activación/desactivación de módulos en la interfaz (Features)
+  "features": {
+    "has_cart": true,                  // ✅ true: activa el carrito y drawer de pedidos | false: solo catálogo
+    "has_products": true,              // ✅ true: activa la sección de catálogo de productos
+    "has_services": true,              // ✅ true: muestra la sección de servicios ofrecidos
+    "has_health_plans": true,          // ✅ true: muestra la sección de planes, membresías o suscripciones
+    "has_appointments": false,         // ❌ false: muestra módulo de reservas de turnos online
+    "has_emergency_button": true,      // ✅ true: activa el botón de urgencias 24h en pantalla y mapas
+    "has_portfolio": false,            // ❌ false: activa galería visual de trabajos realizados
+    "has_locations": true,             // ✅ true: muestra la sección de ubicación física y mapa
+    "has_hero": true,                  // ✅ true: muestra la sección principal de portada (Hero)
+    "has_floating_bottom_bar": true,   // ✅  true: activa la barra flotante de accesos rápidos inferior
+    "has_dividers": true,              // ✅ true: activa ondas curvas SVG entre secciones | false: diseño plano
+    "has_background_animation": false  // ❌ false: activa animación 3D de fondo reactiva al scroll
   },
-  // Contenido de la sección de portada (Hero) con soporte de etiquetas HTML
+
+  // Contenido de la sección de portada (Hero)
   "hero": {
-    "title_image_url": "/tenant/hero-title1.png", // <!> Agregar una imagen en .png o .svg para el titulo del hero, se ubica arriba del titulo de texto "Cuidamos a quienes am".
+    "title_image_url": "/tenant/hero-title1.png",
     "title_html": "<span class='text-vete-primary'>Cuidamos</span> a quienes <span class='text-vete-primary'>amas</span>",
     "description": "Tu mascota merece la mejor atención médica en un ambiente cálido y profesional. Contamos con especialistas comprometidos con el bienestar integral de tus compañeros, brindando cuidado, dedicación y confianza en cada etapa de su vida.",
-    "has_section_dividers": false // Determina si dejo visivel el divisor
+    "has_section_dividers": false
   },
+
+
+
+
+
+
+
+
+
+
+
+
+  // ===========================================================================
+  // MÓDULO SHOWCASE: TRABAJOS DE BARBERÍA (3 CORTES CON FOTOS Y VIDEO)
+  // ===========================================================================
+
+  "portfolio_section": {
+    "title_html": "Nuestros <span class='text-vete-primary'>Trabajos</span>",
+    "description": "Técnica, perfilados de navaja y terminaciones de precisión realizadas en nuestro estudio de Artigas.",
+    "items": [
+      {
+        "id": "corte-low-fade",
+        "title": "Low Fade & Crop Texturizado",
+        "description": "Degradado bajo limpio a navaja con textura superior y fijación profesional efecto mate.",
+        "category": "Corte Moderno",
+        "media": [
+          { "type": "video", "url": "/tenant/trabajos/1-video.mp4" }
+        ],
+        "whatsapp_message": "¡Hola Malandro Barber! Vi el video del *Low Fade Texturizado* en la web y me gustaría coordinar un turno para hacerme ese corte."
+      },
+      {
+        "id": "corte-skin-fade-barba",
+        "title": "Skin Fade & Ritual de Barba",
+        "description": "Degradado a cero pulido, perfilado de barba tradicional con toalla caliente y aceites hidratantes.",
+        "category": "Combo Completo",
+        "media": [
+          { "type": "video", "url": "/tenant/trabajos/2-video.mp4" }
+        ],
+        "whatsapp_message": "¡Buenas! Me interesa el servicio de *Skin Fade & Ritual de Barba*. ¿Qué horarios tienen disponibles esta semana?"
+      },
+      {
+        "id": "corte-taper-fade",
+        "title": "Taper Fade & Freestyle Line",
+        "description": "Desvanecimiento en patillas y nuca manteniendo volumen lateral, acompañado de diseño de líneas a navaja.",
+        "category": "Freestyle Urbano",
+        "media": [
+          { "type": "image", "url": "/tenant/trabajos/3-1.png" },
+          { "type": "image", "url": "/tenant/trabajos/3-3.png" },
+          { "type": "video", "url": "/tenant/trabajos/3-video.mp4" }
+        ],
+        "whatsapp_message": "¡Hola! Vi las fotos y video del *Taper Fade con Diseño* en la web y quiero consultar disponibilidad para un corte similar."
+      }
+    ]
+  },  
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // Módulo de Servicios ofrecidos por la veterinaria o comercio
   "services_section": {
-    "title_image_url": "/tenant/services-title1.png", // <!> Agregar una imagen en .png o .svg para el titulo del hero, se ubica arriba del titulo de texto "Nuestros ".
+    "title_image_url": "/tenant/services-title1.png",
     "title_html": "Nuestros <span class='text-vete-primary'>Servicios</span>",
     "description": "Atención médica integral, diagnósticos precisos y cuidados preventivos para cada etapa de vida.",
     "items": [
@@ -103,7 +165,7 @@
       },
       {
         "id": "cirugia-general",
-        "title": "Cirugía General",
+        "title": "Cirugia General",
         "description": "Quirófano equipado para cirugías de tejidos blandos, esterilizaciones y procedimientos de urgencia.",
         "icon_name": "Activity"
       },
@@ -121,6 +183,7 @@
       }
     ]
   },
+
   // Secciones institucionales estructuradas (Misión, Visión, Valores)
   "institutional": {
     "sections": [
@@ -147,12 +210,13 @@
       }
     ]
   },
+
   // Sección de Planes, Suscripciones o Paquetes Promocionales
   "plans_section": {
-    "title_image_url": "/tenant/plans-title1.png", // <!> Agregar una imagen en .png o .svg para el titulo del hero, se ubica arriba del titulo de texto "Programas de ".
+    "title_image_url": "/tenant/plans-title1.png",
     "title_html": "Programas de <span class='text-vete-primary'>Bienestar Animal</span>",
     "description": "Planes diseñados para asegurar la salud preventiva de tus animales a lo largo de toda su vida.",
-    "has_section_dividers": true, // Determina si dejo visivel el divisor
+    "has_section_dividers": true,
     "items": [
       {
         "id": "salud-preventiva",
@@ -207,16 +271,16 @@
       }
     ]
   },
+
   // Datos de contacto, horarios y geolocalización
   "contact": {
     "admin_phone": "096368021",
     "emergency_phone": "096368021",
     "whatsapp_country_code": "598",
     "email": "valeriabeltramelli.vet@gmail.com",
+    "city_label": "Salto, Uruguay",
     "address": "Calle 1 N°5657, Barrio Volcán, Salto, Uruguay",
-    // 🗺️ URL OFICIAL PARA EL IFRAME (Muestra el cartel oficial de la empresa en el mapa)
     "google_maps_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3391.385317789498!2d-57.9095582!3d-31.3913822!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95addd9a108eada5%3A0x6ad0891a40c05da3!2sVeterinaria%20Beltramelli!5e0!3m2!1ses!2suy!4v1710000000000!5m2!1ses!2suy",
-    // 📍 ENLACE DIRECTO (Abre la ficha completa con fotos, reseñas y horarios como en la imagen 2)
     "google_maps_direct_url": "https://www.google.com/maps/place/Veterinaria+Beltramelli/@-31.3913822,-57.9095582,17z/data=!3m1!4b1!4m6!3m5!1s0x95addd9a108eada5:0x6ad0891a40c05da3!8m2!3d-31.3913822!4d-57.9069779!16s%2Fg%2F11nw3mj4vv?hl=es-ES",
     "schedule": {
       "weekdays": "Lunes a Sábados: 08:00 – 20:00",
@@ -228,6 +292,7 @@
       "tiktok": "https://www.tiktok.com/@beltramelliuy"
     }
   },
+
   // Cuentas bancarias soportadas (permite una o múltiples cuentas para liquidación)
   "bank_accounts": [
     {
@@ -243,6 +308,7 @@
       "beneficiary": "Veterinaria Beltramelli"
     }
   ],
+
   // Formas de pago soportadas (permite una o múltiples formas de pago para liquidación)
   "payment_methods": {
     "efectivo": true,
@@ -250,6 +316,7 @@
     "tarjeta": true,
     "mercadopago": false
   },
+
   // Plantillas de texto para la generación de mensajes de WhatsApp
   "custom_messages": {
     "whatsapp_contact_label": "Agendar Turno",
@@ -258,10 +325,11 @@
     "pos_payment_note": "Pago con débito/crédito al entregar (solicitar POS)",
     "transfer_note": "Adjuntaré comprobante por este medio"
   },
-  // Datos para la seccion Maps en landig page 
+
+  // Datos para la sección de Ubicación en landing page
   "location_section": {
-    "title_image_url": "/tenant/location-title1.png", // <!> Agregar una imagen en .png o .svg para el titulo del hero, se ubica arriba del titulo de texto "¿Dónde estamos?".
-    "title_html": "¿<span class='text-vete-text-base'> Dónde estamos</span>?",
+    "title_image_url": "/tenant/location-title1.png",
+      "title_html": "¿<span class='text-vete-text-base'> Dónde estamos</span>?",
     "description_html": "Te esperamos con <span class='font-bold'>instalaciones de primera</span>, atención personalizada y equipamiento especializado."
   }
 }

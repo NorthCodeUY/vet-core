@@ -73,12 +73,14 @@ export interface BrandingConfig {
  * @property {string} footer - Identificador de variante de pie de página ('v1' | 'v2').
  * @property {string} product_card - Identificador de tarjeta de producto ('v1' | 'v2').
  * @property {string} hero - Identificador de portada principal ('v1' | 'v2').
+ * @property {string} portfolio_card - Identificador de tarjeta de trabajo ('v1' | 'v2').
  */
 export interface UIVariantsConfig {
   header: string;
   footer: string;
   product_card: string;
   hero: string;
+  portfolio_card: string;
 }
 
 /**
@@ -95,6 +97,7 @@ export interface UIVariantsConfig {
  * @property {boolean} has_navbarFloating - Habilita la barra de navegación flotante. Flotante <!> Esto no lo programe 
  * @property {boolean} has_hero - Habilita la sección del hero. <!> Esto no lo programe 
  * @property {boolean} has_dividers - Habilita los divisores. <!> Esto no lo programe
+ * @property {boolean} has_portfolio - Habilita la sección de trabajos/portfolio.
 */
 export interface FeaturesConfig {
   has_cart: boolean;
@@ -109,6 +112,7 @@ export interface FeaturesConfig {
   has_dividers: boolean; 
   has_floating_bottom_bar: boolean; /* 👈 Activa o desactiva el botón flotante de abajo */
   has_background_animation: boolean; /* 👈 Activa o desactiva la animación ambiental de fondo */
+  has_portfolio: boolean; /* 👈 Activa o desactiva la sección de trabajos/portfolio */
 }
 
 /**
@@ -166,6 +170,141 @@ export interface ServicesSectionConfig {
   icon_image_url?: string;  
   items: ServiceItem[];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// <!> Nuevo a probar 
+/**
+ * Elemento multimedia asociado a un trabajo realizado.
+ * 
+ * @interface PortfolioMedia
+ * @property {'image' | 'video'} type - Tipo de medio para discriminación de renderizado.
+ * @property {string} url - Ruta relativa en el tenant (/tenant/trabajos/...).
+ */
+export interface PortfolioMedia {
+  type: 'image' | 'video';
+  url: string;
+}
+
+/**
+ * Trabajo individual exhibido en el catálogo de proyectos/cortes.
+ * 
+ * @interface PortfolioItem
+ * @property {string} id - Identificador único del trabajo.
+ * @property {string} title - Título del trabajo.
+ * @property {string} description - Detalle técnico del trabajo realizado.
+ * @property {string} [category] - Tag de especialidad (ej. 'Fade', 'Barba', 'Herrería').
+ * @property {PortfolioMedia[]} media - Lista de fotos y/o videos del trabajo.
+ * @property {string} [whatsapp_message] - Mensaje predefinido para consultar por este trabajo.
+ */
+export interface PortfolioItem {
+  id: string;
+  title: string;
+  description: string;
+  category?: string;
+  media: PortfolioMedia[];
+  whatsapp_message?: string;
+}
+
+/**
+ * Configuración completa de la sección de trabajos/portfolio.
+ * 
+ * @interface PortfolioSectionConfig
+ * @property {string} title_html - Título con soporte para tags HTML semánticos.
+ * @property {string} description - Bajada descriptiva institucional.
+ * @property {PortfolioItem[]} items - Lista de trabajos a renderizar.
+ */
+export interface PortfolioSectionConfig {
+  title_html: string;
+  description: string;
+  items: PortfolioItem[];
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * Sección institucional estructurada (Misión, Visión, Valores).
@@ -381,7 +520,9 @@ export interface LocationSectionConfig {
  * @property {LocationSectionConfig} location_section - Configuración de la sección de ubicación.
  * @property {ScheduleConfig} schedule - Horarios de atención.
  * @property {SocialNetworksConfig} social_networks - Redes sociales.
- * 
+ * @property {PortfolioSectionConfig} portfolio_section - Configuración de la sección de portafolio.
+ 
+* 
 */
 export interface TenantConfig {
   _version: string;
@@ -402,5 +543,6 @@ export interface TenantConfig {
   payment_methods: PaymentMethodsConfig;
   custom_messages: CustomMessagesConfig;
   location_section: LocationSectionConfig;
-  
+  portfolio_section?: PortfolioSectionConfig;
+
 }

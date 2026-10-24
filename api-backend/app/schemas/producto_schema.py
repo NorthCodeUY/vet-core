@@ -1,123 +1,145 @@
 # api-backend/app/schemas/producto_schema.py
+"""
+=============================================================================
+CONTRATOS DE DATOS (DTOs / SCHEMAS) - CATÁLOGO Y VARIANTES
+=============================================================================
+Define los esquemas de serialización y validación basados en Pydantic v2.
+Estos contratos desacoplan los modelos internos de SQLAlchemy de la respuesta
+JSON consumida por el frontend, garantizando tipado estricto y documentación
+automática en Swagger/OpenAPI.
+"""
 
-from pydantic import BaseModel, Field, field_validator, ConfigDict # Importamos BaseModel de pydantic
-from typing import List, Optional # Importamos List y Optional de typing
+from typing import Optional, List
+from pydantic import BaseModel, ConfigDict, Field
 
-from app.config import settings 
 
-class SubcategoriaSchema(BaseModel): 
-    """ 
-    Clase que representa la tabla "subcategoria" en la base de datos 
+class ColorResponseSchema(BaseModel):
+    """
+    Contrato de salida para la entidad Color.
     
+    Permite al cliente web/móvil renderizar selectores visuales de color
+    mediante códigos hexadecimales directos en componentes de UI.
     """
-    subc_nombre: str # Nombre de la subcategoria
-    model_config = ConfigDict( # representa la tabla "subcategoria" en la base de datos
-        from_attributes=True # Permite que el modelo sea convertido a JSON
-        )
-
-  
-class ImagenSchema(BaseModel): 
-    """ 
-    Clase que representa la tabla "imagen_url" en la 
-    base de datos
-    @:param img_url: Nombre de la imagen
-    @:param img_id: ID de la imagen
-    @:param img_principal: Determina cual es la imagen principal
-    """
-    img_url: str # Nombre de la imagen
-    img_id: int # ID de la imagen
-    img_principal: bool # Determina cual es la imagen principal
-
-
-
-    # Esto es una "validación" que transforma el dato al salir
-   
-    # Crea RUtas Absolutas Lo dejo por si me sirve !!! NO BORRAR ESTOOOOO !!! 
-    # @field_validator(
-    #     'img_url', # Indica que se ejecutara cuando se acceda al campo img_url
-    #     mode="after" # Indica que se ejecutara despues de que se obtenga el valor del campo img_url
-    #     )
-    # @classmethod
-    # def assemble_image_url(cls, v: str) -> str: 
-    #     """
-    #     Lógica de construcción de URL:
-    #     1. Si es nulo o vacío, devuelve cadena vacía (el frontend decidirá qué mostrar).
-    #     2. Si ya es una URL completa (empieza con http), la respeta.
-    #     3. Si es solo el nombre, construye: BASE_URL + /static/productos/ + nombre.
-    #     """
-    #     if not v: # Si la url es nula o vacia 
-    #         return "" # Retorna una cadena vacia 
-
-    #   
-    #     if v.startswith("http"): # Si la url es absoluta 
-    #         return v # Retorna la url 
-        
-    #     # Limpiamos la base del .env (ej: http://192.168.1.11:8001)
-    #     base = settings.base_url.rstrip("/") # path = v.lstrip("/")
-    #     #  Limpiamos el nombre del archivo de la DB (ej: 3.png)
-    #     filename = v.lstrip("/")
-
-    #     # Construimos la ruta completa hacia la subcarpeta de productos
-    #     return f"{base}/static/productos/{filename}"
-
-    #     # # Si el path guardado en la DB no incluye 'static', se lo ponemos
-    #     # if not filename.startswith("static"): 
-    #     #     return f"{base}/{filename}"
-    #     # else: 
-    #     #     return v
-
-
-
-    model_config = ConfigDict( # Representa la tabla "imagen_url" en la base de datos
-        from_attributes=True # Permite que el modelo sea convertido a JSON
-        )
-
-
-
-
-class ProductoSchema(BaseModel): 
-    """
-    Schema que representa un producto completo en la tienda.
-    Incluye sus datos básicos, categoría, subcategoría e imágenes asociadas.
-    """
-    prod_id: int # ID del producto
-    prod_nombre: str # Nombre del producto
-    prod_precio: float # Precio del producto
-    prod_descripcion: Optional[str]= None # Descripción del producto
-    cat_id: int # ID de la categoria
- 
-    # Aquí vinculamos las relaciones
-    imagenes: List[ImagenSchema] = Field(default_factory=list, alias="rel_imagen_url") # Relación con la tabla "imagen"    
-    subcategoria: List[SubcategoriaSchema] = Field(default_factory=list, alias="rel_subcategoria") # Relación con la tabla "subcategoria"
-    
-    model_config = ConfigDict( # Representa la tabla "producto" en la base de datos
-        from_attributes=True, # Permite que el modelo sea convertido a JSON
-        populate_by_name=True # Permite que el modelo sea convertido a JSON por el nombre
+    col_id: int = Field(
+        ..., 
+        description="Identificador único del color en base de datos",
+        examples=[1]
+    )
+    col_nombre: str = Field(
+        ..., 
+        description="Nombre visible del color",
+        examples=["Rojo Escarlata", "Azul Marino"]
+    )
+    col_hex: str = Field(
+        ..., 
+        description="Código hexadecimal de color para renderizado CSS",
+        examples=["#FF5733", "#000080"]
     )
 
-class ProdCatAgrupadaSchema(BaseModel): 
-    """
-    Schema que representa una categoria con sus productos.
-    """
-    cat_nombre: str # Nombre de la categoria: str = Field(..., alias="rel_categoria") # Nombre de la categoria
-    cat_id: int # ID de la categoria
-    productos: List[ProductoSchema] # Reutilizamos el Schema anterior
-    
-    model_config = ConfigDict( # Representa la tabla "categoria" en la base de datos
-        from_attributes=True # Permite que el modelo sea convertido a JSON
-        )
+    # from_attributes=True permite transformar directamente modelos SQLAlchemy ORM a JSON
+    model_config = ConfigDict(from_attributes=True)
 
-    # Ejemplo de salida
-    # [
-    # {
-    # "cat_nombre": "Accesorios",
-    # "cat_id": 1,
-    # "productos": [ {prod_id: 1, ...}, {prod_id: 2, ...}, ... ]
-    # },
-    # {
-    # "categoria": "Alimento",
-    # "productos": [ {prod_id: 10, ...}, {prod_id: 11, ...}, ... ]
-    # }
-    # ] 
 
+class VarianteResponseSchema(BaseModel):
+    """
+    Contrato de salida para la variante física (SKU vendible).
     
+    Representa una opción concreta que puede ser seleccionada dentro de la
+    tarjeta de producto (ej: Talle M, 500 ml) con su propio stock e impacto financiero.
+    """
+    var_id: int = Field(
+        ..., 
+        description="Identificador único de la variante física (SKU id)",
+        examples=[101]
+    )
+    prod_id: int = Field(
+        ..., 
+        description="Identificador del producto padre",
+        examples=[45]
+    )
+    var_tipo: str = Field(
+        ..., 
+        description="Categorización de la variante ('Talle', 'Volumen', 'Peso')",
+        examples=["Talle", "Volumen"]
+    )
+    var_nombre: str = Field(
+        ..., 
+        description="Etiqueta visible de la opción en el selector",
+        examples=["M", "XL", "250 ml", "5 Kg"]
+    )
+    var_precio_adicional: float = Field(
+        default=0.0,
+        ge=0.0,
+        description="Monto extra que se suma al precio base del producto al elegir esta opción",
+        examples=[0.0, 150.0]
+    )
+    var_stock: int = Field(
+        default=0,
+        ge=0,
+        description="Existencias físicas disponibles exclusivamente para esta combinación",
+        examples=[12]
+    )
+    sku: Optional[str] = Field(
+        default=None,
+        description="Código alfanumérico único para lectores de código de barras",
+        examples=["REM-OVR-NEG-M"]
+    )
+    # Resuelve la relación ORM 'rel_color' y la expone como 'color' en el JSON de salida
+    color: Optional[ColorResponseSchema] = Field(
+        default=None, 
+        alias="rel_color",
+        description="Detalle de color asignado a la variante (si aplica)"
+    )
+
+    # populate_by_name permite serializar usando 'rel_color' desde SQLAlchemy y exponerlo como 'color'
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+
+class ProductoResponseSchema(BaseModel):
+    """
+    Contrato de salida principal del catálogo de productos.
+    
+    Diseñado bajo el principio de compatibilidad hacia atrás:
+    - Productos Simples: El array 'variantes' se emite vacío ([]), usando el precio y stock base.
+    - Productos Complejos: El frontend consume la lista 'variantes' para dibujar selectores dinámicos.
+    """
+    prod_id: int = Field(
+        ..., 
+        description="Identificador único del producto en catálogo",
+        examples=[45]
+    )
+    prod_nombre: str = Field(
+        ..., 
+        description="Nombre comercial del producto",
+        examples=["Remera Oversize", "Shampoo Hipoalergénico"]
+    )
+    prod_descripcion: Optional[str] = Field(
+        default=None, 
+        description="Descripción detallada de materiales, usos o composición",
+        examples=["100% Algodón Peinado 24/1."]
+    )
+    prod_precio: float = Field(
+        ..., 
+        ge=0.0,
+        description="Precio base del producto en moneda local",
+        examples=[1200.0]
+    )
+    prod_stock: int = Field(
+        ..., 
+        ge=0,
+        description="Stock global del producto base (utilizado cuando el producto no posee variantes)",
+        examples=[25]
+    )
+    cat_id: int = Field(
+        ..., 
+        description="Identificador de la categoría a la que pertenece",
+        examples=[2]
+    )
+    # Mapea la relación SQLAlchemy 'rel_variantes' hacia el campo público 'variantes'
+    variantes: List[VarianteResponseSchema] = Field(
+        default_factory=list, 
+        alias="rel_variantes",
+        description="Colección de presentaciones físicas, talles o volúmenes disponibles"
+    )
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)

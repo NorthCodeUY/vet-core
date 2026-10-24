@@ -32,6 +32,11 @@ Para facilitar la lectura y auditoría técnica del código, los módulos de may
 
 ---
 
+## Arquitectura de el sistema genera
+
+
+* 📊 [Ver Diagrama de Arquitectura General](docs/architecture/diagrama_arquitectura_fontend.md)
+
 ## 🏢 Arquitectura Multi-Tenant (Zero-Rebuild SaaS)
 
 La separación estricta entre **identidad del tenant** y **código fuente** garantiza despliegues inmediatos:
@@ -425,7 +430,7 @@ npm run tenant <nombre_carpeta_cliente>
 En producción, la imagen `vetcore-web-client:latest` es compilada **una única vez**. Cada cliente corre como un contenedor aislado montando sus volúmenes en caliente:
 
 ### Archivo de Producción Real: `apps/web-client/docker-compose.yml`
-
+<!-- <!> Aca me gustaria ir a mi archivo rela con ipervinculo y  y que muestre como qeda eso se uede o no  -->
 ```yaml
 networks:
   # Red compartida donde corren Nginx Proxy Manager, Cloudflare y bases de datos

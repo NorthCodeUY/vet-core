@@ -1,3 +1,5 @@
+# .gitignore 
+
 # ==========================================
 # VETERINARIA BELTRAMELLI - GITIGNORE GLOBAL
 # ==========================================
@@ -10,7 +12,12 @@
 temp/
 tmp/
 
-# --- ENTORNOS LOCALES (SEGURIDAD) ---
+# --- ENTORNOS LOCALES (SEGURIDAD) 
+# <!> sto Esto no esta funcionando para 
+# api-backend/.env.flordeloto
+# api-backend/.env.veterinaria
+# deveria ignorar esto y todo los archivo de variable de netron para cada cliete que agruege 
+
 # Nunca subir credenciales o llaves de API
 # Ignora cualquier .env en la raíz o en cualquier subcarpeta (api-backend, apps, etc.)
 **/.env

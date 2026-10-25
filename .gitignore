@@ -16,7 +16,7 @@ tmp/
 **/.env
 **/.env.*
 **/.env*.local
-*.env
+*.env*
 
 # Excepciones permitidas (plantillas públicas de ejemplo sin credenciales)
 !**/.env.example

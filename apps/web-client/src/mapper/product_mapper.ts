@@ -1,123 +1,115 @@
-/* --- apps/web-client/src/mappers/product_mapper.ts --- */
-import type { ApiProduct, ApiImageProducto } from '../types/product_types';
+// apps/web-client/src/mapper/product_mapper.ts
 
 /**
- * Transforma un producto crudo del Backend al formato ApiProduct del Frontend.
+ * @fileoverview Mapeador y Transformador de DTOs del Backend hacia la UI (product_mapper.ts)
+ * 
+ * Transforma la estructura cruda retornada por FastAPI (con SQLAlchemy 2.0) al 
+ * modelo estricto de la UI. Resuelve URLs de Cloudflare R2 y sanitiza variantes.
+ * 
+ * @module mapper/product_mapper
  */
-export const productMapper = {
 
+import type { 
+  ApiProduct, 
+  ApiImageProducto, 
+  ProductoVariante 
+} from '../types/product_types';
+
+export const productMapper = {
   /**
-   * Helper interno para formatear el objeto de imagen.
-   * Centraliza la construcción de la ruta relativa.
+   * Resuelve y sanitiza la URL de una imagen.
+   * Si la URL ya es absoluta (Cloudflare R2 / S3), la mantiene intacta.
+   * Si es relativa local, le antepone la ruta de fallback.
+   * 
+   * @private
    */
   _formatImage(rawImg: any): ApiImageProducto {
+    if (!rawImg) {
+      return { img_id: 0, img_url: '/tenant/producto_no_disponible.png' };
+    }
+
+    const rawUrl = String(rawImg.img_url || '');
+    let finalUrl = rawUrl;
+
+    // Si no es una URL externa de Cloudflare R2 (https://...)
+    if (rawUrl && !rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+      finalUrl = `/static/productos/${rawUrl}`;
+    }
+
     return {
-      img_id: rawImg.img_id, // Fallback al ID del producto si no hay ID de imagen
-      /* 
-         RUTAS RELATIVAS: 
-         No necesitamos la URL del archivo de configuración. 
-         Al empezar con '/', el navegador busca automáticamente en el dominio actual.
-         El 'proxy' de vite.config.ts solo actúa como un "desviador" en desarrollo.
-      */
-      img_url: rawImg.img_url ? `/static/productos/${rawImg.img_url}` : ''
+      img_id: Number(rawImg.img_id || 0),
+      img_url: finalUrl || '/tenant/producto_no_disponible.png',
     };
   },
 
-
   /**
-   * Transforma un producto crudo del Backend al formato ApiProduct del Frontend.
-   * @param p - Producto crudo del Backend 
-   * @param catNombre - Nombre de la categoría 
-   * @param catId - ID de la categoría 
-   * @returns Producto transformado 
+   * Mapea un producto individual crudo del Backend a la entidad ApiProduct.
+   * 
+   * @param {any} p - DTO del producto emitido por FastAPI.
+   * @param {string} [catNombre='General'] - Nombre de la categoría padre.
+   * @param {number} [catId=0] - ID de la categoría padre.
+   * @returns {ApiProduct}
    */
-  toUI(p: any, catNombre: string, catId: number): ApiProduct {
-
-    /* Procesamos la lista de imágenes una sola vez para optimizar */
-    const rawImages = p.rel_imagen_url || [];
+  toUI(p: any, catNombre: string = 'General', catId: number = 0): ApiProduct {
+    const rawImages = Array.isArray(p.rel_imagen_url) ? p.rel_imagen_url : [];
     
-    /* Identificamos la imagen principal */
+    // Identificar imagen principal
     const principalData = rawImages.find((img: any) => img.img_principal) || rawImages[0];
-    
-    /* Construimos la instancia de imagen principal (puede ser null si no hay datos) */ //<!> Cambiarlo cuando modifique el bakend  
     const imagenPrincipal = principalData ? this._formatImage(principalData) : null;
 
-    /* Filtramos y mapeamos las secundarias en un solo paso */
+    // Imágenes secundarias
     const imagenesSecundarias = rawImages
-      .filter((img: any) => img !== principalData) // Excluimos la que ya elegimos como principal
+      .filter((img: any) => img !== principalData)
       .map((img: any) => this._formatImage(img));
 
+    // Mapeo seguro de Variantes de Talle / Color
+    const variantesMapeadas: ProductoVariante[] = Array.isArray(p.variantes)
+      ? p.variantes.map((v: any): ProductoVariante => ({
+          var_id: Number(v.var_id),
+          prod_id: Number(v.prod_id || p.prod_id),
+          var_tipo: String(v.var_tipo || 'Talle'),
+          var_nombre: String(v.var_nombre || ''),
+          var_precio_adicional: Number(v.var_precio_adicional || 0),
+          var_stock: Number(v.var_stock || 0),
+          sku: v.sku ? String(v.sku) : undefined,
+          color: v.color
+            ? {
+                col_id: Number(v.color.col_id),
+                col_nombre: String(v.color.col_nombre),
+                col_hex: String(v.color.col_hex),
+              }
+            : undefined,
+        }))
+      : [];
 
-    /* Ahora sí, retornamos el objeto estructurado limpiamente */
     return {
-      prod_id: p.prod_id, // Id del producto 
-      prod_nombre: p.prod_nombre, // Nombre del producto 
-      prod_precio: p.prod_precio, // Precio del producto 
-      prod_descripcion: p.prod_descripcion, // Descripción del producto 
-      cat_nombre: catNombre, // Nombre de la categoría 
-      cat_id: catId, // Id de la categoría
+      prod_id: Number(p.prod_id),
+      prod_nombre: String(p.prod_nombre || ''),
+      prod_descripcion: String(p.prod_descripcion || ''),
+      prod_precio: Number(p.prod_precio || 0),
+      prod_stock: Number(p.prod_stock || 0),
+      cat_id: Number(p.cat_id || catId),
+      cat_nombre: String(p.cat_nombre || catNombre),
       imagen_principal_url: imagenPrincipal,
-
-      /* Lista de imagenes secundarias */
       imagenes_secundarias_url: imagenesSecundarias,
-
-      /* Mapeamos las subcategorías de forma segura */
-      subcategoria: p.rel_subcategoria?.map((sub: any) => ({ subc_nombre: sub.subc_nombre })) || []
+      subcategorias: Array.isArray(p.rel_subcategoria)
+        ? p.rel_subcategoria.map((sub: any) => String(sub.subc_nombre || ''))
+        : [],
+      variantes: variantesMapeadas,
     };
   },
 
   /**
    * Transforma una lista de productos crudos.
-   * @param products - Array de productos crudos 
-   * @param catNombre - Nombre de la categoría 
-   * @param catId - ID de la categoría 
-   * @returns Array de productos transformados 
+   * Responde a tu duda: toUIList simplemente ejecuta toUI en cada elemento del array.
+   * 
+   * @param {any[]} products - Lista de productos crudos.
+   * @param {string} catNombre - Nombre de la categoría.
+   * @param {number} catId - ID de la categoría.
+   * @returns {ApiProduct[]}
    */
-  toUIList(products: any[], catNombre: string, catId: number): ApiProduct[] { //<!>  esto medescoserta un poc para que uso estosi tenog toUI(p: any, catNombre: string, catId: number): ApiProduct {
-    return products.map(p => this.toUI(p, catNombre, catId));
-  }
+  toUIList(products: any[], catNombre: string, catId: number): ApiProduct[] {
+    if (!Array.isArray(products)) return [];
+    return products.map((p) => this.toUI(p, catNombre, catId));
+  },
 };
-
-// Json Esperado 
-
-// [
-//     {
-//         "cat_nombre": "Accesorios",
-//         "cat_id": 1,
-//         "productos": [
-//             {
-//                 "prod_id": 1,
-//                 "prod_nombre": "Durapets Bandeja",
-//                 "prod_precio": 308.0,
-//                 "prod_descripcion": "Kit Bandeja, pala y plato",
-//                 "cat_id": 1,
-//                 "rel_imagen_url": [
-//                     {
-//                         "img_url": "3.png",
-//                         "img_principal": true
-//                     }
-//                 ],
-//                 "rel_subcategoria": [
-//                     {
-//                         "subc_nombre": "Gato"
-//                     }
-//                 ]
-//             },
-//             {
-//                 "prod_id": 2,
-//                 "prod_nombre": "Baño cerrado ",
-//                 "prod_precio": 690.0,
-//                 "prod_descripcion": "Baño cerrado (56x40x40cm) +pala",
-//                 "cat_id": 1,
-//                 "rel_imagen_url": [
-//                     {
-//                         "img_url": "2.png",
-//                         "img_principal": true
-//                     }
-//                 ],
-//                 "rel_subcategoria": [
-//                     {
-//                         "subc_nombre": "Gato"
-//                     }
-//                 ]
-//             },

@@ -1,145 +1,86 @@
 # api-backend/app/schemas/producto_schema.py
 """
 =============================================================================
-CONTRATOS DE DATOS (DTOs / SCHEMAS) - CATÁLOGO Y VARIANTES
+ESQUEMAS DE VALIDACIÓN Y SERIALIZACIÓN (PYDANTIC V2) - PRODUCTOS Y CATÁLOGO
 =============================================================================
-Define los esquemas de serialización y validación basados en Pydantic v2.
-Estos contratos desacoplan los modelos internos de SQLAlchemy de la respuesta
-JSON consumida por el frontend, garantizando tipado estricto y documentación
-automática en Swagger/OpenAPI.
+Define los contratos de datos (DTOs) que viajan entre la base de datos,
+la API FastAPI y las aplicaciones clientes (Frontend/Mobile).
 """
 
 from typing import Optional, List
 from pydantic import BaseModel, ConfigDict, Field
 
 
+# =============================================================================
+# 1. ESQUEMA DE COLOR
+# =============================================================================
 class ColorResponseSchema(BaseModel):
-    """
-    Contrato de salida para la entidad Color.
-    
-    Permite al cliente web/móvil renderizar selectores visuales de color
-    mediante códigos hexadecimales directos en componentes de UI.
-    """
-    col_id: int = Field(
-        ..., 
-        description="Identificador único del color en base de datos",
-        examples=[1]
-    )
-    col_nombre: str = Field(
-        ..., 
-        description="Nombre visible del color",
-        examples=["Rojo Escarlata", "Azul Marino"]
-    )
-    col_hex: str = Field(
-        ..., 
-        description="Código hexadecimal de color para renderizado CSS",
-        examples=["#FF5733", "#000080"]
-    )
+    """Representa el color asignado a una variante física."""
+    col_id: int = Field(..., description="ID único del color")
+    col_nombre: str = Field(..., description="Nombre comercial del color (ej: 'Azul Marino')")
+    col_hex: str = Field(..., description="Código HEX para renderizado visual en frontend (ej: '#000080')")
 
-    # from_attributes=True permite transformar directamente modelos SQLAlchemy ORM a JSON
+    # Permite mapear directamente atributos de objetos SQLAlchemy ORM
     model_config = ConfigDict(from_attributes=True)
 
 
+# =============================================================================
+# 2. ESQUEMA DE VARIANTE (SKU)
+# =============================================================================
 class VarianteResponseSchema(BaseModel):
-    """
-    Contrato de salida para la variante física (SKU vendible).
+    """Representa una presentación específica (Talle, Medida, Volumen) con su propio stock."""
+    var_id: int = Field(..., description="ID único de la variante física")
+    prod_id: int = Field(..., description="ID del producto padre")
+    var_tipo: str = Field(..., description="Clasificación ('Talle', 'Volumen', 'Medida')")
+    var_nombre: str = Field(..., description="Valor visible (ej: 'XL', '500 ml')")
+    var_precio_adicional: float = Field(default=0.0, description="Diferencial de precio sobre el base")
+    var_stock: int = Field(default=0, description="Existencias disponibles de esta variante")
+    sku: Optional[str] = Field(default=None, description="Código de barras único")
     
-    Representa una opción concreta que puede ser seleccionada dentro de la
-    tarjeta de producto (ej: Talle M, 500 ml) con su propio stock e impacto financiero.
-    """
-    var_id: int = Field(
-        ..., 
-        description="Identificador único de la variante física (SKU id)",
-        examples=[101]
-    )
-    prod_id: int = Field(
-        ..., 
-        description="Identificador del producto padre",
-        examples=[45]
-    )
-    var_tipo: str = Field(
-        ..., 
-        description="Categorización de la variante ('Talle', 'Volumen', 'Peso')",
-        examples=["Talle", "Volumen"]
-    )
-    var_nombre: str = Field(
-        ..., 
-        description="Etiqueta visible de la opción en el selector",
-        examples=["M", "XL", "250 ml", "5 Kg"]
-    )
-    var_precio_adicional: float = Field(
-        default=0.0,
-        ge=0.0,
-        description="Monto extra que se suma al precio base del producto al elegir esta opción",
-        examples=[0.0, 150.0]
-    )
-    var_stock: int = Field(
-        default=0,
-        ge=0,
-        description="Existencias físicas disponibles exclusivamente para esta combinación",
-        examples=[12]
-    )
-    sku: Optional[str] = Field(
-        default=None,
-        description="Código alfanumérico único para lectores de código de barras",
-        examples=["REM-OVR-NEG-M"]
-    )
-    # Resuelve la relación ORM 'rel_color' y la expone como 'color' en el JSON de salida
-    color: Optional[ColorResponseSchema] = Field(
-        default=None, 
-        alias="rel_color",
-        description="Detalle de color asignado a la variante (si aplica)"
-    )
+    # Resuelve la relación ORM 'rel_color' y la expone como 'color' en el JSON
+    color: Optional[ColorResponseSchema] = Field(default=None, alias="rel_color")
 
-    # populate_by_name permite serializar usando 'rel_color' desde SQLAlchemy y exponerlo como 'color'
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
+# =============================================================================
+# 3. ESQUEMA PRINCIPAL DE PRODUCTO
+# =============================================================================
 class ProductoResponseSchema(BaseModel):
-    """
-    Contrato de salida principal del catálogo de productos.
+    """Contrato base de un producto expuesto al catálogo."""
+    prod_id: int = Field(..., description="ID del producto")
+    prod_nombre: str = Field(..., description="Nombre comercial del producto")
+    prod_descripcion: Optional[str] = Field(default=None, description="Descripción detallada")
+    prod_precio: float = Field(..., description="Precio base del producto")
+    prod_stock: int = Field(..., description="Stock general (usado si el producto no tiene variantes)")
+    cat_id: int = Field(..., description="ID de la categoría principal")
     
-    Diseñado bajo el principio de compatibilidad hacia atrás:
-    - Productos Simples: El array 'variantes' se emite vacío ([]), usando el precio y stock base.
-    - Productos Complejos: El frontend consume la lista 'variantes' para dibujar selectores dinámicos.
-    """
-    prod_id: int = Field(
-        ..., 
-        description="Identificador único del producto en catálogo",
-        examples=[45]
-    )
-    prod_nombre: str = Field(
-        ..., 
-        description="Nombre comercial del producto",
-        examples=["Remera Oversize", "Shampoo Hipoalergénico"]
-    )
-    prod_descripcion: Optional[str] = Field(
-        default=None, 
-        description="Descripción detallada de materiales, usos o composición",
-        examples=["100% Algodón Peinado 24/1."]
-    )
-    prod_precio: float = Field(
-        ..., 
-        ge=0.0,
-        description="Precio base del producto en moneda local",
-        examples=[1200.0]
-    )
-    prod_stock: int = Field(
-        ..., 
-        ge=0,
-        description="Stock global del producto base (utilizado cuando el producto no posee variantes)",
-        examples=[25]
-    )
-    cat_id: int = Field(
-        ..., 
-        description="Identificador de la categoría a la que pertenece",
-        examples=[2]
-    )
-    # Mapea la relación SQLAlchemy 'rel_variantes' hacia el campo público 'variantes'
+    # Resuelve la relación ORM 'rel_variantes' y la expone como 'variantes'
     variantes: List[VarianteResponseSchema] = Field(
         default_factory=list, 
         alias="rel_variantes",
-        description="Colección de presentaciones físicas, talles o volúmenes disponibles"
+        description="Lista de talles/medidas disponibles. Si no tiene, se emite vacía ([])"
     )
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+# Alias de compatibilidad por si algún router antiguo importa 'ProductoSchema'
+ProductoSchema = ProductoResponseSchema
+
+
+# =============================================================================
+# 4. ESQUEMA AGRUPADO POR CATEGORÍAS (LANDING PAGE)
+# =============================================================================
+class ProdCatAgrupadaSchema(BaseModel):
+    """
+    Estructura jerárquica para la Landing Page:
+    Agrupa los productos directamente dentro de su categoría correspondiente.
+    """
+    cat_id: int = Field(..., description="ID único de la categoría")
+    cat_nombre: str = Field(..., description="Nombre de la categoría (ej: 'Alimentos', 'Ropa')")
+    productos: List[ProductoResponseSchema] = Field(
+        default_factory=list,
+        description="Colección de productos que pertenecen a esta categoría"
+    )
+
+    model_config = ConfigDict(from_attributes=True)

@@ -48,6 +48,7 @@
 
 ## 📦 Estructura General del Proyecto
 
+<!-- <!> Hay que actualizar esto haroa tengo el portal administrativo con flutter-->
 ```text
 /vet-core
 ├── apps/

@@ -12,11 +12,15 @@ tmp/
 
 # --- ENTORNOS LOCALES (SEGURIDAD) ---
 # Nunca subir credenciales o llaves de API
-.env
-.env.local
-.env.*.local
+# Ignora cualquier .env en la raíz o en cualquier subcarpeta (api-backend, apps, etc.)
+**/.env
+**/.env.*
+**/.env*.local
 *.env
-!env.template
+
+# Excepciones permitidas (plantillas públicas de ejemplo sin credenciales)
+!**/.env.example
+!**/.env.template
 
 # --- DEPENDENCIAS ---
 # No subimos librerías, se instalan con npm install o pip install

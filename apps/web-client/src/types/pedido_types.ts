@@ -1,5 +1,5 @@
 /* --- apps/web-client/src/types/pedido_types.ts --- */
-import type { ApiProduct } from './product_types';
+import type { ApiProduct, ProductoVariante } from './product_types';
 
 /**
  * Representa una "Línea de Pedido" (PedidoDetalle).
@@ -12,6 +12,26 @@ export interface PedidoItem {
   cantidad: number;
   precio_unitario_capturado: number;
 }
+
+
+/**
+ * Línea transaccional dentro del pedido.
+ * 
+ * @interface PedidoItem
+ * @property {string} item_key - Identificador compuesto único: `${prod_id}_${var_id || 'simple'}`.
+ * @property {Producto} producto - Datos del producto base.
+ * @property {ProductoVariante} [variante_seleccionada] - Variante elegida por el cliente.
+ * @property {number} cantidad - Unidades solicitadas.
+ * @property {number} precio_unitario_capturado - Precio base + adicional congelado al agregar.
+ */
+export interface PedidoItem {
+  item_key: string;
+  producto: ApiProduct;
+  variante_seleccionada?: ProductoVariante;
+  cantidad: number;
+  precio_unitario_capturado: number;
+}
+
 
 /**
  * Estructura para persistir en el Backend (FastAPI).

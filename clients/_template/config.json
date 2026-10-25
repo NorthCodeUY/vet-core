@@ -1,3 +1,4 @@
+// clients/_template/config.json
 {
   // Control de versión del esquema de configuración (para futuras migraciones de plataforma)
   "_version": "1.0.0",

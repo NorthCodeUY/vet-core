@@ -1,151 +1,229 @@
-/* --- apps/web-client/src/components/ProductCardV2.tsx --- */
+/* --- apps/web-client/src/components/ProductCard/ProductCardV2.tsx --- */
 
-import React, { useState } from 'react';
-import { ShoppingCart, X, ChevronDown, ChevronUp } from 'lucide-react';
-import { SUBCATEGORY_ICONS } from '../../utils/categoryHelpers';
+/**
+ * @fileoverview Tarjeta de Producto V2 con Acordeón, Variantes y Control de Disponibilidad
+ * 
+ * Gestiona el catálogo desacoplándose del conteo numérico estricto de inventario.
+ * Evalúa la disponibilidad comercial (activo/pausado) y permite parametrizar 
+ * los textos de producto agotado desde la configuración runtime (config.json).
+ * 
+ * @module components/ProductCard/ProductCardV2
+ */
+
+import React, { useState, useMemo } from 'react';
+// --- Iconografía Lucide ---
+import { ShoppingCart, X, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
+// --- Helpers y Contexto ---
+import { DynamicIcon } from '../../components/DynamicIcon';
 import { usePedidoStore } from '../../context/pedido_context';
-import type { ApiProduct } from '../../types/product_types';
+import type { ApiProduct, ProductoVariante } from '../../types/product_types';
 import { useConfig } from '../../context/tenant_context';
-
 
 interface Props {
   producto: ApiProduct;
 }
 
-/**
- * Componente de UI para representar una tarjeta de producto en el catálogo (Versión 2).
- * Incluye módulo acordeón para detalles expandibles y WhatsApp.
- */
 export function ProductCardV2({ producto }: Props) {
-  /* --- Estado Local para Control de Acordeón --- */
-  const [isExpanded, setIsExpanded] = useState(false);
+  /* ===========================================================================
+     1. CONSUMO DEL CONTEXTO Y CONFIGURACIÓN DINÁMICA
+     =========================================================================== */
+  const { config } = useConfig();
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
-  /* --- Fachada del Store --- */
-  const store = usePedidoStore() as any;
-  const pedido = store.pedido || [];
-  const addToPedido = store.addToPedido || (() => {});
-  
-  const handleRemove = store.removeAllPedido 
-    || store.removePedido 
-    || store.removeFromPedido 
-    || (() => {});
+  // <!> Mensajes parametrizables desde config.json con fallback defensivo
+  const unavailableBadgeText = config?.custom_messages?.product_unavailable_label || 'Agotado';
+  const unavailableButtonText = config?.custom_messages?.product_unavailable_btn || 'No disponible';
 
-  /* --- Lógica de Estado del Producto --- */
-  const lineaActual = pedido.find((item: any) => item.producto?.prod_id === producto.prod_id);
+  /* ===========================================================================
+     2. GESTIÓN DE VARIANTES Y DISPONIBILIDAD COMERCIAL
+     =========================================================================== */
+  const hasVariantes = Boolean(producto.variantes && producto.variantes.length > 0);
+
+  // Inicializa con la primera variante activa/disponible
+  const [selectedVariant, setSelectedVariant] = useState<ProductoVariante | null>(() => {
+    if (!hasVariantes) return null;
+    return (
+      producto.variantes.find((v: any) => v.var_disponible !== false && v.var_stock !== 0) ||
+      producto.variantes[0] ||
+      null
+    );
+  });
+
+  /**
+   * <!> EVALUACIÓN INTELIGENTE DE DISPONIBILIDAD (Sin acople a facturación)
+   * 1. Prioriza la bandera booleana 'disponible' (manejada por el admin en Flutter).
+   * 2. Si no existe la bandera, solo considera agotado si el stock se fijó explícitamente en 0.
+   * 3. Si el stock es null, asume que el comercio no controla inventario y está disponible.
+   */
+  const isAvailable = useMemo(() => {
+    // A. Evaluación a nivel de Variante seleccionada
+    if (selectedVariant) {
+      if (typeof (selectedVariant as any).var_disponible === 'boolean') {
+        return (selectedVariant as any).var_disponible;
+      }
+      if (selectedVariant.var_stock !== null && selectedVariant.var_stock !== undefined) {
+        return selectedVariant.var_stock > 0;
+      }
+      return true;
+    }
+
+    // B. Evaluación a nivel de Producto Padre
+    if (typeof (producto as any).prod_disponible === 'boolean') {
+      return (producto as any).prod_disponible;
+    }
+    if (producto.prod_stock !== null && producto.prod_stock !== undefined) {
+      return producto.prod_stock > 0;
+    }
+    return true; // Disponible por defecto
+  }, [producto, selectedVariant]);
+
+  /* ===========================================================================
+     3. GESTIÓN DEL STORE GLOBAL (CARRITO)
+     =========================================================================== */
+  const { pedido, addItem, removeItem } = usePedidoStore() as any;
+
+  const lineaActual = useMemo(() => {
+    if (!pedido) return null;
+    return pedido.find((item: any) => {
+      const matchProd = item.producto?.prod_id === producto.prod_id;
+      if (!hasVariantes) return matchProd;
+      return matchProd && item.variante_seleccionada?.var_id === selectedVariant?.var_id;
+    });
+  }, [pedido, producto.prod_id, hasVariantes, selectedVariant]);
+
   const cantidad = lineaActual?.cantidad || 0;
-  const subtotal = producto.prod_precio * cantidad;
   const estaSeleccionado = cantidad > 0;
 
-  // Creamos el link del producto: .origin guarda el link de la pagina, .pathname guarda el subdominio, # el id del producto
-  
-    const productUrl = typeof window !== 'undefined' 
-      ? `${window.location.origin}${window.location.pathname}#prod-${producto.prod_id}`
-      : '';
-  
-    
-  /* --- 1. Extracción dinámica de contacto desde el contexto --- */
-  const { config } = useConfig();
+  /* ===========================================================================
+     4. CÁLCULO DE PRECIO DINÁMICO
+     =========================================================================== */
+  const precioUnitario = useMemo(() => {
+    const adicional = selectedVariant?.var_precio_adicional || 0;
+    return producto.prod_precio + adicional;
+  }, [producto.prod_precio, selectedVariant]);
+
+  const subtotal = precioUnitario * cantidad;
+
+  /* ===========================================================================
+     5. WHATSAPP Y ENLACE SEGURO
+     =========================================================================== */
   const rawPhone = config?.contact?.admin_phone || '';
   const countryCode = config?.contact?.whatsapp_country_code || '598';
-
-  /* --- 2. Normalización del número telefónico --- */
   const digitsOnly = rawPhone.replace(/\D/g, '');
   const cleanPhone = digitsOnly.startsWith('0') ? digitsOnly.slice(1) : digitsOnly;
   const formattedPhone = `${countryCode}${cleanPhone}`;
 
-  /* --- 3. Generación del Link seguro de WhatsApp --- */
+  const productUrl = typeof window !== 'undefined' 
+    ? `${window.location.origin}${window.location.pathname}#prod-${producto.prod_id}`
+    : '';
+
+  const variantText = selectedVariant ? ` (Opción: ${selectedVariant.var_nombre})` : '';
   const whatsappLink = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(
-    `¡Hola! Estoy interesado en el producto: *${producto.prod_nombre}*, *$${producto.prod_precio.toLocaleString('es-UY')}*\n\nVer Producto:\n${productUrl}`
+    `¡Hola! Estoy interesado en el producto: *${producto.prod_nombre}*${variantText}, *$${precioUnitario.toLocaleString('es-UY')}*\n\nVer Producto:\n${productUrl}`
   )}`;
 
-  
+  /* ===========================================================================
+     6. HANDLERS DE INTERACCIÓN
+     =========================================================================== */
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (!isAvailable) return;
+    
+    if (typeof addItem === 'function') {
+      addItem(producto, selectedVariant);
+    }
+  };
 
-  /* --- Manejadores de Eventos --- */
   const handleRemoveFromPedido = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    handleRemove(producto.prod_id);
+    if (typeof removeItem === 'function') {
+      removeItem(producto.prod_id, selectedVariant?.var_id);
+    }
   };
 
   const toggleExpand = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Evita que se agregue al pedido al tocar la flecha
+    e.stopPropagation();
     setIsExpanded(!isExpanded);
   };
 
   return (
     <div
-      id={`prod-${producto.prod_id}`}  /* identificador de cada producto */
-      onClick={() => addToPedido(producto)}
+      id={`prod-${producto.prod_id}`}
+      onClick={() => handleAddToCart()}
       className={`
         /* --- Posición --- */
-        relative                     /* Permite flotar los badges de selección y borrado */
-        flex                         /* Activa flexbox */
-        flex-col                     /* Dirección vertical de la tarjeta */
-        justify-between              /* Separa el contenido superior del bloque de compra */
+        relative
+        flex
+        flex-col
+        justify-between
 
         /* --- Dimensiones --- */
-        h-full                       /* Ocupa el 100% de la altura disponible */
-        w-full                       /* Ocupa todo el ancho de la celda de la grilla */
-        min-w-0                      /* Previene desbordamiento en mobile de 2 columnas */
+        w-full
+        h-full
+        min-w-0
 
         /* --- Colores --- */
-        bg-white                     /* Fondo blanco limpio */
+        bg-vete-surface
         ${estaSeleccionado 
-          ? 'border-vete-primary border-2'  /* Borde verde destacado si está seleccionado */
-          : 'border border-gray-200'         /* Borde gris sutil por defecto */
+          ? 'border-2 border-vete-primary' 
+          : 'border border-vete-border-subtle hover:border-vete-primary/40'
         }
 
         /* --- Estilo --- */
-        rounded-md                   /* Bordes ligeramente redondeados */
-        overflow-hidden              /* Contiene imágenes y bordes recortados */
-        shadow-sm                    /* Sombra suave */
-        cursor-pointer               /* Cursor de selección para toda la tarjeta */
+        rounded-2xl
+        overflow-hidden
+        shadow-sm
+        hover:shadow-md
+        ${!isAvailable ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer'}
 
-        /* --- Animaciones --- */
-        transition-all               /* Transición suave para todos los cambios */
-        duration-200                 /* Duración de 200ms */
+        /* --- Animación --- */
+        transition-all
+        duration-200
       `}
     >
-      {/* --- BADGE SUPERIOR IZQUIERDO: Subtotal --- */}
+      {/* BADGE SUPERIOR IZQUIERDO: Subtotal acumulado */}
       {estaSeleccionado && (
-        <div className={`
-          /* --- Posición --- */
-          absolute                   /* Flota sobre la tarjeta */
-          top-2                      /* Ubicación superior 0.5rem */
-          left-2                     /* Ubicación izquierda 0.5rem */
-          z-20                       /* Se superpone a la imagen */
+        <div
+          className={`
+            /* --- Posición --- */
+            absolute
+            top-2.5
+            left-2.5
+            z-20
+            flex
+            items-center
 
-          /* --- Posición interna --- */
-          flex                       /* Alineación horizontal del icono y texto */
-          items-center               /* Centrado vertical */
-          gap-1                      /* Espacio de 0.25rem entre icono y texto */
+            /* --- Dimensiones --- */
+            gap-1.5
+            px-2.5
+            py-1
 
-          /* --- Dimensiones --- */
-          px-2                       /* Padding horizontal de 0.5rem */
-          py-1                       /* Padding vertical de 0.25rem */
+            /* --- Colores --- */
+            bg-vete-primary
+            text-white
+            shadow-md
 
-          /* --- Colores --- */
-          bg-vete-primary            /* Fondo verde de la marca */
-          text-white                 /* Texto blanco */
+            /* --- Texto --- */
+            text-xs
+            font-bold
 
-          /* --- Texto y Estilo --- */
-          text-xs                    /* Texto pequeño */
-          font-bold                  /* Texto en negrita */
-          rounded-md                 /* Bordes redondeados */
-          shadow-md                  /* Sombra para destacar */
+            /* --- Estilo --- */
+            rounded-lg
 
-          /* --- Animación --- */
-          animate-in                 /* Animación de entrada */
-          fade-in                    /* Desvanecimiento */
-          zoom-in                    /* Leve efecto de zoom al aparecer */
-        `}>
-          <ShoppingCart size={14} />
+            /* --- Animación --- */
+            animate-in
+            fade-in
+            zoom-in-95
+          `}
+        >
+          <ShoppingCart size={13} />
           <span>
-            Can:{cantidad} / ${subtotal.toLocaleString('es-UY')}
+            {cantidad} u. / ${subtotal.toLocaleString('es-UY')}
           </span>
         </div>
       )}
 
-      {/* --- BOTÓN CANCELAR (Top Right) --- */}
+      {/* BOTÓN CANCELAR / QUITAR (Top Right) */}
       {estaSeleccionado && (
         <button
           type="button"
@@ -154,262 +232,510 @@ export function ProductCardV2({ producto }: Props) {
           aria-label="Quitar del pedido"
           className={`
             /* --- Posición --- */
-            absolute                 /* Flota en la esquina superior derecha */
-            top-2                    /* Ubicación superior 0.5rem */
-            right-2                  /* Ubicación derecha 0.5rem */
-            z-20                     /* Capa superior */
+            absolute
+            top-2.5
+            right-2.5
+            z-20
+            flex
+            items-center
+            justify-center
 
             /* --- Dimensiones --- */
-            p-1                      /* Padding de 0.25rem */
+            p-1.5
 
             /* --- Colores --- */
-            bg-vete-error            /* Fondo rojo */
-            text-white               /* Icono blanco */
+            bg-vete-error
+            text-white
+            shadow-md
 
             /* --- Estilo --- */
-            rounded-full             /* Botón completamente circular */
-            shadow-md                /* Sombra leve */
+            rounded-full
 
             /* --- Animación --- */
-            hover:bg-red-600         /* Oscurece el rojo al pasar el mouse */
-            transition-colors        /* Transición de color suave */
+            transition-all
+            active:scale-90
+            hover:opacity-90
           `}
         >
-          <X size={14} />
+          <X size={13} />
         </button>
       )}
 
-      {/* --- CONTENEDOR SUPERIOR: Imagen e Iconos --- */}
-      <div className={`
-        /* --- Posición --- */
-        relative                     /* Contenedor relativo para los iconos de subcategoría */
-        flex                         /* Contenedor flexible */
-        flex-col                     /* Dirección vertical */
-        items-center                 /* Centra la imagen */
-        justify-center               /* Centra el contenido verticalmente */
-        flex-1                       /* Ocupa el espacio disponible superior */
+      {/* =====================================================================
+         CONTENEDOR SUPERIOR: Imagen, Badges y Marca de Agotado
+         ===================================================================== */}
+      <div
+        className={`
+          /* --- Posición --- */
+          relative
+          flex
+          flex-col
+          items-center
+          justify-center
+          flex-1
 
-        /* --- Dimensiones --- */
-        p-3                          /* Padding interno de 0.75rem */
+          /* --- Dimensiones --- */
+          p-4
+          min-h-[140px]
 
-        /* --- Colores --- */
-        bg-white                     /* Fondo blanco */
-      `}>
+          /* --- Colores --- */
+          bg-vete-surface
+        `}
+      >
         <img
           src={producto.imagen_principal_url?.img_url || '/tenant/producto_no_disponible.png'}
-          alt={producto.imagen_principal_url ? producto.prod_nombre : "Imagen no encontrada"}
+          alt={producto.prod_nombre}
           className={`
             /* --- Dimensiones --- */
-            w-full                   /* Ocupa todo el ancho disponible */
-            h-32                     /* Altura de 8rem en móvil */
-            sm:h-40                  /* Altura de 10rem en escritorio */
+            w-full
+            h-32
+            sm:h-40
 
             /* --- Estilo --- */
-            object-contain           /* Ajusta la imagen sin deformarla */
+            object-contain
+            ${!isAvailable ? 'grayscale-[60%]' : ''}
+
+            /* --- Animación --- */
+            transition-all
+            duration-300
+            hover:scale-105
           `}
         />
 
-        {/* Sección de Subcategorías (Iconos) */}
-        <div className={`
-          /* --- Posición --- */
-          absolute                   /* Flota abajo a la izquierda del bloque superior */
-          bottom-1                   /* Pegado al fondo */
-          left-2                     /* Margen izquierdo */
-          flex                       /* Alineación horizontal de badges */
-          gap-1                      /* Espacio entre badges */
-        `}>
-          {producto.subcategoria?.map((sub, idx) => (
-            <div
-              key={idx}
-              title={sub.subc_nombre}
-              className={`
-                /* --- Posición --- */
-                flex                 /* Alineación */
-                items-center         /* Centrado vertical */
-                justify-center       /* Centrado horizontal */
+        {/* <!> BADGE FLOTANTE DE NO DISPONIBLE / AGOTADO POR HOY */}
+        {!isAvailable && (
+          <div
+            className={`
+              /* --- Posición --- */
+              absolute
+              top-1/2
+              left-1/2
+              -translate-x-1/2
+              -translate-y-1/2
+              z-20
+              flex
+              items-center
+              gap-1.5
 
-                /* --- Dimensiones --- */
-                p-1                  /* Padding pequeño */
+              /* --- Dimensiones --- */
+              px-3
+              py-1.5
 
-                /* --- Colores --- */
-                bg-vete-primary/10   /* Verde tenue */
-                text-vete-primary    /* Icono verde principal */
+              /* --- Colores --- */
+              bg-vete-dark/90
+              text-white
+              border
+              border-vete-border-subtle/30
+              shadow-xl
 
-                /* --- Estilo --- */
-                rounded-md           /* Bordes redondeados */
-              `}
-            >
-              {SUBCATEGORY_ICONS[sub.subc_nombre] || null}
-            </div>
-          ))}
-        </div>
+              /* --- Texto --- */
+              text-xs
+              font-black
+              uppercase
+              tracking-wider
+
+              /* --- Estilo --- */
+              rounded-xl
+            `}
+          >
+            <AlertCircle size={14} className="text-vete-error" />
+            <span>{unavailableBadgeText}</span>
+          </div>
+        )}
+
+        {/* Badges de Subcategoría (Agnósticos) */}
+        {producto.subcategorias && producto.subcategorias.length > 0 && (
+          <div
+            className={`
+              /* --- Posición --- */
+              absolute
+              bottom-2
+              left-2.5
+              flex
+              items-center
+
+              /* --- Dimensiones --- */
+              gap-1
+            `}
+          >
+            {producto.subcategorias.map((sub) => (
+              <div
+                key={sub.subc_id}
+                title={sub.subc_nombre}
+                className={`
+                  /* --- Posición --- */
+                  flex
+                  items-center
+                  justify-center
+
+                  /* --- Dimensiones --- */
+                  p-1.5
+
+                  /* --- Colores --- */
+                  bg-vete-primary/10
+                  text-vete-primary
+                  border
+                  border-vete-primary/20
+
+                  /* --- Estilo --- */
+                  rounded-lg
+                `}
+              >
+                {sub.subc_imagen_url ? (
+                  <img 
+                    src={sub.subc_imagen_url} 
+                    alt={sub.subc_nombre} 
+                    className="w-3.5 h-3.5 object-contain" 
+                  />
+                ) : (
+                  <DynamicIcon name={sub.subc_icono} size={13} className="text-vete-primary" />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* --- CONTENEDOR INFERIOR GRIS --- */}
-      <div className={`
-        /* --- Posición --- */
-        flex                         /* Contenedor flexible */
-        flex-col                     /* Dirección vertical */
-        flex-1                       /* Toma el espacio restante */
-        justify-between              /* Distribuye el texto arriba y el botón al fondo */
-        gap-2                        /* Espaciado de 0.5rem */
+      {/* =====================================================================
+         CONTENEDOR INFERIOR: Título, Variantes, Precios y Compra
+         ===================================================================== */}
+      <div
+        className={`
+          /* --- Posición --- */
+          flex
+          flex-col
+          justify-between
+          flex-1
 
-        /* --- Dimensiones --- */
-        p-3                          /* Padding de 0.75rem */
+          /* --- Dimensiones --- */
+          p-3.5
+          gap-2.5
 
-        /* --- Colores --- */
-        bg-[#f2f2f2]                 /* Fondo gris e-commerce */
-        border-t                     /* Línea divisoria superior */
-        border-gray-100              /* Color suave para la divisoria */
-      `}>
+          /* --- Colores --- */
+          bg-vete-dark/5
+          border-t
+          border-vete-border-subtle/50
+        `}
+      >
         <div>
-          {/* Título en negrita (bold) */}
-          <h4 className={`
-            /* --- Texto --- */
-            text-gray-900            /* Color gris muy oscuro */
-            font-bold                /* Negrita requerida */
-            text-sm                  /* Texto pequeño en móvil */
-            sm:text-base             /* Texto mediano en escritorio */
-            leading-tight            /* Interlineado ajustado */
-            line-clamp-2             /* Máximo 2 líneas antes de cortar */
-          `}>
+          <h4
+            className={`
+              /* --- Colores --- */
+              text-vete-text-base
+
+              /* --- Texto --- */
+              font-bold
+              text-sm
+              sm:text-base
+              leading-snug
+              line-clamp-2
+            `}
+          >
             {producto.prod_nombre}
           </h4>
         </div>
 
-        {/* Precio y Botón de Compra Limpio */}
-        <div className={`
-          /* --- Posición --- */
-          flex                       /* Dirección flexible */
-          flex-col                   /* Alineación vertical */
-          gap-2                      /* Espacio entre precio y botón */
-          mt-auto                    /* Empuja el bloque hacia el fondo */
-          w-full                     /* Ancho completo */
-        `}>
-          <div className={`
-            /* --- Posición --- */
-            flex                     /* Alineación del símbolo y el precio */
-            items-baseline           /* Alinea la moneda con la base del número */
-            gap-1                    /* Espacio de 0.25rem */
-          `}>
-            <span className={`
-              /* --- Texto --- */
-              text-vete-primary      /* Color verde marca */
-              font-bold              /* Negrita */
-              text-xs                /* Moneda chica */
-            `}>
-              {/* <!> Aca deberia serializar la mnoeda par que trabaje segun el cliet por un tema de velocidad lo decamos asi  */}
-              $ 
-            </span>
-            <span className={`
-              /* --- Texto --- */
-              text-vete-primary      /* Color verde marca */
-              font-extrabold         /* Negrita reforzada */
-              text-lg                /* Grande en móvil */
-              sm:text-xl             /* Más grande en escritorio */
-            `}>
-              {producto.prod_precio.toLocaleString('es-UY')}
-            </span>
-          </div>
-
-          {/* Botón de Compra Compacto (Sin WhatsApp en la vista principal) */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              addToPedido(producto);
-            }}
+        {/* Selector de Variantes (Talles / Presentaciones) */}
+        {hasVariantes && (
+          <div
+            onClick={(e) => e.stopPropagation()}
             className={`
               /* --- Posición --- */
-              w-full                 /* Ocupa todo el ancho */
-              flex                   /* Contenedor flex */
-              items-center           /* Centra el icono y el texto */
-              justify-center         /* Centrado horizontal */
-              gap-1.5                /* Espacio de 0.375rem */
+              flex
+              flex-col
 
               /* --- Dimensiones --- */
-              py-1.5                 /* Padding vertical compacto */
-              px-3                   /* Padding horizontal */
-
-              /* --- Colores --- */
-              bg-vete-primary        /* Fondo verde de la marca */
-              text-white             /* Texto e icono blancos */
-
-              /* --- Texto y Estilo --- */
-              font-bold              /* Texto en negrita */
-              text-sm                /* Texto estándar */
-              rounded-md             /* Bordes suavizados */
-              shadow-sm              /* Sombra pequeña */
-
-              /* --- Animaciones --- */
-              hover:opacity-90       /* Suave cambio de opacidad */
-              transition-opacity     /* Transición rápida */
+              gap-1.5
+              pt-0.5
             `}
           >
-            Comprar
-            <ShoppingCart size={15} className="text-white" />
+            <div
+              className={`
+                /* --- Posición --- */
+                flex
+                flex-wrap
+                items-center
+
+                /* --- Dimensiones --- */
+                gap-1.5
+              `}
+            >
+              {producto.variantes.map((v: any) => {
+                const isSelected = selectedVariant?.var_id === v.var_id;
+                // <!> Evalúa disponibilidad de la opción puntual
+                const isOptionUnavailable = v.var_disponible === false || v.var_stock === 0;
+
+                return (
+                  <button
+                    key={v.var_id}
+                    type="button"
+                    disabled={isOptionUnavailable}
+                    onClick={() => setSelectedVariant(v)}
+                    className={`
+                      /* --- Posición --- */
+                      flex
+                      items-center
+
+                      /* --- Dimensiones --- */
+                      px-2
+                      py-0.5
+                      gap-1
+
+                      /* --- Colores --- */
+                      ${isSelected
+                        ? 'bg-vete-primary text-white border-vete-primary shadow-sm'
+                        : isOptionUnavailable
+                        ? 'bg-transparent text-vete-text-muted/40 border-vete-border-subtle/30 line-through cursor-not-allowed'
+                        : 'bg-vete-surface text-vete-text-base border-vete-border-subtle hover:border-vete-primary/60'
+                      }
+                      border
+
+                      /* --- Texto --- */
+                      text-[10px]
+                      font-bold
+
+                      /* --- Estilo --- */
+                      rounded-md
+                      outline-none
+
+                      /* --- Animación --- */
+                      transition-all
+                      duration-150
+                      active:scale-95
+                    `}
+                    title={isOptionUnavailable ? unavailableBadgeText : `${v.var_tipo}: ${v.var_nombre}`}
+                  >
+                    <span>{v.var_nombre}</span>
+                    {v.var_precio_adicional > 0 && (
+                      <span className="text-[9px] opacity-80 font-normal">
+                        (+${v.var_precio_adicional})
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Muestrario de Color */}
+            {selectedVariant?.color && (
+              <div
+                className={`
+                  /* --- Posición --- */
+                  flex
+                  items-center
+
+                  /* --- Dimensiones --- */
+                  gap-1.5
+                `}
+              >
+                <span
+                  style={{ backgroundColor: selectedVariant.color.col_hex }}
+                  className={`
+                    /* --- Dimensiones --- */
+                    w-3
+                    h-3
+
+                    /* --- Colores --- */
+                    border
+                    border-white
+                    shadow-sm
+
+                    /* --- Estilo --- */
+                    rounded-full
+                  `}
+                />
+                <span
+                  className={`
+                    /* --- Colores --- */
+                    text-vete-text-muted
+
+                    /* --- Texto --- */
+                    text-[10px]
+                    font-medium
+                  `}
+                >
+                  {selectedVariant.color.col_nombre}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Precio y Botón de Compra */}
+        <div
+          className={`
+            /* --- Posición --- */
+            flex
+            flex-col
+            gap-2
+            mt-auto
+            w-full
+          `}
+        >
+          <div
+            className={`
+              /* --- Posición --- */
+              flex
+              items-baseline
+              justify-between
+            `}
+          >
+            <div className="flex items-baseline gap-1">
+              <span
+                className={`
+                  /* --- Colores --- */
+                  text-vete-primary
+
+                  /* --- Texto --- */
+                  text-xs
+                  font-bold
+                `}
+              >
+                $
+              </span>
+              <span
+                className={`
+                  /* --- Colores --- */
+                  text-vete-primary
+
+                  /* --- Texto --- */
+                  text-lg
+                  sm:text-xl
+                  font-black
+                `}
+              >
+                {precioUnitario.toLocaleString('es-UY')}
+              </span>
+            </div>
+
+            {/* Indicador de estado al lado del precio */}
+            {!isAvailable && (
+              <span
+                className={`
+                  /* --- Colores --- */
+                  text-vete-error
+
+                  /* --- Texto --- */
+                  text-[10px]
+                  font-bold
+                  uppercase
+                  tracking-wider
+                `}
+              >
+                {unavailableBadgeText}
+              </span>
+            )}
+          </div>
+
+          {/* Botón Comprar / Agotado */}
+          <button
+            type="button"
+            disabled={!isAvailable}
+            onClick={(e) => handleAddToCart(e)}
+            className={`
+              /* --- Posición --- */
+              flex
+              items-center
+              justify-center
+              gap-2
+
+              /* --- Dimensiones --- */
+              w-full
+              py-2
+              px-3
+
+              /* --- Colores --- */
+              ${isAvailable 
+                ? 'bg-vete-primary text-white hover:bg-vete-primary-hover shadow-sm active:scale-95' 
+                : 'bg-vete-dark/20 text-vete-text-muted/60 cursor-not-allowed'
+              }
+
+              /* --- Texto --- */
+              text-xs
+              font-bold
+              uppercase
+              tracking-wider
+
+              /* --- Estilo --- */
+              rounded-xl
+              outline-none
+
+              /* --- Animación --- */
+              transition-all
+              duration-150
+            `}
+          >
+            <span>{isAvailable ? 'Comprar' : unavailableButtonText}</span>
+            {isAvailable && <ShoppingCart size={14} className="text-white" />}
           </button>
         </div>
 
-        {/* --- MÓDULO ACORDEÓN: Botón Desplegable --- */}
+        {/* Botón Desplegable del Acordeón */}
         <button
           type="button"
           onClick={toggleExpand}
-          title={isExpanded ? "Ver menos" : "Ver más detalles"}
+          title={isExpanded ? "Ver menos detalles" : "Ver más detalles"}
           className={`
             /* --- Posición --- */
-            flex                     /* Centrado del icono flecha */
-            items-center             /* Centrado vertical */
-            justify-center           /* Centrado horizontal */
+            flex
+            items-center
+            justify-center
 
             /* --- Dimensiones --- */
-            w-full                   /* Ancho completo */
-            pt-1                     /* Espacio superior */
+            w-full
+            pt-1
 
             /* --- Colores --- */
-            text-gray-500             /* Color gris medio por defecto */
-            hover:text-vete-primary  /* Pasa a verde de marca al hover */
+            text-vete-text-muted
+            hover:text-vete-primary
 
             /* --- Estilo --- */
-            focus:outline-none       /* Quita el borde azul por defecto */
-            transition-colors        /* Transición suave de color */
+            outline-none
+
+            /* --- Animación --- */
+            transition-colors
           `}
         >
-          {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
 
-        {/* --- CONTENIDO EXPANDIDO --- */}
+        {/* Contenido Expandido del Acordeón */}
         {isExpanded && (
-          <div className={`
-            /* --- Posición --- */
-            flex                     /* Contenedor flexible vertical */
-            flex-col                 /* Apilado de elementos */
-            gap-2.5                  /* Espacio entre descripción y WhatsApp */
+          <div
+            className={`
+              /* --- Posición --- */
+              flex
+              flex-col
+              gap-2.5
 
-            /* --- Dimensiones --- */
-            pt-2                     /* Padding superior */
+              /* --- Dimensiones --- */
+              pt-2
 
-            /* --- Colores --- */
-            border-t                 /* Borde superior separador */
-            border-gray-200/60       /* Borde gris claro semitransparente */
+              /* --- Colores --- */
+              border-t
+              border-vete-border-subtle/40
 
-            /* --- Animaciones --- */
-            animate-in               /* Animación de entrada */
-            fade-in                  /* Aparece suavemente */
-            duration-200             /* Duración de 200ms */
-          `}>
-            {/* Descripción Completa */}
-            <p className={`
-              /* --- Texto --- */
-              text-gray-600          /* Texto gris oscuro */
-              text-xs                /* Tamaño pequeño */
-              leading-snug           /* Interlineado cómodo */
-              break-words            /* Evita desbordamientos de palabras largas */
-            `}>
+              /* --- Animación --- */
+              animate-in
+              fade-in
+              duration-200
+            `}
+          >
+            <p
+              className={`
+                /* --- Colores --- */
+                text-vete-text-muted
+
+                /* --- Texto --- */
+                text-xs
+                leading-relaxed
+                break-words
+              `}
+            >
               {producto.prod_descripcion || "Sin descripción disponible."}
             </p>
 
-            {/* Botón de WhatsApp dentro del acordeón */}
+            {/* Botón WhatsApp Directo */}
             <a
               href={whatsappLink}
               target="_blank"
@@ -417,41 +743,34 @@ export function ProductCardV2({ producto }: Props) {
               onClick={(e) => e.stopPropagation()}
               className={`
                 /* --- Posición --- */
-                flex                 /* Contenedor flex */
-                items-center         /* Centrado vertical */
-                justify-center       /* Centrado horizontal */
-                gap-2                /* Espacio entre logo de WhatsApp y texto */
+                flex
+                items-center
+                justify-center
+                gap-2
 
                 /* --- Dimensiones --- */
-                py-1.5               /* Padding vertical */
-                px-3                 /* Padding horizontal */
+                w-full
+                py-2
+                px-3
 
                 /* --- Colores --- */
-                bg-[#25D366]         /* Verde oficial de WhatsApp */
-                hover:bg-[#20bd5a]   /* Verde un poco más oscuro al hover */
-                text-white           /* Texto blanco */
+                bg-vete-tertiary
+                text-white
+                shadow-sm
 
-                /* --- Texto y Estilo --- */
-                font-semibold        /* Seminegrita */
-                text-xs              /* Texto compacto */
-                rounded-md           /* Bordes suavizados */
-                shadow-sm            /* Sombra suave */
-                transition-colors    /* Transición suave */
+                /* --- Texto --- */
+                text-xs
+                font-bold
+
+                /* --- Estilo --- */
+                rounded-xl
+
+                /* --- Animación --- */
+                transition-all
+                hover:opacity-90
               `}
             >
-              <img
-                src="/images/branding/LogoWhtSapp.svg"
-                alt="WhatsApp"
-                className={`
-                  /* --- Dimensiones --- */
-                  w-4 h-4            /* Icono de 1rem x 1rem */
-
-                  /* --- Estilo --- */
-                  brightness-0       /* Convierte el icono a color sólido */
-                  invert             /* Lo vuelve blanco */
-                `}
-              />
-              Consultar por WhatsApp
+              <span>Consultar por WhatsApp</span>
             </a>
           </div>
         )}
@@ -459,3 +778,5 @@ export function ProductCardV2({ producto }: Props) {
     </div>
   );
 }
+
+export default ProductCardV2;

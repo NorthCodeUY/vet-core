@@ -1,10 +1,12 @@
+// apps/web-client/src/App.tsx
+
 /* =============================================================================
    ENRUTADOR PRINCIPAL Y JERARQUÍA DE CONTEXTOS (App.tsx)
    ============================================================================= */
 
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { TenantProvider } from './context/tenant_context';
+import { TenantProvider, useConfig } from './context/tenant_context';
 import { PedidoProvider } from './context/pedido_context';
 
 /* Páginas Principales */
@@ -15,58 +17,70 @@ import LandingPage from './pages/landing/LlandingPage';
 import { TenantStudioDrawer } from './components/studio/TenantStudioDrawer';
 
 /**
- * Componente Raíz de la Aplicación (`App`).
+ * Enrutador interno que evalúa la bandera de mantenimiento en tiempo de ejecución.
  * 
- * Orquesta la arquitectura de providers globales y la separación de rutas:
- * 1. `/`: Pantalla pública de mantenimiento / sitio en construcción.
- * 2. `/revision`: Vista limpia para clientes e inspectores sin botones de desarrollo.
- * 3. `/configuracion`: Estudio de diseño en caliente exclusivo para desarrollo local.
- *
  * @component
- * @returns {JSX.Element} Árbol de componentes con providers y ruteo seguro.
+ * @returns {JSX.Element} Configuración de rutas activa.
  */
-function App(): React.JSX.Element {
-  /*
-     SEGURIDAD EN PRODUCCIÓN:
-     `import.meta.env.DEV` vale true solo en desarrollo local (npm run dev).
-     En producción (npm run build), la ruta /configuracion queda deshabilitada.
-  */
+const AppRoutes: React.FC = () => {
+  const { config } = useConfig();
   const isDevMode = import.meta.env.DEV;
 
+  /* 
+     CONTROL DE PASO A PRODUCCIÓN POR CONFIG.JSON:
+     Si no está definido o es false, la web se muestra en la raíz '/'.
+     Si es true, la raíz '/' muestra la pantalla de mantenimiento.
+  */
+  const isMaintenance = config?.features?.is_maintenance ?? false;
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* 1. Ruta Raíz: Dinámica según el flag 'is_maintenance' de cada cliente */}
+        <Route
+          path="/"
+          element={isMaintenance ? <MaintenancePage /> : <LandingPage />}
+        />
+
+        {/* 2. Ruta de Revisión: Bypass para verificar avances en cualquier momento */}
+        <Route path="/revision" element={<LandingPage />} />
+
+        {/* 3. Ruta de Configuración: Solo accesible en entorno de desarrollo local */}
+        {isDevMode ? (
+          <Route
+            path="/configuracion"
+            element={
+              <>
+                <LandingPage />
+                <TenantStudioDrawer />
+              </>
+            }
+          />
+        ) : (
+          <Route path="/configuracion" element={<Navigate to="/" replace />} />
+        )}
+
+        {/* Redirección por defecto */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+};
+
+/**
+ * Componente Raíz de la Aplicación (`App`).
+ * 
+ * Envuelve el árbol con los proveedores de contexto globales `TenantProvider` y `PedidoProvider`.
+ *
+ * @component
+ * @returns {JSX.Element} Aplicación montada con contextos globales.
+ */
+export default function App(): React.JSX.Element {
   return (
     <TenantProvider>
       <PedidoProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* 1. Ruta Raíz: Cartel de Mantenimiento / Próximamente */}
-            <Route path="/" element={<MaintenancePage />} />
-
-            {/* 2. Ruta de Revisión: Landing Page limpia para clientes (SIN botón de Studio) */}
-            <Route path="/revision" element={<LandingPage />} />
-
-            {/* 3. Ruta de Configuración: Landing Page + Tenant Studio activo (Solo en Desarrollo) */}
-            {isDevMode ? (
-              <Route
-                path="/configuracion"
-                element={
-                  <>
-                    <LandingPage />
-                    <TenantStudioDrawer />
-                  </>
-                }
-              />
-            ) : (
-              /* En producción, redirige al inicio para evitar accesos no autorizados */
-              <Route path="/configuracion" element={<Navigate to="/" replace />} />
-            )}
-
-            {/* Redirección de rutas desconocidas */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
+        <AppRoutes />
       </PedidoProvider>
     </TenantProvider>
   );
 }
-
-export default App;

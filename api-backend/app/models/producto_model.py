@@ -1,29 +1,15 @@
 # api-backend/app/models/producto_model.py
-
-# <!> 
-# 
-# Una cosa que tengo que tener en cueta es que debira tenr un
-#  boton o lago con baja logica para que no aparesa por que no hay estok 
-# o lo que sea pero que no se me borre para el registro no se que opinas 
-# cuado empiese a sentralizar la parte de pedido
-# y tora cosa alg para deterninar que no tien stok epro que se es necsario se mantenga en el carrito 
-# por jemplo yo tneog una clieta que es una veteriara ella puede quedare sin una raion porque no se dio cuent o lo qaue ç
-# sea pero ella pide al provedor le pretuna al clite y se lo da pero en la web aparesca sin stok y que ella deside si retirarlo aono 
-# 
-# y tengo otro clite que vede jollas con amatista eso n tiene stok se vende y se vendio no lo puedo dar de baja porque me sirve para el registiro etc pero 
-# tene que salir de la bitrina digital algo asei  
-
-
 """
 =============================================================================
 MODELO DE PERSISTENCIA: NÚCLEO DEL CATÁLOGO DE PRODUCTOS
 =============================================================================
 Entidad central del catálogo. Agrupa información descriptiva, categorización,
-galería multimedia y presentaciones físicas vendibles (variantes).
+galería multimedia, presentaciones físicas (variantes) y reglas de visualización/stock.
 """
 
+from sqlalchemy import true
 from typing import Optional, List, TYPE_CHECKING
-from sqlalchemy import String, Float, Integer, ForeignKey, Text
+from sqlalchemy import String, Float, Integer, ForeignKey, Text, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
@@ -39,10 +25,10 @@ class ProductoModel(Base):
     """
     Entidad maestra de producto.
     
-    Regla de Inventario:
-    - Si el producto no tiene variantes: 'prod_stock' y 'prod_precio' rigen la venta.
-    - Si el producto tiene variantes: El stock y precio se calculan a partir de 
-      sus registros relacionados en 'producto_variante'.
+    Reglas Transaccionales:
+    - prod_activo: Baja lógica para preservar integridad referencial de pedidos pasados.
+    - prod_visible: Permite ocultar el producto de la tienda pública sin desactivarlo.
+    - permitir_sin_stock: Permite compras por encargo (backorders) cuando el stock es 0.
     """
     __tablename__ = "producto"
 
@@ -82,6 +68,48 @@ class ProductoModel(Base):
         doc="Stock global físico (utilizado como fallback cuando no hay variantes)."
     )
 
+    codigo_barra: Mapped[Optional[str]] = mapped_column(
+        String(64),
+        unique=True,
+        nullable=True,
+        index=True,
+        doc="Código de barras EAN/UPC para lectores ópticos en panel administrativo."
+    )
+
+    # =========================================================================
+    # Reglas de Visibilidad, Inventario y Baja Lógica 1 
+    # =========================================================================
+    prod_activo: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        nullable=False,
+        index=True,
+        doc="Baja lógica: False si el producto fue dado de baja definitiva pero debe persistir en auditoría."
+    )
+
+    prod_disponible: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        nullable=False,
+        index=True,
+        doc="Producto disponible: True si el producto está disponible, False si no lo está."
+    )
+
+    prod_visible: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        nullable=False,
+        index=True,
+        doc="Visibilidad en vitrina: False para ocultar de la web pública (ej: joyas únicas agotadas)."
+    )
+
+    permitir_sin_stock: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+        doc="Habilita pedidos por encargo aunque el stock actual sea 0."
+    )
+
     # =========================================================================
     # Claves Foráneas
     # =========================================================================
@@ -95,14 +123,11 @@ class ProductoModel(Base):
     # =========================================================================
     # Relaciones ORM Tipadas (SQLAlchemy 2.0)
     # =========================================================================
-    
-    # 1. Categoría Principal
     rel_categoria: Mapped["CategoriaModel"] = relationship(
         "CategoriaModel",
         doc="Relación Many-to-One hacia la categoría del producto."
     )
     
-    # 2. Galería de Imágenes (1 a N)
     rel_imagenes: Mapped[List["ImagenUrlModel"]] = relationship(
         "ImagenUrlModel", 
         back_populates="rel_producto",
@@ -111,14 +136,12 @@ class ProductoModel(Base):
         doc="Lista de imágenes asociadas al producto."
     )
 
-    # 3. Subcategorías (Relación M:N a través de tabla intermedia)
     rel_subcategoria: Mapped[List["ProductoSubCategoriaModel"]] = relationship(
         "ProductoSubCategoriaModel",
         cascade="all, delete-orphan",
         doc="Asociaciones con subcategorías secundarias del catálogo."
     )
 
-    # 4. Variantes Físicas (Talles, Colores, Medidas)
     rel_variantes: Mapped[List["ProductoVarianteModel"]] = relationship(
         "ProductoVarianteModel",
         back_populates="rel_producto",
@@ -127,7 +150,6 @@ class ProductoModel(Base):
         doc="Presentaciones físicas vendibles asociadas a este producto."
     )
 
-    # 5. Inventario en Cajas de Depósito
     rel_caja_items: Mapped[List["CajaItemModel"]] = relationship(
         "CajaItemModel",
         back_populates="rel_producto",

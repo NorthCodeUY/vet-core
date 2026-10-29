@@ -1,85 +1,118 @@
 # api-backend/app/config.py
-from pydantic_settings import BaseSettings  #  Importamos la clase BaseSettings del modulo pydantic_settings para poder crear variables de entorno 
-from pydantic_settings import SettingsConfigDict # Importamos la clase SettingsConfigDict para poder configurar el cargador
+"""
+=============================================================================
+CONFIGURACIÓN CENTRALIZADA MULTI-TENANT (PYDANTIC SETTINGS V2)
+=============================================================================
+Gestiona variables de entorno, feature flags, derivación dinámica de CORS
+y construcción de la URL de conexión a la base de datos de forma agnóstica.
+"""
 
-import os # Importamos el modulo os para poder trabajar con rutas y archivos 
-import socket # Importamos el modulo socket para poder obtener la direccion ip local
+import os
+import socket
+from typing import List
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
 
-def obtener_ip_local():
-    """Detecta la IP privada de la máquina en la red local (WiFi/Ethernet)"""
+
+def obtener_ip_local() -> str:
+    """Detecta la IP privada del Host en la red local (WiFi/Ethernet)."""
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Sockets son para crear conexiones entre procesos, en este caso para obtener la ip local 
-        # No realiza una conexión real, solo sirve para identificar 
-        # la interfaz de red activa
-        s.connect(("8.8.8.8", 80)) # (Direccion ip, puerto) Se conecta a la ip y puerto de google para obtener la ip local 
-        ip = s.getsockname()[0] # Obtiene la direccion ip local
-        s.close() # Cierra la conexion
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
         return ip
     except Exception:
         return "127.0.0.1"
 
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # Busca el directorio padre dos veces para encontrar la raiz del proyecto
-ENV_PATH = os.path.join(BASE_DIR, ".env") # Busca el archivo .env en la raiz del proyecto
-
 class Settings(BaseSettings):
-    """ Variables de entorno cargadas desde .env """
+    """Contrato de configuración fuertemente tipado para cada Tenant."""
 
-    # Datos Base de datos 
-    db_user: str # Usuario de la base de datos 
-    db_password: str # Contraseña de la base de datos
-    db_host: str # Host de la base de datos
-    db_port: str # Puerto de la base de datos
-    db_name: str # Nombre de la base de datos
+    # -------------------------------------------------------------------------
+    # IDENTIFICACIÓN Y MODO
+    # -------------------------------------------------------------------------
+    PROJECT_NAME: str = Field(default="VetCore Engine API", description="Nombre comercial del tenant")
+    ENV_MODE: str = Field(default="development", description="development | production")
+    IS_DOCKER: bool = Field(default=False, description="True si corre dentro de un contenedor")
     
-    # Configuración de Red
-    base_url: str = "" # La URL base de tu backend (por ejemplo, para construir enlaces absolutos). 
-    allowed_origins: str = "" # Lista de origenes permitidos (para CORS).
-    env_mode: str = "development" # Modo de entorno (development o production)
-    app_port: int = 8000  # Puerto donde corre el backend (8001 en tu caso)
+    # Feature Flags Multi-Tenant
+    TENANT_TYPE: str = Field(default="GENERAL", description="VET | RETAIL | SERVICES")
+    ENABLE_AGENDA: bool = Field(default=False, description="Habilita módulo de citas/turnos")
 
-    # Pydantic v2: Forma moderna de configurar el cargador
-    model_config = SettingsConfigDict( 
-        env_file=ENV_PATH, # Le dice a Pydantic que busque el archivo .env
-        extra='ignore', # Ignora variables no definidas
-        env_file_encoding='utf-8' # Codificacion de utf-8
-    )  
+    # -------------------------------------------------------------------------
+    # PERSISTENCIA (POSTGRESQL)
+    # -------------------------------------------------------------------------
+    DB_USER: str
+    DB_PASSWORD: str
+    DB_HOST: str = "localhost"
+    DB_PORT: str = "5432"
+    DB_NAME: str
 
-settings = Settings() # Instanciamos la configuración inicial desde el .env
+    # -------------------------------------------------------------------------
+    # RED Y SERVIDOR ASGI
+    # -------------------------------------------------------------------------
+    APP_PORT: int = 8000
+    BASE_URL: str = ""
+    ALLOWED_ORIGINS: str = ""
+
+    # -------------------------------------------------------------------------
+    # SEGURIDAD Y TOKENS JWT
+    # -------------------------------------------------------------------------
+    SECRET_KEY: str = Field(default="default_insecure_key_change_in_production", min_length=16)
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 480
+
+    # -------------------------------------------------------------------------
+    # CLOUDFLARE R2 / OBJECT STORAGE (Opcional en desarrollo)
+    # -------------------------------------------------------------------------
+    R2_ACCOUNT_ID: str = ""
+    R2_ACCESS_KEY_ID: str = ""
+    R2_SECRET_ACCESS_KEY: str = ""
+    R2_BUCKET_NAME: str = ""
+    R2_PUBLIC_URL: str = ""
+
+    # Pydantic v2: Carga dinámica priorizando variables del sistema inyectadas por run_desarrollo.py
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="ignore",
+        env_file_encoding="utf-8"
+    )
+
+    # -------------------------------------------------------------------------
+    # PROPIEDADES CALCULADAS (BUSINESS & INFRASTRUCTURE LOGIC)
+    # -------------------------------------------------------------------------
+    @property
+    def DATABASE_URL(self) -> str:
+        """Construye dinámicamente la URL de conexión para SQLAlchemy."""
+        return f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+
+    @property
+    def CORS_ORIGINS(self) -> List[str]:
+        """Calcula los orígenes permitidos según el modo de ejecución."""
+        if self.ENV_MODE == "development":
+            return ["*"]
+        if self.ALLOWED_ORIGINS:
+            return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",") if origin.strip()]
+        return []
+
+    @property
+    def CORS_ALLOW_CREDENTIALS(self) -> bool:
+        """Si se usa '*' en desarrollo, las credenciales deben ser False por estándar HTTP."""
+        return self.ENV_MODE != "development"
+
+    @property
+    def RESOLVED_BASE_URL(self) -> str:
+        """Determina la URL pública para construir enlaces a recursos."""
+        if self.BASE_URL:
+            return self.BASE_URL
+        host = "localhost" if self.IS_DOCKER else obtener_ip_local()
+        return f"http://{host}:{self.APP_PORT}"
 
 
-# --- LÓGICA DE DETECCIÓN DE ENTORNO ---
-is_docker = os.getenv("IS_DOCKER", "false").lower() == "true"
-origins_list = []
-allow_credentials = False
+# Instanciación única consumida por todo el backend
+settings = Settings()
 
-#  LÓGICA DINÁMICA DE BASE_URL
-# Si estamos en desarrollo, ignoramos lo que diga el .env y construimos la URL con la IP real
-if settings.env_mode == "development":
-    # <!> Aca tengo una duda esto va a andar en el entorno bakend contenedor 
-    # fronten local pqero que pasa cuando es ambos en contenedor andara o no hay que refernciar 
-    # a otra cosa ??
-    host= "" # Host del backend
-    if is_docker:
-        host= "localhost" # enra atraves de el host local
-    else:
-        host = obtener_ip_local() # ip local del host
-    
-    
-    # 2. CORS en Desarrollo
-    origins_list = ["*"] # Abre la comunicacion con cualquier frontend 
-    allow_credentials = False # Obligatorio False si usamos "*"
-
-    settings.base_url = f"http://{host}:{settings.app_port}"
-
-elif settings.env_mode == "production":
-    # En producción, si base_url está vacío en el .env, lanzamos un error preventivo
-    if not settings.base_url:
-        raise ValueError("ERROR: BASE_URL debe estar definida en el .env para producción")
-    origins_list = [o.strip() for o in settings.allowed_origins.split(",") if o.strip()]
-    allow_credentials = True 
-
-# --- PROCESAMIENTO DINÁMICO DE CORS ---
-# Convertimos el string de ALLOWED_ORIGINS del .env en una lista limpia
-# origins_list = [origin.strip() for origin in settings.allowed_origins.split(",")]
-
+# Alias de compatibilidad hacia atrás para imports existentes en main.py
+origins_list = settings.CORS_ORIGINS
+allow_credentials = settings.CORS_ALLOW_CREDENTIALS

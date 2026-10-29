@@ -90,34 +90,26 @@
     "description": "Técnica, perfilados de navaja y terminaciones de precisión realizadas en nuestro estudio de Artigas.",
     "items": [
       {
-        "id": "corte-low-fade",
-        "title": "Low Fade & Crop Texturizado",
-        "description": "Degradado bajo limpio a navaja con textura superior y fijación profesional efecto mate.",
-        "category": "Corte Moderno",
         "media": [
           { "type": "video", "url": "/tenant/trabajos/1-video.mp4" }
         ],
         "whatsapp_message": "¡Hola Malandro Barber! Vi el video del *Low Fade Texturizado* en la web y me gustaría coordinar un turno para hacerme ese corte."
       },
       {
-        "id": "corte-skin-fade-barba",
-        "title": "Skin Fade & Ritual de Barba",
-        "description": "Degradado a cero pulido, perfilado de barba tradicional con toalla caliente y aceites hidratantes.",
-        "category": "Combo Completo",
         "media": [
           { "type": "video", "url": "/tenant/trabajos/2-video.mp4" }
         ],
         "whatsapp_message": "¡Buenas! Me interesa el servicio de *Skin Fade & Ritual de Barba*. ¿Qué horarios tienen disponibles esta semana?"
       },
       {
-        "id": "corte-taper-fade",
-        "title": "Taper Fade & Freestyle Line",
-        "description": "Desvanecimiento en patillas y nuca manteniendo volumen lateral, acompañado de diseño de líneas a navaja.",
-        "category": "Freestyle Urbano",
         "media": [
-          { "type": "image", "url": "/tenant/trabajos/3-1.png" },
-          { "type": "image", "url": "/tenant/trabajos/3-3.png" },
           { "type": "video", "url": "/tenant/trabajos/3-video.mp4" }
+        ],
+        "whatsapp_message": "¡Hola! Vi las fotos y video del *Taper Fade con Diseño* en la web y quiero consultar disponibilidad para un corte similar."
+      },
+      {
+        "media": [
+          { "type": "video", "url": "/tenant/trabajos/4-video.mp4" }
         ],
         "whatsapp_message": "¡Hola! Vi las fotos y video del *Taper Fade con Diseño* en la web y quiero consultar disponibilidad para un corte similar."
       }

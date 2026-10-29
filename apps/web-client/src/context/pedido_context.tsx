@@ -1,4 +1,8 @@
-/* --- apps/web-client/src/context/pedido_context.tsx --- */
+/* --- apps/web-client/src/context/pedido_context.tsx --- 
+
+<!> Esto de pedido tendria que ir relacinado a variates porque puede cambiar segun el talle cambia el precio la variate 
+
+*/
 
 import React, { createContext, useContext, useState, useMemo } from 'react';
 import type { ApiProduct } from '../types/product_types';
@@ -50,25 +54,27 @@ export const PedidoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
    * @param {ApiProduct} product - Entidad del producto proveniente del Backend.
    */
   const addToPedido = (product: ApiProduct) => {
-    setPedido((prev) => {
-      const existing = prev.find(item => item.producto.prod_id === product.prod_id);
+    // <!> Esto me da error. 
 
-      if (existing) {
-        /* Si existe, mapeamos el array incrementando solo el item correspondiente */
-        return prev.map(item =>
-          item.producto.prod_id === product.prod_id
-            ? { ...item, cantidad: item.cantidad + 1 }
-            : item
-        );
-      }
+    // setPedido((prev: PedidoItem[]) => {
+    //   const existing = prev.find(item => item.producto.prod_id === product.prod_id);
 
-      /* Si es nuevo, agregamos la línea capturando el precio actual del backend */
-      return [...prev, {
-        producto: product,
-        cantidad: 1,
-        precio_unitario_capturado: product.prod_precio
-      }];
-    });
+    //   if (existing) {
+    //     /* Si existe, mapeamos el array incrementando solo el item correspondiente */
+    //     return prev.map(item =>
+    //       item.producto.prod_id === product.prod_id
+    //         ? { ...item, cantidad: item.cantidad + 1 }
+    //         : item
+    //     );
+    //   }
+
+    //   /* Si es nuevo, agregamos la línea capturando el precio actual del backend */
+    //   return [...prev, {
+    //     producto: product,
+    //     cantidad: 1,
+    //     precio_unitario_capturado: product.prod_precio
+    //   }];
+    // });
   };
 
   /**

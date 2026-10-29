@@ -1,10 +1,29 @@
 # api-backend/docker-compose.yml
 
-# Definición de la versión de especificación de servicios Docker
-services:
-
   # ---------------------------------------------------------------------------
-  # TENANT 1: BACKEND VETERINARIA BELTRAMELLI
+  #  POSTGRES DATABASE
+  # ---------------------------------------------------------------------------
+services:
+  db-vet_bel:
+    image: postgres:15 # Contenedor de PostgreSQL
+    container_name: vet_db_bel # Nombre del contenedor
+    restart: always # Reinicia el contenedor si se cae
+    environment:
+      # Variables de entorno
+      POSTGRES_USER: ${DB_USER} # Usuario de la base de datos
+      POSTGRES_PASSWORD: ${DB_PASSWORD} # Contraseña de la base de datos
+      POSTGRES_DB: ${DB_NAME} # Nombre de la base de datos
+    # Estos puertos hay que comentarlos en produccion
+    ports:
+      # Mapeo de puertos
+      - "${DB_PORT}:5432" # El puerto 5432 de tu máquina se conecta al 5432 del contenedor
+    volumes:
+      # Volúmenes
+      - postgres_data_vet_bel:/var/lib/postgresql/data
+    networks:
+      - northcode-net
+  # ---------------------------------------------------------------------------
+  #  BACKEND VETERINARIA BELTRAMELLI
   # ---------------------------------------------------------------------------
   backend-veterinaria:
     # Contexto de construcción: usa el Dockerfile ubicado en la raíz actual
@@ -13,9 +32,9 @@ services:
     container_name: backend_vet_beltramelli
     # Reinicia automáticamente el contenedor si el proceso falla o se reinicia el servidor
     restart: always
-    ports:
-      # Mapeo de puertos: Host (8001) -> Contenedor (8001)
-      - "8001:8001"
+    # Los puertos quedan comentados. La comunicación se hace vía DNS interno de Docker (northcode-net)
+    # ports:
+    #   - "8001:8001" 
     env_file:
       # Inyecta las variables de entorno específicas de este cliente
       - .env.veterinaria
@@ -38,9 +57,10 @@ services:
     container_name: backend_vestimenta_flordeloto
     # Política de alta disponibilidad en caso de caídas
     restart: always
-    ports:
+    # No expongo los puertos a la máquina host
+    # ports:
       # Mapeo de puertos: Host (8002) -> Contenedor (8002)
-      - "8002:8002"
+      # - "8002:8002"
     env_file:
       # Inyecta las variables de entorno de la tienda de ropa
       - .env.flordeloto

@@ -1,39 +1,44 @@
 <!-- /apps/web-client/index.html -->
 <!doctype html>
-<html lang="es"> <!-- <!> CORRECCIÓN: Cambiado a Español -->
+<html lang="es" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    
-    <!-- FAVICON: El SVG es ideal porque es infinito, no necesita resolución fija -->
-    <link rel="icon" type="image/png" href="/tenant/logo.png" />
-    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- SEO ESTÁNDAR (Para Google) -->
-    <title>Veterinaria Beltramelli - Salto, Uruguay</title>
-    <meta name="description" content="Medicina veterinaria integral en Salto. Pedido online de raciones y accesorios con entrega a domicilio." />
-    <meta name="theme-color" content="#10b981" /> <!-- Color de la barra en móviles Android -->
 
-    <!-- CONFIGURACIÓN OPEN GRAPH (WhatsApp, Facebook) -->
+    <!-- 1. IDENTIDAD DE MARCA: Favicon dinámico montado en /tenant/ -->
+    <link rel="icon" type="image/png" href="/tenant/logo.png" />
+
+    <!-- 2. SEO ESTÁNDAR PARA GOOGLE (Inyectado en Runtime) -->
+    <title>__META_TITLE__</title>
+    <meta name="description" content="__META_DESCRIPTION__" />
+    <!-- Color dinámico de la barra superior en Android según el color primario del cliente -->
+    <meta name="theme-color" content="__THEME_COLOR__" />
+
+    <!-- 3. CONFIGURACIÓN OPEN GRAPH (WhatsApp, Facebook, LinkedIn, iMessage) -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://veterinaria-beltramelli.com/" />
-    <meta property="og:title" content="Veterinaria Beltramelli - Pedido Online" />
-    <meta property="og:description" content="Cuidamos a quienes amas. Realizá tu pedido de forma rápida y segura." />
+    <meta property="og:url" content="__CANONICAL_URL__" />
+    <meta property="og:title" content="__META_TITLE__" />
+    <meta property="og:description" content="__META_DESCRIPTION__" />
     
-    <!-- <!> CRÍTICO: WhatsApp requiere una URL ABSOLUTA para la imagen -->
-    <meta property="og:image" content="https://veterinaria-beltramelli.com/og-image.png" />
+    <!-- Imagen destacada que se muestra en la tarjeta de WhatsApp (1200x630 recomendado) -->
+    <meta property="og:image" content="__OG_IMAGE__" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
 
-    <!-- CARGA DE FUENTES (Optimizado) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <!-- 4. TWITTER CARDS -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="__META_TITLE__" />
+    <meta name="twitter:description" content="__META_DESCRIPTION__" />
+    <meta name="twitter:image" content="__OG_IMAGE__" />
 
+    <!-- 5. FUENTES CORPORATIVAS (Carga Optimizada) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Outfit:wght@100..900&display=swap" rel="stylesheet" />
   </head>
-  <body>
+  <body class="bg-vete-dark text-vete-text-base antialiased selection:bg-vete-primary selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

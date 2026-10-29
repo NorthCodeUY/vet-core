@@ -64,6 +64,7 @@ services:
     environment:
       # Host loopback seguro: Deshabilita el proxy de API al no requerir backend
       - BACKEND_HOST=127.0.0.1:80
+      - DOMAIN_NAME=malandrobarber.northcode-uy.com
     volumes:
       # Inyección de configuración temática oscura/roja
       - ../../clients/malandrobarber/config.json:/usr/share/nginx/html/config/client_info.json:ro
@@ -86,6 +87,7 @@ services:
     environment:
       # Host loopback seguro: Pedidos procesados en cliente vía WhatsApp
       - BACKEND_HOST=127.0.0.1:80
+      - DOMAIN_NAME=veterinaria-beltramelli.com 
     volumes:
       # Inyección de configuración temática rosa pastel / magenta
       - ../../clients/flordeloto/config.json:/usr/share/nginx/html/config/client_info.json:ro

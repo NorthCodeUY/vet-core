@@ -57,6 +57,7 @@
 
   // Interruptores de activación/desactivación de módulos en la interfaz (Features)
   "features": {
+    "is_maintenance": true,            // ✅ true: muestra página de mantenimiento | false: muestra página principal
     "has_cart": true,                  // ✅ true: activa el carrito y drawer de pedidos | false: solo catálogo
     "has_products": true,              // ✅ true: activa la sección de catálogo de productos
     "has_services": true,              // ✅ true: muestra la sección de servicios ofrecidos
@@ -324,7 +325,9 @@
     "whatsapp_order_prefix": "NUEVO PEDIDO WEB",
     "cash_payment_note": "Pago en mano al recibir (coordinar cambio con el vendedor)",
     "pos_payment_note": "Pago con débito/crédito al entregar (solicitar POS)",
-    "transfer_note": "Adjuntaré comprobante por este medio"
+    "transfer_note": "Adjuntaré comprobante por este medio",
+    "product_unavailable_label": "Agotado",
+    "product_unavailable_btn": "Notificarme cuando vuelva"
   },
 
   // Datos para la sección de Ubicación en landing page

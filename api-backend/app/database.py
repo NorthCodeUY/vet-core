@@ -1,78 +1,70 @@
-# /api-backend/app/database.py
+# api-backend/app/database.py
+"""
+=============================================================================
+MOTOR DE PERSISTENCIA Y GESTIÓN DE SESIONES (SQLALCHEMY 2.0)
+=============================================================================
+Configuración del Engine, Pool de conexiones y generador de sesiones transaccionales.
+Completamente agnóstico: la resolución de red depende 100% de las variables de entorno.
+"""
 
-import os
+import logging
+from typing import Generator
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker, DeclarativeBase, Session
 from app.config import settings
 
-# Definición de Base (Debe estar arriba para evitar errores de importación en modelos)
-Base = declarative_base()
-
-# Lógica de detección de Host (Agnóstica al entorno)
-# Si 'IS_DOCKER' es true, usamos el nombre del servicio definido en docker-compose.
-# De lo contrario, usamos lo que diga el .env (localhost para desarrollo manual).
-is_docker = os.getenv("IS_DOCKER", "false").lower() == "true"
-
-if is_docker: 
-    # Nombre del servicio PostgreSQL en la red interna de Docker
-    db_host = "db-vet_bel"
-else:
-    # Si estamos en local, usamos lo que diga el .env (localhost)
-    db_host = settings.db_host
+# =============================================================================
+# 1. BASE DECLARATIVA (Sintaxis Moderna SQLAlchemy 2.0)
+# =============================================================================
+class Base(DeclarativeBase):
+    """Clase base para todos los modelos ORM del sistema."""
+    pass
 
 
-# # Construimos la URL desde settings<!> (Se puede borrar)
-# DATABASE_URL = f"postgresql://" + \
-#                 f"{settings.db_user}:{settings.db_password}@{db_host}:{settings.db_port}/{settings.db_name}"
+# =============================================================================
+# 2. AUDITORÍA DE PICOS DE TRÁFICO Y POOL DE CONEXIONES
+# =============================================================================
+# Si el pool se satura y usa conexiones 'max_overflow', lo imprime en consola/Docker
+if settings.ENV_MODE == "development":
+    # Muestra advertencias de saturación de pool en la terminal
+    logging.getLogger("sqlalchemy.pool").setLevel(logging.WARNING)
 
 
-# Construimos la URL de la base de datos con comentarios por componente
-DATABASE_URL = (
-    "postgresql://"
-    f"{settings.db_user}:"      # Usuario de PostgreSQL
-    f"{settings.db_password}@"  # Contraseña
-    f"{db_host}:"               # Host (ej. 'db' en Docker o 'localhost')
-    f"{settings.db_port}/"      # Puerto (ej. 5432)
-    f"{settings.db_name}"       # Nombre de la base de datos
-)
-
-
-# Configuración del Motor de SQLAlchemy (Optimizado para Producción)
+# =============================================================================
+# 3. CONFIGURACIÓN DEL MOTOR (ENGINE)
+# =============================================================================
+# La URL se resuelve limpiamente desde settings sin condicionales hardcodeados
 engine = create_engine(
-    DATABASE_URL,          # URL de la base de datos
-    pool_pre_ping=True,    # Verifica la salud de la conexión antes de usarla
-    pool_size=10,          # Mantiene 10 conexiones abiertas para rapidez
-    max_overflow=20,       # Permite hasta 20 conexiones extra en picos de tráfico <!> Es posible pasarme a un log o algo con dockerpa ver los picos de travicos 
-    pool_use_lifo=True,    # Mejora el rendimiento reutilizando la conexión más reciente
-    echo=False             # Cambiar a True solo para debugging de SQL
+    settings.DATABASE_URL,
+    pool_pre_ping=True,    # Comprueba que la conexión siga viva antes de entregarla (evita fallos por timeout)
+    pool_size=10,          # Mantiene 10 conexiones persistentes abiertas en memoria
+    max_overflow=20,       # Admite hasta 20 conexiones extras dinámicas durante picos de tráfico
+    pool_use_lifo=True,    # Reutiliza la conexión usada más recientemente (optimiza el cache de PostgreSQL)
+    echo=False             # En True solo para depurar queries SQL en consola
 )
 
-# Fábrica de Sesiones
+
+# =============================================================================
+# 4. FÁBRICA DE SESIONES
+# =============================================================================
 SessionLocal = sessionmaker(
-    autocommit=False,   # Evita que la base de datos guarde automaticamente los cambios
-    autoflush=False,    # Evita que la base de datos guarde automaticamente los cambios
-    bind=engine         # Enlaza la sesion con el motor
-    )                   
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
 
-# Base = declarative_base()
 
-def get_db():
+# =============================================================================
+# 5. DEPENDENCY INJECTION (FastAPI get_db)
+# =============================================================================
+def get_db() -> Generator[Session, None, None]:
     """
-    Generador de sesiones de base de datos. 
-    Garantiza el cierre de la conexión al finalizar la petición.
+    Generador de contexto para endpoints de FastAPI.
+    Garantiza que toda sesión abierta se cierre obligatoriamente al responder la petición,
+    retornando la conexión física al pool sin fugas de memoria.
     """
-    db = SessionLocal() # Crea una instancia de SessionLocal
+    db = SessionLocal()
     try:
-        yield db # Espera a que se complete la peticion
+        yield db
     finally:
-        db.close() # Cierra la conexion
-
-# Ejemplo de uso
-
-# from app.database import get_db
-# from app.models import Categoria
-
-# def read_categorias():
-#     db = get_db()
-#     categorias = db.query(Categoria).all()
-#     return categorias
+        db.close()

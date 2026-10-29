@@ -87,6 +87,7 @@ export interface UIVariantsConfig {
  * Banderas booleanas de activación/desactivación de módulos.
  * 
  * @interface FeaturesConfig
+ * @property {boolean} is_maintenance - Muestra la página de mantenimiento en lugar de la principal.
  * @property {boolean} has_cart - Habilita el carrito y drawer de pedidos.
  * @property {boolean} has_appointments - <!> esto aun no lo programe Habilita el módulo de reservas.
  * @property {boolean} has_health_plans - <!> Esto tampoco lo programe  Habilita la sección de planes/suscripciones.
@@ -100,6 +101,7 @@ export interface UIVariantsConfig {
  * @property {boolean} has_portfolio - Habilita la sección de trabajos/portfolio.
 */
 export interface FeaturesConfig {
+  is_maintenance: boolean;
   has_cart: boolean;
   has_appointments: boolean; // <!> esto aun no lo programe
   has_health_plans: boolean; // <!> esto aun no lo programe
@@ -471,13 +473,18 @@ export interface PaymentMethodsConfig {
  * @property {string} cash_payment_note - Instrucción para pago en efectivo.
  * @property {string} pos_payment_note - Instrucción para pago con tarjeta en puerta.
  * @property {string} transfer_note - Instrucción de transferencia bancaria.
+ * @property {string} product_unavailable_label - Etiqueta para producto agotado.
+ * @property {string} product_unavailable_btn - Etiqueta para botón de producto agotado.
  */
+
 export interface CustomMessagesConfig {
   whatsapp_contact_label: string;
   whatsapp_order_prefix: string;
   cash_payment_note: string;
   pos_payment_note: string;
   transfer_note: string;
+  product_unavailable_label: string;
+  product_unavailable_btn: string;
 }
 
 /**
@@ -544,5 +551,6 @@ export interface TenantConfig {
   custom_messages: CustomMessagesConfig;
   location_section: LocationSectionConfig;
   portfolio_section?: PortfolioSectionConfig;
+
 
 }

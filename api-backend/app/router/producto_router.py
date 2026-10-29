@@ -1,10 +1,11 @@
 # api-backend/app/router/producto_router.py
 """
 =============================================================================
-MODELO DE PERSISTENCIA: NÚCLEO DEL CATÁLOGO DE PRODUCTOS
+CONTROLADOR HTTP: CATÁLOGO Y CONSULTAS DE PRODUCTOS
 =============================================================================
-Entidad central del catálogo. Agrupa información descriptiva, categorización,
-galería multimedia y presentaciones físicas vendibles (variantes).
+Endpoints públicos para la navegación del catálogo.
+Deserialización de parámetros, inyección de dependencias y serialización
+estricta mediante Pydantic v2.
 """
 
 from typing import List, Optional
@@ -21,7 +22,8 @@ from app.schemas.producto_schema import (
     ProductoResponseSchema
 )
 
-router = APIRouter(prefix="/api/productos", tags=["Catálogo de Productos"])
+# Prefijo ajustado: main.py añade '/api', por lo que la ruta final es '/api/productos'
+router = APIRouter(prefix="/productos", tags=["Catálogo de Productos"])
 
 
 @router.get(

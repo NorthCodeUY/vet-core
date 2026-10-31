@@ -1,75 +1,105 @@
-/* --- apps/web-client/src/hooks/useProducts.ts --- */
+/**
+ * @fileoverview Hook de Negocio y Fachada para Catálogo de Productos (useProducts.ts)
+ * 
+ * Gestiona la carga asíncrona del catálogo categorizado desde FastAPI, la persistencia
+ * bidireccional del carrito en los parámetros de búsqueda de la URL (Deep Linking)
+ * y el filtrado reactivo en memoria para el buscador de la Landing Page.
+ * 
+ * @module hooks/useProducts
+ */
+
 import { useState, useEffect, useMemo } from 'react';
+
+// --- Capa de Servicios e Infraestructura HTTP ---
 import { productService } from '../services/product_service';
-import { usePedidoStore } from '../context/pedido_context';
 import { productMapper } from '../mapper/product_mapper';
+
+// --- Estado Global de la Aplicación ---
+import { usePedidoStore } from '../context/pedido_context';
+import { useConfig } from '../context/tenant_context';
+
+// --- Contratos de Dominio ---
 import type { ApiCategory, ApiProduct } from '../types/product_types';
 import type { PedidoItem } from '../types/pedido_types';
 
 /**
- * <!> Mejorar los comentarios la documetacion 
- * Hook para manejar el estado global de los productos
+ * Hook orquestador del catálogo y sincronización de compras (`useProducts`).
+ *
+ * @returns {{
+ *   searchTerm: string,
+ *   setSearchTerm: React.Dispatch<React.SetStateAction<string>>,
+ *   categories: ApiCategory[],
+ *   loading: boolean,
+ *   filteredResults: ApiProduct[] | null
+ * }}
  */
 export const useProducts = () => {
-  const [searchTerm, setSearchTerm] = useState(""); // Guardo el termino de busqueda
-  const [categories, setCategories] = useState<ApiCategory[]>([]); // Guardo las categorias 
-  const [loading, setLoading] = useState(true); // Guardo el estado de carga 
+  /* ===========================================================================
+     1. ESTADOS LOCALES Y DEPENDENCIAS GLOBALES
+     =========================================================================== */
+  const { config } = useConfig();
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [categories, setCategories] = useState<ApiCategory[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const { pedido, loadPedidoMasivo } = usePedidoStore();
   
-  
-  const [isRehydrated, setIsRehydrated] = useState(false); // <!> Nuevo: Control de carga
+  // Bandera de control para evitar que el efecto de escritura sobreescriba la URL antes de leerla
+  const [isRehydrated, setIsRehydrated] = useState<boolean>(false);
 
-
-
-
-
-  /* --- LÓGICA A: Se utiliza para que cuando se altera el carrito guarda la info en la URL --- */
+  /* ===========================================================================
+     2. LÓGICA A: PERSISTENCIA DEL CARRITO EN LA URL (Shareable Links)
+     Serializa el carrito en formato compacto (ej: "?cart=1:2,45_102:1") en el historial.
+     =========================================================================== */
   useEffect(() => {
+    // Si no se completó la rehidratación inicial, bloqueamos la sincronización hacia la URL
+    if (!isRehydrated) return;
 
-    // <!> FIX: Si no hemos procesado la URL inicial, no permitimos que este efecto limpie la URL
-    if (!isRehydrated) return; 
-    
     if (pedido.length === 0) {
-      /* Si el carrito está vacío, limpiamos el parámetro de la URL */
-      const newUrl = window.location.pathname; // Tomamos la ruta actual
-      window.history.replaceState({}, '', newUrl); // Reemplaza el estado actual del historial sin recargar la pagina
+      // Limpia el query param si el carrito quedó vacío
+      const cleanPath = window.location.pathname;
+      window.history.replaceState({}, '', cleanPath);
       return;
     }
 
-    /* Convertimos el array [ {id:1, cant:2}, {id:29, cant:1} ] en "1:2,29:1" */
-    const cartString = pedido // Recorro el array de productos 
-      .map(item => `${item.producto.prod_id}:${item.cantidad}`) // Recorro el array de productos 
-      .join(','); // Convierto el array en un string 
+    // Serialización compacta de ítems con clave única y cantidad
+    const cartParamValue = pedido
+      .map((item) => `${item.producto.prod_id}:${item.cantidad}`)
+      .join(',');
 
-    const newUrl = `${window.location.pathname}?cart=${cartString}`;// Tomamos la ruta actual y le sumamos el string del carrito 
-    /* replaceState actualiza la URL en la barra de direcciones sin recargar la página */
-    window.history.replaceState({}, '', newUrl);
-  }, [pedido, isRehydrated]); // Agregamos isRehydrated como dependencia
+    const updatedUrl = `${window.location.pathname}?cart=${cartParamValue}`;
+    window.history.replaceState({}, '', updatedUrl);
+  }, [pedido, isRehydrated]);
 
-
-
-
-  /* --- LÓGICA B: REHIDRATACIÓN (Leer URL al iniciar) --- */
+  /* ===========================================================================
+     3. LÓGICA B: REHIDRATACIÓN DESDE LA URL (Deep Linking al Iniciar)
+     Reconstruye el pedido si un usuario abre un enlace compartido con "?cart=..."
+     =========================================================================== */
   useEffect(() => {
-    /* Solo actuamos cuando las categorías ya bajaron del backend */
+    // Solo rehidrata una vez que las categorías bajaron de la API y no fue procesado aún
     if (categories.length > 0 && !isRehydrated) {
-      const params = new URLSearchParams(window.location.search);
-      const cartParam = params.get('cart');
+      const urlParams = new URLSearchParams(window.location.search);
+      const cartQuery = urlParams.get('cart');
 
-      if (cartParam) {
-        const allProducts = categories.flatMap(cat => cat.productos);
+      if (cartQuery) {
+        const allProducts = categories.flatMap((cat) => cat.productos);
         const lineasRehidratadas: PedidoItem[] = [];
 
-        cartParam.split(',').forEach(pair => {
+        cartQuery.split(',').forEach((pair) => {
           const [id, qty] = pair.split(':').map(Number);
-          const productoEncontrado = allProducts.find(p => p.prod_id === id);
+          const productoEncontrado = allProducts.find((p) => p.prod_id === id);
 
-          if (productoEncontrado) {
+          if (productoEncontrado && qty > 0) {
+            /* =================================================================
+               <!> CORRECCIÓN CRÍTICA DE TYPESCRIPT:
+               Se inyecta 'item_key' obligatorio para respetar el nuevo contrato
+               de PedidoItem que soporta variantes y transacciones independientes.
+               ================================================================= */
             lineasRehidratadas.push({
+              item_key: `${productoEncontrado.prod_id}_base`,
               producto: productoEncontrado,
               cantidad: qty,
-              precio_unitario_capturado: productoEncontrado.prod_precio
+              precio_unitario_capturado: productoEncontrado.prod_precio,
             });
           }
         });
@@ -79,46 +109,71 @@ export const useProducts = () => {
         }
       }
 
-      /* 
-         <!> FIX CRÍTICO: 
-         Esta línea debe estar FUERA del 'if (cartParam)'.
-         Dice: "Ya revisé la URL, ahora el sistema puede empezar a escribir".
-      */
-      setIsRehydrated(true); 
+      // Habilitamos la escritura en la URL a partir de este momento
+      setIsRehydrated(true);
     }
-  }, [categories, isRehydrated]);
+  }, [categories, isRehydrated, loadPedidoMasivo]);
 
-  /* Carga inicial se utiliza cuando iniciamos el frontend para traer los datos de el bakend */ 
-  useEffect(() => {// Se ejecuta solo una vez cuando el componente se monta
-    const loadData = async () => { // Funcion asincrona que se encarga de cargar los datos iniciales y mapearlos
+  /* ===========================================================================
+     4. LÓGICA C: CONSUMO DE LA API REST (Catálogo Agrupado)
+     =========================================================================== */
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadData = async (): Promise<void> => {
+      // Guardia de seguridad: Si el cliente apaga el catálogo, omitimos la llamada HTTP
+      if (config?.features?.has_products === false) {
+        if (isMounted) setLoading(false);
+        return;
+      }
+
       try {
-        const rawData = await productService.fetchProductosAgrupados(); // Llamo al endpoint de productos agrupados
-        const transformed = rawData.map((cat: any) => ({// Recorro el array de categorias 
-          cat_id: cat.cat_id, // ID de la categoria en base de datos 
-          cat_nombre: cat.cat_nombre, // Nombre de la categoria 
-          productos: productMapper.toUIList(cat.productos, cat.cat_nombre, cat.cat_id) // Mapeo los productos de la categoria 
-        }));
-        setCategories(transformed); // Actualizo el estado de las categorias 
+        const rawData = await productService.fetchProductosAgrupados();
+        
+        if (isMounted) {
+          const transformed: ApiCategory[] = rawData.map((cat: any) => ({
+            cat_id: Number(cat.cat_id),
+            cat_nombre: String(cat.cat_nombre || 'General'),
+            productos: productMapper.toUIList(cat.productos || [], cat.cat_nombre, cat.cat_id),
+          }));
+
+          setCategories(transformed);
+        }
       } catch (error) {
-        console.error("Error:", error); // <!> Agregar a  log para mandar al bakend 
+        console.error('[useProducts] Error al consultar catálogo agrupado:', error);
       } finally {
-        setLoading(false); // Actualizo el estado de carga 
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
-    
-    loadData(); // llamo a la funcion loadData dearria
-  }, []);
 
+    loadData();
 
+    return () => {
+      isMounted = false;
+    };
+  }, [config]);
 
-  /* Lógica de filtrado (useMemo actúa como caché) */
-  const filteredResults = useMemo(() => { // Se ejecuta solo cuando el searchTerm o las categorias cambian 
-    if (!searchTerm) return null; // Si no hay termino de busqueda retorno null
-    const allProducts = categories.flatMap(cat => cat.productos); // Uso flattenMap para recorrer las categorias y obtener todos los productos 
-    return allProducts.filter(p => // Recorro el array de productos 
-      p.prod_nombre.toLowerCase().includes(searchTerm.toLowerCase()) || // Busco si el nombre del producto incluye el termino de busqueda
-      p.prod_descripcion.toLowerCase().includes(searchTerm.toLowerCase()) // Busco si la descripcion del producto incluye el termino de busqueda
-    );
+  /* ===========================================================================
+     5. LÓGICA D: BUSCADOR REACTIVO EN MEMORIA (useMemo Caché)
+     =========================================================================== */
+  const filteredResults = useMemo((): ApiProduct[] | null => {
+    if (!searchTerm.trim()) return null;
+
+    const normalizedTerm = searchTerm.toLowerCase().trim();
+    const allProducts = categories.flatMap((cat) => cat.productos);
+
+    return allProducts.filter((p) => {
+      const matchName = p.prod_nombre.toLowerCase().includes(normalizedTerm);
+      const matchDesc = p.prod_descripcion.toLowerCase().includes(normalizedTerm);
+      // Búsqueda en subcategorías tipadas
+      const matchSub = p.subcategorias?.some((sub) =>
+        sub.subc_nombre.toLowerCase().includes(normalizedTerm)
+      );
+
+      return matchName || matchDesc || matchSub;
+    });
   }, [searchTerm, categories]);
 
   return {
@@ -126,40 +181,45 @@ export const useProducts = () => {
     setSearchTerm,
     categories,
     loading,
-    filteredResults
+    filteredResults,
   };
 };
 
 /**
- * Hook para manejar el estado de los productos de una categoria en specific
- * @param catId ID de la categoria
- * @param initialData Datos iniciales de la categoria
- * @param title Nombre de la categoria 
- * @returns 
+ * Hook secundario para carga bajo demanda de productos por categoría individual.
+ *
+ * @param {number} catId - ID de la categoría a consultar.
+ * @param {ApiProduct[]} initialData - Datos precargados en memoria.
+ * @param {string} title - Nombre de la categoría padre.
+ * @returns {{
+ *   products: ApiProduct[],
+ *   isExpanded: boolean,
+ *   toggleExpand: () => Promise<void>
+ * }}
  */
 export const useCategoryProducts = (catId: number, initialData: ApiProduct[], title: string) => {
-  const [isExpanded, setIsExpanded] = useState(false);// guardo si la categoria esta expandida o no 
-  const [products, setProducts] = useState<ApiProduct[]>(initialData); // guardo los productos de la categoria 
-  const [hasLoadedFull, setHasLoadedFull] = useState(false); // guardo si se han cargado todos los productos de la categoria 
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [products, setProducts] = useState<ApiProduct[]>(initialData);
+  const [hasLoadedFull, setHasLoadedFull] = useState<boolean>(false);
 
-  const toggleExpand = async () => {
-    /* Si vamos a expandir y no hemos cargado el resto, llamamos al servicio */
-    if (!isExpanded && !hasLoadedFull) { // Si no esta expandida y no hemos cargado todos los productos primero carga todos los productos 
+  const toggleExpand = async (): Promise<void> => {
+    // Si se expande y aún no se descargó la lista completa de la categoría
+    if (!isExpanded && !hasLoadedFull) {
       try {
-        const rawData = await productService.fetchProductosPorCategoria(catId); // Llamo al endpoint de productos por categoria 
-        const mapped = productMapper.toUIList(rawData, title, catId); // Mapeo los productos de la categoria 
-        setProducts(mapped); // Actualizo el estado de los productos 
-        setHasLoadedFull(true); // Actualizo el estado de carga 
+        const rawData = await productService.fetchProductosPorCategoria(catId);
+        const mapped = productMapper.toUIList(rawData, title, catId);
+        setProducts(mapped);
+        setHasLoadedFull(true);
       } catch (error) {
-        console.error("Error cargando categoría:", error); // <!> Agregar a  log para mandar al bakend
+        console.error(`[useCategoryProducts] Error cargando categoría ${catId}:`, error);
       }
     }
-    setIsExpanded(!isExpanded);
+    setIsExpanded((prev) => !prev);
   };
 
   return {
     products,
     isExpanded,
-    toggleExpand
+    toggleExpand,
   };
 };

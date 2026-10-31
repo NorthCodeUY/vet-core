@@ -1,4 +1,4 @@
-// frontend/flutter_gestion_contable/lib/screens/login/login_form.dart
+// apps/admin-portal/lib/screens/login/login_form.dart
 
 import 'package:flutter/material.dart';
 // Importa los estilos de la aplicación para mantener la consistencia.

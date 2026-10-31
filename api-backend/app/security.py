@@ -1,45 +1,63 @@
+# api-backend/app/security.py
+"""
+=============================================================================
+MÓDULO DE SEGURIDAD CRIPTOGRÁFICA (BCRYPT + JWT)
+=============================================================================
+Funciones utilitarias para hashing de credenciales y generación/validación
+de tokens JSON Web Token (JWT) con algoritmos estándar.
+"""
 
-# app/security.py
-from passlib.context import CryptContext # Manejo de contrasenias
-from datetime import datetime, timedelta # Manejo de tiempo para el tocken
-from jose import jwt # Manejo de tocken 
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, Optional
+from jose import jwt, JWTError
+from passlib.context import CryptContext
+from app.config import settings
 
-
-# CryptContext es la herramienta que maneja el hashing.
-# "bcrypt" es el algoritmo estándar y seguro para contraseñas.
+# Contexto de hashing configurado con Bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Tiempos de expiración
-ACCESS_TOKEN_EXPIRE_ADMIN_HOURS = 24
-ACCESS_TOKEN_EXPIRE_CLIENT_DAYS = 365 # 1 año para clientes
-
-# Esta clave es como la llave maestra para firmar tus tokens JWT.
-# <!> CÁMBIALA por una cadena aleatoria larga cuando subas a producción.
-SECRET_KEY = "tu_clave_secreta_super_segura" # ¡Cámbiala en producción!
-ALGORITHM = "HS256"
-
-
-def hash_password(password: str) -> str:
-    """
-    Toma una contraseña en texto plano y la convierte en un hash irreversible.
-    Ejemplo: '123456' -> '$2b$12$R9h/cIPz0gi...'
-    """
-    return pwd_context.hash(password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """
-    Compara una contraseña escrita por el usuario con el hash guardado en la DB.
-    """
+    """Verifica si la contraseña en texto plano coincide con el hash almacenado."""
     return pwd_context.verify(plain_password, hashed_password)
 
-def create_access_token(data: dict) -> str:
+
+def get_password_hash(password: str) -> str:
+    """Genera el hash Bcrypt a partir de una contraseña en texto plano."""
+    return pwd_context.hash(password)
+
+
+# Alias de compatibilidad hacia atrás
+hash_password = get_password_hash
+
+
+def create_access_token(
+    data: Dict[str, Any], 
+    expires_delta: Optional[timedelta] = None
+) -> str:
     """
-    Crea un token JWT (JSON Web Token) que sirve como 'pasaporte' para el usuario.
-    El token incluye una fecha de expiración (24 horas por defecto). """
-    
-
+    Genera y firma un token JWT con tiempo de expiración y claims de identidad.
+    """
     to_encode = data.copy() # Copia de los datos
-    expire = datetime.utcnow() + timedelta(hours=24) # Tiempo de expiración
-    to_encode.update({"exp": expire}) # Actualización de los datos
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM) # Codificación del token
+    now = datetime.now(timezone.utc) # Tiempo actual
 
+    if expires_delta: # Si se especifica un tiempo de expiración
+        expire = now + expires_delta # Tiempo de expiración
+    else: # Si no se especifica un tiempo de expiración
+        expire = now + # Tiempo de expiración
+        timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES) # Tiempo de expiración
+
+    to_encode.update({"exp": expire, "iat": now}) # Actualiza el token con el tiempo de expiración y el tiempo actual
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM) # Codifica el token
+
+
+def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
+    """
+    Decodifica y valida la firma y vigencia de un token JWT.
+    Retorna el payload como diccionario o None si es inválido/expirado.
+    """
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        return payload
+    except JWTError:
+        return None

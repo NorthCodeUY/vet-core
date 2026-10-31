@@ -1,5 +1,3 @@
-// apps/web-client/src/App.tsx
-
 /* =============================================================================
    ENRUTADOR PRINCIPAL Y JERARQUÍA DE CONTEXTOS (App.tsx)
    ============================================================================= */
@@ -23,8 +21,22 @@ import { TenantStudioDrawer } from './components/studio/TenantStudioDrawer';
  * @returns {JSX.Element} Configuración de rutas activa.
  */
 const AppRoutes: React.FC = () => {
-  const { config } = useConfig();
+  // <!> Extraemos también el estado de carga del contexto
+  const { config, isLoading } = useConfig() as any;
   const isDevMode = import.meta.env.DEV;
+
+  /* 
+     <!> GUARDIA DE CARGA OBLIGATORIA:
+     Mientras el navegador descarga '/config/client_info.json', mostramos
+     un fondo neutro para evitar que evalúe 'is_maintenance' prematuramente.
+  */
+  if (isLoading || !config) {
+    return (
+      <div className="w-full min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   /* 
      CONTROL DE PASO A PRODUCCIÓN POR CONFIG.JSON:
@@ -67,14 +79,6 @@ const AppRoutes: React.FC = () => {
   );
 };
 
-/**
- * Componente Raíz de la Aplicación (`App`).
- * 
- * Envuelve el árbol con los proveedores de contexto globales `TenantProvider` y `PedidoProvider`.
- *
- * @component
- * @returns {JSX.Element} Aplicación montada con contextos globales.
- */
 export default function App(): React.JSX.Element {
   return (
     <TenantProvider>

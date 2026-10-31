@@ -1,4 +1,4 @@
-// frontend/flutter_gestion_contable/lib/screens/login/login_handler.dart
+// apps/admin-portal/lib/screens/login/login_handler.dart
 
 import 'package:flutter/material.dart'; // Importa el paquete principal de Flutter.
 import 'package:admin_portal/services/api_service.dart'; // Importa el servicio API

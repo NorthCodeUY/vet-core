@@ -72,6 +72,27 @@
     "has_background_animation": false  // ❌ false: activa animación 3D de fondo reactiva al scroll
   },
 
+  // ===========================================================================
+// <!> Completar el de arriba con el formato de abajo par mejorar la documetacion 
+  // INTERRUPTORES DE ACTIVACIÓN Y MÓDULOS DE INTERFAZ (Feature Flags)
+  // Permite encender o apagar secciones completas sin tocar el código fuente.
+  // ===========================================================================
+  "features": {
+    "is_maintenance": false,          // 🚧 Modo Lanzamiento     | ✅ true: pantalla de construcción en '/' | ❌ false: web activa en producción
+    "has_cart": true,                 // 🛒 Carrito de Compras   | ✅ true: activa pedidos y checkout por WhatsApp | ❌ false: solo vitrina informativa
+    "has_products": true,             // 📦 Catálogo Tienda      | ✅ true: activa sección de productos y buscador | ❌ false: oculta la tienda
+    "has_services": true,             // 🩺 Servicios Ofrecidos  | ✅ true: muestra especialidades y prestaciones | ❌ false: oculta servicios
+    "has_health_plans": true,         // 📋 Planes y Membresías  | ✅ true: muestra paquetes mensuales o planes | ❌ false: oculta planes
+    "has_appointments": false,        // 📅 Reservas de Turnos   | ✅ true: habilita formulario de citas online | ❌ false: reservas directas por WhatsApp
+    "has_emergency_button": true,     // 🚨 Urgencias 24 Horas   | ✅ true: activa botón de emergencias y guardia | ❌ false: desactivado
+    "has_locations": true,            // 📍 Ubicación y Mapas    | ✅ true: muestra dirección física y Google Maps | ❌ false: oculta mapa
+    "has_hero": true,                 // ✨ Portada Principal    | ✅ true: muestra sección Hero inicial | ❌ false: inicia directo en catálogo
+    "has_floating_bottom_bar": true,  // 📱 Barra Flotante       | ✅ true: activa barra inferior con WhatsApp fijo | ❌ false: menú tradicional
+    "has_dividers": true,             // 🌊 Divisores con Ondas  | ✅ true: transiciones orgánicas SVG entre secciones | ❌ false: diseño plano moderno
+    "has_background_animation": false // 🎬 Animación 3D Fondo   | ✅ true: activa video WebM reactivo al scroll | ❌ false: sin animación de fondo
+  },
+
+
   // Contenido de la sección de portada (Hero)
   "hero": {
     "title_image_url": "/tenant/hero-title1.png",

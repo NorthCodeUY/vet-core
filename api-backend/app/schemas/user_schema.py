@@ -1,39 +1,39 @@
+# api-backend/app/schemas/user_schema.py
+"""
+=============================================================================
+ESQUEMAS PYDANTIC V2: DTOs DE USUARIOS, LOGIN Y REGISTRO
+=============================================================================
+"""
 
-# /api-backend/app/schemas/user_schema.py
-
-from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
-class UserRegisterSchema(BaseModel): # <!> NO lo puedo usar porque no permite archvios 
-    """Esquema estricto para validar el registro de un nuevo cliente."""
-    nombre: str = Field(..., min_length=2, max_length=100, description="Nombre de usari en cliete es el whatsapp si no tiene email")
-    nombre_mostrar: str = Field(..., min_length=2, max_length=100, description="Nombre que se muestra en el perfil")
-    email: str = Field(..., description="Correo electrónico único del usuario") 
-    password: str = Field(..., min_length=6, description="Contraseña de acceso (mínimo 6 caracteres) Numero Watsap ")
-    whatsapp: str = Field(..., description="Número de WhatsApp con formato internacional lo uso par crear cuenta  (ej: 59899123456)")
-    direccion: Optional[str] = Field(None, description="Dirección del cliente"),
-    ubicacion: Optional[str] = Field(None, description="Ubicación del cliente Para usar google o alguna palicacion de mapa "),
-    rol: str = Field(..., description="Esto por haor es Cliente, Funcionario"),
+class LoginRequestSchema(BaseModel):
+    """Payload para autenticación vía JSON."""
+    email: str = Field(..., description="Correo electrónico o WhatsApp del usuario")
+    password: str = Field(..., min_length=6, description="Contraseña en texto plano")
 
 
-
-{
-  "nombre": "Ary Gimenez",
-  "nombre_mostrar": "Ary",
-  "email": "argi.prog@gmail.com",
-  "password": "hmq7831",
-  "whatsapp": "099123456",
-  "direccion": "Arenal Grande 1546",
-  "ubicacion": "https://maps.app.goo.gl/MQx8LpKxNGoTVCRu9",
-  "rol": "cliente"
-}
- 
- 
-class LoginRequestSchema(BaseModel): # <!> Esto no lo entiendo 
-    """Esquema para validar las credenciales de inicio de sesión."""
-    nombre: EmailStr = Field(..., description="Correo electrónico registrado")
-    password: str = Field(..., description="Contraseña en texto plano")
+class UserRegisterSchema(BaseModel):
+    """Payload para registro de clientes."""
+    email: EmailStr = Field(..., description="Correo electrónico válido")
+    password: str = Field(..., min_length=6, description="Contraseña segura")
+    nombre: str = Field(..., min_length=2, max_length=100)
+    nombre_mostrar: Optional[str] = Field(default=None, max_length=100)
+    whatsapp: Optional[str] = Field(default=None, max_length=20)
+    direccion: Optional[str] = Field(default=None, max_length=255)
+    ubicacion: Optional[str] = Field(default=None)
 
 
-    
+class TokenResponseSchema(BaseModel):
+    """Respuesta emitida al generar un JWT exitoso."""
+    access_token: str
+    token_type: str = "bearer"
+    usu_id: int
+    usu_email: str
+    usu_nombre: str
+    usu_rol: str
+    tenant_type: str
+
+    model_config = ConfigDict(from_attributes=True)

@@ -19,6 +19,8 @@ samples, guidance on mobile development, and a full API reference.
 
 Estructura actual de proyhecto antes de comensar 
 
+
+# Estrucutra actual
 ```text
 
 .
@@ -65,6 +67,68 @@ Estructura actual de proyhecto antes de comensar
 │       └── payments_screen.dart
 └── services
     └── api_service.dart
+
+```
+
+
+
+
+
+
+
+# Estructura sujerida por la ia IA
+
+```text
+
+apps/admin-portal/lib/
+├── core/                                 # Transversal a toda la app
+│   ├── config/                           # Inyección en Runtime (Zero Hardcoding)
+│   │   ├── admin_config.dart             # Modelo fuertemente tipado de admin_config.json
+│   │   └── app_environment.dart          # Variables inyectadas (--dart-define API_URL)
+│   ├── network/                          # Capa HTTP desacoplada
+│   │   ├── api_client.dart               # Cliente Dio configurado con Interceptor JWT
+│   │   └── api_endpoints.dart            # Constantes de rutas FastAPI (/api/v1/...)
+│   ├── storage/                          # Persistencia segura de credenciales
+│   │   └── secure_storage_service.dart   # Encapsula flutter_secure_storage para tokens
+│   └── theme/                            # Motor dinámico de estilos
+│       └── dynamic_theme.dart            # Convierte admin_config.json -> Material 3 ThemeData
+│
+├── features/                             # Módulos de negocio aislados
+│   │
+│   ├── auth/                             # 🔐 FASE 1: Autenticación
+│   │   ├── data/
+│   │   │   └── auth_repository.dart      # Consume /api/auth/token con Dio
+│   │   ├── domain/
+│   │   │   └── auth_state.dart           # Modelos de sesión y usuario autenticado
+│   │   └── presentation/
+│   │       ├── login_screen.dart         # UI pura del formulario de login
+│   │       └── login_handler.dart        # Controlador de estado de login (Loading, Error, Success)
+│   │
+│   ├── shell/                            # 🎛️ FASE 2: Layout Principal (Sidebar Dinámico)
+│   │   └── presentation/
+│   │       ├── dashboard_screen.dart     # Layout responsivo (TopBar + Sidebar + Body)
+│   │       ├── dashboard_handler.dart    # Controla la navegación interna entre pestañas
+│   │       └── widgets/
+│   │           └── dynamic_sidebar.dart  # Renderiza ítems según admin_modules (has_*)
+│   │
+│   └── catalog/                          # 📦 FASE 3: Vitrina / Productos (Alta, Baja, Modificación)
+│       ├── data/
+│       │   └── product_repository.dart   # GET /api/productos, POST, PUT, DELETE, Upload de foto
+│       ├── domain/
+│       │   └── product_model.dart        # Entidad de producto agnóstica
+│       └── presentation/
+│           ├── catalog_list_screen.dart  # Grilla/Tabla de productos activos con toggle visible
+│           ├── catalog_list_handler.dart # Paginación, búsqueda y cambio de visibilidad
+│           ├── product_form_screen.dart  # Formulario alta/edición adaptado al business_type
+│           ├── product_form_handler.dart # Manejo de validaciones y subida multipart
+│           └── widgets/
+│               ├── image_picker_box.dart # Selector de imágenes (Web drag & drop y Mobile)
+│               └── schemas/              # Subformularios condicionales
+│                   ├── standard_fields.dart
+│                   ├── clothing_fields.dart   # Talles / Colores
+│                   └── automotive_fields.dart # Kilómetros / Año / Transmisión
+│
+└── main.dart     # Bootstrap: Carga config, verifica JWT y monta la app
 
 ```
 

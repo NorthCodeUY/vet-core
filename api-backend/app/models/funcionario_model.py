@@ -1,21 +1,48 @@
 # api-backend/app/models/funcionario_model.py
+"""
+=============================================================================
+MODELO DE PERSISTENCIA: PERFIL DE FUNCIONARIOS / EMPLEADOS
+=============================================================================
+Extensión del usuario cuando cumple tareas operativas en el negocio.
+"""
+
+from typing import Optional, TYPE_CHECKING
+from sqlalchemy import Integer, ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from app.database import Base
+
+if TYPE_CHECKING:
+    from app.models.user_model import UserModel
 
 
-from sqlalchemy import Column, Integer, String, ForeignKey # Importación de tipos de datos de SQLAlchemy
-from app.database import Base # Importación de la clase base de SQLAlchemy
-from sqlalchemy.orm import relationship # Importación de la clase relationship de SQLAlchemy
-
-class FuncionarioModel(Base): # Clase que representa la tabla "funcionario" en la base de datos
+class FuncionarioModel(Base):
     """
-    Modelo de la tabla "funcionario" en la base de datos.
-    
-    Args:
-        fun_id (int): ID del funcionario que realiza el pedido
+    Tabla 'funcionarios'.
+    Almacena metadatos del personal (cargos, matrículas, permisos operativos).
     """
-    __tablename__ = "funcionarios" # Nombre de la tabla en la base de datos
-    fun_id = Column(Integer, ForeignKey("usuarios.usu_id"), primary_key=True) # ID del cliete relacionado con su usario 
+    __tablename__ = "funcionarios"
 
-    # Relacion ----
-    
-    rel_usuario = relationship("UserModel") # Relacion con la tabla "usuario"
+    fun_id: Mapped[int] = mapped_column(
+        ForeignKey("usuarios.usu_id", ondelete="CASCADE"), 
+        primary_key=True,
+        doc="ID foráneo vinculado 1:1 con la tabla usuarios."
+    )
 
+    fun_cargo: Mapped[str] = mapped_column(
+        String(50), 
+        nullable=False, 
+        default="Operador",
+        doc="Puesto en el negocio: 'Veterinario', 'Cajero', 'Peluquero', 'Encargado'."
+    )
+
+    fun_matricula: Mapped[Optional[str]] = mapped_column(
+        String(50), 
+        nullable=True,
+        doc="Matrícula profesional médica (aplicable a veterinarias)."
+    )
+
+    # Relación inversa al usuario
+    rel_usuario: Mapped["UserModel"] = relationship(
+        "UserModel", 
+        back_populates="rel_funcionario"
+    )

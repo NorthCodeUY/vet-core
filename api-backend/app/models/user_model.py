@@ -1,56 +1,128 @@
 # api-backend/app/models/user_model.py
+"""
+=============================================================================
+MODELO DE PERSISTENCIA: USUARIOS, IDENTIDAD Y ACCESO (RBAC)
+=============================================================================
+Entidad central de seguridad y autenticación.
+Almacena credenciales encriptadas y determina el nivel de autorización en la API.
+"""
 
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship
+from typing import Optional, TYPE_CHECKING
+from sqlalchemy import String, Integer, Boolean, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
+
+if TYPE_CHECKING:
+    from app.models.cliente_model import ClienteModel
+    from app.models.funcionario_model import FuncionarioModel
+
 
 class UserModel(Base):
     """
-    Modelo de la tabla "usuarios" en la base de datos.
+    Tabla 'usuarios'.
     
-    Args: <!> arreglarlo cuandoande 
-
-        usu_id (int): ID del usuario que realiza el pago
-        usu_nombre (str): Nombre del usuario que realiza el pago
-        usu_email (str): Email del usuario que realiza el pago
-        usu_password_hash (str): Contraseña del usuario que realiza el pago
-        usu_rol (str): Rol del usuario
-        
+    Roles soportados:
+    - 'ADMIN': Acceso ilimitado al panel de control y operaciones del tenant.
+    - 'FUNCIONARIO': Personal dependiente (cajeros, veterinarios, estilistas).
+    - 'CLIENTE': Usuario final que compra por el catálogo digital.
     """
     __tablename__ = "usuarios"
-    
-    # ==========================================
-    # Columnas de la tabla "usuarios"
-    # ==========================================
-    usu_id = Column(Integer, primary_key=True, index=True)  # ID del usuario que realiza el pago
-    usu_nombre = Column(String(100), nullable=False)  # Nombre del usuario que realiza el pago
-    usu_nombre_mostrar = Column(String(100), nullable=False)  # Nombre del usuario que realiza el pago
-    usu_email = Column(String(100), unique=True, index=True, nullable=False) # Email del usuario que realiza el pago
-    usu_password_hash = Column(String(255), nullable=False) # Contraseña del usuario que realiza el pago 
-    usu_whatsapp = Column(String(20), unique=True, index=True, nullable=False) # WhatsApp del usuario que realiza el pago
-    # Añadimos un rol para saber qué tipo de usuario es (ej: "cliente", "admin", "veterinario")
-    usu_rol = Column(String(20), nullable=False, default="cliente")
-    usu_imagen_url = Column(String, nullable=True) # URL de la imagen del usuario
-    usu_direccion = Column(String, nullable=True) # Texto que muestra la direccion 
-    usu_ubicacion = Column(String, nullable=True) # Punto gps para trabajar con Google maps 
-     
-    # ==========================================
-    # RELACIONES BIDIRECCIONALES (1 a 1)
-    # ==========================================
-    
-    # Un usuario que es cliente tendrá este perfil poblado (uselist=False)
-    rel_cliente = relationship(
-        "ClienteModel", # Nombre de la clase del modelo "ClienteModel"
-        back_populates="rel_usuario", # Nombre de la relacion con la tabla "cliente_model"
-        uselist=False, # False porque es una relacion 1 a 1
-        cascade="all, delete-orphan" # Si borrás el usuario, borra el perfil cliente asociado
-    )
-    
-    # Un usuario que es funcionario tendrá este perfil poblado (uselist=False)
-    rel_funcionario = relationship(
-        "FuncionarioModel", # Nombre de la clase del modelo "FuncionarioModel"
-        back_populates="rel_usuario", # Nombre de la relacion con la tabla "funcionario_model"  
-        uselist=False, # False porque es una relacion 1 a 1
-        cascade="all, delete-orphan" # Si borrás el usuario, borra el perfil de funcionario
+
+    # =========================================================================
+    # Identificadores y Credenciales
+    # =========================================================================
+    usu_id: Mapped[int] = mapped_column(
+        Integer, 
+        primary_key=True, 
+        index=True,
+        doc="Identificador único del usuario."
     )
 
+    usu_email: Mapped[str] = mapped_column(
+        String(100), 
+        unique=True, 
+        index=True, 
+        nullable=False,
+        doc="Correo electrónico utilizado como identificador de login (username)."
+    )
+
+    usu_password_hash: Mapped[str] = mapped_column(
+        String(255), 
+        nullable=False,
+        doc="Hash seguro de la contraseña (Bcrypt)."
+    )
+
+    # =========================================================================
+    # Información de Perfil
+    # =========================================================================
+    usu_nombre: Mapped[str] = mapped_column(
+        String(100), 
+        nullable=False,
+        doc="Nombre completo o razón social."
+    )
+
+    usu_nombre_mostrar: Mapped[Optional[str]] = mapped_column(
+        String(100), 
+        nullable=True,
+        doc="Nombre de pila o alias visible en la barra superior."
+    )
+
+    usu_whatsapp: Mapped[Optional[str]] = mapped_column(
+        String(20), 
+        unique=True, 
+        index=True, 
+        nullable=True,
+        doc="Teléfono para notificaciones de pedidos (opcional para admins)."
+    )
+
+    usu_rol: Mapped[str] = mapped_column(
+        String(20), 
+        nullable=False, 
+        default="CLIENTE",
+        index=True,
+        doc="Nivel de permisos: 'ADMIN', 'FUNCIONARIO', 'CLIENTE'."
+    )
+
+    usu_activo: Mapped[bool] = mapped_column(
+        Boolean, 
+        default=True, 
+        nullable=False,
+        doc="Baja lógica: False bloquea el login inmediatamente."
+    )
+
+    usu_imagen_url: Mapped[Optional[str]] = mapped_column(
+        String(255), 
+        nullable=True,
+        doc="URL del avatar almacenado en Cloudflare R2 o almacenamiento local."
+    )
+
+    usu_direccion: Mapped[Optional[str]] = mapped_column(
+        String(255), 
+        nullable=True,
+        doc="Dirección textual de entrega o residencia."
+    )
+
+    usu_ubicacion: Mapped[Optional[str]] = mapped_column(
+        Text, 
+        nullable=True,
+        doc="Coordenadas GPS (Latitud, Longitud) para ruteo en mapas."
+    )
+
+    # =========================================================================
+    # Relaciones Especializadas (1 a 1)
+    # =========================================================================
+    rel_cliente: Mapped[Optional["ClienteModel"]] = relationship(
+        "ClienteModel",
+        back_populates="rel_usuario",
+        uselist=False,
+        cascade="all, delete-orphan",
+        doc="Perfil extendido si el usuario opera como comprador."
+    )
+
+    rel_funcionario: Mapped[Optional["FuncionarioModel"]] = relationship(
+        "FuncionarioModel",
+        back_populates="rel_usuario",
+        uselist=False,
+        cascade="all, delete-orphan",
+        doc="Perfil extendido si el usuario opera como empleado del negocio."
+    )

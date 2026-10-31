@@ -1,217 +1,250 @@
-/* --- apps/web-client/src/context/pedido_context.tsx --- 
+/* --- apps/web-client/src/context/pedido_context.tsx --- */
 
-<!> Esto de pedido tendria que ir relacinado a variates porque puede cambiar segun el talle cambia el precio la variate 
-
-*/
+/**
+ * @fileoverview Store Global y Proveedor de Estado del Carrito de Compras (pedido_context.tsx)
+ * 
+ * Orquesta la canasta de compras de forma agnóstica y multi-tenant.
+ * Soporta productos simples y productos con variantes (talles, medidas y colores),
+ * administrando identificadores compuestos únicos (`item_key`) para permitir
+ * que un cliente compre distintas variantes del mismo artículo en una sola orden.
+ * 
+ * @module context/pedido_context
+ */
 
 import React, { createContext, useContext, useState, useMemo } from 'react';
-import type { ApiProduct } from '../types/product_types';
+// --- Contratos de Dominio ---
+import type { ApiProduct, ProductoVariante } from '../types/product_types';
 import type { PedidoItem } from '../types/pedido_types';
-  
+import { useConfig } from './tenant_context';
+
 /**
- * Interfaz del Contrato de la Fachada.
- * Define qué puede HACER la UI (métodos) y qué puede VER (estado).
- * Se mantiene aquí porque es específica de este Contexto, no es una entidad de datos pura.
+ * Genera la clave compuesta única de la línea de pedido.
+ * Evita colisiones cuando se compra el mismo producto en talles o colores distintos.
+ * 
+ * @param {number} productId - ID del producto padre.
+ * @param {number} [variantId] - ID de la variante (si aplica).
+ * @returns {string} Clave única (ej: "45_102" o "45_base").
+ */
+export const getPedidoItemKey = (productId: number, variantId?: number | null): string => {
+  return variantId ? `${productId}_${variantId}` : `${productId}_base`;
+};
+
+/**
+ * Contrato de la Fachada de Pedidos y Carrito.
+ * @interface PedidoContextType
  */
 interface PedidoContextType {
   pedido: PedidoItem[];
-  loadPedidoMasivo: (lineas: PedidoItem[]) => void;        /* <!> Nueva Funcionalidda Metodo para carga desde URL (Rehidratación) */
-  addToPedido: (product: ApiProduct) => void;              /*  Método para dar de alta o incrementar producto */
-  removeFromPedido: (productId: number) => void;           /*  Método para dar de baja o decrementar producto */
-  removAllPedido: (productId: number) => void;             /*  Método para eliminar completamente un producto del pedido */
-  updateItemQuantity: (productId: number, newQuantity: number) => void; /* NUEVO: Método para actualizar la cantidad de un ítem directamente */
-  clearPedido: () => void;                                 /*  Método para vaciar el pedido actual */
-  getWhatsAppUrl: (address: string) => string;             /*  Generador de link de comunicación con Salto */
-  total: number;                                           /*  Sumatoria total del pedido (Observador) */
-  itemCount: number;                                       /* Cantidad total de artículos (Observador) */
+  loadPedidoMasivo: (lineas: PedidoItem[]) => void;
+  //  Métodos preparados para recibir la variante opcional
+  addToPedido: (product: ApiProduct, variant?: ProductoVariante | null) => void;
+  addItem: (product: ApiProduct, variant?: ProductoVariante | null) => void; // Alias moderno
+  removeFromPedido: (productId: number, variantId?: number | null) => void;
+  removeItem: (productId: number, variantId?: number | null) => void; // Alias moderno
+  removAllPedido: (productId: number, variantId?: number | null) => void;
+  removeAllPedido: (productId: number, variantId?: number | null) => void; // Alias sin typo
+  updateItemQuantity: (idOrKey: number | string, newQuantity: number, variantId?: number | null) => void;
+  clearPedido: () => void;
+  getWhatsAppUrl: (address: string) => string;
+  total: number;
+  itemCount: number;
 }
 
-/* Creación del contexto con valor inicial indefinido */
 const PedidoContext = createContext<PedidoContextType | undefined>(undefined);
 
 /**
- * Proveedor del Contexto de Pedidos (Fachada / Singleton).
- * Envuelve la aplicación para mantener una única instancia de los datos en memoria.
- *
+ * Proveedor del Contexto de Pedidos (`PedidoProvider`).
  */
 export const PedidoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  /* Estado reactivo que almacena el array de líneas de pedido */
+  const { config } = useConfig();
   const [pedido, setPedido] = useState<PedidoItem[]>([]);
-  
+
   /**
-   * Carga el pedido desde una URL.
-   * @param lineas - Array de líneas de pedido a cargar.
-   */ 
-  const loadPedidoMasivo = (lineas: PedidoItem[]) => {
+   * Carga masiva de líneas (utilizado en la rehidratación desde la URL).
+   */
+  const loadPedidoMasivo = (lineas: PedidoItem[]): void => {
     setPedido(lineas);
   };
-  
+
   /**
-   * Agrega un producto al pedido.
-   * Si el producto ya existe en una línea, incrementa su cantidad.
-   * Si no existe, crea una nueva instancia de LineaPedidoItem.
-   *
-   * @param {ApiProduct} product - Entidad del producto proveniente del Backend.
+   *  AGREGA O INCREMENTA UN PRODUCTO CON O SIN VARIANTE
+   * Calcula el precio unitario capturado (Precio Base + Adicional de Talle).
    */
-  const addToPedido = (product: ApiProduct) => {
-    // <!> Esto me da error. 
+  const addToPedido = (product: ApiProduct, variant?: ProductoVariante | null): void => {
+    const itemKey = getPedidoItemKey(product.prod_id, variant?.var_id);
+    const adicional = variant?.var_precio_adicional || 0;
+    const precioCapturado = product.prod_precio + adicional;
 
-    // setPedido((prev: PedidoItem[]) => {
-    //   const existing = prev.find(item => item.producto.prod_id === product.prod_id);
+    setPedido((prev: PedidoItem[]) => {
+      const existingIndex = prev.findIndex((item) => item.item_key === itemKey);
 
-    //   if (existing) {
-    //     /* Si existe, mapeamos el array incrementando solo el item correspondiente */
-    //     return prev.map(item =>
-    //       item.producto.prod_id === product.prod_id
-    //         ? { ...item, cantidad: item.cantidad + 1 }
-    //         : item
-    //     );
-    //   }
+      // 1. Si la combinación exacta ya existe en el carrito, incrementamos su cantidad
+      if (existingIndex > -1) {
+        return prev.map((item, idx) =>
+          idx === existingIndex ? { ...item, cantidad: item.cantidad + 1 } : item
+        );
+      }
 
-    //   /* Si es nuevo, agregamos la línea capturando el precio actual del backend */
-    //   return [...prev, {
-    //     producto: product,
-    //     cantidad: 1,
-    //     precio_unitario_capturado: product.prod_precio
-    //   }];
-    // });
+      // 2. Si es una línea nueva, creamos el PedidoItem completo con su item_key
+      const nuevoItem: PedidoItem = {
+        item_key: itemKey,
+        producto: product,
+        variante_seleccionada: variant || undefined,
+        cantidad: 1,
+        precio_unitario_capturado: precioCapturado,
+      };
+
+      return [...prev, nuevoItem];
+    });
   };
 
   /**
-   * Remueve o decrementa un producto del pedido.
-   * Si la cantidad es 1, elimina la línea completa.
-   *
-   * @param {number} productId - Identificador único del producto a remover.
+   * Decrementa una unidad de la línea. Si llega a 0, se remueve del pedido.
    */
-  const removeFromPedido = (productId: number) => {
-    setPedido((prev) => {
-      const existing = prev.find(item => item.producto.prod_id === productId);
+  const removeFromPedido = (productId: number, variantId?: number | null): void => {
+    const targetKey = getPedidoItemKey(productId, variantId);
 
-      /* Si solo queda una unidad, filtramos el array para eliminar la línea */
-      if (existing?.cantidad === 1) {
-        return prev.filter(item => item.producto.prod_id !== productId);
+    setPedido((prev) => {
+      // Búsqueda defensiva por clave compuesta o por ID simple
+      const existing = prev.find(
+        (item) => item.item_key === targetKey || item.producto.prod_id === productId
+      );
+
+      if (!existing) return prev;
+
+      if (existing.cantidad <= 1) {
+        return prev.filter((item) => item.item_key !== existing.item_key);
       }
 
-      /* Si hay más de una, decrementamos la cantidad manteniendo 
-      la inmutabilidad */
-      return prev.map(item =>
-        item.producto.prod_id === productId
-          ? { ...item, cantidad: item.cantidad - 1 }
-          : item
+      return prev.map((item) =>
+        item.item_key === existing.item_key ? { ...item, cantidad: item.cantidad - 1 } : item
       );
     });
   };
 
   /**
-   * Elimina completamente un producto del pedido, sin importar la cantidad.
-   * @param productId 
+   * Elimina completamente la línea del pedido sin importar cuántas unidades tenga.
    */
-  const removAllPedido = (productId: number) => {
-    setPedido((prev) => {
-      return prev.filter(item => item.producto.prod_id !== productId);
-    });
-  }
+  const removAllPedido = (productId: number, variantId?: number | null): void => {
+    const targetKey = getPedidoItemKey(productId, variantId);
+
+    setPedido((prev) =>
+      prev.filter((item) => {
+        if (variantId) return item.item_key !== targetKey;
+        return item.producto.prod_id !== productId;
+      })
+    );
+  };
 
   /**
-   * Actualiza la cantidad de un producto específico en el pedido.
-   * Valida que la cantidad sea al menos 1. Si la cantidad resultante es 0, el ítem se elimina.
-   *
-   * @param {number} productId - ID del producto a actualizar.
-   * @param {number} newQuantity - La nueva cantidad deseada.
+   * Actualiza la cantidad exacta desde el input numérico editable de `PedidoItemRow`.
    */
-  const updateItemQuantity = (productId: number, newQuantity: number) => {
+  const updateItemQuantity = (
+    idOrKey: number | string,
+    newQuantity: number,
+    variantId?: number | null
+  ): void => {
     setPedido((prev) => {
-      // Asegurar que la cantidad mínima sea 0 para permitir la eliminación, pero 1 para el input.
-      // La validación de input ya garantizará mínimo 1 para mostrar.
       const validatedQuantity = Math.max(0, newQuantity);
 
-      // Si la cantidad validada es 0, eliminamos el ítem
+      // Si la cantidad es 0, eliminamos la línea
       if (validatedQuantity === 0) {
-        return prev.filter(item => item.producto.prod_id !== productId);
+        return prev.filter((item) => {
+          if (typeof idOrKey === 'string') return item.item_key !== idOrKey;
+          if (variantId) return item.item_key !== getPedidoItemKey(idOrKey, variantId);
+          return item.producto.prod_id !== idOrKey;
+        });
       }
 
-      // Si el producto existe, actualizamos su cantidad
-      return prev.map(item =>
-        item.producto.prod_id === productId
-          ? { ...item, cantidad: validatedQuantity }
-          : item
-      );
+      return prev.map((item) => {
+        const matches =
+          typeof idOrKey === 'string'
+            ? item.item_key === idOrKey
+            : variantId
+            ? item.item_key === getPedidoItemKey(idOrKey, variantId)
+            : item.producto.prod_id === idOrKey;
+
+        return matches ? { ...item, cantidad: validatedQuantity } : item;
+      });
     });
   };
 
   /**
-   * Limpia el estado del pedido, dejándolo vacío.
+   * Vacía el carrito por completo.
    */
-  const clearPedido = () => setPedido([]);
+  const clearPedido = (): void => setPedido([]);
 
   /**
-   * Genera la URL de WhatsApp formateada profesionalmente.
-   *
-   * @param {string} address - Dirección de entrega ingresada por el usuario.
-   * @returns {string} Link de WhatsApp con el mensaje codificado.
+   *  GENERADOR DE MENSAJE AGNÓSTICO PARA WHATSAPP
+   * Elimina datos quemados. Lee el nombre de la empresa y teléfono desde config.json.
    */
   const getWhatsAppUrl = (address: string): string => {
-    let message = `🐾 *PEDIDO - VETERINARIA BELTRAMELLI* 🐾\n\n`;
+    const businessName = config?.business_name || 'TIENDA WEB';
+    const rawPhone = config?.contact?.admin_phone || '';
+    const countryCode = config?.contact?.whatsapp_country_code || '598';
+    const cleanPhone = rawPhone.replace(/\D/g, '');
+    const finalPhone = `${countryCode}${cleanPhone.startsWith('0') ? cleanPhone.slice(1) : cleanPhone}`;
+
+    let message = `🛒 *PEDIDO - ${businessName.toUpperCase()}*\n\n`;
     message += `📍 *Entrega:* ${address}\n`;
     message += `----------------------------------\n`;
 
-    /* Iteramos las líneas para construir el cuerpo del mensaje */
-    pedido.forEach(item => {
-      const subtotal = item.precio_unitario_capturado * item.cantidad;
-      message += `✅ ${item.cantidad}x ${item.producto.prod_nombre} - $${subtotal.toLocaleString('es-UY')}\n`; // Formateo de moneda
+    pedido.forEach((item) => {
+      const subtotalLinea = item.precio_unitario_capturado * item.cantidad;
+      const talleTxt = item.variante_seleccionada
+        ? ` (${item.variante_seleccionada.var_tipo}: ${item.variante_seleccionada.var_nombre})`
+        : '';
+      message += `✅ ${item.cantidad}x ${item.producto.prod_nombre}${talleTxt} - $${subtotalLinea.toLocaleString('es-UY')}\n`;
     });
 
     message += `----------------------------------\n`;
-    message += `💰 *TOTAL:* $${total.toLocaleString('es-UY')}\n\n`; // Formateo de moneda
-    message += `_Enviado desde la Web de Salto_`;
+    message += `💰 *TOTAL:* $${total.toLocaleString('es-UY')}\n\n`;
+    message += `_Enviado desde el portal web oficial_`;
 
-    return `https://wa.me/59892444510?text=${encodeURIComponent(message)}`;
+    return `https://wa.me/${finalPhone}?text=${encodeURIComponent(message)}`;
   };
 
-  /* --- LÓGICA DE OBSERVADORES (useMemo) --- */
+  /* ===========================================================================
+     OBSERVADORES COMPUTADOS (useMemo)
+     =========================================================================== */
+  const total = useMemo(() => {
+    return pedido.reduce(
+      (acc, item) => acc + item.precio_unitario_capturado * item.cantidad,
+      0
+    );
+  }, [pedido]);
 
-  /**
-   * Calcula el monto total del pedido.
-   * Se recalcula automáticamente solo cuando el array 'pedido' sufre cambios.
-   */
-  const total = useMemo(() =>
-    pedido.reduce((acc, item) => acc + (item.precio_unitario_capturado * item.cantidad), 0)
-  , [pedido]);
-
-  /**
-   * Calcula la cantidad total de artículos en el pedido.
-   * Útil para mostrar en el badge del Header.
-   */
-  const itemCount = useMemo(() =>
-    pedido.reduce((acc, item) => acc + item.cantidad, 0)
-  , [pedido]);
+  const itemCount = useMemo(() => {
+    return pedido.reduce((acc, item) => acc + item.cantidad, 0);
+  }, [pedido]);
 
   return (
-    <PedidoContext.Provider value={{
-      pedido,
-      loadPedidoMasivo,
-      addToPedido,
-      removeFromPedido,
-      removAllPedido,
-      updateItemQuantity,
-      clearPedido,
-      getWhatsAppUrl,
-      total,
-      itemCount
-    }}>
+    <PedidoContext.Provider
+      value={{
+        pedido,
+        loadPedidoMasivo,
+        addToPedido,
+        addItem: addToPedido, // Alias moderno
+        removeFromPedido,
+        removeItem: removeFromPedido, // Alias moderno
+        removAllPedido,
+        removeAllPedido: removAllPedido, // Alias sin error ortográfico
+        updateItemQuantity,
+        clearPedido,
+        getWhatsAppUrl,
+        total,
+        itemCount,
+      }}
+    >
       {children}
     </PedidoContext.Provider>
   );
 };
 
-/**
- * Hook personalizado para acceder a la Fachada de Pedidos.
- * Lanza un error si se intenta usar fuera del PedidoProvider.
- */
 export const usePedidoStore = () => {
   const context = useContext(PedidoContext);
   if (!context) {
-    throw new Error('usePedidoStore debe usarse dentro de un PedidoProvider');
+    throw new Error('usePedidoStore debe utilizarse dentro de un PedidoProvider');
   }
   return context;
 };

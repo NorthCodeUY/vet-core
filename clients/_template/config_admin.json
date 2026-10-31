@@ -1,0 +1,37 @@
+// clientes/_template/config_admin.json
+
+{
+  "_version": "1.0.0",
+  "tenant_id": "valeria_beltramelli",
+  "business_name": "Veterinaria Beltramelli - Panel de Control",
+  
+  // Tipo de negocio para determinar qué formulario de producto renderizar
+  "business_type": "veterinary", // Opciones: "standard", "clothing", "automotive", "veterinary"
+
+  // Paleta de colores tomada del tema principal
+  "theme": {
+    "primary": "#275D9E",
+    "secondary": "#daebd4",
+    "dark": "#004D40",
+    "surface": "#FFFFFF",
+    "error": "#DC2626"
+  },
+
+  // Módulos que aparecen en la barra lateral del Administrador
+  "admin_modules": {
+    "has_products_catalog": true,   // Gestión de vitrina / productos
+    "has_medical_records": true,    // Historias clínicas (solo veterinaria)
+    "has_appointments_agenda": true,// Agenda de turnos
+    "has_orders_monitoring": true,  // Monitoreo de pedidos de la web
+    "has_business_settings": true   // Datos de contacto, horarios, bancos
+  },
+
+  // Esquema dinámico para las variantes de producto
+  "product_schema": {
+    "supports_variants": false,     // En ropa será true (talles), en autos false
+    "requires_brand": true,
+    "requires_stock": true,
+    "requires_images": true,
+    "max_images_per_product": 5
+  }
+}

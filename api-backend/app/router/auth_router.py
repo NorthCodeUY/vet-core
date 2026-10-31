@@ -1,193 +1,260 @@
-# /api-beckend/app/router/auth_router.py
+# api-backend/app/router/auth_router.py
+"""
+=============================================================================
+CONTROLADOR HTTP: AUTENTICACIÓN, REGISTRO Y GESTIÓN DE TOKENS (JWT)
+=============================================================================
+Provee endpoints para login administrativo, registro de clientes por catálogo
+y emisión de tokens con claims de rol y contexto de tenant.
+"""
 
-from app.models import imagen_url_model
-from fastapi import APIRouter, Depends, HTTPException, status, Body, Form, File # Importo las dependencias necesarias 
-from typing import Optional
+from pathlib import Path
+from fastapi import APIRouter, Depends, HTTPException, status, Body, UploadFile, File
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.orm import Session
+from sqlalchemy import select, or_
 
-from sqlalchemy.orm import Session  # Importo la sesion de la base de datos 
+from app.database import get_db
+from app.config import settings
+from app.models.user_model import UserModel
+from app.models.cliente_model import ClienteModel
+from app.security import verify_password, get_password_hash, create_access_token
+from app.schemas.user_schema import (
+    UserRegisterSchema, 
+    LoginRequestSchema, 
+    TokenResponseSchema
+)
 
-from app.database import get_db # Importo la sesion de la base de datos
-from app.models.user_model import UserModel  # Trae la tabla Usuario
-from app.models.cliente_model import ClienteModel # Trae la tabla Clientes 
-
-# Es normal importar funciones de seguridad aquí, pero si no te gusta visualmente,
-# podés encapsularlas en un "AuthService" dentro de app/services/auth_service.py
-from app.security import hash_password, verify_password, create_access_token
-from pydantic import BaseModel
-# Cambiamos las importaciones al nuevo directorio de esquemas
-
-from sqlalchemy.orm import Session 
-
-# Para subir archivos desde el front  para la foto de perfil de los clietes 
-from fastapi import UploadFile, File
-
-from app.schemas.user_schema import UserRegisterSchema, LoginRequestSchema
+router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
 
-router = APIRouter(prefix="/auth", tags=["Autenticación"])  # Sirve para agrupar todas las rutas de ese archivo bajo una misma categoría
+# =============================================================================
+# 1. LOGIN ESTÁNDAR OAUTH2 (SWAGGER / CLI / BACKOFFICE)
+# =============================================================================
+@router.post(
+    "/token", 
+    response_model=TokenResponseSchema,
+    summary="Login OAuth2 estándar (Form Data)",
+    description="Endpoint compatible con Swagger UI. El campo 'username' acepta Email o WhatsApp."
+)
+def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
+    """Autenticación para Swagger UI y clientes OAuth2 estándar."""
+    identificador = form_data.username.strip().lower()
 
-
-@router.post("/register/cliente", 
-    status_code=status.HTTP_201_CREATED
+    # Búsqueda dual: Permite loguearse con Email o con WhatsApp
+    stmt = select(UserModel).where(
+        or_(
+            UserModel.usu_email == identificador,
+            UserModel.usu_whatsapp == identificador
+        )
     )
-async def register(
-    user_data: UserRegisterSchema = Body(...), # Describe la estructura de el Jeison de Usuario 
-    db: Session = Depends(get_db) # Base de datos 
-    ): 
+    usuario = db.scalars(stmt).first()
 
-        # print("llego aca Registro -------------------------") # <!> Sacar luego que cumpla su funcion
+    if not usuario or not verify_password(form_data.password, usuario.usu_password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales incorrectas (Email/WhatsApp o contraseña inválidos).",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
-        # <!> Aca deberia que los campos requeridos allan sido enviados
+    if not usuario.usu_activo:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Usuario suspendido o dado de baja."
+        )
 
-        # Valiar el password
-        if len(user_data.password) < 6:
-            raise HTTPException(status_code=400, detail="La contraseña debe tener al menos 6 caracteres")
-        
-        # 1. Validación de WhatsApp (que ahora es tu ID principal)
-        if db.query(UserModel).filter(UserModel.usu_whatsapp == user_data.whatsapp).first():
-            raise HTTPException(status_code=400, detail="WhatsApp ya registrado")
+    # Inyección de claims en JWT
+    token_claims = {
+        "sub": str(usuario.usu_id),
+        "email": usuario.usu_email,
+        "rol": usuario.usu_rol,
+        "tenant_type": settings.TENANT_TYPE
+    }
 
-        try: 
-  
-            # <!> Sacar esto version anterior no permite archivos fotos           
-            # Agrego campos obligatorios
-            nuevo_usuario = UserModel(
-                usu_whatsapp=user_data.whatsapp,
-                usu_nombre=user_data.nombre,
-                usu_nombre_mostrar=user_data.nombre_mostrar,
-                usu_password_hash=hash_password(user_data.password),
-                usu_rol='cliente'
+    return {
+        "access_token": create_access_token(token_claims),
+        "token_type": "bearer",
+        "usu_id": usuario.usu_id,
+        "usu_email": usuario.usu_email,
+        "usu_nombre": usuario.usu_nombre,
+        "usu_rol": usuario.usu_rol,
+        "tenant_type": settings.TENANT_TYPE
+    }
+
+
+# =============================================================================
+# 2. LOGIN JSON PARA EL FRONTEND (REACT / AXIOS)
+# =============================================================================
+@router.post(
+    "/login", 
+    response_model=TokenResponseSchema,
+    status_code=status.HTTP_200_OK,
+    summary="Login directo vía JSON para aplicaciones web y móviles"
+)
+def login_json(
+    creds: LoginRequestSchema = Body(...), 
+    db: Session = Depends(get_db)
+):
+    """Endpoint simplificado que recibe un payload JSON tradicional."""
+    identificador = creds.email.strip().lower()
+
+    stmt = select(UserModel).where(
+        or_(
+            UserModel.usu_email == identificador,
+            UserModel.usu_whatsapp == identificador
+        )
+    )
+    usuario = db.scalars(stmt).first()
+
+    if not usuario or not verify_password(creds.password, usuario.usu_password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email/WhatsApp o contraseña incorrectos."
+        )
+
+    if not usuario.usu_activo:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Esta cuenta ha sido desactivada."
+        )
+
+    token_claims = {
+        "sub": str(usuario.usu_id),
+        "email": usuario.usu_email,
+        "rol": usuario.usu_rol,
+        "tenant_type": settings.TENANT_TYPE
+    }
+
+    return {
+        "access_token": create_access_token(token_claims),
+        "token_type": "bearer",
+        "usu_id": usuario.usu_id,
+        "usu_email": usuario.usu_email,
+        "usu_nombre": usuario.usu_nombre,
+        "usu_rol": usuario.usu_rol,
+        "tenant_type": settings.TENANT_TYPE
+    }
+
+
+# =============================================================================
+# 3. REGISTRO PÚBLICO DE CLIENTES (CATÁLOGO WEB)
+# =============================================================================
+@router.post(
+    "/register/cliente", 
+    response_model=TokenResponseSchema,
+    status_code=status.HTTP_201_CREATED,
+    summary="Registro de nuevo comprador en tienda web"
+)
+def register_cliente(
+    user_data: UserRegisterSchema = Body(...), 
+    db: Session = Depends(get_db)
+):
+    """
+    Registra un usuario con rol 'CLIENTE' y provisiona su registro en 'clientes'.
+    Emite inmediatamente el token JWT para dejarlo autenticado tras registrarse.
+    """
+    # 1. Validación de unicidad de email
+    stmt_email = select(UserModel).where(UserModel.usu_email == user_data.email.strip().lower())
+    if db.scalars(stmt_email).first():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="El correo electrónico ya se encuentra registrado."
+        )
+
+    # 2. Validación de unicidad de WhatsApp (si lo proporciona)
+    if user_data.whatsapp:
+        stmt_wpp = select(UserModel).where(UserModel.usu_whatsapp == user_data.whatsapp.strip())
+        if db.scalars(stmt_wpp).first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail="El número de WhatsApp ya pertenece a otra cuenta."
             )
 
-            # Agregamos los opcionales solo si existen
-            # <!> Esto no se si es necesario creo que si el campo
-            # biene sin datos no hay que validarlo simplmente lo mete 
-            # sin datos no se 
-            if user_data.email:
-                nuevo_usuario.usu_email = user_data.email
-            if user_data.direccion:
-                nuevo_usuario.usu_direccion = user_data.direccion
-            if user_data.ubicacion:
-                nuevo_usuario.usu_ubicacion = user_data.ubicacion
+    try:
+        # 3. Creación del Usuario Identity
+        nuevo_usuario = UserModel(
+            usu_email=user_data.email.strip().lower(),
+            usu_password_hash=get_password_hash(user_data.password),
+            usu_nombre=user_data.nombre.strip(),
+            usu_nombre_mostrar=user_data.nombre_mostrar or user_data.nombre.split()[0],
+            usu_whatsapp=user_data.whatsapp.strip() if user_data.whatsapp else None,
+            usu_direccion=user_data.direccion,
+            usu_ubicacion=user_data.ubicacion,
+            usu_rol="CLIENTE",
+            usu_activo=True
+        )
+        db.add(nuevo_usuario)
+        db.flush()  # Genera nuevo_usuario.usu_id
+
+        # 4. Creación del Perfil Cliente (Relación 1 a 1)
+        nuevo_cliente = ClienteModel(cli_id=nuevo_usuario.usu_id)
+        db.add(nuevo_cliente)
         
-            db.add(nuevo_usuario) # Agregar el nuevo usuario a la base de datos 
-            db.flush() # Confirmar la transaccion a BD
+        db.commit()
+        db.refresh(nuevo_usuario)
 
-            # 3. Crear Cliente
-            nuevo_cliente = ClienteModel(
-                cli_id=nuevo_usuario.usu_id # ID del cliente relacionadas con su usario 
-            )
-            db.add(nuevo_cliente) # Agregar el nuevo cliente a la base de datos 
-            db.commit() # Confirmar la transaccion a BD
+        # 5. Emisión de Token de bienvenida
+        token_claims = {
+            "sub": str(nuevo_usuario.usu_id),
+            "email": nuevo_usuario.usu_email,
+            "rol": nuevo_usuario.usu_rol,
+            "tenant_type": settings.TENANT_TYPE
+        }
+
+        return {
+            "access_token": create_access_token(token_claims),
+            "token_type": "bearer",
+            "usu_id": nuevo_usuario.usu_id,
+            "usu_email": nuevo_usuario.usu_email,
+            "usu_nombre": nuevo_usuario.usu_nombre,
+            "usu_rol": nuevo_usuario.usu_rol,
+            "tenant_type": settings.TENANT_TYPE
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            detail=f"Error en la transacción de registro: {str(e)}"
+        )
 
 
-
-            # 5. Token (sub es el whatsapp)
-            token = create_access_token({"sub": nuevo_usuario.usu_whatsapp}) # Generar el token 
-        
-            return { # <!>  Agrege el id para que en la otra cosulta pude agregar la imagen lo que no me queda claro como manda el tokn al fronte ni como funciona pra la secion 
-                "access_token": token,
-                "token_type": "bearer",
-                "user": {"nombre": nuevo_usuario.usu_nombre, 
-                        "whatsapp": nuevo_usuario.usu_whatsapp,
-                        "id": nuevo_usuario.usu_id}
-             }
-        except Exception as e:
-            db.rollback()
-            raise HTTPException(status_code=500, detail=str(e))
-
-# <!> Ejemlo como retorna la informacion 
-# {
-#     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwOTkxMjM0NTYiLCJleHAiOjE3ODQzMDI4Njh9.xGFWNByOFKPZhGHml5Fk2bkFg63HNAnKWCOWZAN6Tsg",
-#     "token_type": "bearer",
-#     "user": {
-#         "nombre": "Ary Gimenez",
-#         "whatsapp": "099123456",
-#         "id": 1
-#     }
-# }
-
-@router.post("/upload-avatar/{user_id}")
+# =============================================================================
+# 4. CARGA DE AVATAR (COMPATIBLE CON CONTENEDORES DOCKER)
+# =============================================================================
+@router.post(
+    "/upload-avatar/{user_id}",
+    summary="Subir imagen de perfil (Fallback local con auto-creación de carpetas)"
+)
 async def upload_avatar(
     user_id: int, 
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
-    ):
-
-    # Verificamos si el usuario existe
-    user = db.query(UserModel).filter(UserModel.usu_id == user_id).first()
-    if not user:
+):
+    """Guarda la foto de perfil en disco local asegurando la existencia de la ruta."""
+    usuario = db.get(UserModel, user_id)
+    if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
-    
-    # Guardar foto si viene
-    file_path = None # Para guardar la foto de perfil del cliente 
-    if file: # Si el cliente envia una foto 
-        file_path = f"app/static/clientes/Cli_{user_id}.png"
-        with open(file_path, "wb") as buffer: # Escribir la foto en el archivo 
-            buffer.write(await file.read()) # Leer la foto  
-    return {"message": "Foto subida"}
-    
-    
-            
 
-@router.post(
-    "/login", 
-    status_code=status.HTTP_200_OK,
-    summary="Autentica un usuario y devuelve su token JWT de sesión"
-)
-def login(creds: LoginRequestSchema, db: Session = Depends(get_db)):
-    """
-    Valida las credenciales del usuario.
-    Si son correctas, emite un JWT que el dispositivo recordará para futuras peticiones.
-    """
-    # Buscamos el registro en la tabla de credenciales
-    user = db.query(UserModel).filter(UserModel.email == creds.email).first()
-    
-    # Mitigación de seguridad: Usamos un mensaje genérico para no dar pistas de si el email existe o no
-    if not user or not verify_password(creds.password, user.password_hash):
-        raise HTTPException( # Error 401 - Porque no se pudo autenticar  
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="WhatSapp o contraseña incorrectos."
-        )
-    
-    # Generamos el token JWT. Este es el que el celular/navegador mantendrá guardado.
-    token = create_access_token({"sub": user.email}) # <!> Esto creo que tendria que ser whatsapp 
-    
+    # Asegura que el directorio exista en el contenedor
+    upload_dir = Path("app/static/clientes")
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    extension = file.filename.split(".")[-1].lower() if file.filename else "png"
+    filename = f"avatar_{user_id}.{extension}"
+    file_path = upload_dir / filename
+
+    content = await file.read()
+    with open(file_path, "wb") as buffer:
+        buffer.write(content)
+
+    # Actualizar la URL relativa en base de datos
+    usuario.usu_imagen_url = f"/static/clientes/{filename}"
+    db.commit()
+
     return {
-        "access_token": token, 
-        "token_type": "bearer", 
-        "user": {
-            "id": user.id,
-            "nombre": user.nombre,
-            "email": user.email
-        }
+        "message": "Avatar actualizado exitosamente",
+        "avatar_url": usuario.usu_imagen_url
     }
-
-
-
-# <!> No se si el situiete metodo esta bien dejo el de arriba y luego lo reviso  
-
-# @router.post("/login") 
-# def login(creds: LoginRequestSchema, db: Session = Depends(get_db)):
-    
-#     # 1. BUSCAR AL USUARIO: 
-#     # El usuario envía su email. Buscamos en la base de datos si alguien tiene ese email.
-#     user = db.query(UserModel).filter(UserModel.email == creds.email).first()
-    
-#     # 2. VALIDAR (La parte crítica):
-#     # Si no encontramos al usuario O la contraseña no coincide con el hash en la DB...
-#     if not user or not verify_password(creds.password, user.password_hash):
-#         # ...entonces rechazamos el acceso.
-#         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
-    
-#     # 3. GENERAR EL TOKEN (El "Pasaporte"):
-#     # Si la contraseña es correcta, creamos un JWT (un string cifrado) que contiene su identidad.
-#     token = create_access_token({"sub": user.email})
-    
-#     # 4. RESPUESTA:
-#     # Le devolvemos el token y sus datos básicos al frontend para que los guarde.
-#     return {
-#         "access_token": token, 
-#         "token_type": "bearer", 
-#         "user": {"id": user.id, "nombre": user.nombre}
-#     }

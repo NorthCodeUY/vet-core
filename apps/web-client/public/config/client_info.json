@@ -1,157 +1,119 @@
-// clientes/malandrobarber/config.json
-
+// clientes/veterinariabeltrameli/config.json
 {
-  // Control de versión del esquema de configuración
+  // Control de versión del esquema de configuración (para futuras migraciones de plataforma)
   "_version": "1.0.0",
-
-  // Identificador único del cliente (usado para logs, cabeceras de API y Docker)
-  "id": "malandro_barber",
-
+  // Identificador único del cliente (usado para logs, cabeceras de API y analítica)
+  "id": "valeria_beltramelli",
   // Nombre comercial que se muestra en títulos de pestaña, header y pie de página
-  "business_name": "Malandro Barber",
-
-  // Eslogan institucional con formato segmentado
+  "business_name": "Veterinaria Beltramelli",
+  // Eslogan institucional con formato segmentado (útil para cabeceras y meta tags de SEO)
   "slogan": {
-    "prefix": "Estilo clásico y",
-    "highlight": "Tendencias Modernas",
-    "suffix": "en Artigas"
+    "prefix": "Cuidado profesional para",
+    "highlight": "Tus Mascotas",
+    "suffix": "en Salto"
   },
-
   // ===========================================================================
-  // PALETA DE COLORES MULTI-TENANT (Modo Oscuro Premium / Rojo & Negro)
+  // PALETA DE COLORES MULTI-TENANT (Inyectada dinámicamente en :root del DOM)
   // Valores estrictamente en formato Hexadecimal (#RRGGBB).
   // ===========================================================================
   "theme": {
     // 1. MARCA & LLAMADAS A LA ACCIÓN (CTA)
-    "primary": "#d21919",         // Rojo intenso de marca (Botones de acción, enlaces, acentos)
-    "primary_hover": "#801e1e",   // Rojo oscuro para el estado hover del botón
-    "secondary": "#18181B",       // Gris carbón metálico (Badges y detalles)
-    "tertiary": "#25D366",        // Verde oficial de WhatsApp
+    "primary": "#275D9E", // Botones principales, enlaces activos, iconos destacados
+    "primary_hover": "#1E4B82", // Estado hover exclusivo del botón principal
+    "secondary": "#daebd4", // Color secundario (Badges, etiquetas, acentos de apoyo)
+    "tertiary": "#1FAF38", // Color exclusivo para canales de WhatsApp y llamadas
     // 2. FONDOS & ESTRUCTURA VISUAL
-    "dark": "#090D16",            // Fondo oscuro estructural para header, footers y modales
-    "surface": "#131C2E",         // Fondo para tarjetas y áreas de contenido
-    "soft": "#1E293B",            // Fondo gris grafito para contraste suave
-    "overlay": "#020617",         // Backdrop con oscurecimiento para modales
-    // 3. JERARQUÍA TIPOGRÁFICA (Legibilidad en Fondo Oscuro)
-    "text_base": "#FFFFFF",       // Texto principal de lectura y títulos (Blanco de alto contraste)
-    "text_muted": "#94A3B8",      // Texto secundario, subtítulos y placeholders (Gris claro)
+    "dark": "#fdfdf1", // Fondo estructural oscuro (Header, Footers, modales, draweres)
+    "surface": "#FFFFFF", // Fondo de tarjetas de producto, inputs y áreas de contenido
+    "soft": "#649353", //  #DBECD5 Tinte suave de marca (Fondos de secciones alternadas, chips pasivos)
+    "overlay": "#000000", // Capa oscura para backdrop de modales y menús móviles
+    // 3. JERARQUÍA TIPOGRÁFICA (Legibilidad)
+    "text_base": "#000000", // Texto principal de lectura y títulos (Alto contraste)
+    "text_muted": "#000000", // Texto secundario, subtítulos, fechas y placeholders
     // 4. BORDES & ALERTAS
-    "border_subtle": "#1E293B",   // Líneas divisorias sutiles y bordes de tarjetas
-    "error": "#DC2626"            // Color para alertas y cancelaciones
+    "border_subtle": "#1E4B82", // Líneas divisorias suaves y bordes de tarjetas
+    "error": "#DC2626" // Acciones destructivas (Vaciar carrito, urgencias 24h, alertas)  
   },
 
-  // Rutas estandarizadas de activos servidos desde la carpeta /tenant/
+  // Rutas estandarizadas de logotipos e iconos servidos desde la carpeta /tenant/
   "branding": {
-    "logo_url": "/tenant/logo.png",
-    "hero_animation_url": "/tenant/animations/hero_animation.json",
-    "background_animation_url": "/tenant/barber_pole.webm"
+    "logo_url": "/tenant/logo.png", // Icono de la empresa 
+    "hero_animation_url": "/tenant/animations/hero_animation.json" // Lottie del heroe 
 
+    // <!> Yo tengo el disneio del logo en png si sire para cosas en espesifico lo agrego  
+    // "favicon_url": "/tenant/favicon.ico" // <!> Por haora no lo uso luevo voe para agregarlo cmo deberia eser de reosolucion 
   },
-
   // Selector de variantes de diseño para componentes modulares
   "ui_variants": {
-    "header": "v1",               // Variante de barra de navegación superior
-    "footer": "v1",               // Variante de pie de página
-    "product_card": "v2",         // Variante de tarjeta de producto con acordeón
-    "hero": "v2",                  // Variante con video 3D transparente (WebM)
-    "portfolio_card": "v1" // Variante visual de la tarjeta de portfolio
+    "header": "v1", // Variante visual de la barra de navegación superior
+    "footer": "v1", // Variante visual del pie de página
+    "product_card": "v2", // Variante visual de la tarjeta de producto en el catálogo
+    "hero": "v1", // Variante visual de la portada principal
+    "maintenance": "v2"   //  v1: Lottie animado | v2: Bento Card interactiva con datos
   },
 
-  // Interruptores de activación/desactivación de módulos en la interfaz
+
+
+  // ===========================================================================
+  // INTERRUPTORES DE ACTIVACIÓN Y MÓDULOS DE INTERFAZ (Feature Flags)
+  // Permite encender o apagar secciones completas sin tocar el código fuente.
+  // ===========================================================================
   "features": {
-    "has_cart": false,            // false: oculta carrito y pedidos (vitrina institucional)
-    "has_products": false,        // false: oculta el catálogo de productos
-    "has_services": false,         // false: oculta la sección de servicios de barbería
-    "has_health_plans": false,     // false: oculta las membresías y packs mensuales
-    "has_portfolio": true,         // true: muestra las membresías los trabajos de el cliete
-    "has_appointments": false,    // false: turnos directos por WhatsApp (sin módulo complejo)
-    "has_emergency_button": false,// false: apaga botón de urgencias médicas
-    "has_locations": true,        // true: muestra la ubicación y mapa del estudio
-    "has_hero": true,             // true: muestra la portada principal
-    "has_floating_bottom_bar": true, // true: footer flotante
-    "has_dividers": false,         // false: diseño plano moderno sin ondas de pasto
-    "has_background_animation": true  // 👈 true: activa el cartel de fondo reactivo al scroll
+    "is_maintenance": true,           // 🚧 Modo Lanzamiento     | true: pantalla de construcción en '/' | false: web activa en producción
+    "has_cart": true,                 // 🛒 Carrito de Compras   | true: activa drawer de pedidos y checkout WhatsApp | false: solo catálogo informativo
+    "has_products": true,             // 📦 Catálogo Tienda      | true: activa la sección de productos y buscador | false: oculta la tienda
+    "has_services": true,             // 🩺 Servicios Ofrecidos  | true: muestra la sección de especialidades y prestaciones | false: oculta servicios
+    "has_health_plans": true,         // 📋 Planes y Membresías  | true: muestra paquetes mensuales o planes de salud | false: oculta planes
+    "has_appointments": false,        // 📅 Reservas de Turnos   | true: habilita formulario de citas online | false: reservas directas por WhatsApp
+    "has_emergency_button": true,     // 🚨 Urgencias 24 Horas   | true: activa botón de emergencias y guardia médica | false: desactivado
+    "has_locations": true,            // 📍 Ubicación y Mapas    | true: muestra dirección del local y Google Maps | false: oculta mapa
+    "has_hero": true,                 // ✨ Portada Principal    | true: muestra la sección Hero inicial | false: inicia directo en catálogo
+    "has_floating_bottom_bar": true,  // 📱 Barra Flotante       | true: activa barra inferior con accesos rápidos y WhatsApp | false: menú tradicional
+    "has_dividers": true              // 🌊 Divisores con Ondas  | true: transiciones orgánicas SVG entre secciones | false: diseño plano moderno
+    
   },
 
-  // Contenido de la sección de portada (Hero)
+
+  // Contenido de la sección de portada (Hero) con soporte de etiquetas HTML
   "hero": {
-    "title_image_url": "/tenant/hero-title1.png",
-    "title_html": "<span class='text-vete-primary'>Estilo</span> y <span class='text-vete-primary'>Carácter</span>",
-    "description": "Tu imagen merece atención de primer nivel en un ambiente exclusivo y profesional. Especialistas en degradados, perfilado de barba tradicional y asesoramiento de imagen en Artigas."
+    "title_image_url": "/tenant/hero-title1.png", // <!> Agregar una imagen en .png o .svg para el titulo del hero, se ubica arriba del titulo de texto "Cuidamos a quienes am".
+    "title_html": "<span class='text-vete-primary'>Cuidamos</span> a quienes <span class='text-vete-primary'>amas</span>",
+    "description": "Tu mascota merece la mejor atención médica en un ambiente cálido y profesional. Contamos con especialistas comprometidos con el bienestar integral de tus compañeros, brindando cuidado, dedicación y confianza en cada etapa de su vida.",
+    "has_section_dividers": false // Determina si dejo visivel el divisor
   },
-
-
-  // ===========================================================================
-  // MÓDULO SHOWCASE: TRABAJOS DE BARBERÍA (3 CORTES CON FOTOS Y VIDEO)
-  // ===========================================================================
-
-  "portfolio_section": {
-    "title_html": "Nuestros <span class='text-vete-primary'>Trabajos</span>",
-    "description": "Técnica, perfilados de navaja y terminaciones de precisión realizadas en nuestro estudio de Artigas.",
-    "items": [
-      {
-        "media": [
-          { "type": "video", "url": "/tenant/trabajos/1-video.mp4" }
-        ],
-        "whatsapp_message": "¡Hola Malandro Barber! Vi el video del *Low Fade Texturizado* en la web y me gustaría coordinar un turno para hacerme ese corte."
-      },
-      {
-        "media": [
-          { "type": "video", "url": "/tenant/trabajos/2-video.mp4" }
-        ],
-        "whatsapp_message": "¡Buenas! Me interesa el servicio de *Skin Fade & Ritual de Barba*. ¿Qué horarios tienen disponibles esta semana?"
-      },
-      {
-        "media": [
-          { "type": "video", "url": "/tenant/trabajos/3-video.mp4" }
-        ],
-        "whatsapp_message": "¡Hola! Vi las fotos y video del *Taper Fade con Diseño* en la web y quiero consultar disponibilidad para un corte similar."
-      },
-      {
-        "media": [
-          { "type": "video", "url": "/tenant/trabajos/4-video.mp4" }
-        ],
-        "whatsapp_message": "¡Hola! Vi las fotos y video del *Taper Fade con Diseño* en la web y quiero consultar disponibilidad para un corte similar."
-      }
-    ]
-  },  
-
-  
-
-  // Módulo de Servicios de Barbería
+  // Módulo de Servicios ofrecidos por la veterinaria o comercio
   "services_section": {
-    "title_image_url": "/tenant/services-title1.png",
+    "title_image_url": "/tenant/services-title1.png", // <!> Agregar una imagen en .png o .svg para el titulo del hero, se ubica arriba del titulo de texto "Nuestros ".
     "title_html": "Nuestros <span class='text-vete-primary'>Servicios</span>",
-    "description": "Técnicas de corte clásico combinadas con las últimas tendencias urbanas y cuidado de barba.",
+    "description": "Atención médica integral, diagnósticos precisos y cuidados preventivos para cada etapa de vida.",
     "items": [
       {
-        "id": "corte-fade",
-        "title": "Corte Clásico & Fade",
-        "description": "Degradados precisos (Skin Fade, Taper, Low Fade), tijera y peinado con cera profesional.",
-        "icon_name": "Scissors"
+        "id": "clinica-medica",
+        "title": "Clínica Médica",
+        "description": "Consultas generales, diagnóstico clínico, tratamientos integrales y medicina preventiva.",
+        "icon_name": "Stethoscope"
       },
       {
-        "id": "perfilado-barba",
-        "title": "Perfilado de Barba & Spa",
-        "description": "Toalla caliente, navaja tradicional, perfilado de líneas y aceites hidratantes premium.",
-        "icon_name": "Sparkles"
+        "id": "cirugia-general",
+        "title": "Cirugía General",
+        "description": "Quirófano equipado para cirugías de tejidos blandos, esterilizaciones y procedimientos de urgencia.",
+        "icon_name": "Activity"
       },
       {
-        "id": "combo-completo",
-        "title": "Servicio Completo VIP",
-        "description": "Corte de cabello + diseño de barba + lavado capilar + perfilado de cejas.",
+        "id": "vacunacion-desparasitacion",
+        "title": "Vacunación y Planes Sanitarios",
+        "description": "Esquemas de inmunización completos, desparasitaciones periódicas y seguimiento sanitario.",
         "icon_name": "ShieldCheck"
       },
       {
-        "id": "tratamiento-capilar",
-        "title": "Lavado & Exfoliación",
-        "description": "Limpieza profunda del cuero cabelludo, masaje capilar y productos revitalizantes.",
-        "icon_name": "Activity"
+        "id": "analisis-laboratorio",
+        "title": "Diagnóstico y Análisis",
+        "description": "Estudios complementarios, análisis de laboratorio y control periódico de parámetros de salud.",
+        "icon_name": "Microscope"
       }
     ]
   },
-
-  // Secciones institucionales adaptadas (Misión, Visión, Valores)
+  // Secciones institucionales estructuradas (Misión, Visión, Valores)
   "institutional": {
     "sections": [
       {
@@ -159,127 +121,139 @@
         "title": "Misión",
         "image_url": "/tenant/mision.png",
         "reversed": false,
-        "content_html": "<p>Brindar una experiencia de <strong class='text-vete-primary font-bold'>barbería artesanal de excelencia</strong>, rescatando el valor del oficio tradicional y combinándolo con las tendencias más innovadoras en un espacio pensado para tu comodidad y relax.</p>"
+        "content_html": "<p>Brindar atención <strong class='text-vete-primary font-bold'>veterinaria profesional</strong>, cálida y confiable, cuidando la salud y el bienestar de cada animal como parte fundamental de la vida de sus familias y de la producción responsable. Nos comprometemos a acompañar a cada mascota en todas las etapas de su vida, mediante tratamientos integrales, planes sanitarios, desparasitaciones y cirugías, incluyendo atención de emergencias. Al mismo tiempo, ofrecemos soluciones eficientes y basadas en el rigor profesional para animales de producción, contribuyendo al desarrollo y la sostenibilidad del sector agropecuario.</p>"
       },
       {
         "id": "vision",
         "title": "Visión",
         "image_url": "/tenant/vision.png",
         "reversed": true,
-        "content_html": "<p>Ser el estudio de barbería referente en Artigas, reconocido por la precisión técnica, el trato personalizado y la creación de una comunidad que valora el cuidado de su imagen personal.</p>"
+        "content_html": "<p>Ser un referente en la medicina veterinaria, reconocido por la confianza, la calidad profesional y la cercanía con nuestros clientes.</p><p class='mt-3'>Aspiramos a consolidarnos como una clínica destacada en el cuidado de pequeños animales, sin dejar de aportar nuestra experiencia y eficiencia al servicio veterinario de grandes animales y producción, respaldados por años de trayectoria, formación constante y compromiso con la excelencia.</p>"
       },
       {
         "id": "valores",
         "title": "Valores",
         "image_url": "/tenant/valores.png",
         "reversed": false,
-        "content_html": "<div class='flex flex-col gap-3'><p><strong class='text-vete-primary font-bold'>Precisión & Detalle: </strong>Cada corte es tratado como una obra única, cuidando simetrías y terminaciones.</p><p><strong class='text-vete-primary font-bold'>Higiene & Confianza: </strong>Herramientas esterilizadas, navajas descartables y productos de primera línea.</p><p><strong class='text-vete-primary font-bold'>Atención Personalizada: </strong>Asesoramiento según la fisonomía y preferencias de cada cliente.</p></div>"
+        "content_html": "<div class='flex flex-col gap-3'><p><strong class='text-vete-primary font-bold'>Compromiso con la vida: </strong>Cuidamos cada animal con responsabilidad, vocación y respeto, entendiendo su importancia en la vida de las personas y en la producción.</p><p><strong class='text-vete-primary font-bold'>Profesionalismo y experiencia: </strong>Aplicamos conocimiento, criterio clínico y mejora continua, respaldados por años de trayectoria en el ámbito veterinario.</p><p><strong class='text-vete-primary font-bold'>Responsabilidad y confianza: </strong>Actuamos con honestidad, transparencia y ética, generando relaciones duraderas basadas en la confianza.</p></div>"
       }
     ]
   },
-
-  // Sección de Planes, Membresías y Packs de Barbería
+  // Sección de Planes, Suscripciones o Paquetes Promocionales <!> Agregarel los precios 
   "plans_section": {
-    "title_image_url": "/tenant/plans-title1.png",
-    "title_html": "Membresías & <span class='text-vete-primary'>Packs de Corte</span>",
-    "description": "Planes diseñados para mantener tu estilo siempre impecable con precios preferenciales.",
+    "title_image_url": "/tenant/plans-title1.png", // <!> Agregar una imagen en .png o .svg para el titulo del hero, se ubica arriba del titulo de texto "Programas de ".
+    "title_html": "Programas de <span class='text-vete-primary'>Bienestar Animal</span>",
+    "description": "Planes diseñados para asegurar la salud preventiva de tus animales a lo largo de toda su vida.",
+    "has_section_dividers": true, // Determina si dejo visivel el divisor
     "items": [
       {
-        "id": "pack-quincenal",
-        "title": "Pack Quincenal",
-        "description": "Ideal para quienes mantienen su degradado perfecto todo el mes.",
+        "id": "salud-preventiva",
+        "title": "Salud Preventiva",
+        "description": "Lo esencial para mantener a tu mascota sana y protegida mes a mes.",
         "benefits": [
-          "2 Cortes de Cabello al mes",
-          "Lavado y peinado incluido",
-          "Turno preferencial"
+          "Consultas Gratis",
+          "Recordatorio",
+          "Descuentos especiales"
         ],
         "is_featured": false,
-        "whatsapp_message": "¡Hola Malandro Barber! Me interesa consultar por el *Pack Quincenal* de cortes. ¿Cómo funciona la agenda?"
+        "whatsapp_message": "¡Hola! Me interesa el Plan *Salud Preventiva* para mi mascota. ¿Me podrían pasar los costos y requisitos? ¡Gracias!"
       },
       {
-        "id": "membresia-vip",
-        "title": "Membresía Completa",
-        "description": "El plan integral para quienes cuidan su cabello y barba constantemente.",
+        "id": "proteccion",
+        "title": "Protección",
+        "description": "Cobertura ampliada para mayor tranquilidad ante imprevistos.",
         "benefits": [
-          "2 Cortes de Cabello al mes",
-          "2 Perfilados de Barba con toalla caliente",
-          "Bebida de cortesía en cada sesión",
-          "Descuento en productos para barba"
+          "Consultas Gratis",
+          "Chequeo anual",
+          "Descuentos especiales",
+          "Baño mensual"
         ],
         "is_featured": true,
-        "whatsapp_message": "¡Hola! Vi en la web la *Membresía Completa* y quiero solicitar información para empezar este mes. ¡Gracias!"
+        "whatsapp_message": "¡Hola! Vi en la web el Plan *Protección* y me pareció muy completo. ¿Me podrían asesorar un poco más? Gracias."
       },
       {
-        "id": "pack-barba",
-        "title": "Club de la Barba",
-        "description": "Cuidado intensivo quincenal para barbas prolijas y perfiladas.",
+        "id": "familia",
+        "title": "Familia",
+        "description": "Plan ideal para hogares con múltiples mascotas.",
         "benefits": [
-          "2 Perfilados completos al mes",
-          "Tratamiento con aceites esenciales",
-          "Perfilado de contorno con navaja"
+          "Consultas Gratis",
+          "Recordatorios",
+          "Descuentos especiales",
+          "1 Baño mensual por mascota"
         ],
         "is_featured": false,
-        "whatsapp_message": "¡Hola! Me gustaría sumarme al *Club de la Barba*. ¿Qué días y horarios tienen disponibles?"
+        "whatsapp_message": "¡Hola! En casa tenemos varios integrantes y nos interesa el Plan *Familia*. ¿Cómo funciona la cobertura para más de 2 mascotas? ¡Gracias!"
+      },
+      {
+        "id": "senior",
+        "title": "Senior",
+        "description": "Cuidados especializados para los años dorados de tu compañero.",
+        "benefits": [
+          "Consultas Gratis",
+          "Chequeo anual",
+          "Descuentos especiales",
+          "Seguimiento personalizado"
+        ],
+        "is_featured": false,
+        "whatsapp_message": "¡Hola! Mi compañero está en sus años dorados y me interesa el Plan *Senior*. ¿Me cuentan más sobre el chequeo geriátrico? Gracias."
       }
     ]
   },
-
-  // Datos de contacto, horarios y geolocalización en Artigas
+  // Datos de contacto, horarios y geolocalización
   "contact": {
-    "admin_phone": "098396070",
+    "admin_phone": "096368021",
     "emergency_phone": "096368021",
     "whatsapp_country_code": "598",
-    "address": "Tomas Berreta 54, Artigas, Uruguay",
-    "google_maps_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3434.629235777121!2d-56.4634916!3d-30.3977087!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95ab098f9cd98801%3A0xa3cc5316b6206c2d!2sMalandro%20Barber!5e0!3m2!1ses!2suy!4v1710000000000!5m2!1ses!2suy", // 🗺️ URL OFICIAL PARA EL IFRAME (Permanente, con ficha comercial, reseñas y cartel oficial)
-    "google_maps_direct_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3434.629235777121!2d-56.4634916!3d-30.3977087!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95ab098f9cd98801%3A0xa3cc5316b6206c2d!2sMalandro%20Barber!5e0!3m2!1ses!2suy!4v1710000000000!5m2!1ses!2suy", // 📍 ENLACE DIRECTO (Abre la app de Google Maps en el celular directo al negocio) 
-    "schedule": { 
-      "weekdays": "Lunes a Viernes: 09:00 - 12:00 | 14:00 - 21:00 hs",
-      "saturdays": "Sábados: 09:00 – 12:00"
+    "email": "valeriabeltramelli.vet@gmail.com",
+    "address": "Calle 1 N°5657, Barrio Volcán, Salto, Uruguay",
+    // 🗺️ URL OFICIAL PARA EL IFRAME (Muestra el cartel oficial de la empresa en el mapa)
+    "google_maps_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3391.385317789498!2d-57.9095582!3d-31.3913822!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95addd9a108eada5%3A0x6ad0891a40c05da3!2sVeterinaria%20Beltramelli!5e0!3m2!1ses!2suy!4v1710000000000!5m2!1ses!2suy",
+    // 📍 ENLACE DIRECTO (Abre la ficha completa con fotos, reseñas y horarios como en la imagen 2)
+    "google_maps_direct_url": "https://www.google.com/maps/place/Veterinaria+Beltramelli/@-31.3913822,-57.9095582,17z/data=!3m1!4b1!4m6!3m5!1s0x95addd9a108eada5:0x6ad0891a40c05da3!8m2!3d-31.3913822!4d-57.9069779!16s%2Fg%2F11nw3mj4vv?hl=es-ES",
+    "schedule": {
+      "weekdays": "Lunes a Sábados: 08:00 – 20:00",
+      "saturdays": "Sábados: 08:00 – 12:00"
     },
     "social_networks": {
-      "instagram": "https://www.instagram.com/malandrobarber/",
-      "facebook": "https://www.facebook.com/p/Malandro-Barber-61580341351412/",
-      "tiktok": "https://www.tiktok.com/@malandro.barber7"
+      "instagram": "https://www.instagram.com/veterinariabeltramelliuy/",
+      "facebook": "https://facebook.com/vete.beltramelli",
+      "tiktok": "https://www.tiktok.com/@beltramelliuy"
     }
   },
-
-  // Cuentas bancarias para señas o pagos por transferencia <!> Tengo que conseguir numero de cueta 
+  // Cuentas bancarias soportadas (permite una o múltiples cuentas para liquidación)
   "bank_accounts": [
     {
       "bank_name": "PREX",
       "currency": "UYU",
       "account_number": "19513183",
-      "beneficiary": "Sergio Betancourt"
+      "beneficiary": "Ary Gimenez"
     },
     {
       "bank_name": "BROU",
       "currency": "UYU",
       "account_number": "123-456789",
-      "beneficiary": "Malandro Barber"
+      "beneficiary": "Veterinaria Beltramelli"
     }
   ],
-
-  // Formas de pago aceptadas en el local
+  // Formas de pago soportadas (permite una o múltiples formas de pago para liquidación)
   "payment_methods": {
     "efectivo": true,
     "transferencia": true,
     "tarjeta": true,
     "mercadopago": false
   },
-
-  // Plantillas de texto para mensajes directos de WhatsApp
+  // Plantillas de texto para la generación de mensajes de WhatsApp
   "custom_messages": {
     "whatsapp_contact_label": "Agendar Turno",
-    "whatsapp_order_prefix": "RESERVA MALANDRO BARBER",
-    "cash_payment_note": "Pago en efectivo en el local",
-    "pos_payment_note": "Aceptamos tarjetas de débito/crédito",
-    "transfer_note": "Adjuntaré comprobante de transferencia"
+    "whatsapp_order_prefix": "NUEVO PEDIDO WEB",
+    "cash_payment_note": "Pago en mano al recibir (coordinar cambio con el vendedor)",
+    "pos_payment_note": "Pago con débito/crédito al entregar (solicitar POS)",
+    "transfer_note": "Adjuntaré comprobante por este medio"
   },
-
-  // Datos de la sección de ubicación
+  // Datos para la seccion Maps en landig page 
   "location_section": {
-    "title_image_url": "/tenant/location-title1.png",
-    "title_html": "¿<span class='text-vete-text-base'> Dónde encontrarnos</span>?",
-    "description_html": "Te esperamos en nuestro estudio en Artigas con un ambiente climatizado, buena música y atención exclusiva."
+    "title_image_url": "/tenant/location-title1.png", // <!> Agregar una imagen en .png o .svg para el titulo del hero, se ubica arriba del titulo de texto "¿Dónde estamos?".
+    "title_html": "¿<span class='text-vete-text-base'> Dónde estamos</span>?",
+    "description_html": "Te esperamos con <span class='font-bold'>instalaciones de primera</span>, atención personalizada y equipamiento especializado."
   }
 }

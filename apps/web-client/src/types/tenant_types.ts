@@ -74,13 +74,15 @@ export interface BrandingConfig {
  * @property {string} product_card - Identificador de tarjeta de producto ('v1' | 'v2').
  * @property {string} hero - Identificador de portada principal ('v1' | 'v2').
  * @property {string} portfolio_card - Identificador de tarjeta de trabajo ('v1' | 'v2').
- */
+ * @property {string} maintenance - Identificador de página de mantenimiento ('v1' | 'v2').
+*/
 export interface UIVariantsConfig {
   header: string;
   footer: string;
   product_card: string;
   hero: string;
   portfolio_card: string;
+  maintenance: string;
 }
 
 /**
@@ -422,6 +424,7 @@ export interface ContactConfig {
   whatsapp_country_code: string;
   email: string;
   address: string;
+  
   google_maps_url?: string;
   google_maps_direct_url?: string;
   schedule?: ScheduleConfig;

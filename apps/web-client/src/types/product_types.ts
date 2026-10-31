@@ -31,6 +31,21 @@ export interface ProductoVariante {
   var_tipo: string;
   var_nombre: string;
   var_precio_adicional: number;
+
+
+
+  /*
+   <!> 
+  prod_disponible
+   permitir_sin_stock
+   
+   Bueno estos valores deberian estr en variante porque en se tambien ude ser que el proeucto princiapl Sea visibe o este deisponele peor el subroducto no 
+
+   Esto tengo que tenerlo en cuenta 
+  */
+
+
+
   var_disponible?: boolean;       /* 👈 Interruptor on/off de la variante */
   permitir_sin_stock?: boolean;   /* 👈 Si permite vender con stock en 0 */
   var_stock: number;
@@ -64,6 +79,24 @@ export interface ApiProduct {
   cat_nombre: string;
   imagen_principal_url?: ApiImage | null;
   imagenes_secundarias_url?: ApiImage[];
+
+
+
+  /*
+   <!> 
+  prod_disponible
+   permitir_sin_stock
+   
+   Bueno estos valores deberian estr en variante porque en se tambien ude ser que el proeucto princiapl Sea visibe o este deisponele peor el subroducto no 
+
+   Esto tengo que tenerlo en cuenta 
+  */
+
+
+
+
+
+
   subcategorias?: SubcategoriaItem[];
   variantes: ProductoVariante[];
 }

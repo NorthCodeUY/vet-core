@@ -28,14 +28,23 @@ class ColorResponseSchema(BaseModel):
 class VarianteResponseSchema(BaseModel):
     var_id: int = Field(..., description="ID de la variante")
     prod_id: int = Field(..., description="ID del producto padre")
-    var_tipo: str = Field(..., description="Clasificación ('Talle', 'Volumen', 'Medida')")
-    var_nombre: str = Field(..., description="Nombre visible (ej: 'XL', '500 ml')")
-    var_precio_adicional: float = Field(default=0.0, description="Monto extra que suma al precio base")
-    var_stock: int = Field(default=0, description="Stock de esta variante específica")
-    sku: Optional[str] = Field(default=None, description="Código de barras único")
+    var_tipo: str = Field(..., description="Talle, Volumen, Peso, etc.")
+    var_nombre: str = Field(..., description="Ej: S, M, XL, 250ml")
+    var_precio_adicional: float = Field(default=0.0)
+    var_stock: int = Field(default=0)
+    sku: Optional[str] = None
+    codigo_barra: Optional[str] = None
+    
+    # Flags operativos
+    var_activo: bool = True
+    var_disponible: bool = True
+    permitir_sin_stock: bool = False
+    
     color: Optional[ColorResponseSchema] = Field(default=None, alias="rel_color")
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+
 
 
 # =============================================================================

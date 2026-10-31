@@ -8,6 +8,28 @@
  * los textos de producto agotado desde la configuración runtime (config.json).
  * 
  * @module components/ProductCard/ProductCardV2
+ 
+<!> Bueno estoy restructurando el bakend para trabajar con la variantes de talle y si estan o no en lista
+
+Le agrege a  variatne la capasidad de 
+
+Variate 
+BUno creo que esto va apara el bakend si no permite sin stok debieria ir a el bakend
+
+
+var_permitir_sin_stock
+var_activo
+
+
+
+
+
+
+y ACA 
+
+
+
+
  */
 
 import React, { useState, useMemo } from 'react';
@@ -34,49 +56,93 @@ export function ProductCardV2({ producto }: Props) {
   const unavailableBadgeText = config?.custom_messages?.product_unavailable_label || 'Agotado';
   const unavailableButtonText = config?.custom_messages?.product_unavailable_btn || 'No disponible';
 
+  
+  
+  
+  
+  
+  
+  
+  
+  
   /* ===========================================================================
-     2. GESTIÓN DE VARIANTES Y DISPONIBILIDAD COMERCIAL
+     1. GESTIÓN DE VARIANTES Y ESTADO INICIAL
      =========================================================================== */
   const hasVariantes = Boolean(producto.variantes && producto.variantes.length > 0);
 
-  // Inicializa con la primera variante activa/disponible
-  const [selectedVariant, setSelectedVariant] = useState<ProductoVariante | null>(() => {
-    if (!hasVariantes) return null;
-    return (
-      producto.variantes.find((v: any) => v.var_disponible !== false && v.var_stock !== 0) ||
-      producto.variantes[0] ||
-      null
-    );
-  });
+  /**
+   * Bandera maestra de venta sin stock (Columna 'permitir_sin_stock' en PostgreSQL).
+   * Si es true, el sistema opera en modo venta continua ignorando si el stock es 0.
+   */
+  const permiteVentaSinStock = Boolean(producto.permitir_sin_stock);
 
   /**
-   * EVALUACIÓN INTELIGENTE DE DISPONIBILIDAD (Sin acople a facturación)
-   * 1. Prioriza la bandera booleana 'disponible' (manejada por el admin en Flutter).
-   * 2. Si no existe la bandera, solo considera agotado si el stock se fijó explícitamente en 0.
-   * 3. Si el stock es null, asume que el comercio no controla inventario y está disponible.
-   * <!> Esto esta mal no se si es de baken o del frontne 
+   * Selección inicial de la variante activa:
+   * 1. Si permite venta sin stock (tu caso actual), selecciona la primera variante directamente.
+   * 2. Si controla stock estricto, busca la primera con stock físico > 0.
    */
-  const isAvailable = useMemo(() => {
-    // A. Evaluación a nivel de Variante seleccionada
-    if (selectedVariant) {
-      if (typeof (selectedVariant as any).var_disponible === 'boolean') {
-        return (selectedVariant as any).var_disponible;
-      }
-      if (selectedVariant.var_stock !== null && selectedVariant.var_stock !== undefined) {
-        return selectedVariant.var_stock > 0;
-      }
+  const [selectedVariant, setSelectedVariant] = useState<ProductoVariante | null>(() => {
+    if (!hasVariantes) return null;
+    if (permiteVentaSinStock) return producto.variantes[0] || null;
+    return producto.variantes.find((v) => v.var_stock > 0) || producto.variantes[0] || null;
+  });
+
+  /* ===========================================================================
+     2. EVALUACIÓN DE DISPONIBILIDAD COMERCIAL (Sincronizada con DB)
+     =========================================================================== */
+  /**
+   * Evalúa si el producto o la variante seleccionada puede comprarse.
+   * 
+   * Reglas de Negocio:
+   * 1. 'prod_disponible' es el interruptor maestro (False = Dueño pausó la venta en Flutter).
+   * 2. Si 'permitir_sin_stock' es TRUE -> DISPONIBLE SIEMPRE (ignora stock = 0).
+   * 3. Si 'permitir_sin_stock' es FALSE -> Exige stock físico > 0.
+   */
+  const isAvailable = useMemo((): boolean => {
+    // -------------------------------------------------------------------------
+    // PASO 1: Validación Maestra del Producto Padre
+    // -------------------------------------------------------------------------
+    // Si el comercio apagó el producto manualmente desde la app, no se puede comprar
+    if (producto.prod_disponible === false) {
+      return false;
+    }
+
+    // -------------------------------------------------------------------------
+    // PASO 2: Regla de Oro de Venta Continua (Backorders)
+    // -------------------------------------------------------------------------
+    // Como en tu DB 'permitir_sin_stock' está en True y el stock no se gestiona aún,
+    // el producto SIEMPRE estará disponible para compra y checkout.
+    if (permiteVentaSinStock) {
       return true;
     }
 
-    // B. Evaluación a nivel de Producto Padre
-    if (typeof (producto as any).prod_disponible === 'boolean') {
-      return (producto as any).prod_disponible;
+    // -------------------------------------------------------------------------
+    // PASO 3: Validación para Futura Gestión Estricta de Inventario
+    // -------------------------------------------------------------------------
+    // Solo se ejecuta si en el futuro apagas 'permitir_sin_stock'
+    if (selectedVariant) {
+      return selectedVariant.var_stock > 0;
     }
-    if (producto.prod_stock !== null && producto.prod_stock !== undefined) {
-      return producto.prod_stock > 0;
-    }
-    return true; // Disponible por defecto
-  }, [producto, selectedVariant]);
+
+    return producto.prod_stock > 0;
+  }, [producto.prod_disponible, permiteVentaSinStock, selectedVariant, producto.prod_stock]);
+
+
+  
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+
 
   /* ===========================================================================
      3. GESTIÓN DEL STORE GLOBAL (CARRITO)

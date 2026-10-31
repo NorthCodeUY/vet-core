@@ -44,8 +44,7 @@ def create_access_token(
     if expires_delta: # Si se especifica un tiempo de expiración
         expire = now + expires_delta # Tiempo de expiración
     else: # Si no se especifica un tiempo de expiración
-        expire = now + # Tiempo de expiración
-        timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES) # Tiempo de expiración
+        expire = now + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES) # Tiempo de expiración
 
     to_encode.update({"exp": expire, "iat": now}) # Actualiza el token con el tiempo de expiración y el tiempo actual
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM) # Codifica el token

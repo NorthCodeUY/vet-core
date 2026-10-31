@@ -12,7 +12,7 @@ graph TD
     subgraph layer_clients ["🌐 Capa de Clientes / Frontends Web (Vite + Nginx)"]
         F1["Frontend: Veterinaria Beltramelli<br/><code>veterinaria-beltramelli.com</code>"]
         F2["Frontend: Vestimenta Flor de Loto<br/><code>flordeloto-moda.northcode-uy.com</code>"]
-        FN["Frontend: Tenant N (Escalabilidad)<br/><code>cliente-n.com</code>"]
+        FN["Frontend: Tenant N - Escalabilidad<br/><code>cliente-n.com</code>"]
     end
 
     %% ==========================================
@@ -21,20 +21,20 @@ graph TD
     subgraph docker_network ["🐳 Red Privada Docker: northcode-net"]
 
         %% Contenedores Backend Independientes
-        subgraph backend_containers ["🚀 Contenedores Backend (FastAPI / Mismo Artefacto Docker)"]
+        subgraph backend_containers ["🚀 Contenedores Backend - FastAPI / Mismo Artefacto Docker"]
             BV["Container: backend_vet_beltramelli<br/><b>Puerto Host: 8001</b><br/>TENANT_TYPE=VET | AGENDA=true"]
             BF["Container: backend_vestimenta_flordeloto<br/><b>Puerto Host: 8002</b><br/>TENANT_TYPE=RETAIL | AGENDA=false"]
-            BN["Container: backend_tenant_n<br/><b>Puerto Host: 800X</b><br/>Configuración Dinámica"]
+            BN["Container: backend_tenant_n<br/><b>Puerto Host: 800X</b><br/>Configuracion Dinamica"]
         end
 
-        %% Contenedor Único de Base de Datos
-        subgraph db_container ["🐘 Contenedor Clúster PostgreSQL 15 (vet_db_bel:5432)"]
+        %% Contenedor Unico de Base de Datos
+        subgraph db_container ["🐘 Cluster PostgreSQL 15 - vet_db_bel:5432"]
             PG_ENGINE[("Motor PostgreSQL Server")]
-            
-            subgraph isolated_databases ["Bases de Datos Lógicas Aisladas"]
-                DB1[("vet_beltramelli_db<br/>(Dueño: usr_veterinaria)")]
-                DB2[("flor_de_loto_db<br/>(Dueño: usr_flordeloto)")]
-                DBN[("tenant_n_db<br/>(Dueño: usr_tenant_n)")]
+
+            subgraph isolated_databases ["Bases de Datos Logicas Aisladas"]
+                DB1[("vet_beltramelli_db<br/>Dueno: usr_veterinaria")]
+                DB2[("flor_de_loto_db<br/>Dueno: usr_flordeloto")]
+                DBN[("tenant_n_db<br/>Dueno: usr_tenant_n")]
             end
 
             PG_ENGINE --- DB1
@@ -46,10 +46,10 @@ graph TD
     %% ==========================================
     %% CAPA: ALMACENAMIENTO DE OBJETOS EXTERNO
     %% ==========================================
-    subgraph cloudflare_r2 ["☁️ Almacenamiento de Objetos: Cloudflare R2 (Stateless)"]
-        R2_1[("Bucket: vetcore-media<br/><code>media.veterinaria-beltramelli.com</code>")]
-        R2_2[("Bucket: flordeloto-media<br/><code>media.flordeloto.com</code>")]
-        R2_N[("Bucket: tenant-n-media<br/><code>media.tenant-n.com</code>")]
+    subgraph cloudflare_r2 ["☁️ Almacenamiento de Objetos: Cloudflare R2 - Stateless"]
+        R2_1[("Bucket: vetcore-media<br/>media.veterinaria-beltramelli.com")]
+        R2_2[("Bucket: flordeloto-media<br/>media.flordeloto.com")]
+        R2_N[("Bucket: tenant-n-media<br/>media.tenant-n.com")]
     end
 
     %% ==========================================
@@ -59,13 +59,13 @@ graph TD
     F2 -->|HTTP Proxy / REST| BF
     FN -->|HTTP Proxy / REST| BN
 
-    BV -->|Conexión Aislada| DB1
-    BF -->|Conexión Aislada| DB2
-    BN -->|Conexión Aislada| DBN
+    BV -->|Conexion Aislada| DB1
+    BF -->|Conexion Aislada| DB2
+    BN -->|Conexion Aislada| DBN
 
-    BV -.->|S3 API (Boto3)| R2_1
-    BF -.->|S3 API (Boto3)| R2_2
-    BN -.->|S3 API (Boto3)| R2_N
+    BV -.->|S3 API Boto3| R2_1
+    BF -.->|S3 API Boto3| R2_2
+    BN -.->|S3 API Boto3| R2_N
 
     %% ==========================================
     %% ESTILOS VISUALES

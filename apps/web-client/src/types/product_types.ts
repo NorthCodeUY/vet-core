@@ -22,6 +22,8 @@ export type { ApiImage, Color, SubcategoriaItem };
  * @property {number} var_stock - Stock disponible exclusivo para esta combinación.
  * @property {string} [sku] - Código alfanumérico único para inventario.
  * @property {Color} [color] - Color normalizado asociado.
+ * @property {boolean} [var_disponible] - Interruptor on/off de la variante.
+ * @property {boolean} [permitir_sin_stock] - Si permite vender con stock en 0.
  */
 export interface ProductoVariante {
   var_id: number;
@@ -29,6 +31,8 @@ export interface ProductoVariante {
   var_tipo: string;
   var_nombre: string;
   var_precio_adicional: number;
+  var_disponible?: boolean;       /* 👈 Interruptor on/off de la variante */
+  permitir_sin_stock?: boolean;   /* 👈 Si permite vender con stock en 0 */
   var_stock: number;
   sku?: string;
   color?: Color;

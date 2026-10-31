@@ -6,6 +6,11 @@ CONTROLADOR HTTP: CATÁLOGO Y CONSULTAS DE PRODUCTOS
 Endpoints públicos para la navegación del catálogo.
 Deserialización de parámetros, inyección de dependencias y serialización
 estricta mediante Pydantic v2.
+
+<!> Aca en los get yho tendria que direrenciarlo caps almenos algunos por ejemplo aora tengo 
+prod_activo si es false no deberia mostrar a la web caps tampoco al portal administrativo pero deva aver  una opacion de verlos si es necesiario 
+prod_visible - Si es false en la web no aparese pero si en el portla administrativo y lo indica con algo para que me quede 
+
 """
 
 from typing import List, Optional

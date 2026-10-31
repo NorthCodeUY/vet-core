@@ -30,7 +30,7 @@ export function ProductCardV2({ producto }: Props) {
   const { config } = useConfig();
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
-  // <!> Mensajes parametrizables desde config.json con fallback defensivo
+  // Mensajes a colocar si no hay producto 
   const unavailableBadgeText = config?.custom_messages?.product_unavailable_label || 'Agotado';
   const unavailableButtonText = config?.custom_messages?.product_unavailable_btn || 'No disponible';
 
@@ -50,10 +50,11 @@ export function ProductCardV2({ producto }: Props) {
   });
 
   /**
-   * <!> EVALUACIÓN INTELIGENTE DE DISPONIBILIDAD (Sin acople a facturación)
+   * EVALUACIÓN INTELIGENTE DE DISPONIBILIDAD (Sin acople a facturación)
    * 1. Prioriza la bandera booleana 'disponible' (manejada por el admin en Flutter).
    * 2. Si no existe la bandera, solo considera agotado si el stock se fijó explícitamente en 0.
    * 3. Si el stock es null, asume que el comercio no controla inventario y está disponible.
+   * <!> Esto esta mal no se si es de baken o del frontne 
    */
   const isAvailable = useMemo(() => {
     // A. Evaluación a nivel de Variante seleccionada

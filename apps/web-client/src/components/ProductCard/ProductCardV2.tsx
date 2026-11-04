@@ -13,6 +13,8 @@
 
 Le agrege a  variatne la capasidad de 
 
+
+
 Variate 
 BUno creo que esto va apara el bakend si no permite sin stok debieria ir a el bakend
 

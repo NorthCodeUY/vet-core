@@ -1,17 +1,25 @@
 # api-backend/app/router/caja_router.py
+"""
+=============================================================================
+CONTROLADOR HTTP: GESTIÓN DE CAJAS Y CÓDIGOS QR DE DEPÓSITO
+=============================================================================
+"""
+
 import io
 import qrcode
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import select
+
 from app.database import get_db
+from app.config import settings
 from app.models.caja_model import CajaModel
 from app.models.caja_item_model import CajaItemModel
 from app.schemas.caja_schema import CajaResponseSchema
-from app.config import TENANT_TYPE
 
-router = APIRouter(prefix="/api/cajas", tags=["Cajas"])
+router = APIRouter(prefix="/cajas", tags=["Cajas"])
+
 
 @router.get("/{codigo}", response_model=CajaResponseSchema)
 def obtener_caja_por_codigo(codigo: str, db: Session = Depends(get_db)):
@@ -39,11 +47,7 @@ def obtener_caja_por_codigo(codigo: str, db: Session = Depends(get_db)):
     return caja
 
 
-
-
-
-
-router.get("/{codigo}/qr")
+@router.get("/{codigo}/qr")
 def imprimir_qr_caja(codigo: str, db: Session = Depends(get_db)):
     """
     Genera y retorna dinámicamente la imagen PNG del código QR
@@ -55,12 +59,10 @@ def imprimir_qr_caja(codigo: str, db: Session = Depends(get_db)):
     if not caja:
         raise HTTPException(status_code=404, detail="Caja no encontrada")
 
-    payload_qr = f"https://app.vetcore.com/cajas/{caja.caja_codigo}"
+    payload_qr = f"{settings.RESOLVED_BASE_URL}/cajas/{caja.caja_codigo}"
 
     img = qrcode.make(payload_qr)
     buffer = io.BytesIO()
-    
-    # Se remueve el keyword 'format="PNG"' incompatible con el driver PyPNGImage
     img.save(buffer)
     buffer.seek(0)
 

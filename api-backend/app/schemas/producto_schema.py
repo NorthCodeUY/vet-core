@@ -32,18 +32,16 @@ class VarianteResponseSchema(BaseModel):
     var_nombre: str = Field(..., description="Ej: S, M, XL, 250ml")
     var_precio_adicional: float = Field(default=0.0)
     var_stock: int = Field(default=0)
-    sku: Optional[str] = None
-    codigo_barra: Optional[str] = None
-    
-    # Flags operativos
+
+    # Nombres exactos sincronizados con ProductoVarianteModel
+    var_codigo_barra: Optional[str] = None
     var_activo: bool = True
     var_disponible: bool = True
-    permitir_sin_stock: bool = False
+    var_permitir_sin_stock: bool = False
     
     color: Optional[ColorResponseSchema] = Field(default=None, alias="rel_color")
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
-
 
 
 

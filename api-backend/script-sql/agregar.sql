@@ -6,10 +6,7 @@ DO \$\$
 BEGIN 
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='producto' AND column_name='prod_disponible') THEN 
         UPDATE producto SET  
-            prod_stock= 0, 
-            prod_activo = TRUE, 
-            prod_visible = TRUE, 
-            permitir_sin_stock = TRUE;
+            prod_stock= 0
     END IF; 
 END \$\$;
 " 

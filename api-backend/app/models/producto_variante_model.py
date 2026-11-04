@@ -78,7 +78,10 @@ class ProductoVarianteModel(Base):
     )
 
     # =========================================================================
-    # Control Transaccional, Precios y Stock
+    # Control Transaccional, Precios y Stock <!> Esto vamos a usar valores serrados si 
+    # queres para otro clite vamos a uar presio de costo y presio de venta valeria solo va a usar presio de venta 
+    # cpas dejamos 
+    # que presio de costo sea nullo presio de venta tiene que eir si o si 
     # =========================================================================
     var_precio_adicional: Mapped[float] = mapped_column(
         Float, 
@@ -86,7 +89,7 @@ class ProductoVarianteModel(Base):
         default=0.0,
         doc="Diferencial de precio sobre el precio base del producto (+/-)."
     )
-
+    # <!> Aca deberia aver una entidad stok minimo minimo Cpas podems usar la capasidad de null para saber los que no tien 
     var_stock: Mapped[int] = mapped_column(
         Integer, 
         nullable=False, 
@@ -119,6 +122,8 @@ class ProductoVarianteModel(Base):
         nullable=False,
         doc="Visibilidad comercial: False deshabilita el botón/chip en el frontend."
     )
+
+    # <!> ACA ME FALTA LA PARTE DE VAR_VISIBLE PARA LA MISMA MODALIDAD DE PRODUCTO_MODEL
 
     # =========================================================================
     # Relaciones ORM

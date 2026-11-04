@@ -1,4 +1,6 @@
 # api-backend/app/models/producto_model.py
+# <!> ACA DEBERIA AGREGAR UNA ENTIDAD PRO_SOLOVARIANTE PAR QUE EL FRONTE SEPA COMO OCMPORTARSE EN ESTE CASOO
+# <!> aemas de usar el temp de Pre_Venta  Pre_Costo 
 """
 =============================================================================
 MODELO DE PERSISTENCIA: NÚCLEO DEL CATÁLOGO DE PRODUCTOS
@@ -60,7 +62,7 @@ class ProductoModel(Base):
         default=0.0,
         doc="Precio base en moneda local."
     )
-    
+    # agregar prod_Sokminimo al igual que variatne 
     prod_stock: Mapped[int] = mapped_column(
         Integer, 
         nullable=False, 
@@ -68,7 +70,7 @@ class ProductoModel(Base):
         doc="Stock global físico (utilizado como fallback cuando no hay variantes)."
     )
 
-    codigo_barra: Mapped[Optional[str]] = mapped_column(
+    prod_codigo_barra: Mapped[Optional[str]] = mapped_column(
         String(64),
         unique=True,
         nullable=True,
@@ -103,7 +105,7 @@ class ProductoModel(Base):
         doc="Visibilidad en vitrina: False para ocultar de la web pública (ej: joyas únicas agotadas)."
     )
 
-    permitir_sin_stock: Mapped[bool] = mapped_column(
+    prod_per_sin_stock: Mapped[bool] = mapped_column(
         Boolean,
         default=False,
         nullable=False,

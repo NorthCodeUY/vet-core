@@ -1,22 +1,76 @@
+// .vscode/launch.json
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Python: FastAPI",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "uvicorn",
-            "args": ["app.main:app", "--reload"],
-            "cwd": "${workspaceFolder}/api-backend",
-            "env": {"PYTHONPATH": "${workspaceFolder}/api-backend"},
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Chrome: Frontend",
-            "type": "chrome",
-            "request": "launch",
-            "url": "http://localhost:5173",
-            "webRoot": "${workspaceFolder}/apps/web-client"
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    // =========================================================================
+    // 1. BACKEND (FASTAPI / MULTI-TENANT CON AUTO-MIGRACIÓN)
+    // =========================================================================
+    {
+      "name": "Backend: Veterinaria (Debug)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/api-backend/run_desarollo.py",
+      "args": ["veterinaria"],
+      "cwd": "${workspaceFolder}/api-backend",
+      // APUNTA DIRECTAMENTE AL PYTHON DE TU ENTORNO VIRTUAL:
+      "python": "${workspaceFolder}/api-backend/venv/bin/python",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/api-backend"
+      },
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "Backend: Flor de Loto (Debug)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/api-backend/run_desarollo.py",
+      "args": ["flordeloto"],
+      "cwd": "${workspaceFolder}/api-backend",
+      // APUNTA DIRECTAMENTE AL PYTHON DE TU ENTORNO VIRTUAL:
+      "python": "${workspaceFolder}/api-backend/venv/bin/python",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/api-backend"
+      },
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+
+    // =========================================================================
+    // 2. FRONTEND CLIENTE (REACT / VITE)
+    // =========================================================================
+    {
+      "name": "Frontend: Web Client (Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/apps/web-client"
+    },
+
+    // =========================================================================
+    // 3. BACKOFFICE ADMINISTRATIVO (FLUTTER WEB)
+    // =========================================================================
+    {
+      "name": "Admin: Flutter Web (Chrome)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "cwd": "${workspaceFolder}/apps/admin-portal", // Ajustar si tu carpeta tiene otro nombre
+      "args": [
+        "-d", "chrome",
+        "--web-port", "8085",
+        "--web-renderer", "html"
+      ]
+    }
+  ],
+
+  // ===========================================================================
+  // COMPUESTOS (Levantar Frontend + Backend simultáneamente con un solo Play)
+  // ===========================================================================
+  "compounds": [
+    {
+      "name": "Fullstack: Veterinaria (API + Web)",
+      "configurations": ["Backend: Veterinaria (Debug)", "Frontend: Web Client (Chrome)"]
+    }
+  ]
 }

@@ -1,11 +1,11 @@
 # api-backend/app/models/producto_variante_model.py
 """
 =============================================================================
-MODELO DE PERSISTENCIA: VARIANTES FÍSICAS Y SKUs DE PRODUCTO
+MODELO DE PERSISTENCIA: VARIANTES FÍSICAS Y SKUs DE PRODUCTO (SQLALCHEMY 2.0)
 =============================================================================
 Representa la unidad atómica de inventario (SKU).
-Contiene existencias, código de barras específico y reglas transaccionales
-independientes del producto padre.
+Contiene existencias, código de barras específico, costos comerciales
+y reglas transaccionales independientes del producto padre.
 """
 
 from typing import Optional, TYPE_CHECKING
@@ -23,14 +23,15 @@ class ProductoVarianteModel(Base):
     Entidad 'producto_variante'.
     
     Reglas de Negocio:
-    - var_activo: Baja lógica (False oculta la variante permanentemente sin alterar compras históricas).
-    - var_disponible: Interruptor temporal (False desactiva la opción en el selector del frontend).
-    - permitir_sin_stock: Permite encargar la variante aunque var_stock sea 0.
+    - var_codigo_barra: Código de barras único para este tamaño/volumen concreto.
+    - var_precio_costo: Costo de compra de esta presentación específica.
+    - var_stock_minimo: Nivel mínimo antes de generar aviso de compra.
+    - var_visible: False oculta esta opción del selector sin desactivar el producto padre.
     """
     __tablename__ = "producto_variante"
 
     # =========================================================================
-    # Claves Primarias y Foráneas
+    # 1. Claves Primarias y Foráneas
     # =========================================================================
     var_id: Mapped[int] = mapped_column(
         Integer, 
@@ -43,18 +44,18 @@ class ProductoVarianteModel(Base):
         ForeignKey("producto.prod_id", ondelete="CASCADE"), 
         nullable=False, 
         index=True,
-        doc="ID del producto padre al que pertenece."
+        doc="ID del producto padre al que pertenece esta variante."
     )
     
     col_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("color.col_id"), 
         nullable=True, 
         index=True,
-        doc="ID del color asociado (opcional)."
+        doc="ID del color asociado (opcional, aplicable a indumentaria y correas)."
     )
 
     # =========================================================================
-    # Identificación, Código Óptico y Dimensiones
+    # 2. Identificación, Dimensiones y Códigos Ópticos
     # =========================================================================
     var_tipo: Mapped[str] = mapped_column(
         String(50), 
@@ -69,27 +70,47 @@ class ProductoVarianteModel(Base):
         doc="Etiqueta visible para el cliente ('S', 'XL', '250 ml', '15 Kg')."
     )
 
+    # <!> no se paro porque me pones esto pero si lo recomendas dejalo pemro 
+    # a mi me gusta usar vet_ o lo qu se por delante a model 
+    
+    val_sku: Mapped[Optional[str]] = mapped_column(
+        String(64), 
+        unique=True, 
+        nullable=True, 
+        index=True,
+        doc="Código interno alfanumérico para logística de almacén."
+    )
+
     var_codigo_barra: Mapped[Optional[str]] = mapped_column(
         String(64),
         unique=True,
         nullable=True,
         index=True,
-        doc="Código de barras EAN/UPC de esta presentación física para escáner óptico."
+        doc="Código de barras EAN/UPC específico de esta presentación física para escáner óptico."
     )
 
     # =========================================================================
-    # Control Transaccional, Precios y Stock <!> Esto vamos a usar valores serrados si 
-    # queres para otro clite vamos a uar presio de costo y presio de venta valeria solo va a usar presio de venta 
-    # cpas dejamos 
-    # que presio de costo sea nullo presio de venta tiene que eir si o si 
+    # 3. Control Financiero y Precios <!>  aca me gustaria suar predio de vena 
+    # no diferencia es dificil e calcularo y mas complejo de mantener pero de venta 
+    # si o si y presio de costo opcional 
     # =========================================================================
-    var_precio_adicional: Mapped[float] = mapped_column(
+    var_precio_venta: Mapped[float] = mapped_column(
         Float, 
         nullable=False, 
         default=0.0,
-        doc="Diferencial de precio sobre el precio base del producto (+/-)."
+        doc="Diferencial de precio que se suma al precio base del producto (+/-)."
     )
-    # <!> Aca deberia aver una entidad stok minimo minimo Cpas podems usar la capasidad de null para saber los que no tien 
+
+    var_precio_costo: Mapped[Optional[float]] = mapped_column(
+        Float,
+        nullable=True,
+        default=None,
+        doc="Costo de adquisición del proveedor para esta variante puntual."
+    )
+
+    # =========================================================================
+    # 4. Control de Inventario y Stock
+    # =========================================================================
     var_stock: Mapped[int] = mapped_column(
         Integer, 
         nullable=False, 
@@ -97,36 +118,48 @@ class ProductoVarianteModel(Base):
         doc="Existencias físicas en depósito exclusivamente para este SKU."
     )
 
+    var_stock_minimo: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        nullable=True,
+        default=None,
+        doc="Umbral de alerta para compra de mercadería de esta variante específica."
+    )
+
     # =========================================================================
-    # Reglas de Disponibilidad y Ciclo de Vida
+    # 5. Reglas de Disponibilidad, Vitrina y Ciclo de Vida
     # =========================================================================
     var_activo: Mapped[bool] = mapped_column(
         Boolean,
         default=True,
         nullable=False,
         index=True,
-        doc="Baja lógica: False si la variante se descontinúa definitivamente."
+        doc="Baja lógica: False descontinúa la variante de forma definitiva."
     )
-    
 
-    var_permitir_sin_stock: Mapped[bool] = mapped_column(
+    var_visible: Mapped[bool] = mapped_column(
         Boolean,
-        default=False,
+        default=True,
         nullable=False,
-        doc="Habilita pedidos por encargo para esta variante específica con stock en 0."
+        index=True,
+        doc="Vitrina: False oculta el botón/chip en la web sin borrar el inventario."
     )
 
     var_disponible: Mapped[bool] = mapped_column(
         Boolean,
         default=True,
         nullable=False,
-        doc="Visibilidad comercial: False deshabilita el botón/chip en el frontend."
+        doc="Disponibilidad comercial: False deshabilita temporalmente el chip (muestra tachado)."
     )
 
-    # <!> ACA ME FALTA LA PARTE DE VAR_VISIBLE PARA LA MISMA MODALIDAD DE PRODUCTO_MODEL
+    var_permitir_sin_stock: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+        doc="Habilita pedidos por encargo para esta variante con stock físico en 0."
+    )
 
     # =========================================================================
-    # Relaciones ORM
+    # 6. Relaciones ORM
     # =========================================================================
     rel_producto: Mapped["ProductoModel"] = relationship(
         "ProductoModel", 

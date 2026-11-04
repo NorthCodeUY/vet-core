@@ -1,15 +1,12 @@
 # api-backend/app/models/producto_model.py
-# <!> ACA DEBERIA AGREGAR UNA ENTIDAD PRO_SOLOVARIANTE PAR QUE EL FRONTE SEPA COMO OCMPORTARSE EN ESTE CASOO
-# <!> aemas de usar el temp de Pre_Venta  Pre_Costo 
 """
 =============================================================================
-MODELO DE PERSISTENCIA: NÚCLEO DEL CATÁLOGO DE PRODUCTOS
+MODELO DE PERSISTENCIA: NÚCLEO DEL CATÁLOGO DE PRODUCTOS (SQLALCHEMY 2.0)
 =============================================================================
 Entidad central del catálogo. Agrupa información descriptiva, categorización,
-galería multimedia, presentaciones físicas (variantes) y reglas de visualización/stock.
+galería multimedia, presentaciones físicas (variantes) y reglas financieras.
 """
 
-from sqlalchemy import true
 from typing import Optional, List, TYPE_CHECKING
 from sqlalchemy import String, Float, Integer, ForeignKey, Text, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -27,15 +24,18 @@ class ProductoModel(Base):
     """
     Entidad maestra de producto.
     
-    Reglas Transaccionales:
-    - prod_activo: Baja lógica para preservar integridad referencial de pedidos pasados.
-    - prod_visible: Permite ocultar el producto de la tienda pública sin desactivarlo.
-    - permitir_sin_stock: Permite compras por encargo (backorders) cuando el stock es 0.
+    Reglas Transaccionales y de Visualización:
+    - prod_solo_variantes: Si es True, el producto no se puede vender directamente;
+      obliga al frontend a exigir la selección de un talle, medida o volumen.
+    - prod_precio_costo: Monto de adquisición (opcional, para cálculo de márgenes).
+    - prod_stock_minimo: Umbral numérico para alertas preventivas de desabastecimiento.
+    - prod_activo: Baja lógica para auditoría histórica de pedidos pasados.
+    - prod_visible: Interruptor de vitrina pública (True=Visible, False=Oculto).
     """
     __tablename__ = "producto"
 
     # =========================================================================
-    # Identificadores y Atributos Básicos
+    # 1. Identificadores y Atributos Básicos
     # =========================================================================
     prod_id: Mapped[int] = mapped_column(
         Integer, 
@@ -47,46 +47,73 @@ class ProductoModel(Base):
     prod_nombre: Mapped[str] = mapped_column(
         String(150), 
         nullable=False,
-        doc="Nombre comercial del producto desplegado en frontend."
+        doc="Nombre comercial del producto desplegado en el frontend."
     )
     
     prod_descripcion: Mapped[Optional[str]] = mapped_column(
         Text, 
         nullable=True,
-        doc="Descripción técnica, instrucciones o detalles del producto."
+        doc="Descripción técnica, instrucciones o composición del producto."
     )
     
-    prod_precio: Mapped[float] = mapped_column(
-        Float, 
-        nullable=False, 
-        default=0.0,
-        doc="Precio base en moneda local."
-    )
-    # agregar prod_Sokminimo al igual que variatne 
-    prod_stock: Mapped[int] = mapped_column(
-        Integer, 
-        nullable=False, 
-        default=0,
-        doc="Stock global físico (utilizado como fallback cuando no hay variantes)."
-    )
-
     prod_codigo_barra: Mapped[Optional[str]] = mapped_column(
         String(64),
         unique=True,
         nullable=True,
         index=True,
-        doc="Código de barras EAN/UPC para lectores ópticos en panel administrativo."
+        doc="Código de barras EAN/UPC general para lectores ópticos."
     )
 
     # =========================================================================
-    # Reglas de Visibilidad, Inventario y Baja Lógica 1 
+    # 2. Control Financiero y Precios
     # =========================================================================
+    prod_precio_venta: Mapped[float] = mapped_column(
+        Float, 
+        nullable=False, 
+        default=0.0,
+        doc="Precio de venta base al público en moneda local."
+    )
+
+    prod_precio_costo: Mapped[Optional[float]] = mapped_column(
+        Float,
+        nullable=True,
+        default=None,
+        doc="Precio de compra al proveedor (confidencial, para reportes contables)."
+    )
+
+    # =========================================================================
+    # 3. Control de Inventario y Stock
+    # =========================================================================
+    prod_stock: Mapped[int] = mapped_column(
+        Integer, 
+        nullable=False, 
+        default=0,
+        doc="Stock físico en depósito (utilizado cuando el producto no tiene variantes)."
+    )
+
+    prod_stock_minimo: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        nullable=True,
+        default=None,
+        doc="Umbral de alerta para reposición de mercadería (None si no controla alertas)."
+    )
+
+    # =========================================================================
+    # 4. Reglas de Negocio, Vitrina y Ciclo de Vida
+    # =========================================================================
+    prod_solo_variantes: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+        doc="True si el producto no tiene existencia unitaria y solo se vende por variantes (ej: medicamentos en ml)."
+    )
+
     prod_activo: Mapped[bool] = mapped_column(
         Boolean,
         default=True,
         nullable=False,
         index=True,
-        doc="Baja lógica: False si el producto fue dado de baja definitiva pero debe persistir en auditoría."
+        doc="Baja lógica: False oculta el producto permanentemente pero conserva auditoría de ventas."
     )
 
     prod_disponible: Mapped[bool] = mapped_column(
@@ -94,7 +121,7 @@ class ProductoModel(Base):
         default=True,
         nullable=False,
         index=True,
-        doc="Producto disponible: True si el producto está disponible, False si no lo está."
+        doc="Interruptor de disponibilidad: False desactiva temporalmente el botón de compra."
     )
 
     prod_visible: Mapped[bool] = mapped_column(
@@ -102,18 +129,18 @@ class ProductoModel(Base):
         default=True,
         nullable=False,
         index=True,
-        doc="Visibilidad en vitrina: False para ocultar de la web pública (ej: joyas únicas agotadas)."
+        doc="Vitrina digital: False oculta el artículo del catálogo público de la tienda web."
     )
 
     prod_per_sin_stock: Mapped[bool] = mapped_column(
         Boolean,
         default=False,
         nullable=False,
-        doc="Habilita pedidos por encargo aunque el stock actual sea 0."
+        doc="Habilita pedidos por encargo (backorders) cuando el stock físico es 0."
     )
 
     # =========================================================================
-    # Claves Foráneas
+    # 5. Claves Foráneas
     # =========================================================================
     cat_id: Mapped[int] = mapped_column(
         ForeignKey("categoria.cat_id"), 
@@ -123,7 +150,7 @@ class ProductoModel(Base):
     )
 
     # =========================================================================
-    # Relaciones ORM Tipadas (SQLAlchemy 2.0)
+    # 6. Relaciones ORM Tipadas (SQLAlchemy 2.0)
     # =========================================================================
     rel_categoria: Mapped["CategoriaModel"] = relationship(
         "CategoriaModel",
@@ -135,7 +162,7 @@ class ProductoModel(Base):
         back_populates="rel_producto",
         cascade="all, delete-orphan",
         lazy="selectin",
-        doc="Lista de imágenes asociadas al producto."
+        doc="Lista de imágenes asociadas a la galería del producto."
     )
 
     rel_subcategoria: Mapped[List["ProductoSubCategoriaModel"]] = relationship(

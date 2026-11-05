@@ -4,41 +4,17 @@
  * @fileoverview Tarjeta de Producto V2 con Acordeón, Variantes y Control de Disponibilidad
  * 
  * Gestiona el catálogo desacoplándose del conteo numérico estricto de inventario.
- * Evalúa la disponibilidad comercial (activo/pausado) y permite parametrizar 
- * los textos de producto agotado desde la configuración runtime (config.json).
+ * Evalúa la disponibilidad comercial (activo/pausado), soporta precios absolutos por
+ * variante, ventas por encargo y renderizado agnóstico de subcategorías.
  * 
  * @module components/ProductCard/ProductCardV2
- 
-<!> Bueno estoy restructurando el bakend para trabajar con la variantes de talle y si estan o no en lista
-
-Le agrege a  variatne la capasidad de 
-
-
-
-Variate 
-BUno creo que esto va apara el bakend si no permite sin stok debieria ir a el bakend
-
-
-var_permitir_sin_stock
-var_activo
-
-
-
-
-
-
-y ACA 
-
-
-
-
  */
 
 import React, { useState, useMemo } from 'react';
 // --- Iconografía Lucide ---
-import { ShoppingCart, X, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
+import { ShoppingCart, X, ChevronDown, ChevronUp, AlertCircle, Clock } from 'lucide-react';
 // --- Helpers y Contexto ---
-import { DynamicIcon } from '../../components/DynamicIcon';
+import { DynamicIcon } from '../DynamicIcon';
 import { usePedidoStore } from '../../context/pedido_context';
 import type { ApiProduct, ProductoVariante } from '../../types/product_types';
 import { useConfig } from '../../context/tenant_context';
@@ -47,6 +23,13 @@ interface Props {
   producto: ApiProduct;
 }
 
+/**
+ * Tarjeta interactiva de catálogo con acordeón expandible y variantes (`ProductCardV2`).
+ *
+ * @component
+ * @param {Props} props - Propiedades del componente.
+ * @returns {JSX.Element}
+ */
 export function ProductCardV2({ producto }: Props) {
   /* ===========================================================================
      1. CONSUMO DEL CONTEXTO Y CONFIGURACIÓN DINÁMICA
@@ -54,100 +37,76 @@ export function ProductCardV2({ producto }: Props) {
   const { config } = useConfig();
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
-  // Mensajes a colocar si no hay producto 
+  // Mensajes parametrizables desde config.json
   const unavailableBadgeText = config?.custom_messages?.product_unavailable_label || 'Agotado';
   const unavailableButtonText = config?.custom_messages?.product_unavailable_btn || 'No disponible';
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
   /* ===========================================================================
-     1. GESTIÓN DE VARIANTES Y ESTADO INICIAL
+     2. GESTIÓN DE VARIANTES Y ESTADO INICIAL
      =========================================================================== */
   const hasVariantes = Boolean(producto.variantes && producto.variantes.length > 0);
 
-  /**
-   * Bandera maestra de venta sin stock (Columna 'permitir_sin_stock' en PostgreSQL).
-   * Si es true, el sistema opera en modo venta continua ignorando si el stock es 0.
-   */
-  const permiteVentaSinStock = Boolean(producto.permitir_sin_stock);
-
-  /**
-   * Selección inicial de la variante activa:
-   * 1. Si permite venta sin stock (tu caso actual), selecciona la primera variante directamente.
-   * 2. Si controla stock estricto, busca la primera con stock físico > 0.
-   */
+  // <!> Si el producto exige elegir variante obligatoriamente, arranca en null
   const [selectedVariant, setSelectedVariant] = useState<ProductoVariante | null>(() => {
     if (!hasVariantes) return null;
-    if (permiteVentaSinStock) return producto.variantes[0] || null;
-    return producto.variantes.find((v) => v.var_stock > 0) || producto.variantes[0] || null;
+    if (producto.prod_solo_variantes) return null;
+
+    // Busca la primera variante disponible o con permiso de venta por encargo
+    return (
+      producto.variantes.find(
+        (v) => v.var_disponible && (v.var_stock > 0 || v.var_permitir_sin_stock || producto.prod_per_sin_stock)
+      ) ||
+      producto.variantes[0] ||
+      null
+    );
   });
 
   /* ===========================================================================
-     2. EVALUACIÓN DE DISPONIBILIDAD COMERCIAL (Sincronizada con DB)
+     3. EVALUACIÓN DE DISPONIBILIDAD Y PEDIDOS POR ENCARGO
      =========================================================================== */
-  /**
-   * Evalúa si el producto o la variante seleccionada puede comprarse.
-   * 
-   * Reglas de Negocio:
-   * 1. 'prod_disponible' es el interruptor maestro (False = Dueño pausó la venta en Flutter).
-   * 2. Si 'permitir_sin_stock' es TRUE -> DISPONIBLE SIEMPRE (ignora stock = 0).
-   * 3. Si 'permitir_sin_stock' es FALSE -> Exige stock físico > 0.
-   */
-  const isAvailable = useMemo((): boolean => {
-    // -------------------------------------------------------------------------
-    // PASO 1: Validación Maestra del Producto Padre
-    // -------------------------------------------------------------------------
-    // Si el comercio apagó el producto manualmente desde la app, no se puede comprar
+  const { isAvailable, isEncargo } = useMemo(() => {
+    // 1. Si el producto padre fue pausado por el comercio, nada se puede comprar
     if (producto.prod_disponible === false) {
-      return false;
+      return { isAvailable: false, isEncargo: false };
     }
 
-    // -------------------------------------------------------------------------
-    // PASO 2: Regla de Oro de Venta Continua (Backorders)
-    // -------------------------------------------------------------------------
-    // Como en tu DB 'permitir_sin_stock' está en True y el stock no se gestiona aún,
-    // el producto SIEMPRE estará disponible para compra y checkout.
-    if (permiteVentaSinStock) {
-      return true;
-    }
-
-    // -------------------------------------------------------------------------
-    // PASO 3: Validación para Futura Gestión Estricta de Inventario
-    // -------------------------------------------------------------------------
-    // Solo se ejecuta si en el futuro apagas 'permitir_sin_stock'
+    // 2. Evaluación a nivel de Variante seleccionada
     if (selectedVariant) {
-      return selectedVariant.var_stock > 0;
+      if (!selectedVariant.var_disponible) {
+        return { isAvailable: false, isEncargo: false };
+      }
+
+      const hasStock = selectedVariant.var_stock > 0;
+      const canBackorder = selectedVariant.var_permitir_sin_stock || producto.prod_per_sin_stock;
+
+      if (!hasStock && canBackorder) {
+        return { isAvailable: true, isEncargo: true };
+      }
+      if (!hasStock && !canBackorder) {
+        return { isAvailable: false, isEncargo: false };
+      }
+
+      return { isAvailable: true, isEncargo: false };
     }
 
-    return producto.prod_stock > 0;
-  }, [producto.prod_disponible, permiteVentaSinStock, selectedVariant, producto.prod_stock]);
+    // 3. Evaluación para Producto Simple (sin variantes)
+    const hasStock = producto.prod_stock !== null && producto.prod_stock !== undefined ? producto.prod_stock > 0 : true;
 
+    if (!hasStock && producto.prod_per_sin_stock) {
+      return { isAvailable: true, isEncargo: true };
+    }
+    if (!hasStock && !producto.prod_per_sin_stock) {
+      return { isAvailable: false, isEncargo: false };
+    }
 
-  
-  
-  
-  
+    return { isAvailable: true, isEncargo: false };
+  }, [producto.prod_disponible, producto.prod_stock, producto.prod_per_sin_stock, selectedVariant]);
 
-
-
-
-
-
-
-
-
-
-
+  // Bloqueo condicional si exige elegir talle
+  const requiresVariantSelection = producto.prod_solo_variantes && hasVariantes && !selectedVariant;
 
   /* ===========================================================================
-     3. GESTIÓN DEL STORE GLOBAL (CARRITO)
+     4. GESTIÓN DEL STORE GLOBAL (CARRITO)
      =========================================================================== */
   const { pedido, addItem, removeItem } = usePedidoStore() as any;
 
@@ -164,40 +123,42 @@ export function ProductCardV2({ producto }: Props) {
   const estaSeleccionado = cantidad > 0;
 
   /* ===========================================================================
-     4. CÁLCULO DE PRECIO DINÁMICO
+     5. CÁLCULO DE PRECIO ABSOLUTO (Sin sumas adicionales)
      =========================================================================== */
-  const precioUnitario = useMemo(() => {
-    const adicional = selectedVariant?.var_precio_adicional || 0;
-    return producto.prod_precio + adicional;
-  }, [producto.prod_precio, selectedVariant]);
+  // <!> Toma directamente el precio_venta final de la variante o del producto padre
+  const precioFinal = useMemo((): number => {
+    if (selectedVariant) {
+      return selectedVariant.var_precio_venta;
+    }
+    return producto.prod_precio_venta;
+  }, [producto.prod_precio_venta, selectedVariant]);
 
-  const subtotal = precioUnitario * cantidad;
+  const subtotal = precioFinal * cantidad;
 
   /* ===========================================================================
-     5. WHATSAPP Y ENLACE SEGURO
+     6. WHATSAPP Y ENLACE SEGURO
      =========================================================================== */
   const rawPhone = config?.contact?.admin_phone || '';
   const countryCode = config?.contact?.whatsapp_country_code || '598';
-  const digitsOnly = rawPhone.replace(/\D/g, '');
-  const cleanPhone = digitsOnly.startsWith('0') ? digitsOnly.slice(1) : digitsOnly;
-  const formattedPhone = `${countryCode}${cleanPhone}`;
+  const cleanPhone = `${countryCode}${rawPhone.replace(/\D/g, '').replace(/^0/, '')}`;
 
   const productUrl = typeof window !== 'undefined' 
     ? `${window.location.origin}${window.location.pathname}#prod-${producto.prod_id}`
     : '';
 
-  const variantText = selectedVariant ? ` (Opción: ${selectedVariant.var_nombre})` : '';
-  const whatsappLink = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(
-    `¡Hola! Estoy interesado en el producto: *${producto.prod_nombre}*${variantText}, *$${precioUnitario.toLocaleString('es-UY')}*\n\nVer Producto:\n${productUrl}`
+  const variantText = selectedVariant ? ` (Presentación: ${selectedVariant.var_nombre})` : '';
+  const encargoNote = isEncargo ? ' [Pedido por Encargo]' : '';
+  const whatsappLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
+    `¡Hola! Estoy interesado en el producto: *${producto.prod_nombre}*${variantText}${encargoNote}, *$${precioFinal.toLocaleString('es-UY')}*.\n\nVer Producto:\n${productUrl}`
   )}`;
 
   /* ===========================================================================
-     6. HANDLERS DE INTERACCIÓN
+     7. HANDLERS DE INTERACCIÓN
      =========================================================================== */
   const handleAddToCart = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    if (!isAvailable) return;
-    
+    if (!isAvailable || requiresVariantSelection) return;
+
     if (typeof addItem === 'function') {
       addItem(producto, selectedVariant);
     }
@@ -212,7 +173,7 @@ export function ProductCardV2({ producto }: Props) {
 
   const toggleExpand = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsExpanded(!isExpanded);
+    setIsExpanded((prev) => !prev);
   };
 
   return (
@@ -234,23 +195,22 @@ export function ProductCardV2({ producto }: Props) {
         /* --- Colores --- */
         bg-vete-surface
         ${estaSeleccionado 
-          ? 'border-2 border-vete-primary' 
-          : 'border border-vete-border-subtle hover:border-vete-primary/40'
+          ? 'border-2 border-vete-primary shadow-md' 
+          : 'border border-vete-border-subtle hover:border-vete-primary/40 shadow-sm'
         }
 
         /* --- Estilo --- */
         rounded-2xl
         overflow-hidden
-        shadow-sm
-        hover:shadow-md
-        ${!isAvailable ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer'}
+        ${!isAvailable ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}
 
         /* --- Animación --- */
         transition-all
         duration-200
+        hover:shadow-md
       `}
     >
-      {/* BADGE SUPERIOR IZQUIERDO: Subtotal acumulado */}
+      {/* BADGE: Subtotal y Cantidad Acumulada */}
       {estaSeleccionado && (
         <div
           className={`
@@ -331,7 +291,7 @@ export function ProductCardV2({ producto }: Props) {
       )}
 
       {/* =====================================================================
-         CONTENEDOR SUPERIOR: Imagen, Badges y Marca de Agotado
+         1. CONTENEDOR SUPERIOR: Imagen, Badges y Marca de Agotado
          ===================================================================== */}
       <div
         className={`
@@ -371,7 +331,7 @@ export function ProductCardV2({ producto }: Props) {
           `}
         />
 
-        {/* <!> BADGE FLOTANTE DE NO DISPONIBLE / AGOTADO POR HOY */}
+        {/* BADGE CENTRAL: No disponible / Agotado */}
         {!isAvailable && (
           <div
             className={`
@@ -412,7 +372,7 @@ export function ProductCardV2({ producto }: Props) {
           </div>
         )}
 
-        {/* Badges de Subcategoría (Agnósticos) */}
+        {/* BADGES DE SUBCATEGORÍA CON ÍCONOS DEL BACKEND */}
         {producto.subcategorias && producto.subcategorias.length > 0 && (
           <div
             className={`
@@ -466,7 +426,7 @@ export function ProductCardV2({ producto }: Props) {
       </div>
 
       {/* =====================================================================
-         CONTENEDOR INFERIOR: Título, Variantes, Precios y Compra
+         2. CONTENEDOR INFERIOR: Título, Variantes, Precios y Compra
          ===================================================================== */}
       <div
         className={`
@@ -504,7 +464,7 @@ export function ProductCardV2({ producto }: Props) {
           </h4>
         </div>
 
-        {/* Selector de Variantes (Talles / Presentaciones) */}
+        {/* SELECTOR DE VARIANTES COMPACTO */}
         {hasVariantes && (
           <div
             onClick={(e) => e.stopPropagation()}
@@ -529,16 +489,19 @@ export function ProductCardV2({ producto }: Props) {
                 gap-1.5
               `}
             >
-              {producto.variantes.map((v: any) => {
+              {producto.variantes.map((v) => {
                 const isSelected = selectedVariant?.var_id === v.var_id;
-                // <!> Evalúa disponibilidad de la opción puntual
-                const isOptionUnavailable = v.var_disponible === false || v.var_stock === 0;
+                
+                // Deshabilitado solo si está apagada por el dueño o agotada sin permiso de encargo
+                const isOptionDisabled = 
+                  !v.var_disponible || 
+                  (v.var_stock <= 0 && !v.var_permitir_sin_stock && !producto.prod_per_sin_stock);
 
                 return (
                   <button
                     key={v.var_id}
                     type="button"
-                    disabled={isOptionUnavailable}
+                    disabled={isOptionDisabled}
                     onClick={() => setSelectedVariant(v)}
                     className={`
                       /* --- Posición --- */
@@ -553,7 +516,7 @@ export function ProductCardV2({ producto }: Props) {
                       /* --- Colores --- */
                       ${isSelected
                         ? 'bg-vete-primary text-white border-vete-primary shadow-sm'
-                        : isOptionUnavailable
+                        : isOptionDisabled
                         ? 'bg-transparent text-vete-text-muted/40 border-vete-border-subtle/30 line-through cursor-not-allowed'
                         : 'bg-vete-surface text-vete-text-base border-vete-border-subtle hover:border-vete-primary/60'
                       }
@@ -572,14 +535,9 @@ export function ProductCardV2({ producto }: Props) {
                       duration-150
                       active:scale-95
                     `}
-                    title={isOptionUnavailable ? unavailableBadgeText : `${v.var_tipo}: ${v.var_nombre}`}
+                    title={`${v.var_tipo}: ${v.var_nombre} - $${v.var_precio_venta}`}
                   >
                     <span>{v.var_nombre}</span>
-                    {v.var_precio_adicional > 0 && (
-                      <span className="text-[9px] opacity-80 font-normal">
-                        (+${v.var_precio_adicional})
-                      </span>
-                    )}
                   </button>
                 );
               })}
@@ -630,7 +588,7 @@ export function ProductCardV2({ producto }: Props) {
           </div>
         )}
 
-        {/* Precio y Botón de Compra */}
+        {/* PRECIO Y BOTÓN DE COMPRA */}
         <div
           className={`
             /* --- Posición --- */
@@ -673,12 +631,12 @@ export function ProductCardV2({ producto }: Props) {
                   font-black
                 `}
               >
-                {precioUnitario.toLocaleString('es-UY')}
+                {precioFinal.toLocaleString('es-UY')}
               </span>
             </div>
 
-            {/* Indicador de estado al lado del precio */}
-            {!isAvailable && (
+            {/* Estados de Disponibilidad */}
+            {!isAvailable ? (
               <span
                 className={`
                   /* --- Colores --- */
@@ -693,13 +651,28 @@ export function ProductCardV2({ producto }: Props) {
               >
                 {unavailableBadgeText}
               </span>
-            )}
+            ) : isEncargo ? (
+              <span
+                className={`
+                  /* --- Colores --- */
+                  text-vete-tertiary
+
+                  /* --- Texto --- */
+                  text-[10px]
+                  font-bold
+                  uppercase
+                  tracking-wider
+                `}
+              >
+                Por Encargo
+              </span>
+            ) : null}
           </div>
 
-          {/* Botón Comprar / Agotado */}
+          {/* Botón Comprar / Por Encargo / Agotado */}
           <button
             type="button"
-            disabled={!isAvailable}
+            disabled={!isAvailable || requiresVariantSelection}
             onClick={(e) => handleAddToCart(e)}
             className={`
               /* --- Posición --- */
@@ -714,9 +687,9 @@ export function ProductCardV2({ producto }: Props) {
               px-3
 
               /* --- Colores --- */
-              ${isAvailable 
-                ? 'bg-vete-primary text-white hover:bg-vete-primary-hover shadow-sm active:scale-95' 
-                : 'bg-vete-dark/20 text-vete-text-muted/60 cursor-not-allowed'
+              ${!isAvailable || requiresVariantSelection
+                ? 'bg-vete-dark/20 text-vete-text-muted/60 cursor-not-allowed'
+                : 'bg-vete-primary text-white hover:bg-vete-primary-hover shadow-sm active:scale-95'
               }
 
               /* --- Texto --- */
@@ -734,12 +707,22 @@ export function ProductCardV2({ producto }: Props) {
               duration-150
             `}
           >
-            <span>{isAvailable ? 'Comprar' : unavailableButtonText}</span>
-            {isAvailable && <ShoppingCart size={14} className="text-white" />}
+            <span>
+              {!isAvailable
+                ? unavailableButtonText
+                : requiresVariantSelection
+                ? 'Elegir opción'
+                : isEncargo
+                ? 'Pedir por Encargo'
+                : 'Comprar'}
+            </span>
+            {isAvailable && !requiresVariantSelection && (
+              isEncargo ? <Clock size={14} className="text-white" /> : <ShoppingCart size={14} className="text-white" />
+            )}
           </button>
         </div>
 
-        {/* Botón Desplegable del Acordeón */}
+        {/* BOTÓN DESPLEGABLE DEL ACORDEÓN */}
         <button
           type="button"
           onClick={toggleExpand}
@@ -768,7 +751,7 @@ export function ProductCardV2({ producto }: Props) {
           {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
 
-        {/* Contenido Expandido del Acordeón */}
+        {/* CONTENIDO EXPANDIDO DEL ACORDEÓN */}
         {isExpanded && (
           <div
             className={`

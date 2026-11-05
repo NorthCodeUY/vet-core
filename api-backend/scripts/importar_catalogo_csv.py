@@ -15,13 +15,10 @@ from typing import Optional, Any
 import pandas as pd
 from dotenv import load_dotenv
 
-# 1. Resolver la ruta absoluta de la raíz del backend (api-backend/)
+# 1. Resolver path raíz del backend
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(BASE_DIR)
 
-# -----------------------------------------------------------------------------
-# PASO 1 OBLIGATORIO: CARGAR EL .ENV ANTES DE IMPORTAR APP.DATABASE O APP.CONFIG
-# -----------------------------------------------------------------------------
 if len(sys.argv) < 2:
     print("\n❌ Uso: python scripts/importar_catalogo_csv.py [veterinaria|flordeloto]\n")
     sys.exit(1)
@@ -33,14 +30,11 @@ if not os.path.exists(env_file):
     print(f"\n❌ Error: Archivo de configuración '{env_file}' no encontrado.\n")
     sys.exit(1)
 
-# Inyectar las variables del tenant específico en el entorno del sistema
+# Cargar entorno antes de instanciar SQLAlchemy
 load_dotenv(dotenv_path=env_file, override=True)
 os.environ["IS_DOCKER"] = "false"
 os.environ["DB_HOST"] = "localhost"
 
-# -----------------------------------------------------------------------------
-# PASO 2: AHORA SÍ IMPORTAMOS SQLAlchemy Y MODELOS (LEERÁN vet_beltramelli_db)
-# -----------------------------------------------------------------------------
 from sqlalchemy import select
 import app.models
 from app.database import SessionLocal
@@ -87,13 +81,25 @@ NORMALIZACION_SUBCATEGORIAS = {
 }
 
 
-def resolver_archivo_imagen(id_imagen: str) -> Optional[str]:
-    """Busca si el archivo existe en el disco local."""
-    base_path = os.path.join(STATIC_DIR, str(id_imagen).strip())
+def resolver_archivo_imagen(id_imagen_raw: Any) -> Optional[str]:
+    """
+    Busca físicamente el archivo en el disco tolerando floats de pandas (ej: 3.0 -> '3').
+    Maneja .png, .jpeg, .jpg y .webp.
+    """
+    if pd.isna(id_imagen_raw):
+        return None
+
+    # Limpieza: 3.0 -> "3" | "3" -> "3"
+    id_str = str(id_imagen_raw).strip()
+    if id_str.endswith(".0"):
+        id_str = id_str[:-2]
+
+    # Probar las diferentes extensiones existentes en disco
     for ext in [".png", ".jpeg", ".jpg", ".webp"]:
-        full_path = f"{base_path}{ext}"
-        if os.path.exists(full_path):
-            return full_path
+        posible_ruta = os.path.join(STATIC_DIR, f"{id_str}{ext}")
+        if os.path.exists(posible_ruta):
+            return posible_ruta
+
     return None
 
 
@@ -124,6 +130,7 @@ def importar_catalogo(tenant_key: str):
 
     total_prods = 0
     total_vars = 0
+    total_imgs = 0
     productos_cache: dict[str, ProductoModel] = {}
 
     try:
@@ -204,11 +211,9 @@ def importar_catalogo(tenant_key: str):
                 nuevo_prod.prod_solo_variantes = True
                 total_vars += 1
 
-            # 4. Subcategorías (Especies)
+            # 4. Subcategorías (Especies con Deduplicación)
             fuente_especie = str(row.get("Especie", "")) if pd.notna(row.get("Especie")) else str(row.get("Subcategoría", ""))
             tokens = re.split(r"[/,]", fuente_especie)
-            
-            # Usamos un set para evitar IDs de subcategoría duplicados en el mismo producto
             subcategorias_asignadas_ids = set()
 
             for token in tokens:
@@ -218,45 +223,38 @@ def importar_catalogo(tenant_key: str):
                         stmt_sub = select(SubcategoriaModel).where(SubcategoriaModel.subc_nombre == v)
                         sub_obj = db.scalars(stmt_sub).first()
                         if sub_obj and sub_obj.subc_id not in subcategorias_asignadas_ids:
-                            # Verificamos que no esté en la base de datos ni en el set local
-                            stmt_rel = select(ProductoSubCategoriaModel).where(
-                                ProductoSubCategoriaModel.prod_id == nuevo_prod.prod_id,
-                                ProductoSubCategoriaModel.subc_id == sub_obj.subc_id
-                            )
-                            if not db.scalars(stmt_rel).first():
-                                db.add(ProductoSubCategoriaModel(prod_id=nuevo_prod.prod_id, subc_id=sub_obj.subc_id))
-                                subcategorias_asignadas_ids.add(sub_obj.subc_id)
+                            db.add(ProductoSubCategoriaModel(prod_id=nuevo_prod.prod_id, subc_id=sub_obj.subc_id))
+                            subcategorias_asignadas_ids.add(sub_obj.subc_id)
                         break
 
-
-
-
-            # 5. Imágenes (Cloudflare R2 o Fallback)
+            # 5. Imágenes (Cloudflare R2 o Fallback Local)
             img_val = row.get("imagen_url")
-            if pd.notna(img_val) and str(img_val).strip():
-                archivo_local = resolver_archivo_imagen(str(img_val).strip())
-                if archivo_local:
-                    nombre_archivo = os.path.basename(archivo_local)
-                    url_final = storage.upload_local_file(tenant_key, archivo_local, nombre_archivo)
-                    
-                    img = ImagenUrlModel(
-                        prod_id=nuevo_prod.prod_id,
-                        img_url=url_final,
-                        img_principal=True,
-                        img_tipo=ImagenUrlModel.TIPO_PRODUCTO
-                    )
-                    db.add(img)
+            archivo_local = resolver_archivo_imagen(img_val)
+            
+            if archivo_local:
+                nombre_archivo = os.path.basename(archivo_local)
+                url_final = storage.upload_local_file(tenant_key, archivo_local, nombre_archivo)
+                
+                img = ImagenUrlModel(
+                    prod_id=nuevo_prod.prod_id,
+                    img_url=url_final,
+                    img_principal=True,
+                    img_tipo=ImagenUrlModel.TIPO_PRODUCTO
+                )
+                db.add(img)
+                total_imgs += 1
 
         db.commit()
         print("\n" + "=" * 65)
-        print("✅ INGESTA Y SUBIDA DE IMÁGENES COMPLETADA")
-        print(f"📦 Productos creados:  {total_prods}")
-        print(f"🧩 Variantes creadas:  {total_vars}")
+        print("✅ INGESTA DE CATÁLOGO Y FOTOS COMPLETADA")
+        print(f"📦 Productos creados:           {total_prods}")
+        print(f"🧩 Variantes físicas creadas:   {total_vars}")
+        print(f"🖼️  Imágenes vinculadas a BD:    {total_imgs}")
         print("=" * 65 + "\n")
 
     except Exception as e:
         db.rollback()
-        print(f"\n❌ Error fatal: {e}")
+        print(f"\n❌ Error fatal durante la importación: {e}")
         sys.exit(1)
     finally:
         db.close()

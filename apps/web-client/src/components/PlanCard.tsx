@@ -4,6 +4,7 @@ import { Check } from 'lucide-react';
 import { WhatsAppDynamicButton } from './WhatsAppDynamicButton';
 
 /**
+ * <!> Esto teng que actualizarlo para que muestre precios y que quede mas paresido a lo que valeria me paso 
  * Propiedades del componente `PlanCard`.
  * 
  * @interface PlanCardProps

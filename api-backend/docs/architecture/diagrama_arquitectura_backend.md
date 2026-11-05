@@ -1,8 +1,14 @@
 <!-- api-backend/docs/architecture/diagrama_arquitectura_backend.md -->
 
-# 🏛️ Arquitectura del Sistema Multi-Tenant (VetCore / NorthCode)
+# 🏛️ Topología de Infraestructura del Sistema (VetCore / NorthCode)
 
-Este diagrama representa la topología completa de red, el aislamiento de contenedores por tenant, la persistencia en el clúster unificado de PostgreSQL y el desacoplamiento de activos multimedia en Cloudflare R2.
+> 📌 **Nota de Organización:** Este diagrama de topología global y orquestación de contenedores Docker ha sido trasladado al directorio de infraestructura del proyecto:
+> 👉 **[infrastructure/README.md](file:///home/ary/Documentos/proyect/app/vet-core/infrastructure/README.md)** | **[infrastructure/diagrama_arquitectura.md](file:///home/ary/Documentos/proyect/app/vet-core/infrastructure/diagrama_arquitectura.md)**
+
+Para la documentación de la arquitectura interna de código del backend (FastAPI, Routers, Schemas, Repositories, Models y ciclo de peticiones), consulta el archivo principal:
+👉 **[api-backend/README.md](file:///home/ary/Documentos/proyect/app/vet-core/api-backend/README.md)**
+
+---
 
 ```mermaid
 graph TD

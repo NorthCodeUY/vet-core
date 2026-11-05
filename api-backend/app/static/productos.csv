@@ -1,82 +1,179 @@
-Nomre Producto,Categoria,Subcategoria,Descripcion,precio,imagen_url
-Durapets Bandeja,Accesorios,Gato,"Kit Bandeja, pala y plato",308,3
-Baño cerrado ,Accesorios,Gato,Baño cerrado (56x40x40cm) +pala,690,2
-Antideslizante,Accesorios,Perro,Medias antideslizantes ,81,3
-Antideslizante,Accesorios,Perro,Medias antideslizantes ,86,4
-Comedero lento,Accesorios,Perro,Comedero Lento Ed. (650ml),99,5
-Comedero lento,Accesorios,Perro,Comedero Lento Ed. (1.200ml),140,6
-Comedero tradicional,Accesorios,Perro,Comedero trad. Medio,53,7
-Comedero tradicional,Accesorios,Perro,Comedero trad. Grande,75,8
-Comedero doble,Accesorios,Perro/Gato,Comedero doble BP6404 40x18xH6cm,202,9
-Bebedero y comedero,Accesorios,Perro/Gato,CTB6221S,140,10
-Corta Uñas,Accesorios,Perro/Gato,NC5008M,180,11
-Corta uñas y lima,Accesorios,Perro/Gato,GS302S,208,12
-Bozal,Accesorios,Perro,DZ02-3,86,13
-Bozal,Accesorios,Perro,DZ02-5,108,14
-Bozal,Accesorios,Perro,DZ02-7,128,15
-Pretales S,Accesorios,Perro,SH399S,168,16
-Pretales M,Accesorios,Perro,SH399M,202,17
-Pretales L,Accesorios,Perro,SH399L,232,18
-Traje post quirurguco S,Accesorios,Perro/Gato,CWSO1 S,305,19
-Traje post quirurguco M,Accesorios,Perro,CWSO1 M,320,20
-Traje post quirurguco L,Accesorios,Perro,CWSO1 L,335,21
-Comedero doble AH,Accesorios,Perro,Comedero doble 415-685ml,145,22
-Bebedero,Accesorios,Perro/Gato,Bebedero 6701,45,23
-Cama 040,Accesorios,Perro/Gato,Cama 040 (45x45),550,81
-Cama 044,Accesorios,Perro/Gato,Cama (43x36x13cm),786,24
-Cama 045,Accesorios,Perro/Gato,Cama (70x56x21 cm),1090,25
-LickiMat,Accesorios,Perro/Gato,LickiMat 20x20cm,216,26
-Juguete,Accesorios,Perro,Juguete rasca encias,213,27
-Tropical Fish,Alimento,Peces,TF Escamas 14gr,98,28
-Goldfish,Alimento,Peces,GF Escamas 14gr,98,29
-Golosina gatos,Alimento,Gato,Golosina con yerba gatera (4×8 cm) QQ-09 PROMO 10+2,79,30
-Palito fino ,Alimento,Perro,Palitos finos blanco,12,31
-Oreja de vaca,Alimento,Perro,Oreja de vaca,35,32
-Hueso ,Alimento,Perro,Hueso fibra de coco S,176,33
-Hueso,Alimento,Perro,Hueso fibra de coco M,260,34
-Hueso,Alimento,Perro,Hueso fibra de coco G,353,35
-Bocao Premiun Gato Adulto,Alimento,Gato,"Bocao Premium Gato Adulto 10,1kg+ rascador",1404,36
-Pet Palatto Premiun G. Cast.,Alimento,Gato,Pet Palatto Premiun Gato Castrado 10kg + transportadora ,2180,37
-Pet Palatto Premiun G. Cast.,Alimento,Gato,Pet Palatto Premiun Gato Castrado 1kg,246,38
-Pet Palatto Super Premiun Adulto,Alimento,Perro,Pet Palatto Super Premiun Adulto 3kg,475,1
-Pet palatto SP. Raza Peq.,Alimento,Perro,Pet palatto S.Premiun Raza Pequeña 3kg,495,39
-Pet Palatto Tradicional,Alimento,Perro,Pet Palatto premiun Tradicional 25kg + colchoneta,2760,40
-Bocao Original,Alimento,Perro,Bocao Origianl 25kg +plato + Dona Pollo,2235,41
-Bocao Original,Alimento,Perro,Bocao Original 7kg,668,42
-Arena aglomerante,Higiene,Gato,Charm Cat Lavanda 5lt,260,43
-Arena aglomerante,Higiene,Gato,Charm Cat Cafe 5lt,260,44
-Piedras,Higiene,Gato,"Piedras Cat Point 1,8kg",105,45
-Pañales Sativa,Higiene,Perro/Gato,Pañales Sativa 60x60 (30un),537,46
-Porta Bolsitas,Higiene,Perro/Gato,Porta bolsitas,26,47
-Pañuelos PetClean,Higiene,Perro,Pañuelos humedos PetClean Macho 75U,250,48
-Pañuelos PetClean,Higiene,Perro,Pañuelos humedos  PetClean Hembras 75U,250,49
-Pañuelos PetClean,Higiene,Perro,Pañuelos humedos PetClean Cachorros 75U,260,50
-Pañuelos PetClean,Higiene,Gato,Pañuelos  humedos  PetClean Gato 75U,260,51
-Hidratante PetClean,Higiene,Perro,Hidratante de hocico PetClean 60gr,247,52
-Shampoo PetClean,Higiene,Perro,Shampoo PetClean neutralizador de olores 700ml,280,53
-Shampoo PetClean,Higiene,Perro,Shampoo PetClean Pieles Sensibles 700ml,295,54
-Shampoo PetClean,Higiene,Perro,Shampoo PetClean 5 en 1 700ml,260,55
-Shampoo PetClean,Higiene,Perro,Shampoo PetClean Oscurecedor 700ml,260,56
-Shampoo PetClean,Higiene,Perro,Shampoo PetClean  Bomba de Vit 700ml,275,57
-Shampoo PetClean,Higiene,Perro,Shampoo PetClean Cachorros 700ml,285,58
-Shampoo PetClean,Higiene,Perro,Shampoo PetClean Blanqueo 700ml,270,59
-Shampoo Seco,Higiene,Gato,Shampoo PetClean Shampoo seco gatos,259,60
-Foliar,Jardineria,Plantas,Hook Foliar para hojas 1lt,412,61
-Foliar,Jardineria,Plantas,Hook Foliar para flores 1lt,487,62
-Juguete,Accesorios,Perro/Gato,VT4104M 21CM,105,63
-Juguete,Accesorios,Perro/Gato,VT4130M 14.5CM,102,64
-Juguete HUESO GEL L,Accesorios,Perro/Gato,PT1000L ,78,65
-Juguete,Accesorios,Perro/Gato,R39211,79,67
-Juguete,Accesorios,Perro/Gato,R32009,106,66
-Juguete,Accesorios,Perro/Gato,R33103,166,68
-Juguete,Accesorios,Perro/Gato,R35207,120,69
-Juguete,Accesorios,Perro/Gato,CT9022,77,70
-Juguete,Accesorios,Perro/Gato,CT8216,100,71
-Juguete,Accesorios,Perro/Gato,CT31020,264,72
-Juguete,Accesorios,Perro/Gato,CT8742,172,73
-Juguete,Accesorios,Perro/Gato,CT8823,86,74
-Juguete,Accesorios,Perro/Gato,VT1036M,69,75
-Juguete,Accesorios,Perro/Gato,TP1070,100,76
-Juguete,Accesorios,Perro/Gato,TP1050,75,78
-Juguete,Accesorios,Perro/Gato,TP2411,230,79
-Juguete,Accesorios,Perro/Gato,TY032,93,80
+Nomre Producto,Categoria,Subcategoría,Especie,Talle,Descripcion,precio,imagen_url
+Durapets Bandeja,Accesorio,,Gatos,,"Kit Bandeja, pala y plato",308,3
+Baño cerrado ,Accesorio,,Gatos,,Baño cerrado (56x40x40cm) +pala,690,2
+Antideslizante,Accesorio,,Perros,,Medias antideslizantes ,81,3
+Antideslizante,Accesorio,,Perros,,Medias antideslizantes ,86,4
+Comedero lento,Accesorio,,Perros,,Comedero Lento Ed. (650ml),99,5
+Comedero lento,Accesorio,,Perros,,Comedero Lento Ed. (1.200ml),140,6
+Comedero tradicional,Accesorio,,Perros,,Comedero trad. Medio,53,7
+Comedero tradicional,Accesorio,,Perros,,Comedero trad. Grande,75,8
+Comedero doble,Accesorio,,Perros/Gatos,,Comedero doble BP6404 40x18xH6cm,202,9
+Bebedero y comedero,Accesorio,,Perro/Gato,,CTB6221S,140,10
+Corta Uñas,Accesorio,,Perro/Gato,,NC5008M,180,11
+Corta uñas y lima,Accesorio,,Perro/Gato,,GS302S,208,12
+Bozal,Accesorio,,Perro,,DZ02-3 chico,86,13
+Bozal,Accesorio,,Perro,,DZ02-5 mediano,108,14
+Bozal,Accesorio,,Perro,,DZ02-7 grande,128,15
+Pretales S,Accesorio,,Perro,,SH399S,168,16
+Pretales M,Accesorio,,Perro,,SH399M,202,17
+Pretales L,Accesorio,,Perro,,SH399L,232,18
+Traje post quirurguco S,Accesorio,,Perro/Gato,,CWSO1 S,305,19
+Traje post quirurguco M,Accesorio,,Perro,,CWSO1 M,320,20
+Traje post quirurguco L,Accesorio,,Perro,,CWSO1 L,335,21
+Comedero doble AH,Accesorio,,Perro,,Comedero doble 415-685ml,145,22
+Bebedero,Accesorio,,Perro/Gato,,Bebedero 6701,45,23
+Cama 040,Accesorios,,Perro/Gato,,Cama 040 (45x45),550,81
+Cama 044,Accesorios,,Perro/Gato,,Cama (43x36x13cm),786,24
+Cama 045,Accesorios,,Perro/Gato,,Cama (70x56x21 cm),1090,25
+LickiMat,Accesorios,,Perro/Gato,,LickiMat 20x20cm,216,26
+Juguete,Accesorios,,Perros,,Juguete rasca encias,213,27
+Tropical Fish,Alimento,,Peces,,TF Escamas 14gr,98,28
+Goldfish,Alimento,,Peces,,GF Escamas 14gr,98,29
+Golosina gatos,Alimento,,Gatos,,"Golosina con yerba gatera (4×8 cm) QQ-09 PROMO 10+2
+",79,30
+Palito fino ,Alimento,,Perro,,Palitos finos blanco,12,31
+Oreja de vaca,Alimento,,Perro,,Oreja de vaca,35,32
+Hueso ,Alimento,,Perros,,Hueso fibra de coco S,176,33
+Hueso,Alimento,,Perros,,Hueso fibra de coco M,260,34
+Hueso,Alimento,,Perros,,Hueso fibra de coco G,353,35
+Bocao Premiun Gato Adulto,Alimento,,Gatos,,"Bocao Premium Gato Adulto 10,1kg+ rascador",1404,36
+Pet Palatto Premiun G. Cast.,Alimento,,Gatos,,Pet Palatto Premiun Gato Castrado 10kg + transportadora ,2180,37
+Pet Palatto Premiun G. Cast.,Alimento,,Gatos,,Pet Palatto Premiun Gato Castrado 1kg,246,38
+Pet Palatto Super Premiun Adulto,Alimento,,Perro,,Pet Palatto Super Premiun Adulto 3kg,475,1
+Pet palatto SP. Raza Peq.,Alimento,,Perro,,Pet palatto S.Premiun Raza Pequeña 3kg,495,39
+Pet Palatto Tradicional,Alimento,,Perro,,Pet Palatto premiun Tradicional 25kg + colchoneta,2760,40
+Bocao Original,Alimento,,Perro,,Bocao Origianl 25kg +7kg+plato + Dona Pollo,2199,41
+Bocao Original,Alimento,,Perro,,Bocao Original 7kg,520,42
+Arena aglomerante,Higiene,,Gatos,,Charm Cat Lavanda 5lt,260,43
+Arena aglomerante,Higiene,,Gatos,,Charm Cat Cafe 5lt,260,44
+Piedras,Higiene,,Gatos,,"Piedras Cat Point 1,8kg",105,45
+Pañales Sativa,Higiene,,Perro/Gato,,Pañales Sativa 60x60 (30un),537,46
+Porta Bolsitas,Higiene,,Perros/Gatos,,Porta bolsitas,26,47
+Pañuelos PetClean,Higiene,,Perros,,Pañuelos humedos PetClean Macho 75U,250,48
+Pañuelos PetClean,Higiene,,Perros,,Pañuelos humedos  PetClean Hembras 75U,250,49
+Pañuelos PetClean,Higiene,,Perros,,Pañuelos humedos PetClean Cachorros 75U,260,50
+Pañuelos PetClean,Higiene,,Gatos,,Pañuelos  humedos  PetClean Gatos 75U,260,51
+Hidratante PetClean,Higiene,,Perros,,Hidratante de hocico PetClean 60gr,247,52
+Shampoo PetClean,Higiene,Shampoo,Perro,,Shampoo PetClean neutralizador de olores 700ml,280,53
+Shampoo PetClean,Higiene,Shampoo,Perro,,Shampoo PetClean Pieles Sensibles 700ml,295,54
+Shampoo PetClean,Higiene,Shampoo,Perro,,Shampoo PetClean 5 en 1 700ml,260,55
+Shampoo PetClean,Higiene,Shampoo,Perro,,Shampoo PetClean Oscurecedor 700ml,260,56
+Shampoo PetClean,Higiene,Shampoo,Perro,,Shampoo PetClean  Bomba de Vit 700ml,275,57
+Shampoo PetClean,Higiene,Shampoo,Perro,,Shampoo PetClean Cachorros 700ml,285,58
+Shampoo PetClean,Higiene,Shampoo,Perro,,Shampoo PetClean Blanqueo 700ml,270,59
+Shampoo Seco,Higiene,Shampoo,Gatos,,Shampoo PetClean Shampoo seco gatos,259,60
+Foliar,Jardineria,,Plantas,,Hook Foliar para hojas 1lt,412,61
+Foliar,Jardineria,,Plantas,,Hook Foliar para flores 1lt,487,62
+Juguete,Accesorio,,Perro/Gato,,VT4104M 21CM,105,63
+Juguete,Accesorio,,Perro/Gato,,VT4130M 14.5CM,102,64
+Juguete HUESO GEL L,Accesorio,,Perro/Gato,,PT1000L ,78,65
+Juguete,Accesorio,,Perro/Gato,,R39211,79,67
+Juguete,Accesorio,,Perro/Gato,,R32009,106,66
+Juguete,Accesorio,,Perro/Gato,,R33103,166,68
+Juguete,Accesorio,,Perro/Gato,,R35207,120,69
+Juguete,Accesorio,,Perro/Gato,,CT9022,77,70
+Juguete,Accesorio,,Perro/Gato,,CT8216,100,71
+Juguete,Accesorio,,Perro/Gato,,CT31020,264,72
+Juguete,Accesorio,,Perro/Gato,,CT8742,172,73
+Juguete,Accesorio,,Perro/Gato,,CT8823,86,74
+Juguete,Accesorio,,Perro/Gato,,VT1036M,69,75
+Juguete,Accesorio,,Perro/Gato,,TP1070,100,76
+Juguete,Accesorio,,Perro/Gato,,TP1050,75,78
+Juguete,Accesorio,,Perro/Gato,,TP2411,230,79
+Juguete,Accesorio,,Perro/Gato,,TY032,93,80
+Collar Sativa XXL,Accesorio,,Perro/Gato,,,172,
+Transportadora,Accesorio,,Perro/Gato,,DC716S,1095,
+Strydox ,Medicamento,Tónico neuromuscular,Equino,100ml,Inyectable I/M,744,
+Fluxamine,Medicamento,AINE,Equino,10ml,Iny,387,
+Fructosa 50R,Medicamento,Antioxidante energético,Equinos/Bovinos/Ovinos,250ml,Iny,768,
+Biovitaion,Medicamento,Multivitamínico,Equino/Bovino,100ml,Iny,774,
+Bronquioll,Medicamento,Antiséptico bronquial,Equino,100ml,Iny,870,
+F.A.F,Medicamento,Analgésico antipirético,Equino/Bovino/Perro/Gato,100ml,Iny,759,
+Equiplex I.P.600,Medicamento,Antiparasitario,Equino,12g,Jeringa oral,270,
+Dicloflex,Medicamento,AINE y Relajante muscular,Equino,100ml,Iny,945,
+Crema de ordeñe,Medicamento,Cicatrizante antiséptico y anestésico,Equino/Bovino,500g,Pote,801,
+Crema de ordeñe,Medicamento,Cicatrizante antiséptico y anestésico,Equino/Bovino,250g,Pote,513,
+Colirio R,Medicamento,Colirio,Bov/Ovi/Equi/Can/Feli/Sui,500ml,Frasco,585,
+Clenpulmin,Medicamento,Broncodilatador y espasmolítico,Equino,50ml,Iny,774,
+Vitaion B,Medicamento,Complejo vitamínico B,Bovino/Equino,100ml,Iny,696,
+Urotrol,Medicamento,Relajante músculos vesicales,Equino,100ml,Iny,615,
+Triple Cicatrizante,Medicamento,"Cicatrizante, antibiótico y anestésico",Bov/Ovi/Equi/Can/Feli/Sui,120g,Crema,693,
+Sulf. de atropina R2,Medicamento,Parasimpaticolítico ,Bov/Ovi/Equi/Can/Feli/Sui,50ml,Iny,709,
+Lidocaina 2%,Medicamento,Anestésico local,Bov/Ovi/Equi/Can/Feli/Sui,100ml,Iny,441,
+Hierro R,Medicamento,"Suplemento de hierro, antianémico",Equino,100ml,Iny,879,
+Furo R,Medicamento,Diurético,Bov/Ovi/Equi/Can/Feli/Sui,100ml,Iny,348,
+Fluxamine,Medicamento,AINE,Perro/Gato,100ml,Iny,1390,
+Clenparto,Medicamento,Tocolítico,Bovino/Equino,50ml,Iny,774,
+Calcio B12,Medicamento,Calcificante vitamínico,Equino/Bovino/Ovino/Suino,250ml,Iny,744,
+B1-B12 Fuerte,Medicamento,Complejo vitamínico B,Bov/Ovi/Equi/Can/Feli/Sui,100ml,Iny,750,
+Bu-Dipiroll,Medicamento,Antiespasmódico y AINE,Bovino/Equino/Suino/Canino,100ml,Iny,975,
+Artralgin,Medicamento,Analgésico antiinflamatorio antipirético,Equino,100ml,Iny,684,
+Acitioc,Medicamento,Hepatoprotector,Equino/Bovino/Suino,100ml,Iny,621,
+Providean repro 12,Vacuna,,Bovino,,50 Dosis,3492,
+Providean repro 12,Vacuna,,Bovino,,25 Dosis,2095,
+Providean Respi 8 Querato,Vacuna,,Bovino,,50 Dosis,2810,
+Providean Clostridial 10P,Vacuna,,Bovino,,60 Dosis,1120,
+Providean Entero Plus 7,Vacuna,,Bovino,,50 Dosis,1680,
+Colotrin JM,Medicamento,Condroprotectores,Perro/Gato,,30 Comp,1192,
+Clavoxin,Medicamento,Antibiótico ,Perro/Gato,,Polvo Susp Oral,512,
+Laxipet,Medicamento,Laxante,Perro/Gato,60g,Pasta palatable,543,
+Agujas,Insumos,,,18G (Rosada),(Por unidad),6,
+Konclav,Medicamento,Antibiótico,Perro,250Mg,Por Comprimido,50,
+Konclav,Medicamento,Antibiótico,Perro,500Mg,por Comprimido,98,
+Konclav,Medicamento,Antibiótico,Perro,50Mg,por Comprimido,35,
+Felilax Pet,Medicamento,Laxante,Gato,40g,Pasta oral,540,
+Difran,Medicamento,Antihistamínico,Equi/Bov/Ovi/Sui,50cc,iny,650,
+Hematon B12 Elixir,Medicamento,Tónico antianémico,Equi/Bov/Ovi/Sui/Can/Feli,1Lt,Oral,750,
+Hematon B12 Elixir,Medicamento,Tónico antianémico,Equi/Bov/Ovi/Sui/Can/Feli,100cc,Oral,550,
+Iverton 3.15% LA,Medicamento,Antiparasitario,Bovino,500cc,Iny,,
+Oxifarma LA,Medicamento,Antibiótico,Bovino/Ovino/Suino,500cc,Iny,,
+Rehidratante Duva,Medicamento,Rehidratante electrolítico,Equi/Bov/Ovi/Sui/Can/Feli,500cc,iny,,
+Imidoxan,Medicamento,Hemoparasiticida ,Bovino/Equino,250Ml,iny S/C,,
+Imidoxan,Medicamento,Hemoparasiticida ,Bovino/Equino,100Ml,Iny S/C,,
+Di Oxi Forte,Medicamento,Antibiótico,Bovino,250Ml,iny I/M,,
+Gluconato Calcio Magnesiado,Medicamento,Calcificante,Bov/Equi/Ovi/Sui,500cc,iny ,,
+Celotest amarillo,Pintura,,Bovino/Ovino/Suino,,,,
+Celotest celeste,Pintura,,Bovino/Ovino/Suino,,,,
+Adipet,Medicamento,Antiparasitario,Perro/Gato,10 comprimidos,Por comprimido,,
+Stomorgyl 10,Medicamento,Antibiótico,Perro/Gato,,Por comprimido,,
+Osteocart Plus,Medicamento,Condroprotector,Perro/Gato,30 comprimidos,Por comprimido,,
+Dipirona,Medicamento,AINE,Equino/Bovino/Porcino,100ml,Iny,,
+Meloxicam Aditivos 0.5%,Medicamento,AINE,Equi/Bov/Ovi/Sui/Can/Feli,20ml,Iny,,
+Ciprovet,Medicamento,Colirio ,Equi/Can/Feli,5ml,Gotero,,
+Ocubiotic,Medicamento,Colirio ,Equi/Can/Feli,5ml,Gotero,,
+Otiflex Limpiador,Medicamento,Limpiador ótico,Perro/Gato,25ml,,,
+Adicelo,Medicamento,Interruptor de celo,Perro/Gato,20 tabletas,Por blister,,
+Milpro Gato Kitten,Medicamento,Antiparasitario interno,Gato,4Mg/10Mg,Por comprimido,,
+Milpro Gato Kitten,Medicamento,Antiparasitario interno ,Gato,16Mg/40Mg,Por comprimido,,
+Allercalm,Medicamento,Shampoo ,Perro/Gato,250ml,Tópico,,
+Allermyl SIS,Medicamento,Shampoo ,Perro/Gato,250ml,Tópico,,
+Cortavance,Medicamento,Antiinflamatorio tópico esteroideo,Perro ,76ml,Tópico,,
+Ketochlor,Medicamento,Shampoo ,Equi/Can/Feli,250ml,Tópico,,
+Pronefra,Medicamento,Protector renal ,Perro/Gato,60ml,Suspensión oral,,
+Canigen MHA ,Vacuna,,Perro,2PPI/Lt,,,
+Feligen CRP,Vacuna,,Gato,,,,
+Bravecto Mensual,Medicamento,Antiparasitario externo,Perro,45Mg,"2-4,5Kg comprimido",,
+Bravecto Mensual,Medicamento,Antiparasitario externo,Perro,100Mg,"4,5-10Kg comprimido",,
+Bravecto Mensual,Medicamento,Antiparasitario externo,Perro,200Mg,10-20Kg comprimido,,
+Bravecto Mensual,Medicamento,Antiparasitario externo,Perro,400Mg,20-40Kg comprimido,,
+Sulfaprim S,Medicamento,Antibiótico,Equi/Bov/Ovi/Sui,100Ml,Iny,,
+Killitam,Medicamento,Sedante,Perro/Gato,10 Comp,Por comprimido,,
+Triam Retard,Medicamento,Antiinflamatorio esteroideo,Equi/Can/Feli,20Ml,iny,,
+DKL-5 Plata,Medicamento,Cicatrizante antimiásico antimicrobiano,Equi/Bov/Ovi/Sui/Can,440Ml,Tópico,,
+Criptolat,Medicamento,Antiprolactínico,Perro/Gato,15Ml,Oral,,
+Pipeta Spot Max <4Kg,Medicamento,Antiparasitario   ,Gato,,Tópico,,
+Pipeta Spot Max >4Kg,Medicamento,Antiparasitario,Gato ,,Tópico,,
+Pipeta Spot Max <10Kg,Medicamento,Antiparasitario ,Perro ,,Tópico,,
+Pipeta Spot Max 11-20Kg,Medicamento,Antiparasitario,Perro,,Tópico,,
+Pipeta Spot Max 21-40Kg,Medicamento,Antiparasitario,Perro,,Tópico,,
+Pipeta Spot Max 41-60Kg,Medicamento,Antiparasitario,Perro,,Tópico,,
+Calcio AWT ,Medicamento,Suplemento Calcio,Equino,1Kg,Pote,,
+Calcio AWT ,Medicamento,Suplemento Calcio,Equino,4Kg,Balde,,
+Pintura para ganado Tofana ,Pintura,,,1Lt,"Azul, roja, verde, amarilla",,
+Pintura para ganado Tofana ,Pintura,,,4Lt,"Azul, roja, verde, amarilla",,
+Biotina ,Medicamento,Suplemento nutricional,Equino,500g,Oral ,,
+Marcafrío Tofana,Pintura,,,350g,,,
+Tiza para lanares Azul,Pintura,,Ovino,,,,
+Tiza para lanares Roja,Pintura,,Ovino,,,,
+Tiza para lanares Verde,Pintura,,Ovino,,,,
+No me muerdas ,Varios,,,250cc frasco,Spray,,

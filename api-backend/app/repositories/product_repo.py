@@ -1,5 +1,7 @@
 # api-backend/app/repositories/product_repo.py
 """
+
+<!> aca tambien supongo que hay que actualizar devido al cambio de la estructura de los model 
 =============================================================================
 REPOSITORIO DE PERSISTENCIA: CATÁLOGO DE PRODUCTOS (SQLALCHEMY 2.0)
 =============================================================================

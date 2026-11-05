@@ -1,6 +1,11 @@
 
 
 <!> pasa los productos anteriores a tru para saber si esta dsiponible es desir se ve en la interfas pero no hay stok aunque alla esta pensa para comida etc nos quedamos sin esto 
+
+
+
+
+
 docker exec -it vet_db_bel psql -U ary -d vet_core_db -c "
 DO \$\$ 
 BEGIN 
@@ -10,3 +15,7 @@ BEGIN
     END IF; 
 END \$\$;
 " 
+
+
+
+docker exec -it vet_db_bel psql -U ary -c "DROP DATABASE IF EXISTS vet_core_db WITH (FORCE);"

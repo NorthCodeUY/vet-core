@@ -3,8 +3,10 @@
 =============================================================================
 CONFIGURACIÓN CENTRALIZADA MULTI-TENANT (PYDANTIC SETTINGS V2)
 =============================================================================
-Gestiona variables de entorno, feature flags, derivación dinámica de CORS
-y construcción de la URL de conexión a la base de datos de forma agnóstica.
+Gestiona la carga de variables de entorno de forma dinámica por Tenant:
+- Prioriza variables del sistema operativo (Docker env_file).
+- Si existe la variable ENV_FILE, carga ese archivo específico (.env.veterinaria).
+- Ensambla la conexión a PostgreSQL y la política de CORS de manera agnóstica.
 """
 
 import os
@@ -26,28 +28,34 @@ def obtener_ip_local() -> str:
         return "127.0.0.1"
 
 
+# Resolución dinámica del archivo de entorno a cargar
+# 1. Si el sistema operativo define 'ENV_FILE', usa ese.
+# 2. Si no, busca '.env'.
+TARGET_ENV_FILE = os.getenv("ENV_FILE", ".env")
+
+
 class Settings(BaseSettings):
     """Contrato de configuración fuertemente tipado para cada Tenant."""
 
     # -------------------------------------------------------------------------
-    # IDENTIFICACIÓN Y MODO
+    # IDENTIFICACIÓN Y MODO DE EJECUCIÓN
     # -------------------------------------------------------------------------
-    PROJECT_NAME: str = Field(default="VetCore Engine API", description="Nombre comercial del tenant")
+    PROJECT_NAME: str = Field(default="VetCore Engine API", description="Nombre del tenant")
     ENV_MODE: str = Field(default="development", description="development | production")
-    IS_DOCKER: bool = Field(default=False, description="True si corre dentro de un contenedor")
+    IS_DOCKER: bool = Field(default=False, description="True si corre dentro de Docker")
     
     # Feature Flags Multi-Tenant
     TENANT_TYPE: str = Field(default="GENERAL", description="VET | RETAIL | SERVICES")
-    ENABLE_AGENDA: bool = Field(default=False, description="Habilita módulo de citas/turnos")
+    ENABLE_AGENDA: bool = Field(default=False, description="Habilita módulo de turnos/citas")
 
     # -------------------------------------------------------------------------
     # PERSISTENCIA (POSTGRESQL)
     # -------------------------------------------------------------------------
-    DB_USER: str
-    DB_PASSWORD: str
+    DB_USER: str = "postgres"
+    DB_PASSWORD: str = ""
     DB_HOST: str = "localhost"
     DB_PORT: str = "5432"
-    DB_NAME: str
+    DB_NAME: str = "default_db"
 
     # -------------------------------------------------------------------------
     # RED Y SERVIDOR ASGI
@@ -59,28 +67,30 @@ class Settings(BaseSettings):
     # -------------------------------------------------------------------------
     # SEGURIDAD Y TOKENS JWT
     # -------------------------------------------------------------------------
-    SECRET_KEY: str = Field(default="default_insecure_key_change_in_production", min_length=16)
+    SECRET_KEY: str = Field(default="insecure_secret_key_change_me_in_production_32b", min_length=16)
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480
 
     # -------------------------------------------------------------------------
-    # CLOUDFLARE R2 / OBJECT STORAGE (Opcional en desarrollo)
+    # CLOUDFLARE R2 / OBJECT STORAGE
     # -------------------------------------------------------------------------
     R2_ACCOUNT_ID: str = ""
     R2_ACCESS_KEY_ID: str = ""
     R2_SECRET_ACCESS_KEY: str = ""
-    R2_BUCKET_NAME: str = ""
+    R2_BUCKET_NAME: str = "vetcore-media"
     R2_PUBLIC_URL: str = ""
 
-    # Pydantic v2: Carga dinámica priorizando variables del sistema inyectadas por run_desarrollo.py
+    # -------------------------------------------------------------------------
+    # CONFIGURACIÓN DEL LOADER DE PYDANTIC V2
+    # -------------------------------------------------------------------------
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=TARGET_ENV_FILE,
         extra="ignore",
         env_file_encoding="utf-8"
     )
 
     # -------------------------------------------------------------------------
-    # PROPIEDADES CALCULADAS (BUSINESS & INFRASTRUCTURE LOGIC)
+    # PROPIEDADES DERIVADAS (BUSINESS & INFRASTRUCTURE LOGIC)
     # -------------------------------------------------------------------------
     @property
     def DATABASE_URL(self) -> str:
@@ -109,10 +119,32 @@ class Settings(BaseSettings):
         host = "localhost" if self.IS_DOCKER else obtener_ip_local()
         return f"http://{host}:{self.APP_PORT}"
 
+    # -------------------------------------------------------------------------
+    # ALIASES DE COMPATIBILIDAD HACIA ATRÁS (MINÚSCULAS)
+    # -------------------------------------------------------------------------
+    @property
+    def db_user(self) -> str: return self.DB_USER
+    @property
+    def db_password(self) -> str: return self.DB_PASSWORD
+    @property
+    def db_host(self) -> str: return self.DB_HOST
+    @property
+    def db_port(self) -> str: return self.DB_PORT
+    @property
+    def db_name(self) -> str: return self.DB_NAME
+    @property
+    def env_mode(self) -> str: return self.ENV_MODE
+    @property
+    def app_port(self) -> int: return self.APP_PORT
+    @property
+    def base_url(self) -> str: return self.BASE_URL
+    @property
+    def allowed_origins(self) -> str: return self.ALLOWED_ORIGINS
+
 
 # Instanciación única consumida por todo el backend
 settings = Settings()
 
-# Alias de compatibilidad hacia atrás para imports existentes en main.py
+# Alias globales consumidos por main.py
 origins_list = settings.CORS_ORIGINS
 allow_credentials = settings.CORS_ALLOW_CREDENTIALS

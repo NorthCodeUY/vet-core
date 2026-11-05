@@ -14,6 +14,7 @@
 - 🏢 **Sitio Oficial de Desarrolladores**: [https://northcode-uy.com/](https://northcode-uy.com/)
 - 📊 **[Documentación Frontend Web Clientes](./apps/web-client/README.md)**
 - ⚙️ **[Documentación Backend API FastAPI](./api-backend/README.md)**
+- 🌐 **[Documentación de Infraestructura y Orquestación](./infrastructure/README.md)**
 
 ---
 
@@ -52,13 +53,16 @@
 ```text
 /vet-core
 ├── apps/
-│   └── web-client/            # Frontend React (E-commerce y Portal Clientes)
-├── api-backend/               # Backend FastAPI (REST API, SQLAlchemy, Pydantic)
-├── admin-dashboard/           # Portal Administrativo (Flutter / En desarrollo)
+│   ├── web-client/            # Frontend React 19 (E-commerce y Portal Clientes)
+│   └── admin-portal/          # Portal Administrativo (Flutter / Gestión de Catálogo y Caja)
+├── api-backend/               # Backend FastAPI (REST API, SQLAlchemy 2.0, Pydantic v2)
+├── infrastructure/            # Orquestación Docker, Topología de Redes, Cloudflare R2 y Tunnels
 ├── clients/                   # Plantillas y datos de configuración por cliente (Zero-Rebuild)
 │   ├── _template/             # Estructura base para nuevos clientes (config.json + assets)
-│   └── valeria/               # Assets y marcas de cliente específico
-├── docker-compose.yml         # Orquestador multi-servicio local y producción <!> (Pendiente de personalizar por entorno)
+│   ├── veterinariabeltrameli/ # Assets y configuración del cliente Veterinaria Beltramelli
+│   ├── flordeloto/            # Assets y configuración de Tienda de Ropa Flor de Loto
+│   └── malandrobarber/        # Assets y configuración de Barbería Malandro
+├── docker-compose.yml         # Orquestador multi-servicio raíz (Include Compose V2)
 └── README.md                  # Documentación técnica centralizada
 ```
 

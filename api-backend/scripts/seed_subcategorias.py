@@ -3,30 +3,55 @@
 =============================================================================
 SEMILLERO AUTOMATIZADO DE CATÁLOGO MULTI-TENANT (DATABASE SEEDER)
 =============================================================================
-Propósito:
-    Inyecta las categorías y subcategorías oficiales por cliente:
-    - VET: Categorías reales de la clienta (Alimento, Accesorios, etc.) y Especies.
-    - RETAIL: Vertical de moda para Flor de Loto.
-    
-Comportamiento Idempotente:
-    - No duplica registros existentes.
-    - Si la subcategoría existe sin ícono, le asigna el ícono correspondiente.
-
-Uso:
-    python scripts/seed_subcategorias.py veterinaria
-    python scripts/seed_subcategorias.py flordeloto
+Inyecta las categorías y subcategorías oficiales por cliente.
+Asegura la carga de variables de entorno ANTES de instanciar el engine de BD.
+Ejecutar
+ python scripts/seed_subcategorias.py veterinaria
+ python scripts/seed_subcategorias.py flordeloto
 """
-# api-backend/scripts/seed_subcategorias.py
 
 import sys
 import os
 from dotenv import load_dotenv
+
+# 1. Resolver la ruta absoluta de la raíz del backend (api-backend/)
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(BASE_DIR)
+
+TENANTS = {
+    "veterinaria": {
+        "env_file": ".env.veterinaria",
+        "rubro": "VET"
+    },
+    "flordeloto": {
+        "env_file": ".env.flordeloto",
+        "rubro": "RETAIL"
+    }
+}
+
+# -----------------------------------------------------------------------------
+# PASO CRÍTICO: CARGA DE ENTORNO ANTES DE IMPORTAR BASE DE DATOS
+# -----------------------------------------------------------------------------
+if len(sys.argv) < 2 or sys.argv[1].lower() not in TENANTS:
+    disponibles = " | ".join(TENANTS.keys())
+    print(f"\n❌ Uso: python scripts/seed_subcategorias.py [{disponibles}]\n")
+    sys.exit(1)
+
+tenant_key = sys.argv[1].lower()
+info = TENANTS[tenant_key]
+env_path = os.path.join(BASE_DIR, info["env_file"])
+
+if not os.path.exists(env_path):
+    print(f"❌ Error: No se encontró el archivo '{env_path}'.")
+    sys.exit(1)
+
+# Cargar variables del tenant específico en memoria
+load_dotenv(dotenv_path=env_path, override=True)
+os.environ["IS_DOCKER"] = "false"
+os.environ["DB_HOST"] = "localhost"
+
+# AHORA SÍ: Con las variables inyectadas, importamos la base de datos y modelos
 from sqlalchemy import select
-
-# Garantiza que el script resuelva las importaciones desde la raíz del backend
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-# Carga obligatoria del registro de modelos completo antes de usar SessionLocal
 import app.models
 from app.database import SessionLocal
 from app.models.categoria_model import CategoriaModel
@@ -36,9 +61,6 @@ from app.models.subcategoria_model import SubcategoriaModel
 # CATÁLOGO OFICIAL POR RUBRO
 # =============================================================================
 CATALOGO_POR_RUBRO = {
-    # -------------------------------------------------------------------------
-    # VERTICAL 1: VETERINARIA & AGRO (Valeria Beltramelli)
-    # -------------------------------------------------------------------------
     "VET": {
         "categorias": [
             "Accesorios",
@@ -48,7 +70,6 @@ CATALOGO_POR_RUBRO = {
             "Medicamentos"
         ],
         "subcategorias": [
-            # Nombres exactos que ya existen en tu BD + nuevas incorporaciones
             {"nombre": "Perro", "icono": "Dog"},
             {"nombre": "Gato", "icono": "Cat"},
             {"nombre": "Caballo", "icono": "Sparkles"},
@@ -57,10 +78,6 @@ CATALOGO_POR_RUBRO = {
             {"nombre": "Plantas", "icono": "Sprout"}
         ]
     },
-
-    # -------------------------------------------------------------------------
-    # VERTICAL 2: RETAIL & VESTIMENTA (Flor de Loto)
-    # -------------------------------------------------------------------------
     "RETAIL": {
         "categorias": [
             "Prendas Superiores",
@@ -82,17 +99,6 @@ CATALOGO_POR_RUBRO = {
     }
 }
 
-TENANTS = {
-    "veterinaria": {
-        "env": ".env.veterinaria",
-        "rubro": "VET"
-    },
-    "flordeloto": {
-        "env": ".env.flordeloto",
-        "rubro": "RETAIL"
-    }
-}
-
 
 def poblar_catalogo(rubro: str):
     """Ejecuta la inserción o enriquecimiento sin romper registros existentes."""
@@ -104,14 +110,14 @@ def poblar_catalogo(rubro: str):
         return
 
     try:
-        print(f"[*] Conectado a la base de datos.")
+        print(f"[*] Conectado a la base de datos: {os.getenv('DB_NAME')}")
         print(f"[*] Procesando catálogo para vertical: [{rubro}]")
         
         cat_nuevas = 0
         subc_nuevas = 0
         subc_actualizadas = 0
 
-        # 1. Procesar Categorías Principales
+        # 1. Categorías
         for cat_nombre in datos_rubro["categorias"]:
             stmt = select(CategoriaModel).where(CategoriaModel.cat_nombre == cat_nombre)
             existe = db.scalars(stmt).first()
@@ -121,13 +127,12 @@ def poblar_catalogo(rubro: str):
 
         db.flush()
 
-        # 2. Procesar Subcategorías con Íconos
+        # 2. Subcategorías con Íconos
         for sub_data in datos_rubro["subcategorias"]:
             stmt = select(SubcategoriaModel).where(SubcategoriaModel.subc_nombre == sub_data["nombre"])
             subcategoria = db.scalars(stmt).first()
 
             if not subcategoria:
-                # Si no existe, se inserta completa
                 nueva_subc = SubcategoriaModel(
                     subc_nombre=sub_data["nombre"],
                     subc_icono=sub_data["icono"],
@@ -136,7 +141,6 @@ def poblar_catalogo(rubro: str):
                 db.add(nueva_subc)
                 subc_nuevas += 1
             else:
-                # Si ya existía pero no tenía icono configurado, se actualiza
                 if not subcategoria.subc_icono:
                     subcategoria.subc_icono = sub_data["icono"]
                     subc_actualizadas += 1
@@ -158,25 +162,5 @@ def poblar_catalogo(rubro: str):
         db.close()
 
 
-def main():
-    if len(sys.argv) < 2 or sys.argv[1].lower() not in TENANTS:
-        disponibles = " | ".join(TENANTS.keys())
-        print(f"\n❌ Uso: python scripts/seed_subcategorias.py [{disponibles}]\n")
-        sys.exit(1)
-
-    tenant_key = sys.argv[1].lower()
-    info = TENANTS[tenant_key]
-
-    if not os.path.exists(info["env"]):
-        print(f"❌ No se encontró el archivo '{info['env']}'.")
-        sys.exit(1)
-
-    load_dotenv(dotenv_path=info["env"], override=True)
-    os.environ["IS_DOCKER"] = "false"
-    os.environ["DB_HOST"] = "localhost"
-
-    poblar_catalogo(info["rubro"])
-
-
 if __name__ == "__main__":
-    main()
+    poblar_catalogo(info["rubro"])

@@ -1,230 +1,191 @@
 <!-- apps/web-client/src/pages/landing/README.md -->
+
 # 🏠 Módulo Landing Page (`pages/landing`)
 
-Documentación técnica y funcional del módulo de **Landing Page** (Página Principal de Inicio) de **Veterinaria Beltramelli**.
+[⬅️ Volver a la Documentación Principal de Web Client](../../../README.md) | [🛒 Módulo de Pedidos y Carrito](../pedido/README.md) | [🏛️ Diagrama de Arquitectura](../../../docs/architecture/diagrama_arquitectura_fontend.md) | [📑 Overview de Arquitectura](../../../docs/architecture/overview.md)
 
 ---
 
 ## 📌 Visión General
 
-La **Landing Page** es el punto de entrada principal y orquestador de la experiencia del usuario en la web client de Veterinaria Beltramelli. Presenta la propuesta de valor de la empresa, muestra la clínica y sus servicios, ofrece un catálogo de productos interactivo integrado con el carrito de compras, detalla los planes sanitarios, presenta la misión/visión corporativa y proporciona la ubicación con mapa interactivo y canales directos de comunicación por WhatsApp.
+La **Landing Page** es la vista principal orquestada por [`LlandingPage.tsx`](LlandingPage.tsx). Integra la propuesta de valor de la marca, la presentación institucional, el catálogo de productos interactivo conectado al carrito de compras, los servicios profesionales, las suscripciones/planes sanitarios, el portafolio de trabajos realizados y la localización física con mapa interactivo y canales directos de WhatsApp.
 
-La interfaz está construida mediante una arquitectura modular en la carpeta `sessions/`, intercalando divisores con ondas vectoriales dinámicas (`SectionDivider.tsx`) que garantizan transiciones visuales suaves ("Pixel Perfect") entre esquemas de color claros y oscuros.
+Opera bajo un **motor de alternancia matricial de fondos** y **divisores ondulatorios SVG dinámicos** ([`SectionDivider.tsx`](../../components/SectionDivider.tsx)), garantizando que los contrastes de color (`bg-vete-secondary` $\leftrightarrow$ `bg-vete-dark`) se calculen matemáticamente sin importar qué secciones se activen o apaguen en el archivo `config.json` del cliente.
+
+---
+
+## 📁 Estructura del Directorio (Navegable)
+
+> 💡 **Tip:** Haz clic en cualquiera de los enlaces para abrir directamente el archivo en tu editor:
+
+* 📁 **[pages/landing/](.)**
+  * 📄 [LlandingPage.tsx](LlandingPage.tsx) *(Orquestador principal y motor matricial de secciones)*
+  * 📄 [README.md](README.md) *(Este documento)*
+  * 📁 **[sessions/](sessions/)**
+    * 📄 [HederSession.tsx](sessions/HederSession.tsx) *(Barra de navegación fija superior con badge de carrito)*
+    * 📄 [HeroSession.tsx](sessions/HeroSession.tsx) *(Despachador de portadas de impacto visual)*
+    * 📁 **[HeroSection/](sessions/HeroSection/)** *(Estrategias de portada según ui_variants)*
+      * 📄 [HeroSectionV1.tsx](sessions/HeroSection/HeroSectionV1.tsx) *(Portada clásica con imagen y titular destacado)*
+      * 📄 [HeroSectionV2.tsx](sessions/HeroSection/HeroSectionV2.tsx) *(Portada minimalista con llamada de acción directa)*
+      * 📄 [HeroSectionV3.tsx](sessions/HeroSection/HeroSectionV3.tsx) *(Variante moderna con acentos de color)*
+      * 📄 [HeroSectionV4.tsx](sessions/HeroSection/HeroSectionV4.tsx) *(Variante multimedia con soporte animado)*
+    * 📄 [ProductsSession.tsx](sessions/ProductsSession.tsx) *(Catálogo comercial con buscador y filtros de categoría)*
+    * 📄 [ServicioSession.tsx](sessions/ServicioSession.tsx) *(Grilla de servicios profesionales y especialidades)*
+    * 📄 [PlanSession.tsx](sessions/PlanSession.tsx) *(Planes de salud preventiva, suscripciones y paquetes)*
+    * 📄 [PortfolioSession.tsx](sessions/PortfolioSession.tsx) *(Galería multimedia de trabajos realizados)*
+    * 📄 [MapsSession.tsx](sessions/MapsSession.tsx) *(Ubicación geográfica, horarios y mapa embebido)*
+    * 📄 [AboutSection.tsx](sessions/AboutSection.tsx) *(Bloque institucional: Misión, Visión y Valores)*
+    * 📄 [FooterSession.tsx](sessions/FooterSession.tsx) *(Pie de página corporativo con enlaces y créditos)*
 
 ---
 
-## 📁 Estructura del Directorio
-
-```text
-apps/web-client/src/pages/landing/
-├── LlandingPage.tsx             # Orquestador principal de la vista de Landing Page
-├── descarteLandigPage.tsx       # [Borrador/Auxiliar] Versión alternativa de pruebas
-├── README.md                    # Documentación del módulo (Este archivo)
-└── sessions/                    # Sub-componentes modulares por sección de la Landing
-    ├── HederSession.tsx         # Cabecera de navegación superior (Sticky Header)
-    ├── HeroSession.tsx          # Banner principal de impacto visual (Hero)
-    ├── ProductsSession.tsx      # Catálogo de productos interactivo y buscador
-    ├── ServicioSession.tsx      # Grilla de servicios veterinarios (Ganadería, Mascotas, Equinos)
-    ├── MapsSession.tsx          # Sección de ubicación con mapa interactivo de Google Maps
-    ├── FooterSession.tsx        # Pie de página corporativo con contacto y barra de emergencia
-    └── descarteSession.tsx      # [Borrador/Auxiliar] Sección de pruebas temporales
-```
-<!-- 
-
-
-Real Y agregale comentario a cada modulo 
-.
-├── LlandingPage.tsx
-├── README.md
-└── sessions
-    ├── AboutSection.tsx
-    ├── FooterSession.tsx
-    ├── HederSession.tsx
-    ├── HeroSection
-    │   ├── HeroSectionV1.tsx
-    │   ├── HeroSectionV2.tsx
-    │   ├── HeroSectionV3.tsx
-    │   └── HeroSectionV4.tsx
-    ├── HeroSession.tsx
-    ├── MapsSession.tsx
-    ├── PlanSession.tsx
-    ├── ProductsSession.tsx
-    └── ServicioSession.tsx
-
-
-<!> Ahay que actializar la estructura superior -->
-
----
-<!--. config.json (Tenants) 
-   │
-   ▼
-2. activeSectionsPipeline[] 
-   └── Filtra sólo lo que está en 'true' en features.
-   │
-   ▼
-3. renderedSections[] (Máquina de color)
-   ├── Sección 0: Hero      ──> secondary (Verde)
-   ├── Sección 1: Productos ──> dark (Crema)   [Onda: Verde arriba -> Crema abajo]
-   ├── Sección 2: Servicios ──> secondary (Verde) [Onda: Crema arriba -> Verde abajo]
-   ├── Sección 3: Planes    ──> secondary (Verde) [Sin onda: groupWithPrevious=true]
-   └── Sección 4: Mapas     ──> dark (Crema)   [Onda: Verde arriba -> Crema abajo]
-   │
-   ▼
-
-   ┌────────────────────────────────────────────────────────┐
- │ Header Fijo                ──> z-[60] (Arriba de todo) │
- │ Footer                     ──> z-[55] (Tapa la barra)  │
- │ Barra Flotante (WhatsApp)  ──> z-[50] (Sobre el 3D)   │ ◄── [CORREGIDO]
- │ Animación 3D Ambiental     ──> z-[40] (Bajo la barra)  │ ◄── [CORREGIDO]
- │ Textos y Botones de Página ──> z-20                    │
- │ Fondos y Divisores SVG     ──> z-0                     │
- └────────────────────────────────────────────────────────┘
-4. Render en el DOM
-   - Cada sección dibuja su onda de entrada correcta antes de sus tarjetas.
-   
-   Esto esta bueno para agrearlo la coninacion de colores ademas hayu que empesar a documetar la parte de la agnosticacion
-   
-   
-    -->
 ## 📐 Arquitectura de Componentes y Flujo de Secciones
-
-El componente maestro [`LlandingPage.tsx`](LlandingPage.tsx) ensambla verticalmente cada sección dentro de un contenedor principal, inyectando propiedades de color (`bgColor`) y divisores estilizados:
 
 ```mermaid
 graph TD
-    App[Router / App.tsx] -->|Ruta '/'| LP[LlandingPage.tsx]
+    App["🧭 App.tsx (React Router DOM v7)"] -->|Ruta '/'| LP["🏠 LlandingPage.tsx"]
 
-    subgraph LandingPage ["🏠 LlandingPage.tsx"]
-        HS[HeaderSession.tsx] -->|Abre Drawer| PD[PedidoDrawer.tsx]
-        Hero[HeroSection / HeroSession.tsx]
-        SD1[SectionDivider.tsx]
-        PS[ProductsSession.tsx]
-        SD2[SectionDivider.tsx]
-        SS[ServicioSession.tsx]
-        ProgS[ProgramsSection]
-        SD3[SectionDivider.tsx]
-        About[AboutSection - Misión / Visión / Valores]
-        SD4[SectionDivider.tsx]
-        MS[MapsSession.tsx]
-        FS[FooterSession.tsx]
+    subgraph LandingPipeline ["⚙️ Pipeline de Secciones Activas (LlandingPage)"]
+        HS["📌 HeaderSession (Navbar Fijo)"]
+        Hero["🚀 HeroSession -> HeroSectionV1-V4"]
+        SD1["🌊 SectionDivider (SVG Wave)"]
+        PS["📦 ProductsSession (Catálogo)"]
+        SD2["🌊 SectionDivider (SVG Wave)"]
+        SS["🩺 ServicioSession (Servicios)"]
+        Plans["📋 PlanSession (Planes)"]
+        SD3["🌊 SectionDivider (SVG Wave)"]
+        Port["💼 PortfolioSession (Galería)"]
+        SD4["🌊 SectionDivider (SVG Wave)"]
+        Maps["📍 MapsSession (Google Maps)"]
+        Footer["👣 FooterSession (Pie de Página)"]
     end
 
-    PS <-->|Custom Hook| UP[useProducts.ts]
-    ProgS <-->|JSON Data| DataPromos[promociones.json]
-    SS <-->|JSON Data| DataServicios[servicios.json]
-    MS <-->|JSON Data| DataCompany[companyInfo.json]
-    FS <-->|JSON Data| DataCompany
+    LP --> HS
+    LP --> Hero
+    LP --> SD1
+    LP --> PS
+    LP --> SD2
+    LP --> SS
+    LP --> Plans
+    LP --> SD3
+    LP --> Port
+    LP --> SD4
+    LP --> Maps
+    LP --> Footer
+
+    %% Relaciones de Datos y Estado
+    HS -->|Abre Carrito| Drawer["🛒 PedidoDrawer.tsx"]
+    PS <-->|Fachada REST| Hook["🪝 useProducts.ts"]
+    Hook <-->|HTTP Client| API["🌐 product_service.ts"]
+    SS <-->|Runtime Config| Cfg["📄 client_info.json"]
+    Plans <-->|Runtime Config| Cfg
+    Port <-->|Runtime Config| Cfg
+    Maps <-->|Runtime Config| Cfg
+    Footer <-->|Runtime Config| Cfg
 ```
 
 ---
 
-## 🧩 Descripción Detallada de Secciones y Componentes
+## 🎨 Motor de Alternancia Matricial de Colores y Divisores
+
+[`LlandingPage.tsx`](LlandingPage.tsx) no acopla los colores de fondo a nombres de sección fijos. Si un cliente apaga la sección de Productos (`has_products: false`), las secciones subsiguientes recalculan sus fondos automáticamente para evitar colisiones cromáticas:
+
+```mermaid
+flowchart TD
+    A["1. client_info.json (config.features)"] --> B["2. activeSectionsPipeline[]"]
+    B -->|Filtra solo las secciones habilitadas| C["3. renderedSections[] (Máquina Matricial)"]
+    C -->|Calcula alternancia matemática| D["4. Asignación de Tokens & Ondas SVG"]
+
+    subgraph Alternancia ["Regla de Alternancia Matricial"]
+        S0["Sección 0: Hero ──> secondary (Verde)"]
+        S1["Sección 1: Productos ──> dark (Oscuro) [Onda: secondary -> dark]"]
+        S2["Sección 2: Servicios ──> secondary (Verde) [Onda: dark -> secondary]"]
+        S3["Sección 3: Planes ──> secondary (Verde) [groupWithPrevious: true / Sin Onda]"]
+        S4["Sección 4: Portfolio ──> dark (Oscuro) [Onda: secondary -> dark]"]
+        S5["Sección 5: Ubicación ──> secondary (Verde) [Onda: dark -> secondary]"]
+    end
+```
+
+### Reglas del Motor:
+1. **Alternancia Automática:** Si la sección previa fue `secondary`, la siguiente adopta `dark`, y viceversa.
+2. **Agrupamiento Semántico (`groupWithPrevious`):** La sección de Planes sanitarios (`PlanSession`) comparte el mismo fondo de Servicios (`ServicioSession`) si ambas están activas, suprimiendo el divisor SVG para crear una zona continua y cohesiva.
+3. **Divisores Ondulatorios:** [`SectionDivider.tsx`](../../components/SectionDivider.tsx) recibe `topColor` (fondo anterior) y `bottomColor` (fondo nuevo), proyectando una onda SVG vectorial limpia.
+
+---
+
+## 🥞 Jerarquía de Capas de Apilamiento (Stacking Context & Z-Index)
+
+Para garantizar que los videos 3D de fondo no tapen los textos, y que la barra flotante y el drawer se mantengan siempre accesibles, la Landing Page establece una jerarquía estricta de 6 niveles de `z-index`:
+
+| Capa / Nivel | Componente | Responsabilidad |
+| :--- | :--- | :--- |
+| **`z-[160]` / `z-[150]`** | [`PedidoDrawer.tsx`](../pedido/PedidoDrawer.tsx) y Backdrop | Panel lateral de checkout y overlay oscuro de fondo. |
+| **`z-[60]`** | [`HederSession.tsx`](sessions/HederSession.tsx) | Barra de navegación superior fija (`sticky top-0`). |
+| **`z-[55]`** | [`FooterSession.tsx`](sessions/FooterSession.tsx) | Pie de página corporativo (cubre la barra flotante al hacer scroll completo). |
+| **`z-[50]`** | [`FloatingBottomBar.tsx`](../../components/FloatingBottomBar.tsx) | Barra flotante inferior de accesos rápidos con auto-ocultado cerca del footer. |
+| **`z-[45]`** | [`AmbientScrollAnimation.tsx`](../../components/animations/AmbientScrollAnimation.tsx) | Video volumétrico 3D WebM flotante con scroll interactivo. |
+| **`z-20`** | Contenido Seccional | Textos, botones CTA, tarjetas de producto y carruseles. |
+| **`z-0`** | Fondos y Divisores SVG | Contenedores estructurales y vectores ondulatorios de [`SectionDivider.tsx`](../../components/SectionDivider.tsx). |
+
+---
+
+## 🧩 Descripción Detallada de Módulos Seccionales
 
 ### 1. [`HederSession.tsx`](sessions/HederSession.tsx) (Cabecera y Navegación)
-Barra de navegación fija en la parte superior (`sticky top-0 z-50`).
+Barra de navegación fija (`sticky top-0 z-[60]`) adaptada a la marca del tenant:
+* **Identidad Dinámica:** Isotipo vectorial y nombre comercial con isotipo del tenant.
+* **Navegación Fluida:** Anclas suaves hacia `#HeroSession`, `#ProductsSession`, `#ServicioSession`, `#PlanSession`, `#PortfolioSession` y `#MapsSection`.
+* **Badge de Carrito:** Muestra el total acumulado de unidades (`itemCount` de `usePedidoStore`) y abre el [`PedidoDrawer`](../pedido/PedidoDrawer.tsx).
+* **Menú Móvil:** Desplegable responsive para dispositivos móviles con cierre táctil fuera del contenedor.
 
-* **Características**:
-  * **Logo Corporativo**: Muestra el isotipo y marca de la veterinaria.
-  * **Navegación Fluida (`NAV_LINKS`)**: Enlaces internos con desplazamiento suave hacia `#ServicioSeccion`, `#ProgramsSection`, `#ProductsSession`, `#AboutSection` y `#MapsSection`.
-  * **Acceso al Carrito**: Botón destacado con icono de carrito de compras que muestra un badge dinámico en tiempo real con la cantidad de ítems agregados (`itemCount` desde `usePedidoStore`). Al hacer clic, despliega el [`PedidoDrawer`](../pedido/PedidoDrawer.tsx).
-  * **Menú Móvil Responsive**: Botón *hamburger* que conmuta la visibilidad del menú desplegable en dispositivos móviles.
+### 2. [`HeroSession.tsx`](sessions/HeroSession.tsx) (Portada Principal)
+Despachador que lee `config.ui_variants.hero` e instancia la versión correspondiente ([`HeroSectionV1`](sessions/HeroSection/HeroSectionV1.tsx) a [`V4`](sessions/HeroSection/HeroSectionV4.tsx)):
+* Titular dinámico con resaltado en eslogan (`prefix`, `highlight`, `suffix`).
+* Banners gráficos montados desde `/tenant/hero.png` o animación Lottie `/tenant/animations/hero_animation.json`.
+* Botón directo hacia el catálogo de productos o consulta por WhatsApp.
 
----
+### 3. [`ProductsSession.tsx`](sessions/ProductsSession.tsx) (Catálogo Transaccional)
+Módulo central de venta de productos:
+* **Integración con Fachada:** Consume el hook [`useProducts.ts`](../../hooks/useProducts.ts).
+* **Buscador en Memoria:** Búsqueda facetada instantánea por nombre, descripción y etiquetas de subcategoría.
+* **Agrupación:** Renderiza tarjetas [`CategoryGroupCard.tsx`](../../components/CategoryGroupCard.tsx) que a su vez despachan tarjetas individuales [`ProductCard.tsx`](../../components/ProductCard/ProductCard.tsx) (`ProductCardV1` plana o `ProductCardV2` con acordeón).
+* **Variantes y Stock:** Admite selección de talle/medida/color antes de añadir al carrito.
 
-### 2. `HeroSection` / [`HeroSession.tsx`](sessions/HeroSession.tsx) (Banner Principal)
-Primera sección de impacto visual que recibe al visitante.
+### 4. [`ServicioSession.tsx`](sessions/ServicioSession.tsx) (Servicios Profesionales)
+Muestra la lista de especialidades de la empresa:
+* Carga datos desde `config.services_section.items`.
+* Renderiza tarjetas [`ServiceCard.tsx`](../../components/ServiceCard.tsx) con icono representativo, descripción técnica y botón de consulta directa por WhatsApp.
 
-* **Props**: `bgColor: string` (Control de color de fondo).
-* **Contenido**:
-  * Titular principal: *"Cuidamos a quienes amás"*.
-  * Párrafo descriptivo del compromiso médico y profesional de la clínica.
-  * Fotografía destacada estilizada con bordes redondeados (`rounded-[3rem]`).
-  * Enlace o botón directo de contacto de urgencias.
+### 5. [`PlanSession.tsx`](sessions/PlanSession.tsx) (Programas de Salud y Suscripciones)
+Presenta planes recurrentes o membresías:
+* Carga datos desde `config.plans_section.items`.
+* Renderiza tarjetas de precio [`PlanCard.tsx`](../../components/PlanCard.tsx) con lista de beneficios incluidos y llamada a la acción hacia WhatsApp.
 
----
-
-### 3. [`ProductsSession.tsx`](sessions/ProductsSession.tsx) (Catálogo de Productos)
-Módulo central para la navegación comercial de productos disponibles en la veterinaria.
-
-* **Props**: `bgColor: string`.
-* **Integración de Datos**:
-  * Utiliza la fachada de datos [`useProducts.ts`](../../hooks/useProducts.ts).
-  * Maneja filtrado por categorías (Alimentos, Medicamentos, Accesorios, etc.) e insumos ganaderos.
-  * Integra campo de búsqueda textual interactiva.
-* **Componentes Hijos**:
-  * Renderiza una grilla responsiva de tarjetas [`ProductCard.tsx`](../../components/ProductCard.tsx), permitiendo agregar unidades directamente al estado global del pedido.
-
----
-
-### 4. [`ServicioSession.tsx`](sessions/ServicioSession.tsx) (Catálogo de Servicios)
-Despliega las áreas de especialización veterinaria de la clínica.
-
-* **Props**: `bgColor: string`.
-* **Fuentes de Datos**: Carga información estructurada desde [`servicios.json`](../../data/servicios.json).
-* **Especialidades**:
-  1. **Animales de Producción / Campo**: Asesoramiento zootécnico, planes sanitarios ganaderos y trazabilidad DICOSE.
-  2. **Pequeños Animales / Mascotas**: Consulta clínica, vacunación, desparasitación y cirugías.
-  3. **Equinos**: Atención especializada para caballos de deporte y trabajo.
-* **Componentes Hijos**: Renderiza tarjetas de servicios [`ServiceCard.tsx`](../../components/ServiceCard.tsx).
-
----
-
-### 5. `ProgramsSection` (Programas de Bienestar Animal)
-Sección dedicada a planes de salud preventiva y ofertas especiales.
-
-* **Fuentes de Datos**: Carga datos desde [`promociones.json`](../../data/promociones.json) e inyecta el teléfono corporativo desde [`companyInfo.json`](../../data/companyInfo.json).
-* **Componentes Hijos**: Renderiza la grilla de tarjetas [`PlanCard.tsx`](../../components/PlanCard.tsx) con llamada a acción directa a WhatsApp.
-
----
-
-### 6. `AboutSection` (Misión, Visión y Valores)
-Sección institucional que transmite la historia, filosofía y principios rectores de Veterinaria Beltramelli.
-
-* **Estructura Interna**:
-  * Utiliza el sub-componente helper `InfoSection` para alternar la disposición de imagen y texto de manera invirtible (`reversed={true}`).
-  * **Misión**: Enfoque integral entre la salud de pequeñas mascotas y la producción ganadera responsable en Salto.
-  * **Visión**: Aspiración a ser referente regional en medicina veterinaria basada en la confianza y el rigor técnico.
-  * **Valores**: Compromiso con la vida, profesionalismo, empatía y responsabilidad ética.
-
----
+### 6. [`PortfolioSession.tsx`](sessions/PortfolioSession.tsx) (Galería de Trabajos)
+Galería fotográfica o de casos de éxito:
+* Lee elementos de `config.portfolio_section.items`.
+* Utiliza el despachador [`PortfolioCard.tsx`](../../components/PortfolioCard/PortfolioCard.tsx) con soporte para multimedia antes/después y etiquetas temáticas.
 
 ### 7. [`MapsSession.tsx`](sessions/MapsSession.tsx) (Ubicación y Horarios)
-Mapeo geográfico interactivo de la sucursal de la veterinaria.
+Mapa interactivo y ficha de contacto físico:
+* Lee la dirección física, horarios de atención habituales, teléfonos de emergencia y la URL embebida de Google Maps desde `config.locations`.
+* Tarjeta informativa responsive con enlace de navegación GPS para Waze o Google Maps.
 
-* **Props**: `bgColor: string`.
-* **Fuentes de Datos**: Carga dirección física, mapa embebido de Google Maps y horarios de atención desde [`companyInfo.json`](../../data/companyInfo.json).
-* **Elementos Visuales**:
-  * Mapa interactivo iframe responsivo.
-  * Tarjetas de información destacadas con horarios habituales y atención de emergencias.
+### 8. [`AboutSection.tsx`](sessions/AboutSection.tsx) (Misión, Visión y Valores)
+Bloque institucional que transmite la historia y principios del comercio:
+* Disposición alternada de imágenes (`/tenant/mision.png`, `/tenant/vision.png`, `/tenant/valores.png`) y párrafos explicativos mediante el subcomponente `InfoSection`.
 
----
-
-### 8. [`FooterSession.tsx`](sessions/FooterSession.tsx) (Pie de Página)
-Sección final de la página web con accesos directos y enlaces corporativos.
-
-* **Props**: `bgColor: string`.
-* **Barra Flotante de Emergencias**: Acceso directo con un toque para llamadas de urgencia 24/7 o consultas por WhatsApp.
-* **Información Corporativa**: Redes sociales (Instagram, Facebook), correo electrónico, teléfono administrativo y dirección.
-* **Derechos de Autor**: Mención y créditos de desarrollo por **NorthCode**.
+### 9. [`FooterSession.tsx`](sessions/FooterSession.tsx) (Pie de Página Corporativo)
+Sección inferior (`z-[55]`):
+* Canales de contacto directos, redes sociales corporativas (Instagram, Facebook), correo electrónico y aviso legal de derechos reservados por **NorthCode**.
 
 ---
 
-## 🎨 Transiciones de Color con `SectionDivider.tsx`
+## 🔗 Referencias Cruzadas y Enlaces de Interés
 
-Para intercalar fondos entre secciones de colores alternados (ej. `bg-vete-dark` y `bg-vete-secondary`), la Landing Page utiliza [`SectionDivider.tsx`](../../components/SectionDivider.tsx):
-
-```tsx
-<SectionDivider
-  topColor="bg-vete-dark"
-  bottomColor="text-vete-secondary"
-/>
-```
-
-Este componente renderiza un vector SVG ondulatorio cuya clase fill/text adopta dinámicamente los colores del tema de Tailwind CSS, creando un efecto de empalme fluido y elegante.
-
----
-
-## 🗂️ Archivos Auxiliares / Descarte
-
-* [`descarteLandigPage.tsx`](descarteLandigPage.tsx): Archivo borrador de versiones anteriores de la Landing Page preservedo para referencia de maquetación.
-* [`sessions/descarteSession.tsx`](sessions/descarteSession.tsx): Componente auxiliar reservado para maquetación de prueba de nuevas secciones.
+* 📘 [README Principal del Frontend Web Client](../../../README.md)
+* 🛒 [Documentación del Módulo Pedidos y Carrito](../pedido/README.md)
+* 🏛️ [Diagrama de Arquitectura Global](../../../docs/architecture/diagrama_arquitectura_fontend.md)
+* 📑 [Overview de Arquitectura](../../../docs/architecture/overview.md)
+* ⚛️ [Documentación Oficial de React 19](https://react.dev/)
+* 🎨 [Documentación Oficial de Tailwind CSS](https://tailwindcss.com/)

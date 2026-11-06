@@ -4,9 +4,8 @@
  * @fileoverview Store Global y Proveedor de Estado del Carrito de Compras (pedido_context.tsx)
  * 
  * Orquesta la canasta de compras de forma agnóstica y multi-tenant.
- * Soporta productos simples y productos con variantes (talles, medidas y colores),
- * administrando identificadores compuestos únicos (`item_key`) para permitir
- * que un cliente compre distintas variantes del mismo artículo en una sola orden.
+ * Soporta productos simples y con variantes con precios absolutos (var_precio_venta),
+ * blindando el cálculo de totales contra valores nulos o indefinidos (Anti-NaN).
  * 
  * @module context/pedido_context
  */
@@ -19,30 +18,24 @@ import { useConfig } from './tenant_context';
 
 /**
  * Genera la clave compuesta única de la línea de pedido.
- * Evita colisiones cuando se compra el mismo producto en talles o colores distintos.
  * 
  * @param {number} productId - ID del producto padre.
  * @param {number} [variantId] - ID de la variante (si aplica).
- * @returns {string} Clave única (ej: "45_102" o "45_base").
+ * @returns {string} Clave única (ej: "2_base" o "3_1").
  */
 export const getPedidoItemKey = (productId: number, variantId?: number | null): string => {
   return variantId ? `${productId}_${variantId}` : `${productId}_base`;
 };
 
-/**
- * Contrato de la Fachada de Pedidos y Carrito.
- * @interface PedidoContextType
- */
 interface PedidoContextType {
   pedido: PedidoItem[];
   loadPedidoMasivo: (lineas: PedidoItem[]) => void;
-  //  Métodos preparados para recibir la variante opcional
   addToPedido: (product: ApiProduct, variant?: ProductoVariante | null) => void;
-  addItem: (product: ApiProduct, variant?: ProductoVariante | null) => void; // Alias moderno
+  addItem: (product: ApiProduct, variant?: ProductoVariante | null) => void;
   removeFromPedido: (productId: number, variantId?: number | null) => void;
-  removeItem: (productId: number, variantId?: number | null) => void; // Alias moderno
+  removeItem: (productId: number, variantId?: number | null) => void;
   removAllPedido: (productId: number, variantId?: number | null) => void;
-  removeAllPedido: (productId: number, variantId?: number | null) => void; // Alias sin typo
+  removeAllPedido: (productId: number, variantId?: number | null) => void;
   updateItemQuantity: (idOrKey: number | string, newQuantity: number, variantId?: number | null) => void;
   clearPedido: () => void;
   getWhatsAppUrl: (address: string) => string;
@@ -52,40 +45,43 @@ interface PedidoContextType {
 
 const PedidoContext = createContext<PedidoContextType | undefined>(undefined);
 
-/**
- * Proveedor del Contexto de Pedidos (`PedidoProvider`).
- */
 export const PedidoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { config } = useConfig();
   const [pedido, setPedido] = useState<PedidoItem[]>([]);
 
-  /**
-   * Carga masiva de líneas (utilizado en la rehidratación desde la URL).
-   */
   const loadPedidoMasivo = (lineas: PedidoItem[]): void => {
-    setPedido(lineas);
+    // Sanitiza cualquier línea defectuosa para asegurar números válidos
+    const lineasSeguras = lineas.map((item) => ({
+      ...item,
+      precio_unitario_capturado: Number(item.precio_unitario_capturado) || 0,
+      cantidad: Number(item.cantidad) || 1,
+    }));
+    setPedido(lineasSeguras);
   };
 
   /**
-   *  AGREGA O INCREMENTA UN PRODUCTO CON O SIN VARIANTE
-   * Calcula el precio unitario capturado (Precio Base + Adicional de Talle).
+   * <!> RESOLUCIÓN DE PRECIO ABSOLUTO SIN NaN:
+   * Prioriza var_precio_venta sobre prod_precio_venta y usa fallbacks seguros.
    */
   const addToPedido = (product: ApiProduct, variant?: ProductoVariante | null): void => {
     const itemKey = getPedidoItemKey(product.prod_id, variant?.var_id);
-    const adicional = variant?.var_precio_adicional || 0;
-    const precioCapturado = product.prod_precio + adicional;
+
+    // Resolución segura del precio numérico (cero NaN)
+    const precioBase = Number(product.prod_precio_venta);
+    const precioVariante = variant ? Number(variant.var_precio_venta ?? precioBase) : precioBase;
+    const precioCapturado = isNaN(precioVariante) ? 0 : precioVariante;
 
     setPedido((prev: PedidoItem[]) => {
       const existingIndex = prev.findIndex((item) => item.item_key === itemKey);
 
-      // 1. Si la combinación exacta ya existe en el carrito, incrementamos su cantidad
+      // Si ya existe, incrementamos cantidad
       if (existingIndex > -1) {
         return prev.map((item, idx) =>
           idx === existingIndex ? { ...item, cantidad: item.cantidad + 1 } : item
         );
       }
 
-      // 2. Si es una línea nueva, creamos el PedidoItem completo con su item_key
+      // Si es nuevo, lo agregamos con su precio capturado
       const nuevoItem: PedidoItem = {
         item_key: itemKey,
         producto: product,
@@ -98,14 +94,10 @@ export const PedidoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   };
 
-  /**
-   * Decrementa una unidad de la línea. Si llega a 0, se remueve del pedido.
-   */
   const removeFromPedido = (productId: number, variantId?: number | null): void => {
     const targetKey = getPedidoItemKey(productId, variantId);
 
     setPedido((prev) => {
-      // Búsqueda defensiva por clave compuesta o por ID simple
       const existing = prev.find(
         (item) => item.item_key === targetKey || item.producto.prod_id === productId
       );
@@ -122,9 +114,6 @@ export const PedidoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   };
 
-  /**
-   * Elimina completamente la línea del pedido sin importar cuántas unidades tenga.
-   */
   const removAllPedido = (productId: number, variantId?: number | null): void => {
     const targetKey = getPedidoItemKey(productId, variantId);
 
@@ -136,9 +125,6 @@ export const PedidoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     );
   };
 
-  /**
-   * Actualiza la cantidad exacta desde el input numérico editable de `PedidoItemRow`.
-   */
   const updateItemQuantity = (
     idOrKey: number | string,
     newQuantity: number,
@@ -147,7 +133,6 @@ export const PedidoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setPedido((prev) => {
       const validatedQuantity = Math.max(0, newQuantity);
 
-      // Si la cantidad es 0, eliminamos la línea
       if (validatedQuantity === 0) {
         return prev.filter((item) => {
           if (typeof idOrKey === 'string') return item.item_key !== idOrKey;
@@ -169,15 +154,8 @@ export const PedidoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   };
 
-  /**
-   * Vacía el carrito por completo.
-   */
   const clearPedido = (): void => setPedido([]);
 
-  /**
-   *  GENERADOR DE MENSAJE AGNÓSTICO PARA WHATSAPP
-   * Elimina datos quemados. Lee el nombre de la empresa y teléfono desde config.json.
-   */
   const getWhatsAppUrl = (address: string): string => {
     const businessName = config?.business_name || 'TIENDA WEB';
     const rawPhone = config?.contact?.admin_phone || '';
@@ -190,7 +168,8 @@ export const PedidoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     message += `----------------------------------\n`;
 
     pedido.forEach((item) => {
-      const subtotalLinea = item.precio_unitario_capturado * item.cantidad;
+      const precioUnit = Number(item.precio_unitario_capturado) || 0;
+      const subtotalLinea = precioUnit * item.cantidad;
       const talleTxt = item.variante_seleccionada
         ? ` (${item.variante_seleccionada.var_tipo}: ${item.variante_seleccionada.var_nombre})`
         : '';
@@ -205,17 +184,22 @@ export const PedidoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   /* ===========================================================================
-     OBSERVADORES COMPUTADOS (useMemo)
+     <!> OBSERVADORES BLINDADOS CONTRA NaN:
+     Aseguran que cualquier valor no numérico se convierta a 0.
      =========================================================================== */
   const total = useMemo(() => {
-    return pedido.reduce(
-      (acc, item) => acc + item.precio_unitario_capturado * item.cantidad,
-      0
-    );
+    return pedido.reduce((acc, item) => {
+      const precioUnitario = Number(item.precio_unitario_capturado) || 0;
+      const cantidad = Number(item.cantidad) || 0;
+      return acc + (precioUnitario * cantidad);
+    }, 0);
   }, [pedido]);
 
   const itemCount = useMemo(() => {
-    return pedido.reduce((acc, item) => acc + item.cantidad, 0);
+    return pedido.reduce((acc, item) => {
+      const cantidad = Number(item.cantidad) || 0;
+      return acc + cantidad;
+    }, 0);
   }, [pedido]);
 
   return (
@@ -224,11 +208,11 @@ export const PedidoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         pedido,
         loadPedidoMasivo,
         addToPedido,
-        addItem: addToPedido, // Alias moderno
+        addItem: addToPedido,
         removeFromPedido,
-        removeItem: removeFromPedido, // Alias moderno
+        removeItem: removeFromPedido,
         removAllPedido,
-        removeAllPedido: removAllPedido, // Alias sin error ortográfico
+        removeAllPedido: removAllPedido,
         updateItemQuantity,
         clearPedido,
         getWhatsAppUrl,

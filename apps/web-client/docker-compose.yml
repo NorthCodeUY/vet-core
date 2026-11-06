@@ -40,8 +40,9 @@ services:
     ports:
       - "8081:80"
     environment:
-      # Nombre del servicio/contenedor backend exclusivo de Valeria en la red Docker
-      - BACKEND_HOST=backend-vet-bel:8000
+      # Nombre del servicio/contenedor backend exclusivo de Valeria en la red Docker 
+      # <!>Esto funciono lo del puerto ok pero si estoy tendira qe pasarlo a al avariable de entorn 
+       - BACKEND_HOST=backend_vet_beltramelli:8001
     volumes:
       # Inyección en Runtime de Identidad y Paleta Semántica
       - ../../clients/veterinariabeltrameli/config.json:/usr/share/nginx/html/config/client_info.json:ro

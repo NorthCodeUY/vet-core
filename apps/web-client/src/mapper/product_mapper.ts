@@ -24,6 +24,8 @@ export const productMapper = {
    * Si es relativa local, antepone la ruta de fallback correspondiente.
    * 
    * @private
+   * @param {any} rawImg - Nodo de imagen crudo del backend.
+   * @returns {ApiImage} Objeto normalizado con ID y URL absoluta o fallback.
    */
   _formatImage(rawImg: any): ApiImage {
     if (!rawImg) {
@@ -33,7 +35,7 @@ export const productMapper = {
     const rawUrl = String(rawImg.img_url || '');
     let finalUrl = rawUrl;
 
-    // Si no es una URL absoluta de Cloudflare R2 / S3
+    // Si no es una URL absoluta de Cloudflare R2 / S3 / CDN
     if (rawUrl && !rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
       finalUrl = `/static/productos/${rawUrl}`;
     }
@@ -50,17 +52,27 @@ export const productMapper = {
    * @param {any} p - Objeto DTO del producto emitido por FastAPI.
    * @param {string} [catNombre='General'] - Nombre de la categoría asociada.
    * @param {number} [catId=0] - ID de la categoría asociada.
-   * @returns {ApiProduct}
+   * @returns {ApiProduct} Producto tipado listo para renderizar en UI.
    */
   toUI(p: any, catNombre: string = 'General', catId: number = 0): ApiProduct {
     /* =========================================================================
-       1. RESOLUCIÓN DE IMÁGENES (Soporta 'imagenes' del nuevo backend)
+       1. RESOLUCIÓN DE IMÁGENES
        ========================================================================= */
-    const rawImages = Array.isArray(p.imagenes) ? p.imagenes : Array.isArray(p.rel_imagen_url) ? p.rel_imagen_url : [];
+    /* <!> CORRECCIÓN: El backend envía "rel_imagenes" (en plural con 'es').
+       Antes solo buscaba "imagenes" y "rel_imagen_url", dejando rawImages siempre vacío ([]). */
+    const rawImages = Array.isArray(p.rel_imagenes) 
+      ? p.rel_imagenes 
+      : Array.isArray(p.imagenes) 
+        ? p.imagenes 
+        : Array.isArray(p.rel_imagen_url) 
+          ? p.rel_imagen_url 
+          : [];
     
-    // Identifica la imagen principal marcada como img_principal: true
-    const principalData = rawImages.find((img: any) => img.img_principal) || rawImages[0];
-    const imagenPrincipal = principalData ? this._formatImage(principalData) : null;
+    // Identifica la imagen principal marcada como img_principal: true o toma la primera
+    const principalData = rawImages.find((img: any) => img.img_principal === true) || rawImages[0];
+    
+    /* <!> Se asegura un fallback consistente invocando _formatImage incluso si no hay datos */
+    const imagenPrincipal = this._formatImage(principalData);
 
     // Mapea las imágenes secundarias restantes
     const imagenesSecundarias: ApiImage[] = rawImages
@@ -68,9 +80,13 @@ export const productMapper = {
       .map((img: any) => this._formatImage(img));
 
     /* =========================================================================
-       <!> 2. RESOLUCIÓN DE VARIANTES CON PRECIOS ABSOLUTOS
+       2. RESOLUCIÓN DE VARIANTES CON PRECIOS ABSOLUTOS
        ========================================================================= */
-    const rawVariantes = Array.isArray(p.variantes) ? p.variantes : Array.isArray(p.rel_variantes) ? p.rel_variantes : [];
+    const rawVariantes = Array.isArray(p.variantes) 
+      ? p.variantes 
+      : Array.isArray(p.rel_variantes) 
+        ? p.rel_variantes 
+        : [];
     
     const variantesMapeadas: ProductoVariante[] = rawVariantes
       // Filtro defensivo: Si viene una variante inactiva u oculta, no entra a la UI pública
@@ -80,12 +96,10 @@ export const productMapper = {
         prod_id: Number(v.prod_id || p.prod_id),
         var_tipo: String(v.var_tipo || 'Presentación'),
         var_nombre: String(v.var_nombre || ''),
-        // <!> Precio de venta final absoluto (var_precio_venta)
         var_precio_venta: Number(v.var_precio_venta ?? v.var_precio ?? p.prod_precio_venta ?? p.prod_precio ?? 0),
         var_stock: Number(v.var_stock ?? 0),
         var_sku: v.var_sku ? String(v.var_sku) : v.sku ? String(v.sku) : null,
         var_codigo_barra: v.var_codigo_barra ? String(v.var_codigo_barra) : null,
-        // <!> Banderas de disponibilidad por variante
         var_disponible: Boolean(v.var_disponible ?? true),
         var_permitir_sin_stock: Boolean(v.var_permitir_sin_stock ?? false),
         color: v.color
@@ -98,9 +112,13 @@ export const productMapper = {
       }));
 
     /* =========================================================================
-       <!> 3. RESOLUCIÓN DE SUBCATEGORÍAS ANIDADAS (subcategorias[].subcategoria)
+       3. RESOLUCIÓN DE SUBCATEGORÍAS ANIDADAS (subcategorias[].subcategoria)
        ========================================================================= */
-    const rawSubc = Array.isArray(p.subcategorias) ? p.subcategorias : Array.isArray(p.rel_subcategoria) ? p.rel_subcategoria : [];
+    const rawSubc = Array.isArray(p.subcategorias) 
+      ? p.subcategorias 
+      : Array.isArray(p.rel_subcategoria) 
+        ? p.rel_subcategoria 
+        : [];
     
     const subcategoriasMapeadas: SubcategoriaItem[] = rawSubc.map((item: any) => {
       // Desempaqueta la entidad real según el schema del backend
@@ -114,7 +132,7 @@ export const productMapper = {
     });
 
     /* =========================================================================
-       <!> 4. MAPEO DEL OBJETO PRINCIPAL (PRODUCTO)
+       4. MAPEO DEL OBJETO PRINCIPAL (PRODUCTO)
        ========================================================================= */
     const precioVentaFinal = Number(p.prod_precio_venta ?? p.prod_precio ?? 0);
 
@@ -151,7 +169,7 @@ export const productMapper = {
   toUIList(products: any[], catNombre: string, catId: number): ApiProduct[] {
     if (!Array.isArray(products)) return [];
     return products
-      // Guardia extra: Solo renderiza si no viene explícitamente apagado
+      // Guardia: Solo renderiza si no viene explícitamente apagado
       .filter((p) => p.prod_activo !== false && p.prod_visible !== false)
       .map((p) => this.toUI(p, catNombre, catId));
   },

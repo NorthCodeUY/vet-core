@@ -2,112 +2,184 @@
 
 # 🚀 Web Client — Motor Web y E-commerce Agnóstico (SaaS Multi-Tenant)
 
-Plataforma Web y Motor de E-commerce **multi-tenant de marca blanca (White-Label)** desarrollado con **React 19**, **Vite 6**, **TypeScript** y **Tailwind CSS v3**.
+Plataforma Web y Motor de E-commerce **multi-tenant de marca blanca (White-Label)** desarrollado con **React 19**, **Vite 6**, **TypeScript 5** y **Tailwind CSS v3.4**.
 
-El proyecto opera bajo una **Arquitectura de Aislamiento por Silos en Tiempo de Ejecución (Zero-Rebuild)**: una única imagen de contenedor sirve a múltiples clientes comerciales (veterinarias, barberías, boutiques de moda, herrerías) adaptando su identidad, pasarelas de pago, módulos funcionales y catálogo de servicios/productos **sin recompilar el bundle de JavaScript**.
+El proyecto opera bajo una **Arquitectura de Aislamiento por Silos en Tiempo de Ejecución (Zero-Rebuild)**: una única imagen inmutable de contenedor sirve a múltiples clientes comerciales (veterinarias, barberías, boutiques de moda, herrerías) adaptando su identidad corporativa, pasarelas de pago, módulos funcionales y catálogo de servicios/productos **sin recompilar el bundle de JavaScript**.
 
 ---
 
-## 📖 Sub-Documentaciones Modulares (Vistas Principales)
+## 📖 Sub-Documentaciones Modulares y Arquitectura
 
-Para facilitar la lectura y auditoría técnica del código, los módulos de mayor volumen cuentan con su propia especificación:
+Para facilitar la auditoría técnica y lectura del código, la documentación se organiza en módulos especializados:
 
 * 🏠 **[Módulo Landing Page (`src/pages/landing/README.md`)](src/pages/landing/README.md)**:  
-  Orquestación de [`LlandingPage.tsx`](src/pages/landing/LlandingPage.tsx), máquina de alternancia matricial de colores, stacking context de 4 niveles (`z-index`), animaciones volumétricas 3D y desglose de `sessions/` ([`HeaderSession`](src/pages/landing/sessions/HederSession.tsx), [`HeroSession`](src/pages/landing/sessions/HeroSession.tsx), [`ProductsSession`](src/pages/landing/sessions/ProductsSession.tsx), [`ServicioSession`](src/pages/landing/sessions/ServicioSession.tsx), [`PlanSession`](src/pages/landing/sessions/PlanSession.tsx), [`MapsSession`](src/pages/landing/sessions/MapsSession.tsx) y [`FooterSession`](src/pages/landing/sessions/FooterSession.tsx)).
+  Orquestación de [`LlandingPage.tsx`](src/pages/landing/LlandingPage.tsx), máquina de alternancia matricial de fondos, jerarquía de 6 niveles de stacking context (`z-index`), animación ambiental 3D en WebM y desglose de las secciones en `sessions/` ([`HeaderSession`](src/pages/landing/sessions/HederSession.tsx), [`HeroSession`](src/pages/landing/sessions/HeroSession.tsx), [`ProductsSession`](src/pages/landing/sessions/ProductsSession.tsx), [`ServicioSession`](src/pages/landing/sessions/ServicioSession.tsx), [`PlanSession`](src/pages/landing/sessions/PlanSession.tsx), [`PortfolioSession`](src/pages/landing/sessions/PortfolioSession.tsx), [`MapsSession`](src/pages/landing/sessions/MapsSession.tsx) y [`FooterSession`](src/pages/landing/sessions/FooterSession.tsx)).
 
 * 🛒 **[Módulo de Pedidos y Carrito (`src/pages/pedido/README.md`)](src/pages/pedido/README.md)**:  
-  Panel lateral Off-Canvas ([`PedidoDrawer.tsx`](src/pages/pedido/PedidoDrawer.tsx)), edición de cantidad en línea ([`PedidoItemRow.tsx`](src/pages/pedido/PedidoItemRow.tsx)), acordeón colapsable con selección de pago y logística de entrega ([`PedidoFooterCollapsible.tsx`](src/pages/pedido/PedidoFooterCollapsible.tsx)) y generador del payload para WhatsApp.
+  Panel lateral Off-Canvas ([`PedidoDrawer.tsx`](src/pages/pedido/PedidoDrawer.tsx)), edición de cantidad numérica en vivo ([`PedidoItemRow.tsx`](src/pages/pedido/PedidoItemRow.tsx)), acordeón colapsable con selección de pago y logística ([`PedidoFooterCollapsible.tsx`](src/pages/pedido/PedidoFooterCollapsible.tsx)), persistencia en URL por Deep Linking (`?cart=...`) y generador del mensaje estructurado para WhatsApp.
+
+* 🏛️ **[Diagrama de Arquitectura Global (`docs/architecture/diagrama_arquitectura_fontend.md`)](docs/architecture/diagrama_arquitectura_fontend.md)**:  
+  Esquema interactivo de capas: Configuración en Runtime, Infraestructura HTTP, Capa de Estado y Fachadas (Hooks), y Capa de Presentación UI.
+
+* 🔄 **[Diagrama de Secuencia de Integración (`docs/architecture/diagrama_secuencia_fronten.md`)](docs/architecture/diagrama_secuencia_fronten.md)**:  
+  Flujo transaccional completo: Inicialización Zero-Rebuild $\rightarrow$ Petición REST a FastAPI $\rightarrow$ Mapeo DTO $\rightarrow$ Carrito con clave compuesta $\rightarrow$ Despacho por WhatsApp.
+
+* 📑 **[Overview Integral de Arquitectura (`docs/architecture/overview.md`)](docs/architecture/overview.md)**:  
+  Especificación profunda de principios de diseño, contratos de datos, patrones de integración y reglas de diseño defensivo Anti-NaN.
 
 ---
 
-## 🚀 Stack Tecnológico
+## 🛠️ Stack Tecnológico Oficial
 
-- **[React 19](https://react.dev/)**: Biblioteca base para UI reactiva basada en componentes y concurrencia.
-- **[Vite](https://vitejs.dev/)**: Bundler y entorno de desarrollo con Hot Module Replacement (HMR).
-- **[TypeScript 5.x](https://www.typescriptlang.org/)**: Tipado estricto en contratos de datos, DTOs y validaciones de configuración.
-- **[Tailwind CSS v3.4](https://tailwindcss.com/)**: Motor de utilidades con tokens semánticos dinámicos (`vete-*`) respaldados por variables CSS en formato RGB.
-- **[React Router DOM v7](https://reactrouter.com/)**: Enrutador SPA (`/` para Landing, `/mantenimiento` para contingencia).
-- **[Lucide React](https://lucide.dev/) + Custom SVGs**: Iconografía vectorial escalable para interfaz y marcas registradas.
-- **Docker + NGINX Alpine**: Despliegue de producción inmutable con enrutamiento SPA y proxy inverso hacia FastAPI.
+El frontend se apoya en tecnologías modernas del ecosistema web:
+
+- ⚛️ **[React 19](https://react.dev/)**: Biblioteca base para UI reactiva basada en componentes, concurrencia y hooks nativos (`useMemo`, `useCallback`, `useContext`).
+- ⚡ **[Vite 6](https://vite.dev/)**: Bundler ultrarrápido con Hot Module Replacement (HMR) y proxy inverso para desarrollo local.
+- 📘 **[TypeScript 5.x](https://www.typescriptlang.org/docs/)**: Tipado estricto en contratos de datos, DTOs de API y validaciones de configuración en runtime.
+- 🎨 **[Tailwind CSS v3.4](https://tailwindcss.com/docs)**: Motor de utilidades CSS con tokens semánticos dinámicos (`vete-*`) mapeados a variables CSS en canales RGB.
+- 🧭 **[React Router DOM v7](https://reactrouter.com/)**: Enrutador declarativo para SPAs (`/` para Landing, `/mantenimiento` para contingencia técnica).
+- 🧩 **[Lucide React](https://lucide.dev/)**: Iconografía vectorial escalable para interfaz y resolución agnóstica de subcategorías.
+- 🐳 **[Docker Engine](https://docs.docker.com/) + NGINX Alpine**: Imagen de producción inmutable con enrutamiento SPA y proxy dinámico hacia FastAPI.
+- 🚀 **[FastAPI](https://fastapi.tiangolo.com/)**: Servidor backend RESTful montado en contenedor independiente por silo.
 
 ---
-
-## Arquitectura de el sistema genera
-
-
-* 📊 [Ver Diagrama de Arquitectura General](docs/architecture/diagrama_arquitectura_fontend.md)
 
 ## 🏢 Arquitectura Multi-Tenant (Zero-Rebuild SaaS)
 
-La separación estricta entre **identidad del tenant** y **código fuente** garantiza despliegues inmediatos:
+La separación estricta entre la **identidad del tenant** y el **código fuente** garantiza despliegues inmediatos sin recompilaciones:
 
-```text
-1. [Directorio de Clientes Host]
-   clients/<cliente>/config.json + assets/
-           │
-           ▼ (Montaje de volúmenes Docker o switch-tenant.js)
-2. [Entorno Web Público]
-   public/config/client_info.json + public/tenant/
-           │
-           ▼ (fetch('/config/client_info.json') al arrancar la SPA)
-3. [TenantProvider (src/context/tenant_context.tsx)]
-   - Descarga client_info.json y sanea comentarios JSON en memoria (stripJsonComments)
-   - Valida la integridad estructural mediante la interfaz TenantConfig
-   - Actualiza document.title y favicon
-           │
-           ▼
-4. [Inyector de Tema (src/config/theme_config.ts)]
-   - Transforma colores Hexadecimales (#275D9E) a canales RGB ("39 93 158")
-   - Inyecta variables CSS en document.documentElement (:root)
-           │
-           ▼
-5. [Tailwind CSS + Componentes de Presentación]
-   - Clases semánticas (bg-vete-primary, text-vete-base) consumen las variables CSS
-   - Los elementos gráficos consumen rutas relativas fijas (/tenant/logo.png, /tenant/hero.png)
+```mermaid
+flowchart TD
+    subgraph Host ["💻 Directorio de Clientes (Host)"]
+        ClientConfig["clients/<cliente>/config.json"]
+        ClientAssets["clients/<cliente>/assets/*"]
+    end
+
+    subgraph ContainerMount ["🐳 Montaje en Runtime (Docker / switch-tenant.js)"]
+        PublicConfig["public/config/client_info.json"]
+        PublicTenant["public/tenant/*"]
+    end
+
+    subgraph FrontendApp ["🚀 Aplicación Web (React 19 + TypeScript)"]
+        Provider["🏢 TenantProvider (tenant_context.tsx)"]
+        Sanitize["🧹 stripJsonComments()"]
+        Theme["🎨 Inyector de Tema (theme_config.ts)"]
+        RootCSS[":root { --vete-primary: R G B }"]
+        TailwindCSS["🎨 Clases Tailwind (bg-vete-primary, text-vete-base)"]
+    end
+
+    ClientConfig -->|Volumen :ro| PublicConfig
+    ClientAssets -->|Volumen :ro| PublicTenant
+
+    PublicConfig -->|fetch('/config/client_info.json')| Provider
+    Provider --> Sanitize
+    Sanitize --> Theme
+    Theme --> RootCSS
+    RootCSS --> TailwindCSS
 ```
+
+### Proceso de Inicialización:
+1. **Montaje Estático:** En producción, Docker monta en caliente el archivo de configuración del cliente en `/public/config/client_info.json` y sus imágenes en `/public/tenant/`. En desarrollo, el comando `npm run tenant <cliente>` ejecuta [`switch-tenant.js`](scripts/switch-tenant.js) para sincronizar estos archivos.
+2. **Saneamiento Defensivo:** [`tenant_context.tsx`](src/context/tenant_context.tsx) descarga `client_info.json` y ejecuta `stripJsonComments()`, eliminando comentarios `//` y `/* */` antes de deserializar.
+3. **Inyección Cromática Dinámica:** [`theme_config.ts`](src/config/theme_config.ts) transforma los códigos Hexadecimales (`#275D9E`) a canales decimales RGB (`39 93 158`) e inyecta las variables CSS nativas en `document.documentElement` (`:root`).
+4. **Consumo Semántico:** Las clases Tailwind `bg-vete-primary`, `bg-vete-secondary`, `bg-vete-dark` y `text-vete-base` consumen estas variables inmediatamente, adaptando la interfaz al comercio activo.
 
 ---
 
-## 🔄 Flujo de Integración Frontend-Backend
+## 🔄 Comunicación con el Backend y Capa de Infraestructura
 
-El catálogo transaccional sigue el patrón **Fachada (Facade)** desacoplando la UI de la infraestructura de red:
+El consumo del backend se desacopla mediante el patrón **Fachada (Facade)** y una **Capa Anti-Corrupción (Mapper)**:
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Usuario
-    participant UI as ProductsSession.tsx (UI)
-    participant Hook as useProducts.ts (Fachada)
-    participant Service as product_service.ts (API)
-    participant Mapper as product_mapper.ts
-    participant Backend as FastAPI / PostgreSQL
+    participant UI as 📦 ProductsSession.tsx (UI)
+    participant Hook as 🪝 useProducts.ts (Fachada)
+    participant Service as 🌐 product_service.ts (HTTP)
+    participant Logger as 📡 logger.ts (Telemetría)
+    participant Backend as ⚡ FastAPI Backend
+    participant Mapper as 🔄 product_mapper.ts
 
-    Usuario->>UI: Visualiza catálogo de productos
-    UI->>Hook: Invoca a useProducts()
+    UI->>Hook: useProducts()
     Note over Hook: Valida config.features.has_backend
-    alt Backend Habilitado
-        Hook->>Service: getProducts(apiUrl)
-        Service->>Backend: GET /api/v1/products/
-        Backend-->>Service: Respuesta JSON DTO
-        Service->>Mapper: Transforma DTO -> Modelo Frontend
-        Mapper-->>Service: Objetos tipados de Producto
-        Service-->>Hook: Retorna lista de productos
-    else Modo Standalone (Sin Backend)
-        Hook-->>Hook: Corta ejecución temprana (early return)
+    alt Backend Habilitado (has_backend: true)
+        Hook->>Service: productService.fetchProductosAgrupados()
+        Service->>Backend: GET /api/productos/agrupados
+        alt Respuesta Exitosa (200 OK)
+            Backend-->>Service: DTO JSON Crudo
+            Service-->>Hook: Retorna DTO sin procesar
+            Hook->>Mapper: productMapper.toUIList(cat.productos)
+            Note over Mapper: Resuelve R2/CDN, precios absolutos y subcategorías
+            Mapper-->>Hook: ApiProduct[] normalizados
+        else Error de Red o Servidor
+            Backend-->>Service: Excepción HTTP
+            Service->>Logger: logErrorToBackend(error, endpoint)
+            Logger-->>Backend: POST /api/logs/frontend
+            Service-->>Hook: Propaga error controlado
+        end
+    else Modo Standalone (has_backend: false)
+        Hook-->>Hook: Retorna catálogo vacío inmediatamente
     end
-    Hook-->>UI: Expone { products, isLoading, error }
-    UI->>Usuario: Renderiza ProductCard por cada ítem
+    Hook-->>UI: Expone { categories, loading, filteredResults, searchTerm }
 ```
+
+### 1. Proxy Inverso para Evitar CORS
+El cliente web siempre emite peticiones a rutas relativas `/api/*`:
+* **En Desarrollo (Vite):** En [`vite.config.ts`](vite.config.ts), se intercepta `/api` y se redirige hacia `http://localhost:${backendPort}` (por defecto `8001`).
+* **En Producción (NGINX):** [`nginx.conf.template`](nginx.conf.template) redirige `/api/` hacia `http://${BACKEND_HOST}/api/`.
+
+### 2. Endpoints Principales ([`product_service.ts`](src/services/product_service.ts))
+* **`GET /api/productos/agrupados`**: Descarga la lista completa de categorías con sus productos anidados para el catálogo general.
+* **`GET /api/productos?cat_id={id}`**: Permite carga bajo demanda (Lazy Loading) de productos de una categoría específica.
+* **`POST /api/logs/frontend`**: Endpoint consumido por [`logger.ts`](src/services/logger.ts) para despachar silenciosamente excepciones de red y errores de runtime ocurridos en el navegador.
+
+### 3. Transformación de Datos ([`product_mapper.ts`](src/mapper/product_mapper.ts))
+FastAPI envía DTOs asociados a modelos relacionales. El mapeador asegura que la UI reciba objetos confiables y tipados:
+* **Resolución de Imágenes:** Si la URL proviene de Cloudflare R2 o CDN (`https://...`), se mantiene. Si es relativa, antepone `/static/productos/`. Si no existe imagen, asigna el fallback `/tenant/producto_no_disponible.png`. Soporta el schema del backend (`rel_imagenes`, `imagenes`, `rel_imagen_url`).
+* **Variantes con Precios Absolutos:** Asigna `var_precio_venta` como valor numérico final, filtrando variantes inactivas (`var_activo !== false` y `var_visible !== false`).
+* **Subcategorías e Iconos:** Extrae la relación (`subcategorias[].subcategoria`) y mapea iconos dinámicos de Lucide o archivos SVG personalizados.
+* **Guardias de Visibilidad:** Descarta productos que tengan `prod_activo: false` o `prod_visible: false`.
+
+---
+
+## 📐 Sistema de Tipos TypeScript (`src/types/`)
+
+El tipado estricto asegura consistencia en todo el flujo de datos:
+
+| Archivo | Contratos Principales | Responsabilidad |
+| :--- | :--- | :--- |
+| [`product_types.ts`](src/types/product_types.ts) | `ApiProduct`, `ProductoVariante`, `ApiCategory` | Modelos de catálogo público, reglas comerciales (`prod_solo_variantes`, `prod_disponible`), stock y variantes vendibles. |
+| [`tenant_types.ts`](src/types/tenant_types.ts) | `TenantConfig`, `ThemeColors`, `FeaturesConfig`, `BrandingConfig` | Estructura completa de `config.json` con tokens de color, flags de activación y datos institucionales. |
+| [`pedido_types.ts`](src/types/pedido_types.ts) | `PedidoItem`, `PedidoOrderRequest` | Línea de carrito con clave compuesta `item_key`, variante seleccionada y precio unitario capturado. |
+| [`payment_types.ts`](src/types/payment_types.ts) | `PaymentMethodId`, `PaymentOption` | Identificadores de medios de pago (`efectivo`, `transferencia`, `tarjeta`, `mercadopago`) y generador de notas. |
+| [`category_types.ts`](src/types/category_types.ts) | `SubcategoriaItem`, `CategoriaBase` | Especies o tags de filtrado con soporte de icono Lucide (`subc_icono`) o SVG propio (`subc_imagen_url`). |
+| [`common_types.ts`](src/types/common_types.ts) | `ApiImage`, `Color` | Estructura genérica para imágenes y swatches cromáticos (`col_hex`, `col_nombre`). |
+| [`auth.ts`](src/types/auth.ts) | `UserProfile`, `AuthCredentials` | Contratos de usuario y autenticación para futuras extensiones. |
+
+---
+
+## 🛒 Gestión del Carrito y Prevención de NaN (Anti-NaN)
+
+Ubicado en [`src/context/pedido_context.tsx`](src/context/pedido_context.tsx) y [`src/hooks/useProducts.ts`](src/hooks/useProducts.ts):
+
+1. **Clave Compuesta Única (`item_key`):**  
+   Se genera como `${prod_id}_${var_id}` para productos con variantes o `${prod_id}_base` para productos simples. Esto permite al cliente tener en el carrito el mismo producto en talles distintos sin que se pisen entre sí.
+2. **Cálculo de Precios Anti-NaN:**  
+   Se utiliza `Number(...) || 0` en cada paso aritmético. Las variantes contienen un precio absoluto (`var_precio_venta`), eliminando la fragilidad de sumas relativas.
+3. **Persistencia Bidireccional en URL (Deep Linking):**  
+   El hook `useProducts` sincroniza en tiempo real el carrito en la URL del navegador (`?cart=prodId_varId:cantidad`). Al abrir un enlace compartido, el hook rehidrata el pedido completo de manera automática.
+4. **Despacho Directo a WhatsApp:**  
+   `getWhatsAppUrl` formatea un mensaje estructurado con desglose de ítems, talle/color, subtotales, método de pago, datos de cuenta bancaria y dirección de entrega, abriendo el chat de WhatsApp con el comercio en un clic.
 
 ---
 
 ## 🎨 Diccionario de Tokens Semánticos (`vete-*`)
 
-Queda prohibido el uso de nombres de colores fijos de Tailwind (`bg-blue-600`, `text-black`). Todo componente debe consumir exclusivamente los tokens institucionales del tema activo:
+Queda prohibido utilizar nombres de colores estáticos de Tailwind (`bg-blue-600`, `text-black`). Todo componente debe consumir los tokens institucionales del tema activo:
 
 | Token Semántico | Uso Exclusivo en Componentes |
 | :--- | :--- |
-| `bg-vete-primary` / `text-vete-primary` | Color principal de marca (Botones de acción, enlaces activos, iconos destacados). |
+| `bg-vete-primary` / `text-vete-primary` | Color principal de marca (Botones de acción CTA, enlaces activos, iconos destacados). |
 | `hover:bg-vete-primary-hover` | Estado hover exclusivo para elementos con color primario. |
 | `bg-vete-secondary` / `text-vete-secondary` | Color secundario institucional (Badges, acentos complementarios, fondos alternos). |
 | `bg-vete-tertiary` / `text-vete-tertiary` | Color para canales de contacto directo (WhatsApp, llamadas). |
@@ -122,252 +194,101 @@ Queda prohibido el uso de nombres de colores fijos de Tailwind (`bg-blue-600`, `
 
 ---
 
-## 📂 Estructura Completa del Repositorio
+## 📂 Estructura Completa del Repositorio (Navegable)
 
-Árbol de directorios fidedigno del proyecto, la suite de clientes y el cliente web:
+> 💡 **Tip:** Haz clic en cualquier archivo o carpeta para abrirlo directamente en tu editor:
 
-
-
-## 📂 Estructura del Repositorio (Navegable)
-
-> 💡 **Tip de Navegación:** Haz `Ctrl + Clic` en cualquier archivo o carpeta para abrirlo directamente en tu editor.
-
-* 📁 **[clients/_template/](../../clients/_template/)** *(Plantilla base para clonar clientes)*
-  * 📁 **[assets/](../../clients/_template/assets/)** *(Recursos montados en /tenant/)*
-    * 📁 **[animations/](../../clients/_template/assets/animations/)**
-      * 📄 [hero_animation.json](../../clients/_template/assets/animations/hero_animation.json) *(Lottie de portada)*
-    * 📁 **[trabajos/](../../clients/_template/assets/trabajos/)** *(Galería para portfolio_section)*
-      * 📄 [1-1.png](../../clients/_template/assets/trabajos/1-1.png) | [1-2.png](../../clients/_template/assets/trabajos/1-2.png) | [2-1.png](../../clients/_template/assets/trabajos/2-1.png)
-    * 📄 [logo.png](../../clients/_template/assets/logo.png) | [logo.svg](../../clients/_template/assets/logo.svg) *(Identidad principal)*
-    * 📄 [hero.png](../../clients/_template/assets/hero.png) *(Imagen principal de portada)*
-    * 📄 [ambient.webm](../../clients/_template/assets/ambient.webm) *(Video 3D transparente en scroll)*
-    * 📄 [nav.png](../../clients/_template/assets/nav.png) *(Textura de barra inferior)*
-    * 📄 [mision.png](../../clients/_template/assets/mision.png) | [vision.png](../../clients/_template/assets/vision.png) | [valores.png](../../clients/_template/assets/valores.png)
-    * 📄 [hero-title1.png](../../clients/_template/assets/hero-title1.png) | [services-title1.png](../../clients/_template/assets/services-title1.png) | [plans-title1.png](../../clients/_template/assets/plans-title1.png) | [location-title1.png](../../clients/_template/assets/location-title1.png)
-    * 📄 [producto_no_disponible.png](../../clients/_template/assets/producto_no_disponible.png) *(Fallback de catálogo)*
-  * 📄 [config.json](../../clients/_template/config.json) *(Esquema maestro de configuración)*
-  * 📄 [generator.html](../../clients/_template/generator.html) *(Suite visual para previsualizar y editar)*
-  * 📄 [generator.js](../../clients/_template/generator.js) *(Motor reactivo de generator.html)*
-  * 📄 [PaletaColores.svg](../../clients/_template/PaletaColores.svg)
-
----
-
-* 📁 **apps/web-client/** *(Raíz de la aplicación Frontend)*
-  * 📄 [Dockerfile](Dockerfile) *(Compilación NGINX multi-stage SPA)*
-  * 📄 [docker-compose.yml](docker-compose.yml) *(Orquestador multi-tenant con red northcode-net)*
-  * 📄 [nginx.conf.template](nginx.conf.template) *(Plantilla de servidor con proxy dinámico ${BACKEND_HOST})*
+* 📁 **[clients/](../../clients/)** *(Silos de configuración por cliente)*
+  * 📁 **[veterinariabeltrameli/](../../clients/veterinariabeltrameli/)** *(Cliente Veterinaria con backend)*
+  * 📁 **[malandrobarber/](../../clients/malandrobarber/)** *(Cliente Barbería Standalone)*
+  * 📁 **[flordeloto/](../../clients/flordeloto/)** *(Cliente Boutique Standalone)*
+  * 📁 **[_template/](../../clients/_template/)** *(Plantilla agnóstica para clonar nuevos comercios)*
+    * 📁 **[assets/](../../clients/_template/assets/)** *(Imágenes, logos y animación WebM)*
+    * 📄 [config.json](../../clients/_template/config.json) *(Esquema maestro de configuración)*
+* 📁 **apps/web-client/** *(Código fuente Frontend)*
+  * 📄 [dockerfile](dockerfile) *(Compilación NGINX multi-stage inmutable)*
+  * 📄 [docker-compose.yml](docker-compose.yml) *(Orquestador multi-contenedor con red northcode-net)*
+  * 📄 [nginx.conf.template](nginx.conf.template) *(Plantilla NGINX con proxy dinámico ${BACKEND_HOST})*
   * 📄 [package.json](package.json) *(Scripts CLI y dependencias React 19)*
-  * 📄 [vite.config.ts](vite.config.ts) *(Configuración de empaquetador y proxy /api)*
+  * 📄 [vite.config.ts](vite.config.ts) *(Configuración de empaquetador y proxy local /api)*
   * 📄 [tailwind.config.js](tailwind.config.js) *(Tokens semánticos vete-* y breakpoints)*
   * 📄 [postcss.config.js](postcss.config.js) *(Pipeline PostCSS)*
-  * 📄 [eslint.config.js](eslint.config.js) *(Auditoría estática ESLint v9 Flat Config)*
+  * 📄 [eslint.config.js](eslint.config.js) *(Auditoría estática ESLint)*
   * 📄 [index.html](index.html) *(Punto de entrada HTML y montaje del DOM)*
   * 📁 **[public/](public/)**
     * 📁 **[config/](public/config/)**
-      * 📄 [client_info.json](public/config/client_info.json) *(Configuración del tenant activo en runtime)*
+      * 📄 [client_info.json](public/config/client_info.json) *(Configuración inyectada en runtime)*
     * 📁 **[tenant/](public/tenant/)** *(Assets montados del tenant activo)*
   * 📁 **[scripts/](scripts/)**
     * 📄 [switch-tenant.js](scripts/switch-tenant.js) *(Conmutador de cliente en desarrollo local)*
+  * 📁 **[docs/](docs/)**
+    * 📁 **[architecture/](docs/architecture/)**
+      * 📄 [diagrama_arquitectura_fontend.md](docs/architecture/diagrama_arquitectura_fontend.md) *(Diagrama interactivo de capas)*
+      * 📄 [diagrama_secuencia_fronten.md](docs/architecture/diagrama_secuencia_fronten.md) *(Diagrama de secuencia de integración)*
+      * 📄 [overview.md](docs/architecture/overview.md) *(Overview integral de arquitectura)*
   * 📁 **[src/](src/)**
     * 📄 [App.tsx](src/App.tsx) *(Enrutador principal React Router DOM v7)*
-    * 📄 [main.tsx](src/main.tsx) *(Punto de entrada de renderizado concurrente)*
+    * 📄 [main.tsx](src/main.tsx) *(Punto de entrada concurrente createRoot)*
     * 📄 [index.css](src/index.css) *(Directivas base Tailwind)*
     * 📁 **[config/](src/config/)**
       * 📄 [theme_config.ts](src/config/theme_config.ts) *(Inyector Hex -> RGB en :root)*
       * 📄 [ui-config.ts](src/config/ui-config.ts) *(Parámetros visuales de UI)*
     * 📁 **[context/](src/context/)**
-      * 📄 [tenant_context.tsx](src/context/tenant_context.tsx) *(Consumo reactivo de client_info.json)*
-      * 📄 [pedido_context.tsx](src/context/pedido_context.tsx) *(Estado global del carrito)*
+      * 📄 [tenant_context.tsx](src/context/tenant_context.tsx) *(Carga de client_info.json vía useConfig())*
+      * 📄 [pedido_context.tsx](src/context/pedido_context.tsx) *(Store del carrito Anti-NaN y persistencia)*
       * 📄 [auth_context.tsx](src/context/auth_context.tsx) *(Gestión de sesión)*
     * 📁 **[types/](src/types/)**
-      * 📄 [tenant_types.ts](src/types/tenant_types.ts) *(Contrato TypeScript de config.json)*
-      * 📄 [product_types.ts](src/types/product_types.ts) | [pedido_types.ts](src/types/pedido_types.ts) | [payment_types.ts](src/types/payment_types.ts)
+      * 📄 [product_types.ts](src/types/product_types.ts) *(Contratos de productos y variantes)*
+      * 📄 [tenant_types.ts](src/types/tenant_types.ts) *(Contratos de configuración del tenant)*
+      * 📄 [pedido_types.ts](src/types/pedido_types.ts) *(Contratos de líneas de pedido)*
+      * 📄 [payment_types.ts](src/types/payment_types.ts) *(Contratos de formas de pago)*
+      * 📄 [category_types.ts](src/types/category_types.ts) *(Contratos de subcategorías e iconos)*
+      * 📄 [common_types.ts](src/types/common_types.ts) *(Contratos de imágenes y colores)*
     * 📁 **[hooks/](src/hooks/)**
-      * 📄 [useProducts.ts](src/hooks/useProducts.ts) *(Consumo REST condicional con has_backend)*
-      * 📄 [useAddressManagement.ts](src/hooks/useAddressManagement.ts)
+      * 📄 [useProducts.ts](src/hooks/useProducts.ts) *(Fachada de catálogo, buscador y Deep Linking)*
+      * 📄 [useAddressManagement.ts](src/hooks/useAddressManagement.ts) *(Gestión de direcciones de entrega)*
     * 📁 **[services/](src/services/)**
-      * 📄 [product_service.ts](src/services/product_service.ts) *(Cliente HTTP hacia FastAPI)*
-      * 📄 [auth_service.ts](src/services/auth_service.ts) | [logger.ts](src/services/logger.ts)
+      * 📄 [product_service.ts](src/services/product_service.ts) *(Cliente HTTP REST hacia FastAPI)*
+      * 📄 [logger.ts](src/services/logger.ts) *(Telemetría de errores hacia /api/logs/frontend)*
+      * 📄 [auth_service.ts](src/services/auth_service.ts) *(Autenticación)*
     * 📁 **[mapper/](src/mapper/)**
-      * 📄 [product_mapper.ts](src/mapper/product_mapper.ts) *(Transformación DTO -> Frontend)*
+      * 📄 [product_mapper.ts](src/mapper/product_mapper.ts) *(Adaptador DTO backend -> UI models)*
     * 📁 **[components/](src/components/)**
       * 📁 **[animations/](src/components/animations/)**
-        * 📄 [AmbientScrollAnimation.tsx](src/components/animations/AmbientScrollAnimation.tsx) *(Video 3D en Capa z-10)*
+        * 📄 [AmbientScrollAnimation.tsx](src/components/animations/AmbientScrollAnimation.tsx) *(Video 3D WebM en Capa z-[45])*
       * 📁 **[ProductCard/](src/components/ProductCard/)**
-        * 📄 [ProductCard.tsx](src/components/ProductCard/ProductCard.tsx) *(Strategy Pattern)*
-        * 📄 [ProductCardV1.tsx](src/components/ProductCard/ProductCardV1.tsx) | [ProductCardV2.tsx](src/components/ProductCard/ProductCardV2.tsx)
+        * 📄 [ProductCard.tsx](src/components/ProductCard/ProductCard.tsx) *(Despachador de variante)*
+        * 📄 [ProductCardV1.tsx](src/components/ProductCard/ProductCardV1.tsx) *(Variante plana)*
+        * 📄 [ProductCardV2.tsx](src/components/ProductCard/ProductCardV2.tsx) *(Variante con acordeón)*
+      * 📁 **[PortfolioCard/](src/components/PortfolioCard/)**
+        * 📄 [PortfolioCard.tsx](src/components/PortfolioCard/PortfolioCard.tsx)
       * 📁 **[studio/](src/components/studio/)**
         * 📄 [TenantStudioDrawer.tsx](src/components/studio/TenantStudioDrawer.tsx)
       * 📄 [FloatingBottomBar.tsx](src/components/FloatingBottomBar.tsx) *(Barra flotante inferior con auto-hide)*
-      * 📄 [SectionDivider.tsx](src/components/SectionDivider.tsx) *(Transición ondulatoria SVG)*
+      * 📄 [SectionDivider.tsx](src/components/SectionDivider.tsx) *(Ondas divisorias SVG vectoriales)*
       * 📄 [ServiceCard.tsx](src/components/ServiceCard.tsx) | [PlanCard.tsx](src/components/PlanCard.tsx)
-      * 📄 [ConfirmationModal.tsx](src/components/ConfirmationModal.tsx) | [CategoryGroupCard.tsx](src/components/CategoryGroupCard.tsx)
-      * 📄 [WhatsAppDynamicButton.tsx](src/components/WhatsAppDynamicButton.tsx) | [WhatsAppButtonProps.tsx](src/components/WhatsAppButtonProps.tsx)
+      * 📄 [CategoryGroupCard.tsx](src/components/CategoryGroupCard.tsx) | [ConfirmationModal.tsx](src/components/ConfirmationModal.tsx)
+      * 📄 [WhatsAppDynamicButton.tsx](src/components/WhatsAppDynamicButton.tsx)
     * 📁 **[pages/](src/pages/)**
-      * 📁 **[landing/](src/pages/landing/)** *(🏠 Landing Page Principal)*
-        * 📄 [LlandingPage.tsx](src/pages/landing/LlandingPage.tsx) *(Orquestador y alternancia matricial)*
-        * 📄 [README.md](src/pages/landing/README.md) *(Sub-documentación de Landing)*
+      * 📁 **[landing/](src/pages/landing/)** *(🏠 Vista Principal)*
+        * 📄 [LlandingPage.tsx](src/pages/landing/LlandingPage.tsx) *(Orquestador y máquina matricial)*
+        * 📄 [README.md](src/pages/landing/README.md) *(Sub-documentación)*
         * 📁 **[sessions/](src/pages/landing/sessions/)**
-          * 📄 [HederSession.tsx](src/pages/landing/sessions/HederSession.tsx) *(Navbar fijo)*
-          * 📄 [HeroSession.tsx](src/pages/landing/sessions/HeroSession.tsx) *(Despachador de portadas)*
+          * 📄 [HederSession.tsx](src/pages/landing/sessions/HederSession.tsx) | [HeroSession.tsx](src/pages/landing/sessions/HeroSession.tsx)
           * 📁 **[HeroSection/](src/pages/landing/sessions/HeroSection/)** ([V1](src/pages/landing/sessions/HeroSection/HeroSectionV1.tsx) | [V2](src/pages/landing/sessions/HeroSection/HeroSectionV2.tsx) | [V3](src/pages/landing/sessions/HeroSection/HeroSectionV3.tsx) | [V4](src/pages/landing/sessions/HeroSection/HeroSectionV4.tsx))
-          * 📄 [ProductsSession.tsx](src/pages/landing/sessions/ProductsSession.tsx) *(Catálogo transaccional)*
-          * 📄 [ServicioSession.tsx](src/pages/landing/sessions/ServicioSession.tsx) *(Servicios profesionales)*
-          * 📄 [PlanSession.tsx](src/pages/landing/sessions/PlanSession.tsx) *(Membresías y paquetes)*
-          * 📄 [MapsSession.tsx](src/pages/landing/sessions/MapsSession.tsx) *(Mapa interactivo y ubicación)*
-          * 📄 [AboutSection.tsx](src/pages/landing/sessions/AboutSection.tsx) *(Misión, visión y valores)*
-          * 📄 [FooterSession.tsx](src/pages/landing/sessions/FooterSession.tsx) *(Pie de página en Capa z-0)*
+          * 📄 [ProductsSession.tsx](src/pages/landing/sessions/ProductsSession.tsx) | [ServicioSession.tsx](src/pages/landing/sessions/ServicioSession.tsx)
+          * 📄 [PlanSession.tsx](src/pages/landing/sessions/PlanSession.tsx) | [PortfolioSession.tsx](src/pages/landing/sessions/PortfolioSession.tsx)
+          * 📄 [MapsSession.tsx](src/pages/landing/sessions/MapsSession.tsx) | [AboutSection.tsx](src/pages/landing/sessions/AboutSection.tsx)
+          * 📄 [FooterSession.tsx](src/pages/landing/sessions/FooterSession.tsx)
       * 📁 **[pedido/](src/pages/pedido/)** *(🛒 Checkout y Carrito)*
-        * 📄 [PedidoDrawer.tsx](src/pages/pedido/PedidoDrawer.tsx) *(Panel lateral)*
-        * 📄 [PedidoItemRow.tsx](src/pages/pedido/PedidoItemRow.tsx) *(Fila con selector numérico)*
-        * 📄 [PedidoFooterCollapsible.tsx](src/pages/pedido/PedidoFooterCollapsible.tsx) *(Checkout colapsable y WhatsApp)*
+        * 📄 [PedidoDrawer.tsx](src/pages/pedido/PedidoDrawer.tsx)
+        * 📄 [PedidoItemRow.tsx](src/pages/pedido/PedidoItemRow.tsx)
+        * 📄 [PedidoFooterCollapsible.tsx](src/pages/pedido/PedidoFooterCollapsible.tsx)
         * 📄 [README.md](src/pages/pedido/README.md)
-      * 📁 **[cliete/](src/pages/cliete/)**
-        * 📄 [register_cliente.tsx](src/pages/cliete/register_cliente.tsx)
       * 📁 **[maintenance/](src/pages/maintenance/)**
         * 📄 [MaintenancePage.tsx](src/pages/maintenance/MaintenancePage.tsx)
 
-
-
-`
-<!--
-Otra ista oculata 
-    clientes/_template/
-   ├── 📁 assets/                                 # 🖼️ Recursos multimedia montados en /tenant/
-   │   ├── 📁 animations/
-   │   │   └── 📄 hero_animation.json             # Lottie interactivo de portada
-   │   │
-   │   ├── 📁 trabajos/                           # 💼 Galería para portfolio_section
-   │   │   ├── 📄 1-1.png                         # Muestra de proyecto 1 (Foto A)
-   │   │   ├── 📄 1-2.png                         # Muestra de proyecto 1 (Foto B)
-   │   │   └── 📄 2-1.png                         # Muestra de proyecto 2
-   │   │
-   │   ├── 📄 logo.png                            # Isotipo rasterizado principal
-   │   ├── 📄 logo.svg                            # Isotipo vectorial de alta definición
-   │   ├── 📄 hero.png                            # Imagen principal del Hero (Mascota, Barbero, etc.)
-   │   ├── 📄 ambient.webm                        # Video 3D transparente de fondo (Scroll reactivo)
-   │   ├── 📄 nav.png                             # Textura de la barra inferior (pasto, madera, etc.)
-   │   ├── 📄 producto_no_disponible.png          # Placeholder fallback para catálogo
-   │   ├── 📄 carrito.svg                         # Icono decorativo de compras
-   │   │
-   │   ├── 📄 mision.png                          # Foto de bloque institucional Misión
-   │   ├── 📄 vision.png                          # Foto de bloque institucional Visión
-   │   ├── 📄 valores.png                         # Foto de bloque institucional Valores
-   │   │
-   │   ├── 📄 hero-title1.png                     # Título gráfico superior del Hero (Opcional)
-   │   ├── 📄 services-title1.png                 # Título gráfico superior de Servicios (Opcional)
-   │   ├── 📄 plans-title1.png                    # Título gráfico superior de Planes (Opcional)
-   │   └── 📄 location-title1.png                 # Título gráfico superior de Ubicación (Opcional)
-   │
-   ├── 📄 config.json                             # ⚙️ Esquema maestro de configuración
-   ├── 📄 generator.html                          # 🖥️ Suite visual para previsualizar y editar clientes
-   ├── 📄 generator.js                            # ⚙️ Lógica de reactividad de generator.html
-   └── 📄 PaletaColores.svg                       # Referencia de tokens cromáticos
-   └── 📁 apps/web-client/                             # 💻 Código fuente Frontend (React 19 + Vite)
-    ├── 📄 Dockerfile                              # Compilación NGINX multi-stage optimizada
-    ├── 📄 docker-compose.yml                      # Orquestador multi-contenedor por cliente
-    ├── 📄 nginx.conf.template                     # Plantilla NGINX con proxy dinámico ${BACKEND_HOST}
-    ├── 📄 package.json                            # Manifiesto de dependencias y scripts CLI
-    ├── 📄 postcss.config.js                       # Pipeline de PostCSS y Autoprefixer
-    ├── 📄 tailwind.config.js                      # Configuración de diseño y tokens semánticos
-    ├── 📄 tsconfig.json / tsconfig.app.json       # Configuración TypeScript del compilador
-    ├── 📄 tsconfig.node.json                      # Configuración TypeScript para entorno Node/Vite
-    ├── 📄 vite.config.ts                          # Configuración de Vite y proxy local /api
-    ├── 📄 eslint.config.js                        # Reglas de auditoría estática (ESLint Flat Config)
-    ├── 📄 index.html                              # Punto de entrada HTML de la SPA
-    │
-    ├── 📁 public/                                 # Directorio servido en raíz por el servidor
-    │   ├── 📁 config/
-    │   │   └── 📄 client_info.json                # Archivo inyectado en runtime
-    │   ├── 📁 tenant/                             # Montaje de assets del cliente activo
-    │   └── 📁 assets/branding/                    # Recursos gráficos compartidos globales
-    │
-    ├── 📁 scripts/
-    │   └── 📄 switch-tenant.js                    # Script Node.js para alternar cliente local
-    │
-    └── 📁 src/
-        ├── 📄 App.tsx                             # Enrutador principal (React Router DOM v7)
-        ├── 📄 main.tsx                            # Punto de entrada concurrente (createRoot)
-        ├── 📄 index.css                           # Directivas base de Tailwind CSS
-        ├── 📄 vite-env.d.ts                       # Tipado global de entorno Vite
-        │
-        ├── 📁 config/                             # Inyectores y parámetros de UI
-        │   ├── 📄 theme_config.ts                 # Transforma Hex a variables CSS RGB (:root)
-        │   └── 📄 ui-config.ts                    # Constantes visuales de la interfaz
-        │
-        ├── 📁 context/                            # Proveedores de estado global (React Context)
-        │   ├── 📄 tenant_context.tsx              # Carga y expone client_info.json vía useConfig()
-        │   ├── 📄 pedido_context.tsx              # Estado del carrito de compras y persistencia
-        │   └── 📄 auth_context.tsx                # Sesión y credenciales de usuario
-        │
-        ├── 📁 types/                              # Interfaces TypeScript estrictas
-        │   ├── 📄 tenant_types.ts                 # Esquema de contrato de config.json
-        │   ├── 📄 product_types.ts                # Modelos de catálogo y categorías
-        │   ├── 📄 pedido_types.ts                 # Modelos de líneas de pedido y checkout
-        │   ├── 📄 payment_types.ts                # Pasarelas de cobro y transferencias
-        │   └── 📄 auth.ts                         # Tipos de autenticación
-        │
-        ├── 📁 hooks/                              # Custom Hooks / Fachadas de negocio
-        │   ├── 📄 useProducts.ts                  # Filtrado, ordenamiento y consumo REST condicional
-        │   └── 📄 useAddressManagement.ts         # Validación y guardado de direcciones
-        │
-        ├── 📁 services/                           # Capa HTTP pura e infraestructura
-        │   ├── 📄 product_service.ts              # Cliente REST hacia endpoints de FastAPI
-        │   ├── 📄 auth_service.ts                 # Manejo de tokens JWT y credenciales
-        │   └── 📄 logger.ts                       # Registrador de eventos de sistema
-        │
-        ├── 📁 mapper/                             # Transformación de datos DTO -> Frontend
-        │   └── 📄 product_mapper.ts               # Mapeador de respuestas de la API
-        │
-        ├── 📁 utils/                              # Utilidades y funciones auxiliares
-        │   └── 📄 categoryHelpers.tsx             # Normalización y agrupamiento de categorías
-        │
-        ├── 📁 components/                         # Componentes de presentación reutilizables
-        │   ├── 📁 animations/
-        │   │   └── 📄 AmbientScrollAnimation.tsx  # Video volumétrico WebM reactivo al scroll
-        │   ├── 📁 ProductCard/                    # Tarjetas de producto (Strategy Pattern)
-        │   │   ├── 📄 ProductCard.tsx             # Despachador según config.ui_variants
-        │   │   ├── 📄 ProductCardV1.tsx           # Variante plana minimalista
-        │   │   └── 📄 ProductCardV2.tsx           # Variante con acordeón de especificaciones
-        │   ├── 📁 studio/
-        │   │   └── 📄 TenantStudioDrawer.tsx      # Cajón flotante de inspección técnica
-        │   ├── 📄 FloatingBottomBar.tsx           # Barra flotante de accesos rápidos con auto-ocultado
-        │   ├── 📄 SectionDivider.tsx              # Transición SVG con curvaturas dinámicas
-        │   ├── 📄 ServiceCard.tsx                 # Tarjeta de servicio profesional
-        │   ├── 📄 PlanCard.tsx                    # Tarjeta de plan o membresía recurrente
-        │   ├── 📄 CategoryGroupCard.tsx           # Agrupador de catálogo por categorías
-        │   ├── 📄 ConfirmationModal.tsx           # Modal genérico accesible
-        │   ├── 📄 WhatsAppButtonProps.tsx         # Interfaces para botones de mensajería
-        │   └── 📄 WhatsAppDynamicButton.tsx       # Botón de contacto directo con prefijo de país
-        │
-        └── 📁 pages/                              # Vistas enrutadas
-            ├── 📁 landing/                        # 🏠 Landing Page Principal
-            │   ├── 📄 LlandingPage.tsx            # Orquestador y alternador matricial de fondos
-            │   ├── 📄 README.md                   # Documentación específica de Landing
-            │   └── 📁 sessions/                   # Sub-secciones modulares
-            │       ├── 📄 HederSession.tsx        # Barra de navegación fija superior
-            │       ├── 📄 HeroSession.tsx         # Despachador de portadas (V1 a V4)
-            │       ├── 📁 HeroSection/            # Variantes de Hero (V1, V2, V3, V4)
-            │       ├── 📄 ProductsSession.tsx     # Catálogo con buscador y filtros
-            │       ├── 📄 ServicioSession.tsx     # Grilla de servicios
-            │       ├── 📄 PlanSession.tsx         # Paquetes y suscripciones
-            │       ├── 📄 MapsSession.tsx         # Ubicación y mapa interactivo de Google Maps
-            │       ├── 📄 AboutSection.tsx        # Misión, visión y valores corporativos
-            │       └── 📄 FooterSession.tsx       # Pie de página y créditos
-            │
-            ├── 📁 pedido/                         # 🛒 Módulo de Checkout y Carrito
-            │   ├── 📄 PedidoDrawer.tsx            # Drawer lateral de compras
-            │   ├── 📄 PedidoItemRow.tsx           # Fila de ítem con selector numérico editable
-            │   ├── 📄 PedidoFooterCollapsible.tsx # Acordeón con selección de pago y logística
-            │   └── 📄 README.md                   # Documentación específica de Pedidos
-            │
-            ├── 📁 cliete/
-            │   └── 📄 register_cliente.tsx        # Formulario de alta de clientes
-            └── 📁 maintenance/
-                └── 📄 MaintenancePage.tsx         # Vista de sitio en mantenimiento
-```
--  -->
-
+---
 
 ## 🛠️ Guía de Operación Diaria y Comandos CLI
 
@@ -385,10 +306,10 @@ npm run dev
 ```
 
 ### 2. Alternar entre Clientes en Desarrollo Local
-El script CLI `switch-tenant.js` copia en caliente la configuración y los assets del cliente elegido hacia la carpeta `public/`:
+El script CLI [`switch-tenant.js`](scripts/switch-tenant.js) copia en caliente la configuración y los assets del cliente elegido hacia la carpeta `public/`:
 
 ```bash
-# 1. Clientes reales configurados:
+# 1. Clientes reales preconfigurados:
 npm run dev:veterinariabeltrameli  # Levanta la veterinaria en http://localhost:5173
 npm run dev:flordeloto            # Levanta la boutique de moda en http://localhost:5173
 npm run dev:malandrobarber        # Levanta la barbería en http://localhost:5173
@@ -402,7 +323,7 @@ npm run tenant <nombre_carpeta_cliente>
 
 > 💡 **Nota sobre el Backend en Local:** Si estás probando un cliente que requiere backend (`has_backend: true`, como Valeria), abre otra terminal y ejecuta su API en Python:
 > ```bash
-> cd apps/api-backend
+> cd api-backend
 > python run_desarrollo.py veterinaria
 > ```
 > Para clientes standalone como `flordeloto` o `malandrobarber`, no necesitas levantar el backend.
@@ -412,11 +333,10 @@ npm run tenant <nombre_carpeta_cliente>
 ### 3. Crear un Nuevo Comercio en 3 Pasos
 
 1. **Clonar la plantilla:**
-   Copia la carpeta `clients/_template/` asignándole el nombre del cliente (ej: `clients/ferreteria_central/`).
+   Copia la carpeta `clients/_template/` asignándole el nombre del nuevo cliente (ej: `clients/ferreteria_central/`).
 2. **Definir Identidad y Recursos:**
    - Agrega su logotipo, portada e imágenes en `clients/ferreteria_central/assets/`.
    - Modifica `clients/ferreteria_central/config.json` (colores, teléfonos, servicios, horarios).
-   *(Puedes usar `clients/_template/generator.html` en tu navegador para editarlo visualmente).*
 3. **Probar localmente:**
    ```bash
    npm run tenant ferreteria_central
@@ -427,17 +347,15 @@ npm run tenant <nombre_carpeta_cliente>
 
 ## 🐳 Despliegue en Producción (Docker Silo Architecture)
 
-En producción, la imagen `vetcore-web-client:latest` es compilada **una única vez**. Cada cliente corre como un contenedor aislado montando sus volúmenes en caliente:
+En producción, la imagen `vetcore-web-client:latest` es compilada **una única vez** vía [`dockerfile`](dockerfile). Cada cliente corre como un contenedor aislado montando sus volúmenes en caliente:
 
-### Archivo de Producción Real: `apps/web-client/docker-compose.yml`
-<!-- <!> Aca me gustaria ir a mi archivo rela con ipervinculo y  y que muestre como qeda eso se uede o no  -->
+### Archivo de Orquestación: [`apps/web-client/docker-compose.yml`](docker-compose.yml)
+
 ```yaml
 networks:
-  # Red compartida donde corren Nginx Proxy Manager, Cloudflare y bases de datos
   northcode-net:
     external: true
 
-# Plantilla base compartida para compilar la imagen agnóstica una sola vez
 x-frontend-base: &frontend-build
   build:
     context: .
@@ -445,9 +363,7 @@ x-frontend-base: &frontend-build
   image: vetcore-web-client:latest
 
 services:
-  # ===========================================================================
-  # CLIENTE 1: Veterinaria Beltramelli (Con Backend FastAPI Activo)
-  # ===========================================================================
+  # CLIENTE 1: Veterinaria Beltramelli (Con Backend Activo)
   front-valeria:
     <<: *frontend-build
     container_name: nc-web-valeria
@@ -455,16 +371,14 @@ services:
     ports:
       - "8081:80"
     environment:
-      - BACKEND_HOST=backend-vet-bel:8000 # Proxy inverso hacia su backend dedicado
+      - BACKEND_HOST=backend_vet_beltramelli:8001
     volumes:
       - ../../clients/veterinariabeltrameli/config.json:/usr/share/nginx/html/config/client_info.json:ro
       - ../../clients/veterinariabeltrameli/assets:/usr/share/nginx/html/tenant:ro
     networks:
       - northcode-net
 
-  # ===========================================================================
-  # CLIENTE 2: Malandro Barber (Standalone / Sin Backend)
-  # ===========================================================================
+  # CLIENTE 2: Malandro Barber (Standalone)
   front-malandrobarber:
     <<: *frontend-build
     container_name: nc-web-malandrobarber
@@ -472,16 +386,14 @@ services:
     ports:
       - "8082:80"
     environment:
-      - BACKEND_HOST=127.0.0.1:80 # Host loopback seguro
+      - BACKEND_HOST=127.0.0.1:80
     volumes:
       - ../../clients/malandrobarber/config.json:/usr/share/nginx/html/config/client_info.json:ro
       - ../../clients/malandrobarber/assets:/usr/share/nginx/html/tenant:ro
     networks:
       - northcode-net
 
-  # ===========================================================================
-  # CLIENTE 3: Flor de Loto (Boutique de Indumentaria / Sin Backend)
-  # ===========================================================================
+  # CLIENTE 3: Flor de Loto (Standalone)
   front-flordeloto:
     <<: *frontend-build
     container_name: nc-web-flordeloto
@@ -489,7 +401,7 @@ services:
     ports:
       - "8083:80"
     environment:
-      - BACKEND_HOST=127.0.0.1:80 # Pedidos procesados directo en cliente vía WhatsApp
+      - BACKEND_HOST=127.0.0.1:80
     volumes:
       - ../../clients/flordeloto/config.json:/usr/share/nginx/html/config/client_info.json:ro
       - ../../clients/flordeloto/assets:/usr/share/nginx/html/tenant:ro
@@ -527,7 +439,6 @@ Para exponer cada tenant hacia internet con certificado SSL automático (Let's E
 
 ---
 
-## 📄 Licencia
+## 📄 Licencia y Créditos
 © 2026 **VetCore Platform** — Desarrollado por **[NorthCode](https://github.com/NorthCodeUY)**.  
 Arquitectura de Silos Multi-tenant y Motor E-commerce de Marca Blanca.
-```

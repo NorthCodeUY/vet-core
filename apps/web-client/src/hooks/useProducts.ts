@@ -1,29 +1,31 @@
 /**
  * @fileoverview Hook de Negocio y Fachada para Catálogo de Productos (useProducts.ts)
  * 
- * Gestiona la carga asíncrona del catálogo categorizado desde FastAPI, la persistencia
- * bidireccional del carrito en los parámetros de búsqueda de la URL (Deep Linking)
- * y el filtrado reactivo en memoria para el buscador de la Landing Page.
+ * Centraliza las 4 operaciones nucleares del catálogo en la Landing Page:
+ * 1. Consumo asíncrono de la API REST (FastAPI) con control de clientes sin backend.
+ * 2. Deep Linking / Persistencia bidireccional del carrito en la URL (?cart=id_var:cant).
+ * 3. Rehidratación segura al cargar enlaces compartidos (sin errores de NaN).
+ * 4. Motor de búsqueda reactivo multicampo en memoria (nombre, descripción y tags de subcategoría).
  * 
  * @module hooks/useProducts
  */
 
 import { useState, useEffect, useMemo } from 'react';
 
-// --- Capa de Servicios e Infraestructura HTTP ---
+// --- Infraestructura HTTP y Mappers ---
 import { productService } from '../services/product_service';
 import { productMapper } from '../mapper/product_mapper';
 
-// --- Estado Global de la Aplicación ---
+// --- Estado Global y Configuración ---
 import { usePedidoStore } from '../context/pedido_context';
 import { useConfig } from '../context/tenant_context';
 
 // --- Contratos de Dominio ---
-import type { ApiCategory, ApiProduct } from '../types/product_types';
+import type { ApiCategory, ApiProduct, ProductoVariante } from '../types/product_types';
 import type { PedidoItem } from '../types/pedido_types';
 
 /**
- * Hook orquestador del catálogo y sincronización de compras (`useProducts`).
+ * Hook principal de fachada para productos y buscador (`useProducts`).
  *
  * @returns {{
  *   searchTerm: string,
@@ -35,7 +37,7 @@ import type { PedidoItem } from '../types/pedido_types';
  */
 export const useProducts = () => {
   /* ===========================================================================
-     1. ESTADOS LOCALES Y DEPENDENCIAS GLOBALES
+     1. ESTADOS LOCALES Y DEPENDENCIAS
      =========================================================================== */
   const { config } = useConfig();
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -43,28 +45,31 @@ export const useProducts = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   const { pedido, loadPedidoMasivo } = usePedidoStore();
-  
-  // Bandera de control para evitar que el efecto de escritura sobreescriba la URL antes de leerla
+
+  // Bandera que bloquea la escritura en la URL hasta que se complete la lectura inicial
   const [isRehydrated, setIsRehydrated] = useState<boolean>(false);
 
   /* ===========================================================================
-     2. LÓGICA A: PERSISTENCIA DEL CARRITO EN LA URL (Shareable Links)
-     Serializa el carrito en formato compacto (ej: "?cart=1:2,45_102:1") en el historial.
+     2. LÓGICA A: PERSISTENCIA DEL CARRITO EN LA URL (Deep Linking Serializer)
+     Convierte el estado del carrito en un parámetro compartible (ej: ?cart=3_1:2,2_base:1).
      =========================================================================== */
   useEffect(() => {
-    // Si no se completó la rehidratación inicial, bloqueamos la sincronización hacia la URL
+    // Si no se procesó la URL de entrada, evitamos pisarla en blanco
     if (!isRehydrated) return;
 
     if (pedido.length === 0) {
-      // Limpia el query param si el carrito quedó vacío
+      // Si el carrito se vació, limpiamos los query params sin recargar la página
       const cleanPath = window.location.pathname;
       window.history.replaceState({}, '', cleanPath);
       return;
     }
 
-    // Serialización compacta de ítems con clave única y cantidad
+    // <!> Serialización con soporte de variantes (prodId_varId:cantidad)
     const cartParamValue = pedido
-      .map((item) => `${item.producto.prod_id}:${item.cantidad}`)
+      .map((item) => {
+        const varId = item.variante_seleccionada?.var_id || 'base';
+        return `${item.producto.prod_id}_${varId}:${item.cantidad}`;
+      })
       .join(',');
 
     const updatedUrl = `${window.location.pathname}?cart=${cartParamValue}`;
@@ -72,11 +77,11 @@ export const useProducts = () => {
   }, [pedido, isRehydrated]);
 
   /* ===========================================================================
-     3. LÓGICA B: REHIDRATACIÓN DESDE LA URL (Deep Linking al Iniciar)
-     Reconstruye el pedido si un usuario abre un enlace compartido con "?cart=..."
+     3. LÓGICA B: REHIDRATACIÓN AL INICIAR (Deep Linking Parser)
+     Reconstruye el pedido completo (con talle y precio real) si el usuario abre un enlace compartido.
      =========================================================================== */
   useEffect(() => {
-    // Solo rehidrata una vez que las categorías bajaron de la API y no fue procesado aún
+    // Solo se ejecuta una vez cuando las categorías ya bajaron del backend
     if (categories.length > 0 && !isRehydrated) {
       const urlParams = new URLSearchParams(window.location.search);
       const cartQuery = urlParams.get('cart');
@@ -86,20 +91,47 @@ export const useProducts = () => {
         const lineasRehidratadas: PedidoItem[] = [];
 
         cartQuery.split(',').forEach((pair) => {
-          const [id, qty] = pair.split(':').map(Number);
-          const productoEncontrado = allProducts.find((p) => p.prod_id === id);
+          const [keyPart, qtyStr] = pair.split(':');
+          const qty = Number(qtyStr) || 1;
+
+          if (!keyPart) return;
+
+          // Soporte tanto para formato moderno (3_1 o 3_base) como legado (3)
+          let prodId: number;
+          let varId: number | null = null;
+
+          if (keyPart.includes('_')) {
+            const [pId, vId] = keyPart.split('_');
+            prodId = Number(pId);
+            varId = vId !== 'base' ? Number(vId) : null;
+          } else {
+            prodId = Number(keyPart);
+          }
+
+          const productoEncontrado = allProducts.find((p) => p.prod_id === prodId);
 
           if (productoEncontrado && qty > 0) {
+            // Resolución de variante
+            const varianteEncontrada: ProductoVariante | undefined = varId
+              ? productoEncontrado.variantes?.find((v) => v.var_id === varId)
+              : undefined;
+
             /* =================================================================
-               <!> CORRECCIÓN CRÍTICA DE TYPESCRIPT:
-               Se inyecta 'item_key' obligatorio para respetar el nuevo contrato
-               de PedidoItem que soporta variantes y transacciones independientes.
+               <!> RESOLUCIÓN DEFENSIVA DE PRECIO (ANTI-NaN):
+               Prioriza el precio absoluto de la variante, luego prod_precio_venta.
                ================================================================= */
+            const precioCapturado = varianteEncontrada
+              ? Number(varianteEncontrada.var_precio_venta)
+              : Number(productoEncontrado.prod_precio_venta ?? (productoEncontrado as any).prod_precio ?? 0);
+
+            const itemKey = varId ? `${prodId}_${varId}` : `${prodId}_base`;
+
             lineasRehidratadas.push({
-              item_key: `${productoEncontrado.prod_id}_base`,
+              item_key: itemKey,
               producto: productoEncontrado,
+              variante_seleccionada: varianteEncontrada,
               cantidad: qty,
-              precio_unitario_capturado: productoEncontrado.prod_precio,
+              precio_unitario_capturado: isNaN(precioCapturado) ? 0 : precioCapturado,
             });
           }
         });
@@ -109,27 +141,28 @@ export const useProducts = () => {
         }
       }
 
-      // Habilitamos la escritura en la URL a partir de este momento
+      // Habilitamos la sincronización de salida
       setIsRehydrated(true);
     }
   }, [categories, isRehydrated, loadPedidoMasivo]);
 
   /* ===========================================================================
-     4. LÓGICA C: CONSUMO DE LA API REST (Catálogo Agrupado)
+     4. LÓGICA C: CONSUMO DE LA API REST (FastAPI)
+     Descarga y mapea el catálogo agrupado respetando los flags del tenant.
      =========================================================================== */
   useEffect(() => {
     let isMounted = true;
 
     const loadData = async (): Promise<void> => {
-      // Guardia de seguridad: Si el cliente apaga el catálogo, omitimos la llamada HTTP
-      if (config?.features?.has_products === false) {
+      // Si el cliente apaga el catálogo o no tiene backend, cortamos sin disparar errores
+      if (config?.features?.has_products === false || (config?.features as any)?.has_backend === false) {
         if (isMounted) setLoading(false);
         return;
       }
 
       try {
         const rawData = await productService.fetchProductosAgrupados();
-        
+
         if (isMounted) {
           const transformed: ApiCategory[] = rawData.map((cat: any) => ({
             cat_id: Number(cat.cat_id),
@@ -156,7 +189,8 @@ export const useProducts = () => {
   }, [config]);
 
   /* ===========================================================================
-     5. LÓGICA D: BUSCADOR REACTIVO EN MEMORIA (useMemo Caché)
+     5. LÓGICA D: BUSCADOR REACTIVO EN MEMORIA (Faceted Search Cache)
+     Filtra en tiempo real por título, descripción y nombres de subcategoría.
      =========================================================================== */
   const filteredResults = useMemo((): ApiProduct[] | null => {
     if (!searchTerm.trim()) return null;
@@ -166,11 +200,13 @@ export const useProducts = () => {
 
     return allProducts.filter((p) => {
       const matchName = p.prod_nombre.toLowerCase().includes(normalizedTerm);
-      const matchDesc = p.prod_descripcion.toLowerCase().includes(normalizedTerm);
-      // Búsqueda en subcategorías tipadas
-      const matchSub = p.subcategorias?.some((sub) =>
-        sub.subc_nombre.toLowerCase().includes(normalizedTerm)
-      );
+      const matchDesc = p.prod_descripcion ? p.prod_descripcion.toLowerCase().includes(normalizedTerm) : false;
+
+      // <!> Búsqueda robusta en subcategorías (soporta objetos planos o anidados)
+      const matchSub = p.subcategorias?.some((subItem: any) => {
+        const name = subItem.subcategoria?.subc_nombre || subItem.subc_nombre || '';
+        return name.toLowerCase().includes(normalizedTerm);
+      });
 
       return matchName || matchDesc || matchSub;
     });
@@ -186,10 +222,10 @@ export const useProducts = () => {
 };
 
 /**
- * Hook secundario para carga bajo demanda de productos por categoría individual.
+ * Hook secundario para carga bajo demanda (Lazy Loading) de productos por categoría.
  *
  * @param {number} catId - ID de la categoría a consultar.
- * @param {ApiProduct[]} initialData - Datos precargados en memoria.
+ * @param {ApiProduct[]} initialData - Datos iniciales precargados.
  * @param {string} title - Nombre de la categoría padre.
  * @returns {{
  *   products: ApiProduct[],
@@ -203,7 +239,6 @@ export const useCategoryProducts = (catId: number, initialData: ApiProduct[], ti
   const [hasLoadedFull, setHasLoadedFull] = useState<boolean>(false);
 
   const toggleExpand = async (): Promise<void> => {
-    // Si se expande y aún no se descargó la lista completa de la categoría
     if (!isExpanded && !hasLoadedFull) {
       try {
         const rawData = await productService.fetchProductosPorCategoria(catId);

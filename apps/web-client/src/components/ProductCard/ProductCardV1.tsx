@@ -2,8 +2,8 @@
  * @fileoverview Tarjeta de Producto V1 (Plana / Minimalista)
  * 
  * Componente visual de catálogo optimizado para despliegue rápido.
- * Soporta renderizado de subcategorías con iconografía agnóstica desde el backend,
- * badges de selección interactiva y despacho directo al carrito o WhatsApp.
+ * Sincronizado con el nuevo contrato de precios absolutos (prod_precio_venta),
+ * disponibilidad comercial e iconografía agnóstica para subcategorías.
  * 
  * @module components/ProductCard/ProductCardV1
  */
@@ -18,23 +18,10 @@ import { usePedidoStore } from '../../context/pedido_context';
 import type { ApiProduct } from '../../types/product_types';
 import { useConfig } from '../../context/tenant_context';
 
-/**
- * Propiedades del componente `ProductCardV1`.
- * 
- * @interface ProductCardV1Props
- * @property {ApiProduct} producto - Entidad de producto a renderizar.
- */
 interface ProductCardV1Props {
   producto: ApiProduct;
 }
 
-/**
- * Tarjeta de producto de diseño plano con selección rápida (`ProductCardV1`).
- *
- * @component
- * @param {ProductCardV1Props} props - Propiedades recibidas del catálogo.
- * @returns {JSX.Element}
- */
 export function ProductCardV1({ producto }: ProductCardV1Props) {
   /* ===========================================================================
      1. CONSUMO DEL STORE GLOBAL Y COMPATIBILIDAD DEFENSIVA
@@ -42,47 +29,56 @@ export function ProductCardV1({ producto }: ProductCardV1Props) {
   const store = usePedidoStore() as any;
   const pedido = store.pedido || [];
   
-  // Soporte defensivo para ambos nombres de método del store
   const addItemToCart = store.addItem || store.addToPedido || (() => {});
   const removeItemFromCart = store.removeItem || store.removeAllPedido || store.removeFromPedido || (() => {});
 
   /* ===========================================================================
-     2. ESTADO LOCAL Y LÍNEA DE PEDIDO
+     2. RESOLUCIÓN DE PRECIO Y LÍNEA DE PEDIDO
      =========================================================================== */
+  // <!> Sincronización con prod_precio_venta (elimina el fallo de compilación)
+  const precioUnitario = Number(producto.prod_precio_venta ?? (producto as any).prod_precio ?? 0);
+
   const lineaActual = useMemo(() => {
     return pedido.find((item: any) => item.producto?.prod_id === producto.prod_id);
   }, [pedido, producto.prod_id]);
 
   const cantidad = lineaActual?.cantidad || 0;
-  const subtotal = producto.prod_precio * cantidad;
+  const subtotal = precioUnitario * cantidad;
   const estaSeleccionado = cantidad > 0;
 
-  // Stock disponible
-  const isOutOfStock = producto.prod_stock !== null && producto.prod_stock <= 0;
+  /* ===========================================================================
+     3. EVALUACIÓN DE DISPONIBILIDAD COMERCIAL
+     =========================================================================== */
+  const isAvailable = useMemo(() => {
+    if (producto.prod_disponible === false) return false;
+    if (producto.prod_per_sin_stock) return true;
+    if (producto.prod_stock !== null && producto.prod_stock !== undefined) {
+      return producto.prod_stock > 0;
+    }
+    return true;
+  }, [producto.prod_disponible, producto.prod_per_sin_stock, producto.prod_stock]);
 
   /* ===========================================================================
-     3. NORMALIZACIÓN DE WHATSAPP DINÁMICO
+     4. WHATSAPP Y ENLACE SEGURO
      =========================================================================== */
   const { config } = useConfig();
   const rawPhone = config?.contact?.admin_phone || '';
   const countryCode = config?.contact?.whatsapp_country_code || '598';
-  const digitsOnly = rawPhone.replace(/\D/g, '');
-  const cleanPhone = digitsOnly.startsWith('0') ? digitsOnly.slice(1) : digitsOnly;
-  const formattedPhone = `${countryCode}${cleanPhone}`;
+  const cleanPhone = `${countryCode}${rawPhone.replace(/\D/g, '').replace(/^0/, '')}`;
 
   const productUrl = typeof window !== 'undefined'
     ? `${window.location.origin}${window.location.pathname}#prod-${producto.prod_id}`
     : '';
 
-  const whatsappLink = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(
-    `¡Hola! Estoy interesado en el producto: *${producto.prod_nombre}*, *$${producto.prod_precio.toLocaleString('es-UY')}*\n\nVer Producto:\n${productUrl}`
+  const whatsappLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
+    `¡Hola! Estoy interesado en el producto: *${producto.prod_nombre}*, *$${precioUnitario.toLocaleString('es-UY')}*.\n\nVer Producto:\n${productUrl}`
   )}`;
 
   /* ===========================================================================
-     4. HANDLERS DE INTERACCIÓN
+     5. HANDLERS DE INTERACCIÓN
      =========================================================================== */
   const handleCardClick = () => {
-    if (isOutOfStock) return;
+    if (!isAvailable) return;
     addItemToCart(producto);
   };
 
@@ -97,18 +93,18 @@ export function ProductCardV1({ producto }: ProductCardV1Props) {
       onClick={handleCardClick}
       className={`
         /* --- Posición --- */
-        relative                     /* Contexto para badges flotantes */
+        relative                     /* Contexto para badges absolutos */
         flex                         /* Layout en columna */
         flex-col
         justify-between              /* Distribuye contenido e interacción */
 
         /* --- Dimensiones --- */
-        w-full                       /* Ocupa el ancho completo de la celda */
+        w-full                       /* Ocupa el ancho completo */
         h-full                       /* Altura total homogénea */
-        min-w-0                      /* Previene desbordamiento en grillas móviles */
+        min-w-0                      /* Previene desbordamiento en grillas */
         p-4                          /* Padding interno móvil */
         sm:p-5                       /* Padding interno escritorio */
-        gap-3                        /* Separación vertical entre bloques */
+        gap-3                        /* Separación vertical */
 
         /* --- Colores --- */
         ${estaSeleccionado 
@@ -118,8 +114,8 @@ export function ProductCardV1({ producto }: ProductCardV1Props) {
 
         /* --- Estilo --- */
         rounded-[1.75rem]            /* Curvatura moderna */
-        overflow-hidden              /* Contiene imágenes y esquinas */
-        cursor-pointer               /* Toda la tarjeta es seleccionable */
+        overflow-hidden
+        ${!isAvailable ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}
         shadow-sm
 
         /* --- Animación --- */
@@ -129,7 +125,7 @@ export function ProductCardV1({ producto }: ProductCardV1Props) {
         hover:shadow-lg
       `}
     >
-      {/* --- BADGE SUPERIOR IZQUIERDO: Subtotal acumulado --- */}
+      {/* BADGE: Subtotal acumulado */}
       {estaSeleccionado && (
         <div
           className={`
@@ -171,7 +167,7 @@ export function ProductCardV1({ producto }: ProductCardV1Props) {
         </div>
       )}
 
-      {/* --- BOTÓN QUITAR DEL PEDIDO (Top Right) --- */}
+      {/* BOTÓN QUITAR DEL PEDIDO */}
       {estaSeleccionado && (
         <button
           type="button"
@@ -210,7 +206,7 @@ export function ProductCardV1({ producto }: ProductCardV1Props) {
       )}
 
       {/* =====================================================================
-         1. IMAGEN DEL PRODUCTO
+         1. IMAGEN PRINCIPAL
          ===================================================================== */}
       <div
         className={`
@@ -243,6 +239,7 @@ export function ProductCardV1({ producto }: ProductCardV1Props) {
 
             /* --- Estilo --- */
             object-contain
+            ${!isAvailable ? 'grayscale-[60%]' : ''}
 
             /* --- Animación --- */
             transition-transform
@@ -253,7 +250,7 @@ export function ProductCardV1({ producto }: ProductCardV1Props) {
       </div>
 
       {/* =====================================================================
-         <!> 2. SUBCATEGORÍAS CON ICONOGRAFÍA AGNÓSTICA (DynamicIcon)
+         2. SUBCATEGORÍAS CON ICONOGRAFÍA AGNÓSTICA (DynamicIcon)
          ===================================================================== */}
       {producto.subcategorias && producto.subcategorias.length > 0 && (
         <div
@@ -268,40 +265,43 @@ export function ProductCardV1({ producto }: ProductCardV1Props) {
             pt-1
           `}
         >
-          {producto.subcategorias.map((sub) => (
-            <div
-              key={sub.subc_id}
-              title={sub.subc_nombre}
-              className={`
-                /* --- Posición --- */
-                flex
-                items-center
-                justify-center
+          {producto.subcategorias.map((subItem: any) => {
+            const sub = subItem.subcategoria || subItem;
+            return (
+              <div
+                key={sub.subc_id}
+                title={sub.subc_nombre}
+                className={`
+                  /* --- Posición --- */
+                  flex
+                  items-center
+                  justify-center
 
-                /* --- Dimensiones --- */
-                p-1.5
+                  /* --- Dimensiones --- */
+                  p-1.5
 
-                /* --- Colores --- */
-                bg-vete-primary/10
-                text-vete-primary
-                border
-                border-vete-primary/20
+                  /* --- Colores --- */
+                  bg-vete-primary/10
+                  text-vete-primary
+                  border
+                  border-vete-primary/20
 
-                /* --- Estilo --- */
-                rounded-lg
-              `}
-            >
-              {sub.subc_imagen_url ? (
-                <img 
-                  src={sub.subc_imagen_url} 
-                  alt={sub.subc_nombre} 
-                  className="w-3.5 h-3.5 object-contain" 
-                />
-              ) : (
-                <DynamicIcon name={sub.subc_icono} size={13} className="text-vete-primary" />
-              )}
-            </div>
-          ))}
+                  /* --- Estilo --- */
+                  rounded-lg
+                `}
+              >
+                {sub.subc_imagen_url ? (
+                  <img 
+                    src={sub.subc_imagen_url} 
+                    alt={sub.subc_nombre} 
+                    className="w-3.5 h-3.5 object-contain" 
+                  />
+                ) : (
+                 <DynamicIcon name={sub.subc_icono} size={13} className="text-vete-primary" />
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -387,10 +387,10 @@ export function ProductCardV1({ producto }: ProductCardV1Props) {
               font-black
             `}
           >
-            ${producto.prod_precio.toLocaleString('es-UY')}
+            ${precioUnitario.toLocaleString('es-UY')}
           </span>
 
-          {isOutOfStock && (
+          {!isAvailable && (
             <span
               className={`
                 /* --- Colores --- */
@@ -453,7 +453,7 @@ export function ProductCardV1({ producto }: ProductCardV1Props) {
           {/* Botón Comprar / Agregar */}
           <button
             type="button"
-            disabled={isOutOfStock}
+            disabled={!isAvailable}
             onClick={(e) => {
               e.stopPropagation();
               handleCardClick();
@@ -482,7 +482,7 @@ export function ProductCardV1({ producto }: ProductCardV1Props) {
               disabled:opacity-40
               disabled:cursor-not-allowed
             `}
-            title={isOutOfStock ? "Agotado" : "Agregar al pedido"}
+            title={!isAvailable ? "No disponible" : "Agregar al pedido"}
           >
             <ShoppingCart size={16} />
           </button>

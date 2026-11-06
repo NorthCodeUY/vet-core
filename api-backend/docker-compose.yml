@@ -1,82 +1,77 @@
 # api-backend/docker-compose.yml
 
-  # ---------------------------------------------------------------------------
-  #  POSTGRES DATABASE
-  # ---------------------------------------------------------------------------
 services:
+
+  # ---------------------------------------------------------------------------
+  # MOTOR POSTGRESQL (CLÚSTER CENTRALIZADO)
+  # Consume variables desde el archivo .env raíz
+  # ---------------------------------------------------------------------------
   db-vet_bel:
-    image: postgres:15 # Contenedor de PostgreSQL
-    container_name: vet_db_bel # Nombre del contenedor
-    restart: always # Reinicia el contenedor si se cae
+    image: postgres:15
+    container_name: vet_db_bel
+    restart: always
     environment:
-      # Variables de entorno
-      POSTGRES_USER: ${DB_USER} # Usuario de la base de datos
-      POSTGRES_PASSWORD: ${DB_PASSWORD} # Contraseña de la base de datos
-      POSTGRES_DB: ${DB_NAME} # Nombre de la base de datos
-    # Estos puertos hay que comentarlos en produccion
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
-      # Mapeo de puertos
-      - "${DB_PORT}:5432" # El puerto 5432 de tu máquina se conecta al 5432 del contenedor
+      # Expuesto al host local para desarrollo (comentar en VPS de producción)
+      - "${DB_PORT:-5432}:5432"
     volumes:
-      # Volúmenes
       - postgres_data_vet_bel:/var/lib/postgresql/data
     networks:
       - northcode-net
+
   # ---------------------------------------------------------------------------
-  #  BACKEND VETERINARIA BELTRAMELLI
+  # TENANT 1: BACKEND VETERINARIA BELTRAMELLI
+  # Consume variables exclusivamente de .env.veterinaria
   # ---------------------------------------------------------------------------
   backend-veterinaria:
-    # Contexto de construcción: usa el Dockerfile ubicado en la raíz actual
     build: .
-    # Asigna un nombre estático y legible al contenedor en Docker
     container_name: backend_vet_beltramelli
-    # Reinicia automáticamente el contenedor si el proceso falla o se reinicia el servidor
     restart: always
-    # Los puertos quedan comentados. La comunicación se hace vía DNS interno de Docker (northcode-net)
+    # Puertos no expuestos al host: la comunicación se hace vía DNS Docker (northcode-net)
     # ports:
-    #   - "8001:8001" 
+    #   - "8001:8001"
     env_file:
-      # Inyecta las variables de entorno específicas de este cliente
       - .env.veterinaria
+    depends_on:
+      - db-vet_bel
     volumes:
-      # Sincroniza el código fuente local con el contenedor (desarrollo/hot-reload)
       - ./app:/app/app
-      # Monta la carpeta física de imágenes aislada para Veterinaria
       - ./static/veterinaria:/app/static
     networks:
-      # Conecta el contenedor a la red compartida donde ya vive tu base de datos
       - northcode-net
 
   # ---------------------------------------------------------------------------
   # TENANT 2: BACKEND VESTIMENTA FLOR DE LOTO
+  # Consume variables exclusivamente de .env.flordeloto
   # ---------------------------------------------------------------------------
   backend-flordeloto:
-    # Reutiliza exactamente la misma imagen base / Dockerfile
     build: .
-    # Asigna nombre unívoco para el segundo tenant
     container_name: backend_vestimenta_flordeloto
-    # Política de alta disponibilidad en caso de caídas
     restart: always
-    # No expongo los puertos a la máquina host
     # ports:
-      # Mapeo de puertos: Host (8002) -> Contenedor (8002)
-      # - "8002:8002"
+    #   - "8002:8002"
     env_file:
-      # Inyecta las variables de entorno de la tienda de ropa
       - .env.flordeloto
+    depends_on:
+      - db-vet_bel
     volumes:
-      # Comparte la misma base de código Python
       - ./app:/app/app
-      # Monta la carpeta física de imágenes aislada para Flor de Loto
       - ./static/flordeloto:/app/static
     networks:
-      # Ambos backends conviven en la misma red privada de Docker
       - northcode-net
 
 # -----------------------------------------------------------------------------
-# RED PRIVADA EXISTENTE
+# DEFINICIONES GLOBALES DE INFRAESTRUCTURA
 # -----------------------------------------------------------------------------
 networks:
   northcode-net:
-    # Indica que la red ya existe en tu sistema y Docker no debe intentar crearla
     external: true
+
+volumes:
+  postgres_data_vet_bel:
+    # Vincula con el volumen ya existente en tu Docker daemon
+    external: true
+    name: api-backend_postgres_data_vet_bel

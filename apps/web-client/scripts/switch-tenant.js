@@ -111,8 +111,8 @@ const preparePublicDirectories = () => {
  * @returns {void}
  */
 const syncConfigurationFile = (sourceDir, targetDir) => {
-  const sourceConfigFile = path.join(sourceDir, 'config.json');
-  const targetConfigFile = path.join(targetDir, 'client_info.json');
+  const sourceConfigFile = path.join(sourceDir, 'config.json'); 
+  const targetConfigFile = path.join(targetDir, 'client_info.json');// 
 
   if (fs.existsSync(sourceConfigFile)) {
     fs.copyFileSync(sourceConfigFile, targetConfigFile);

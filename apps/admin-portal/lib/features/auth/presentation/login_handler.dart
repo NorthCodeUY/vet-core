@@ -1,6 +1,7 @@
 // apps/admin-portal/lib/features/presentation/login_handler.dart
+
 import 'package:flutter/material.dart';
-import 'package:admin_portal/screens/main_website/main_handler.dart';
+import 'package:admin_portal/features/shell/presentation/dashboard_screen.dart';
 import '../data/auth_repository.dart';
 import '../domain/auth_models.dart';
 import 'login_screen.dart';
@@ -48,7 +49,7 @@ class _LoginHandlerState extends State<LoginHandler> {
 
       // Navegación limpia al Dashboard eliminando el Login del stack
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const MainHandler()),
+        MaterialPageRoute(builder: (_) => const DashboardScreen()),
         (route) => false,
       );
     } catch (e) {

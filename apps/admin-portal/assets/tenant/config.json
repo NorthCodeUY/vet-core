@@ -1,0 +1,27 @@
+{
+  "_version": "1.0.0",
+  "tenant_id": "valeria_beltramelli",
+  "business_name": "Veterinaria Beltramelli - Panel de Control",
+  "business_type": "veterinary",
+  "theme": {
+    "primary": "#275D9E",
+    "secondary": "#daebd4",
+    "dark": "#004D40",
+    "surface": "#FFFFFF",
+    "error": "#DC2626"
+  },
+  "admin_modules": {
+    "has_products_catalog": true,
+    "has_medical_records": true,
+    "has_appointments_agenda": false,
+    "has_orders_monitoring": true,
+    "has_business_settings": true
+  },
+  "product_schema": {
+    "supports_variants": false,
+    "requires_brand": true,
+    "requires_stock": true,
+    "requires_images": true,
+    "max_images_per_product": 5
+  }
+}

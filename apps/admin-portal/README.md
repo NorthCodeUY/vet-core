@@ -1,134 +1,126 @@
-# admin_portal
+# 🏢 VetCore Admin Portal
 
-A new Flutter project.
+Portal administrativo multiplataforma (Web, Desktop y Mobile) para la suite SaaS **VetCore**. Construido con Flutter (Dart 3) bajo principios de **Clean Architecture**, enfoque **Feature-First** y **Aislamiento Multi-Tenant (Zero Hardcoding)**.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 🏛️ Arquitectura del Sistema
 
-A few resources to get you started if this is your first Flutter project:
+1. **Aislamiento Multi-Tenant (Runtime Injection):**
+   - La identidad visual, paleta de colores y logotipos se inyectan en tiempo de ejecución desde `assets/tenant/admin_config.json`.
+   - Cero cadenas de texto comerciales ni colores hexadecimales quemados en código fuente Dart.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+2. **Resolución de Backend Agnóstica:**
+   - En desarrollo, el target de FastAPI se inyecta mediante variables de entorno de compilación:
+     `--dart-define=API_URL=http://localhost:8000`
+   - En producción Web/Docker, opera acoplado a NGINX bajo el proxy inverso estándar `/api`.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+3. **Separación de Responsabilidades (Screen + Handler):**
+   - `*_screen.dart`: Widgets de presentación puros, reactivos a estados de UI.
+   - `*_handler.dart`: Controladores de estado que gestionan llamadas HTTP, validaciones y ciclo de vida.
+
+---
 
 
-Estructura actual de proyhecto antes de comensar 
+## 🚀 Entorno de Desarrollo Local
 
+### Pre-requisitos
+- Flutter SDK 3.44.x o superior.
+- Backend FastAPI del tenant levantado en su puerto correspondiente (ej. 8000 para Valeria).
 
-# Estrucutra actual
-```text
+### Ejecución con Orquestador
+Utiliza el script orquestador para enlazar los assets del cliente e inicializar Flutter:
 
-.
-├── assets
-│   ├── Logo Barone.png
-│   ├── logo (Copiar).png
-│   └── logo.png
-├── core
-│   └── theme
-│       ├── app_colors.dart
-│       ├── app_styles.dart
-│       ├── app_text_styles.dart
-│       └── app_theme.dart
-├── main.dart
-├── models
-│   ├── cliente.dart
-│   ├── depositos.dart
-│   └── user.dart
-├── screens
-│   ├── add_clients
-│   │   ├── add_clients.dart
-│   │   └── add_clients_handler.dart
-│   ├── clients
-│   │   ├── clients_handler.dart
-│   │   └── clients_screen.dart
-│   ├── deposits
-│   │   ├── deposits_handler.dart
-│   │   └── deposits_screen.dart
-│   ├── login
-│   │   ├── login_form.dart
-│   │   ├── login_handler.dart
-│   │   └── login_styles.dart
-│   ├── main_website
-│   │   ├── main_content.dart
-│   │   ├── main_handler.dart
-│   │   ├── main_styles.dart
-│   │   └── notification_modal.dart
-│   ├── password_reset
-│   │   ├── password_reset_form.dart
-│   │   ├── password_reset_handler.dart
-│   │   └── password_reset_styles.dart
-│   └── payments
-│       ├── payments_handler.dart
-│       └── payments_screen.dart
-└── services
-    └── api_service.dart
+```bash
+# Ejecución para tenant Valeria en Web
+./run_admin.sh valeria chrome
 
+# Ejecución para tenant Flor de Loto en Linux Desktop
+./run_admin.sh flordeloto linux
 ```
 
+## 📦 Mapa de Módulos (Feature Flags)
+El portal activa o desactiva pantallas dinámicamente según las banderas - provistas en admin_config.json:
+- has_products_catalog: Habilita la gestión de inventario y vitrina.
+- has_appointments_agenda: Habilita el calendario de turnos.
+- has_medical_records: Activa fichas clínicas (exclusivo veterinarias).
+- has_orders_monitoring: Panel de compras en tiempo real.
+Code
+---
+
+### Siguiente paso inmediato
+Ejecuta la limpieza del **Paso 1** en tu terminal y confírmame que la estructura de carpetas quedó lista. A partir de ahí, colocamos el `main.dart` mínimo para levantar la pantalla de login sin errores.
 
 
 
 
 
 
-# Estructura sujerida por la ia IA
 
-```text
 
-apps/admin-portal/lib/
-├── core/                                 # Transversal a toda la app
-│   ├── config/                           # Inyección en Runtime (Zero Hardcoding)
-│   │   ├── admin_config.dart             # Modelo fuertemente tipado de admin_config.json
-│   │   └── app_environment.dart          # Variables inyectadas (--dart-define API_URL)
-│   ├── network/                          # Capa HTTP desacoplada
-│   │   ├── api_client.dart               # Cliente Dio configurado con Interceptor JWT
-│   │   └── api_endpoints.dart            # Constantes de rutas FastAPI (/api/v1/...)
-│   ├── storage/                          # Persistencia segura de credenciales
-│   │   └── secure_storage_service.dart   # Encapsula flutter_secure_storage para tokens
-│   └── theme/                            # Motor dinámico de estilos
-│       └── dynamic_theme.dart            # Convierte admin_config.json -> Material 3 ThemeData
+lib/features/catalog/presentation/
+├── catalog_screen.dart             # Orquestador principal (ensambla las piezas)
+├── catalog_handler.dart            # Estado: carga de productos, filtros y toggles
+└── widgets/
+    ├── metrics_header.dart         # Tarjetas de resumen (Total, Vitrina, Críticos, Ocultos)
+    ├── search_and_filters.dart     # Barra de búsqueda y pills de filtro
+    ├── product_card_item.dart      # Tarjeta individual de producto con switch de vitrina
+    └── quick_actions_footer.dart   # Barra de acciones rápidas (Ajuste de precio, CSV)
+
+
+
+
+admin@beltramelli.com
+654321
+
+
+
+
+
+
+
+```text 
+
+lib/
+├── core/                                   # Capa transversal desacoplada
+│   ├── config/
+│   │   ├── admin_config.dart               # Parser tipado de admin_config.json
+│   │   └── app_environment.dart            # Inyección de URL de FastAPI (--dart-define)
+│   ├── network/
+│   │   ├── api_client.dart                 # Cliente Dio con interceptor de JWT
+│   │   └── api_endpoints.dart              # URLs (/api/auth/token, /api/productos)
+│   ├── storage/
+│   │   └── secure_storage_service.dart     # Persistencia cifrada de credenciales
+│   └── theme/
+│       └── dynamic_theme.dart              # Mapeo de tokens de diseño a Material 3
 │
-├── features/                             # Módulos de negocio aislados
-│   │
-│   ├── auth/                             # 🔐 FASE 1: Autenticación
+├── features/                               # Módulos de negocio (Feature-First)
+│   ├── auth/                               # Módulo 1: Autenticación
 │   │   ├── data/
-│   │   │   └── auth_repository.dart      # Consume /api/auth/token con Dio
+│   │   │   └── auth_repository.dart        # Llamadas a /api/auth con Dio
 │   │   ├── domain/
-│   │   │   └── auth_state.dart           # Modelos de sesión y usuario autenticado
+│   │   │   └── auth_models.dart            # LoginCredentials, AuthSession
 │   │   └── presentation/
-│   │       ├── login_screen.dart         # UI pura del formulario de login
-│   │       └── login_handler.dart        # Controlador de estado de login (Loading, Error, Success)
+│   │       ├── login_handler.dart          # Lógica, estado y validación
+│   │       └── login_screen.dart           # UI pura agnóstica al tenant
 │   │
-│   ├── shell/                            # 🎛️ FASE 2: Layout Principal (Sidebar Dinámico)
+│   ├── shell/                              # Módulo 2: Contenedor Administrativo
 │   │   └── presentation/
-│   │       ├── dashboard_screen.dart     # Layout responsivo (TopBar + Sidebar + Body)
-│   │       ├── dashboard_handler.dart    # Controla la navegación interna entre pestañas
+│   │       ├── dashboard_handler.dart      # Control de navegación y tabs
+│   │       ├── dashboard_screen.dart       # Layout (TopBar + Workspace)
 │   │       └── widgets/
-│   │           └── dynamic_sidebar.dart  # Renderiza ítems según admin_modules (has_*)
+│   │           └── dynamic_sidebar.dart    # Menú condicionado por feature flags
 │   │
-│   └── catalog/                          # 📦 FASE 3: Vitrina / Productos (Alta, Baja, Modificación)
+│   └── catalog/                            # Módulo 3: Vitrina de Productos (ABM)
 │       ├── data/
-│       │   └── product_repository.dart   # GET /api/productos, POST, PUT, DELETE, Upload de foto
+│       │   └── product_repository.dart     # CRUD y subida de imágenes a FastAPI
 │       ├── domain/
-│       │   └── product_model.dart        # Entidad de producto agnóstica
+│       │   └── product_model.dart          # Modelo de Producto
 │       └── presentation/
-│           ├── catalog_list_screen.dart  # Grilla/Tabla de productos activos con toggle visible
-│           ├── catalog_list_handler.dart # Paginación, búsqueda y cambio de visibilidad
-│           ├── product_form_screen.dart  # Formulario alta/edición adaptado al business_type
-│           ├── product_form_handler.dart # Manejo de validaciones y subida multipart
-│           └── widgets/
-│               ├── image_picker_box.dart # Selector de imágenes (Web drag & drop y Mobile)
-│               └── schemas/              # Subformularios condicionales
-│                   ├── standard_fields.dart
-│                   ├── clothing_fields.dart   # Talles / Colores
-│                   └── automotive_fields.dart # Kilómetros / Año / Transmisión
+│           ├── catalog_handler.dart        # Paginación, filtros y bajas
+│           ├── catalog_screen.dart         # Grilla/Tabla administrativa
+│           ├── product_form_handler.dart   # Lógica del formulario
+│           └── product_form_screen.dart    # Vista de alta/edición de producto
 │
-└── main.dart     # Bootstrap: Carga config, verifica JWT y monta la app
-
-```
-
+└── main.dart                               # Bootstrap: Inyección de config y arranque
+``` 

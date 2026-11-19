@@ -1,67 +1,54 @@
-// frontend/flutter_gestion_contable/lib/main.dart
+// lib/main.dart
 
 import 'package:flutter/material.dart';
-// Importa flutter_localizations para el soporte de idiomas (MaterialLocalizations)
-import 'package:flutter_localizations/flutter_localizations.dart'; 
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:admin_portal/core/config/tenant_config.dart';
+import 'package:admin_portal/features/auth/presentation/login_handler.dart';
 
-// Asegúrate de que estas rutas sean correctas para tu proyecto:
-import 'package:admin_portal/screens/login/login_handler.dart';
-import 'package:admin_portal/screens/main_website/main_handler.dart';
-import 'package:admin_portal/services/api_service.dart';
-import 'package:admin_portal/core/theme/app_theme.dart';
-// <!> No se para que es ni idea 
-import 'package:provider/provider.dart'; // Si estás usando Provider en tu aplicación, mantenlo.
-
-
-// La función principal que arranca la aplicación de Flutter.
 void main() async {
-  // Asegura que los bindings de Flutter estén inicializados antes de cualquier operación asíncrona.
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Crea una instancia del ApiService para verificar si hay un token de autenticación.
-  final apiService = ApiService();
-  final token = await apiService.getToken(); // Obtiene el token almacenado (si existe).
+  // Carga inicial agnóstica de configuración del tenant
+  final tenantConfig = await TenantConfig.loadFromAssets();
 
-  // Inicia la aplicación, pasando un valor booleano que indica si hay un token.
-  runApp(MyApp(hasToken: token != null));
+  runApp(VetCoreAdminApp(config: tenantConfig));
 }
 
-// MyApp es el widget raíz de la aplicación.
-class MyApp extends StatelessWidget {
-  // Variable para determinar la pantalla inicial.
-  final bool hasToken;
-  
-  const MyApp({super.key, required this.hasToken});
+class VetCoreAdminApp extends StatelessWidget {
+  final TenantConfig config;
+
+  const VetCoreAdminApp({super.key, required this.config});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // Título de la aplicación, visible en el selector de aplicaciones.
-      title: 'Estudio Contable',
-      // Aplica el tema de la aplicación para colores, fuentes, etc.
-      theme: AppTheme.lightTheme,
-
-      // *******************************************************************
-      // ******* AÑADIR ESTAS LÍNEAS PARA LA LOCALIZACIÓN ******************
-      // *******************************************************************
+      title: config.businessName,
+      debugShowCheckedModeBanner: false,
+      
+      // Localización estándar
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate, // Necesario para soporte en iOS
+        GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [
-        Locale('en', ''), // Soporte para inglés
-        Locale('es', ''), // Soporte para español
+        Locale('es', 'ES'),
       ],
-      // *******************************************************************
-      // *******************************************************************
 
-      // Define la pantalla inicial basándose en la existencia de un token.
-      // Si `hasToken` es verdadero, navega a la pantalla principal.
-      // Si es falso, muestra la pantalla de inicio de sesión.
-      home: hasToken ? const MainHandler() : const LoginHandler(),
-      // Desactiva el banner de "debug" en la esquina superior derecha.
-      debugShowCheckedModeBanner: false,
+      // <!> TEMA DINÁMICO: Inyección de color primario y secundario del tenant
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: config.theme.primary,
+          primary: config.theme.primary,
+          secondary: config.theme.secondary,
+          error: config.theme.error,
+          surface: config.theme.surface,
+        ),
+      ),
+
+      // Inicia directamente en la pantalla de autenticación
+      home: const LoginHandler(),
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:admin_portal/core/config/app_environment.dart';
 import '../domain/auth_models.dart';
 
+
 /// Repositorio encargado de la comunicación con los endpoints de autenticación.
 class AuthRepository {
   late final Dio _dio;

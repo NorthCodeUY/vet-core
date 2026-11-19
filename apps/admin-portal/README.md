@@ -94,7 +94,7 @@ lib/
 │   └── theme/
 │       └── dynamic_theme.dart              # Mapeo de tokens de diseño a Material 3
 │
-├── features/                               # Módulos de negocio (Feature-First)
+├── screm/                               # Módulos de negocio (Feature-First)
 │   ├── auth/                               # Módulo 1: Autenticación
 │   │   ├── data/
 │   │   │   └── auth_repository.dart        # Llamadas a /api/auth con Dio

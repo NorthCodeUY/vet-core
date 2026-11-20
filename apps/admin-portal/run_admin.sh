@@ -1,57 +1,59 @@
+# apps/admin-portal/run_admin.sh
+
+
+
+
+
 #!/bin/bash
-# =============================================================================
-# ORQUESTADOR DE DESARROLLO FLUTTER MULTI-TENANT (run_admin.sh)
-# =============================================================================
+# ==============================================================================
+# ORQUESTADOR VETCORE SAAS - PORTAL ADMINISTRATIVO
+# ==============================================================================
 
-TENANT=$1
-DEVICE=${2:-chrome} # Por defecto corre en Chrome, pero puedes pasar 'linux'
+TENANT=${1:-veterinaria}
+TARGET=${2:-chrome} # Opciones: 'chrome' o 'linux'
 
-# 1. Validación de parámetros
-if [ -z "$TENANT" ]; then
-  echo "❌ Error: Debes especificar un tenant."
-  echo "👉 Uso: ./run_admin.sh [valeria | flordeloto] [chrome | linux]"
-  exit 1
-fi
-
-CLIENT_DIR="../../clients/$TENANT"
-
-if [ ! -d "$CLIENT_DIR" ]; then
-  echo "❌ Error: No existe el directorio de cliente: $CLIENT_DIR"
-  exit 1
-fi
-
-# 2. Mapeo de puertos de desarrollo (Igual que en run_desarrollo.py)
+# 1. Normalización de rutas y nombres de cliente
 case $TENANT in
-  "valeria" | "veterinaria")
-    PORT=8000
+  "valeria" | "veterinaria" | "veterinariabeltrameli")
+    CLIENT_DIR="../../clients/veterinariabeltrameli"
+    ENV_FILE="../../api-backend/.env.veterinaria"
     ;;
   "flordeloto")
-    PORT=8001
+    CLIENT_DIR="../../clients/flordeloto"
+    ENV_FILE="../../api-backend/.env.flordeloto"
     ;;
   *)
-    PORT=8000
+    CLIENT_DIR="../../clients/$TENANT"
+    ENV_FILE="../../api-backend/.env.$TENANT"
     ;;
 esac
 
-echo "============================================================"
-echo "🚀 [VETCORE SAAS] - INICIANDO PORTAL ADMINISTRATIVO"
-echo "🏢 Tenant Activo : $TENANT"
-echo "🌐 Conectando a  : http://localhost:$PORT"
-echo "📱 Dispositivo   : $DEVICE"
-echo "============================================================"
-
-# 3. Preparación de Assets en apps/admin-portal/assets/tenant/
-mkdir -p assets/tenant
-
-# Enlace simbólico o copia del config.json y assets del cliente
-cp "$CLIENT_DIR/config.json" assets/tenant/config.json
-
-if [ -d "$CLIENT_DIR/assets" ]; then
-  cp -r "$CLIENT_DIR/assets/"* assets/tenant/ 2>/dev/null || true
+# 2. Validación de existencia del cliente
+if [ ! -d "$CLIENT_DIR" ]; then
+  echo "❌ Error: Directorio del cliente no encontrado: $CLIENT_DIR"
+  exit 1
 fi
 
-# 4. Ejecución de Flutter inyectando la URL del silo FastAPI
-flutter run -d "$DEVICE" \
+# 3. Extracción automática del puerto desde el .env del backend
+if [ -f "$ENV_FILE" ]; then
+  PORT=$(grep -E '^APP_PORT=' "$ENV_FILE" | cut -d '=' -f2 | tr -d ' "')
+fi
+PORT=${PORT:-8001}
+
+echo "============================================================"
+echo "🚀 [VETCORE SAAS] - INICIANDO PORTAL ADMINISTRATIVO"
+echo "🏢 Tenant Activo  : $TENANT"
+echo "📄 Config Admin   : $CLIENT_DIR/config_admin.json"
+echo "🌐 Backend Target : http://localhost:$PORT"
+echo "🖥️  Target Device  : $TARGET"
+echo "============================================================"
+
+# 4. Sincronización en caliente de assets locales
+mkdir -p assets/tenant
+cp "$CLIENT_DIR/config_admin.json" assets/tenant/config.json 2>/dev/null || cp "$CLIENT_DIR/config.json" assets/tenant/config.json
+cp "$CLIENT_DIR/assets/logo.png" assets/tenant/logo.png 2>/dev/null || true
+
+# 5. Ejecución de Flutter
+flutter run -d "$TARGET" \
   --dart-define=API_URL="http://localhost:$PORT" \
-  --dart-define=TENANT="$TENANT" \
-  --dart-define=ENV="development"
+  --dart-define=TENANT="$TENANT"

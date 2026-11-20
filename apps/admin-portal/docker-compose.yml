@@ -1,0 +1,51 @@
+# apps/admin-portal/docker-compose.yml 
+
+version: '3.8'
+
+# ==============================================================================
+# INFRAESTRUCTURA DE RED COMPARTIDA (DOCKER BRIDGE)
+# ==============================================================================
+# Conecta este portal con los contenedores existentes de FastAPI y PostgreSQL
+# sin necesidad de exponer puertos al host para la comunicación interna.
+networks:
+  northcode-net:
+    external: true # Utiliza la red previamente creada en tu entorno Docker
+
+services:
+  # ============================================================================
+  # SILO ADMIN PORTAL: VETERINARIA BELTRAMELLI (FLUTTER WEB EN PRODUCCIÓN)
+  # ============================================================================
+  admin-valeria:
+    build:
+      dockerfile: Dockerfile
+    container_name: nc-admin-valeria
+    restart: unless-stopped
+
+    # Vinculación a la red donde ya conviven tu FastAPI y Nginx Proxy Manager
+    networks:
+      - northcode-net
+
+    # Mapeo de puerto para acceso directo desde el navegador
+    ports:
+      - "8090:80"
+
+    environment:
+      # ========================================================================
+      # RESOLUCIÓN DE BACKEND POR DNS INTERNO DE DOCKER (ZERO HARDCODING)
+      # ========================================================================
+      # NGINX (dentro de este contenedor) usará esta variable para redirigir /api/
+      # Apunta al nombre del contenedor de FastAPI en la red 'northcode-net'.
+      # NOTA: Asegúrate de que coincida con el 'container_name' de tu backend.
+      - BACKEND_HOST=backend_vet_beltramelli:8000
+
+    volumes:
+      # ========================================================================
+      # INYECCIÓN DINÁMICA DE CONFIGURACIÓN EN RUNTIME (ZERO-REBUILD)
+      # ========================================================================
+      # Permite actualizar paleta de colores, módulos y logotipos sin recompilar
+      # la imagen de Docker de Flutter.
+
+      # 1. Configuración administrativa tipada (Módulos activos, banderas, temas)
+      - ../../clients/veterinariabeltrameli/config_admin.json:/usr/share/nginx/html/assets/tenant/config.json:ro
+      # 2. Imagotipo institucional de alta resolución  
+      - ../../clients/veterinariabeltrameli/assets/logo.png:/usr/share/nginx/html/assets/tenant/logo.png:ro

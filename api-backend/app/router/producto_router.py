@@ -37,7 +37,7 @@ def listar_agrupados(db: Session = Depends(get_db)):
 
 
 @router.get(
-    "/", 
+    "/filtrados", 
     response_model=List[ProductoResponseSchema],
     status_code=status.HTTP_200_OK,
     summary="Buscar y filtrar productos públicos"
@@ -51,8 +51,11 @@ def listar_productos(
     return get_productos_filtrados(db, cat_id=cat_id, search=search)
 
 
+# <!> no me queda claro esto supongo que manda todo ded una no se si pudeo si croleo para que no conjestione todo de una 
+# adeas lo que no me quedo muy claro es el tema de  este suongo que el metodo apunta a 
+# a deiverets metods porque el panel administrativo trae todo independientemete de si esta activo o no y el rsto de los parametros 
 @router.get(
-    "/admin/todos",
+    "/admin_todos",
     response_model=List[ProductoResponseSchema],
     status_code=status.HTTP_200_OK,
     summary="Listado completo para panel administrativo"

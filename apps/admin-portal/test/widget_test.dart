@@ -1,7 +1,7 @@
 // test/widget_test.dart
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:admin_portal/core/config/tenant_config.dart';
+import 'package:admin_portal/config/tenant_config.dart';
 import 'package:admin_portal/main.dart';
 
 void main() {

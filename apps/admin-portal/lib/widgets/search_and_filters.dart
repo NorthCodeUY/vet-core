@@ -59,6 +59,12 @@ class SearchAndFilters extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               _FilterChip(
+                label: 'Con Foto',
+                isSelected: selectedFilter == 'with_photo',
+                onTap: () => onFilterChanged('with_photo'),
+              ),
+              const SizedBox(width: 8),
+              _FilterChip(
                 label: 'En Vitrina',
                 isSelected: selectedFilter == 'showcase',
                 onTap: () => onFilterChanged('showcase'),

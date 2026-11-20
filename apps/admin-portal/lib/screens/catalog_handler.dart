@@ -207,10 +207,11 @@ class _CatalogHandlerState extends State<CatalogHandler> {
   List<Product> _getFilteredProducts() {
     return _products.where((p) {
       final matchesFilter = switch (_activeFilter) {
-        'showcase' => p.isVisibleInShowcase,
-        'critical' => p.isCriticalStock,
-        'hidden'   => !p.isVisibleInShowcase,
-        _          => true,
+        'with_photo' => p.images.isNotEmpty,
+        'showcase'   => p.isVisibleInShowcase,
+        'critical'   => p.isCriticalStock,
+        'hidden'     => !p.isVisibleInShowcase,
+        _            => true,
       };
       if (!matchesFilter) return false;
 

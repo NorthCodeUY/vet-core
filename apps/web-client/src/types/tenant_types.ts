@@ -191,8 +191,7 @@ export interface ServicesSectionConfig {
 
 
 
-
-// <!> Nuevo a probar 
+ 
 /**
  * Elemento multimedia asociado a un trabajo realizado.
  * 

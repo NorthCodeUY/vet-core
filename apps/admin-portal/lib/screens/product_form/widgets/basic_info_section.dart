@@ -70,7 +70,7 @@ class BasicInfoSection extends StatelessWidget {
 
           // 2. Selector de Categoría (cat_id)
           DropdownButtonFormField<int>(
-            value: selectedCategoryId,
+            initialValue: selectedCategoryId,
             decoration: const InputDecoration(
               labelText: 'Categoría Principal (cat_id) *',
               border: OutlineInputBorder(),

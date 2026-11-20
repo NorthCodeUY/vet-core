@@ -62,7 +62,12 @@ class CatalogScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: _CatalogAppBar(onCreateProduct: onCreateProduct),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: onCreateProduct,
+        icon: const Icon(Icons.add),
+        label: const Text('Nuevo Producto'),
+        tooltip: 'Registrar un nuevo producto en el catálogo',
+      ),
       body: RefreshIndicator(
         onRefresh: onRefresh,
         child: _buildBody(context),
@@ -101,40 +106,7 @@ class CatalogScreen extends StatelessWidget {
 }
 
 // =============================================================================
-// SUB-COMPONENTE 1: APPBAR MODULAR (WIDGET PRIVADO)
-// =============================================================================
-class _CatalogAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final VoidCallback onCreateProduct;
-
-  const _CatalogAppBar({required this.onCreateProduct});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return AppBar(
-      title: Text(
-        'Gestión de Catálogo',
-        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-      ),
-      actions: [
-        IconButton(
-          tooltip: 'Nuevo Producto',
-          icon: Icon(Icons.add_circle, color: colorScheme.primary),
-          onPressed: onCreateProduct,
-        ),
-        const SizedBox(width: 8),
-      ],
-    );
-  }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-}
-
-// =============================================================================
-// SUB-COMPONENTE 2: LISTA DE CONTENIDO Y FILTROS (WIDGET PRIVADO)
+// SUB-COMPONENTE 1: LISTA DE CONTENIDO, MÉTRICAS Y FILTROS (WIDGET PRIVADO)
 // =============================================================================
 class _CatalogContentList extends StatelessWidget {
   final int totalCount;
@@ -279,7 +251,9 @@ class _CatalogContentList extends StatelessWidget {
 }
 
 // =============================================================================
-// SUB-COMPONENTE 3: ESTADO VACÍO (EMPTY STATE)
+// SUB-COMPONENTE 2: ESTADO VACÍO (EMPTY STATE)
+// Visualiza un mensaje informativo amigable cuando la búsqueda o el filtro activo
+// no devuelven coincidencias dentro del catálogo de productos.
 // =============================================================================
 class _CatalogEmptyState extends StatelessWidget {
   const _CatalogEmptyState();

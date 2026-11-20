@@ -5,7 +5,6 @@
 import 'package:flutter/material.dart';
 import 'package:admin_portal/models/product/product.dart';
 import 'package:admin_portal/screens/product_form/widgets/basic_info_section.dart';
-import 'package:admin_portal/screens/product_form/widgets/form_section_card.dart';
 import 'package:admin_portal/screens/product_form/widgets/gallery_picker_section.dart';
 import 'package:admin_portal/screens/product_form/widgets/inventory_stock_section.dart';
 import 'package:admin_portal/screens/product_form/widgets/pricing_finance_section.dart';
@@ -103,8 +102,6 @@ class ProductFormScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(isEditing ? 'Editar Producto' : 'Nuevo Producto'),

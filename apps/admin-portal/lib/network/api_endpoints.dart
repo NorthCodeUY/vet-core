@@ -26,13 +26,15 @@ abstract final class ApiEndpoints {
   // 2. MÓDULO DE CATÁLOGO, PRODUCTOS Y VITRINA (E-COMMERCE)
   // ===========================================================================
 
-  /// Listado de productos públicos portal administrativo (`GET /api/productos/admin_todos`). 
+  /// Listado de productos para portal administrativo (`GET /api/productos/admin_todos`). 
   static const String adminProducts = '/api/productos/admin_todos';
 
-  /// Operaciones sobre un producto específico por ID (`GET`, `PUT`, `DELETE`). <!> no lo uso 
+  /// Operaciones sobre un producto específico por ID (`GET`, `PUT`, `DELETE`).
+  /// - `DELETE`: Baja lógica (`prod_activo = false`).
+  /// - `PUT`: Actualización de stock, precios y datos.
   static String productById(int id) => '/api/productos/$id';
 
-  /// Conmutador de visibilidad para publicar u ocultar en la vitrina web (`PATCH`). <!> no lo uso
+  /// Conmutador de visibilidad para publicar u ocultar en la vitrina web (`PATCH /api/productos/:id/vitrina`).
   static String toggleShowcase(int id) => '/api/productos/$id/vitrina';
 
   /// Carga y actualización de imagen principal del producto (`POST` multipart). <!> no lo uso creo

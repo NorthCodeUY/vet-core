@@ -9,7 +9,7 @@
 // 1. Tipos e Infraestructura
 // -----------------------------------------------------------------------------
 import { logErrorToBackend } from './logger';
-/* <!> Tipos reales importados directamente desde tu archivo product_types.ts */
+/* Tipos reales importados directamente desde tu archivo product_types.ts */
 import type { ApiCategory, ApiProduct } from '../types/product_types';
 
 // -----------------------------------------------------------------------------
@@ -45,7 +45,7 @@ export const productService = {
       /* 3. Deserialización y casteo al contrato real ApiCategory[] */
       return (await response.json()) as ApiCategory[];
     } catch (error) {
-      /* <!> Corrección de ruta en el log: antes enviaba "/api/productos/productos/agrupados" */
+      /* Corrección de ruta en el log: antes enviaba "/api/productos/productos/agrupados" */
       await logErrorToBackend(error, endpoint);
 
       /* 4. Propagación para que el hook maneje su estado de error */

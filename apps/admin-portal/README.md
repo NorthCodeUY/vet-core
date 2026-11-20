@@ -226,7 +226,7 @@ apps/admin-portal/
 │   │           ├── basic_info_section.dart  # Sección 1: Nombre, categoría, tags y código de barras
 │   │           ├── gallery_picker_section.dart # Sección 2: Portada y selector de fotografías
 │   │           ├── pricing_finance_section.dart# Sección 3: Precio PVP, costo y margen reactivo
-│   │           ├── inventory_stock_section.dart# Sección 4: Stock actual y punto de pedido
+│   │           ├── inventory_stock_section.dart# Sección 4: Stock actual y punto de pedido 
 │   │           ├── showcase_switches_section.dart # Sección 5: Banderas booleanas de vitrina
 │   │           ├── variants_editor_section.dart# Sección 6: Editor dinámico de SKUs y variantes
 │   │           └── form_section_card.dart   # Tarjeta estilizada contenedora reutilizable

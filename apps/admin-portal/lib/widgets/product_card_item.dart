@@ -251,6 +251,7 @@ class _ProductThumbnailCarouselState extends State<_ProductThumbnailCarousel> {
                     ),
             ),
           ),
+          
           if (widget.variantsCount > 0)
             Positioned(
               top: 3,
@@ -491,8 +492,11 @@ class _ProductActionBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
+    return Wrap(
+      alignment: WrapAlignment.end,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 6,
+      runSpacing: 6,
       children: [
         // 1. Botón: Marcar No disponible / Pausar
         _ActionButton(
@@ -500,9 +504,9 @@ class _ProductActionBar extends StatelessWidget {
           icon: isAvailable ? Icons.pause_circle_outline : Icons.play_circle_outline,
           backgroundColor: colorScheme.surfaceContainerHigh,
           foregroundColor: colorScheme.onSurfaceVariant,
+          tooltip: isAvailable ? 'Pausar compra del producto' : 'Reanudar disponibilidad',
           onPressed: onToggleAvailability,
         ),
-        const SizedBox(width: 6),
 
         // 2. Botón: Editar
         _ActionButton(
@@ -510,9 +514,9 @@ class _ProductActionBar extends StatelessWidget {
           icon: Icons.edit_outlined,
           backgroundColor: colorScheme.primary,
           foregroundColor: colorScheme.onPrimary,
+          tooltip: 'Editar detalles y stock del producto',
           onPressed: onEdit,
         ),
-        const SizedBox(width: 6),
 
         // 3. Botón: Eliminar / Baja lógica
         _ActionButton(
@@ -520,6 +524,7 @@ class _ProductActionBar extends StatelessWidget {
           icon: Icons.delete_outline,
           backgroundColor: colorScheme.errorContainer,
           foregroundColor: colorScheme.error,
+          tooltip: 'Dar de baja del catálogo (baja lógica)',
           onPressed: onDelete,
         ),
       ],
@@ -533,6 +538,7 @@ class _ActionButton extends StatelessWidget {
   final IconData icon;
   final Color backgroundColor;
   final Color foregroundColor;
+  final String? tooltip;
   final VoidCallback onPressed;
 
   const _ActionButton({
@@ -540,12 +546,13 @@ class _ActionButton extends StatelessWidget {
     required this.icon,
     required this.backgroundColor,
     required this.foregroundColor,
+    this.tooltip,
     required this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    final button = SizedBox(
       height: 30,
       child: TextButton.icon(
         onPressed: onPressed,
@@ -570,5 +577,14 @@ class _ActionButton extends StatelessWidget {
         ),
       ),
     );
+
+    if (tooltip != null) {
+      return Tooltip(
+        message: tooltip!,
+        child: button,
+      );
+    }
+
+    return button;
   }
 }

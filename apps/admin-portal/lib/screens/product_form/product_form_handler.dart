@@ -30,7 +30,7 @@ class _ProductFormHandlerState extends State<ProductFormHandler> {
   // Estado
   bool _isSubmitting = false;
   int? _selectedCategoryId;
-  List<Category> _categories = const [
+  final List<Category> _categories = const [
     Category(id: 1, name: 'Nutrición Clínica'),
     Category(id: 2, name: 'Farmacia y Medicamentos'),
     Category(id: 3, name: 'Higiene & Cuidado'),

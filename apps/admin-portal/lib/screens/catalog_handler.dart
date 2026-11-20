@@ -167,24 +167,99 @@ class _CatalogHandlerState extends State<CatalogHandler> {
   }
 
   /// Ejecuta la baja lógica del producto (`DELETE /api/productos/:id`).
+  ///
+  /// Solicita confirmación explícita mediante un diálogo destructivo Material 3.
+  /// Si el usuario confirma, despacha la petición al backend FastAPI, actualiza
+  /// optimistamente la lista en memoria y recalcula las métricas del catálogo.
   Future<void> _handleDeleteProduct(Product product) async {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Eliminar Producto'),
-        content: Text('¿Desea dar de baja "${product.name}"?'),
+        icon: Icon(Icons.delete_sweep_outlined, color: colorScheme.error, size: 36),
+        title: const Text('Dar de baja producto'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text.rich(
+              TextSpan(
+                text: '¿Confirmas la baja de ',
+                children: [
+                  TextSpan(
+                    text: '"${product.name}"',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const TextSpan(text: '?'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: colorScheme.errorContainer.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 16, color: colorScheme.error),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'El producto se marcará como inactivo (prod_activo = False) en la base de datos y dejará de exhibirse en vitrina.',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onErrorContainer,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton.icon(
+            style: FilledButton.styleFrom(
+              backgroundColor: colorScheme.error,
+              foregroundColor: colorScheme.onError,
+            ),
+            icon: const Icon(Icons.delete_outline, size: 18),
+            label: const Text('Confirmar Baja'),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Eliminar'),
           ),
         ],
       ),
     );
 
-    if (confirm != true) return;
+    if (confirm != true || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+
+    // Feedback inmediato de operación en curso
+    messenger.showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 1),
+        content: Row(
+          children: [
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Text('Dando de baja "${product.name}"...')),
+          ],
+        ),
+      ),
+    );
 
     try {
       await _productRepository.softDeleteProduct(product.id);
@@ -192,13 +267,21 @@ class _CatalogHandlerState extends State<CatalogHandler> {
       setState(() {
         _products.removeWhere((p) => p.id == product.id);
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Producto dado de baja correctamente')),
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(
+          backgroundColor: colorScheme.primary,
+          content: Text('Producto "${product.name}" dado de baja correctamente'),
+        ),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al eliminar: $e')),
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(
+          backgroundColor: colorScheme.error,
+          content: Text('Error al dar de baja el producto: $e'),
+        ),
       );
     }
   }

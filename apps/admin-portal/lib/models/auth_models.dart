@@ -1,8 +1,6 @@
-// lib/features/auth/domain/auth_models.dart
+// apps/admin-portal/lib/models/auth_models.dart
 
-/// Credenciales necesarias para autenticarse en FastAPI.
-//<!> Mejora los comentarios 
-
+/// Credenciales necesarias para autenticarse en FastAPI mediante OAuth2 Password Flow.
 class LoginCredentials {
   final String username;
   final String password;

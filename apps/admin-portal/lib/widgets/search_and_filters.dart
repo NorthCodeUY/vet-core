@@ -46,6 +46,7 @@ class SearchAndFilters extends StatelessWidget {
         const SizedBox(height: 10),
 
         // Filtros en Barra Horizontal Desplazable
+        // <!> aca tendria que implemetar caps diferte tipo de filtro me gustaria 
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16.0),

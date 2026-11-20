@@ -13,7 +13,7 @@
   "admin_modules": {
     "has_products_catalog": true,
     "has_medical_records": true,
-    "has_appointments_agenda": false,
+    "has_appointments_agenda": true,
     "has_orders_monitoring": true,
     "has_business_settings": true
   },

@@ -65,7 +65,7 @@ class ProductCardItem extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Mini-carrusel atómico de fotografías con badges
+                  // Mini-carrusel atómico de fotografías con badges <!> aca no nada muestra la imagen no se si no la trae o que esta mal 
                   _ProductThumbnailCarousel(
                     images: product.images,
                     variantsCount: product.variants.length,

@@ -1,6 +1,5 @@
 # apps/admin-portal/docker-compose.yml 
 
-version: '3.8'
 
 # ==============================================================================
 # INFRAESTRUCTURA DE RED COMPARTIDA (DOCKER BRIDGE)
@@ -35,8 +34,8 @@ services:
       # ========================================================================
       # NGINX (dentro de este contenedor) usará esta variable para redirigir /api/
       # Apunta al nombre del contenedor de FastAPI en la red 'northcode-net'.
-      # NOTA: Asegúrate de que coincida con el 'container_name' de tu backend.
-      - BACKEND_HOST=backend_vet_beltramelli:8000
+      # NOTA: Asegúrate de que coincida con el 'container_name' de tu backend. <!> pnese queesto se comunicaba solo por nombre de contenedor no reqe3ria puerto no se es mas yo en produccion tendira que ocultar todo los purtos extornos no se 
+      - BACKEND_HOST=backend_vet_beltramelli:8001
 
     volumes:
       # ========================================================================

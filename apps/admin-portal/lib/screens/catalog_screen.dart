@@ -179,7 +179,7 @@ class _CatalogContentList extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // 2. Buscador y chips
+        // 2. Buscador y chips 
         SearchAndFilters(
           selectedFilter: activeFilter,
           onFilterChanged: onFilterChanged,

@@ -1,35 +1,41 @@
 // apps/admin-portal/lib/screens/login_screen.dart
+// Propósito: Renderizar la vista declarativa de inicio de sesión con soporte de autofill y tema del tenant.
 
 import 'package:flutter/material.dart';
 
-/// Componente de presentación puro (Stateless) para la vista de inicio de sesión.
+/// Vista declarativa (Stateless) de inicio de sesión administrativo.
 ///
-/// Diseñado bajo el principio de inversión de dependencias:
-/// - No contiene llamadas a servicios de red ni lógica de validación interna.
-/// - Delega las acciones al controlador [LoginHandler] mediante callbacks.
-/// - Se adapta dinámicamente al [ColorScheme] inyectado por el tenant activo.
+/// Carece de lógica HTTP y delega intenciones a [LoginHandler]. Incorpora
+/// [AutofillGroup] para habilitar el guardado y autocompletado de credenciales
+/// en navegadores Web y gestores de contraseñas nativos.
 class LoginScreen extends StatelessWidget {
-  /// Clave global utilizada para activar las validaciones del formulario.
+  // --- Estado y Dependencias ---
+
+  /// Clave global utilizada para validar el formulario antes del envío.
   final GlobalKey<FormState> formKey;
 
-  /// Controlador de texto para capturar el identificador o correo del usuario.
+  /// Controlador del campo de usuario o correo electrónico.
   final TextEditingController userController;
 
-  /// Controlador de texto para capturar la contraseña de acceso.
+  /// Controlador del campo de contraseña.
   final TextEditingController passwordController;
 
-  /// Bandera booleana que controla la ofuscación del campo de contraseña.
+  /// Controla si la contraseña se muestra en texto claro u ofuscada.
   final bool isPasswordVisible;
 
-  /// Estado de carga que inhabilita el botón e inserta un spinner durante la petición HTTP.
+  /// Bloquea múltiples envíos mientras la petición OAuth2 está en curso.
   final bool isLoading;
 
-  /// Callback ejecutado al presionar el icono de visibilidad (ojo) en el campo de clave.
+  /// Indica si se está verificando un JWT almacenado al iniciar la aplicación.
+  final bool isCheckingSession;
+
+  /// Callback al alternar la visibilidad de la contraseña.
   final VoidCallback onPasswordVisibilityToggle;
 
-  /// Callback ejecutado al presionar el botón principal o confirmar el formulario.
+  /// Callback al confirmar el inicio de sesión.
   final VoidCallback onSubmit;
 
+  /// Construye la vista pura de autenticación con los callbacks y controladores provistos por el handler.
   const LoginScreen({
     super.key,
     required this.formKey,
@@ -39,22 +45,39 @@ class LoginScreen extends StatelessWidget {
     required this.isLoading,
     required this.onPasswordVisibilityToggle,
     required this.onSubmit,
+    this.isCheckingSession = false,
   });
+
+  // --- Acciones Públicas ---
 
   @override
   Widget build(BuildContext context) {
-    // Extracción de tokens semánticos dinámicos del tenant actual (Material 3)
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    // Evita un parpadeo del formulario mientras se verifica el JWT en almacenamiento seguro.
+    if (isCheckingSession) {
+      return Scaffold(
+        backgroundColor: colorScheme.surface,
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildTenantLogo(colorScheme),
+              const SizedBox(height: 24),
+              const CircularProgressIndicator(),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: Center(
-        // Garantiza scroll en pantallas pequeñas o cuando el teclado virtual emerge
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
           child: ConstrainedBox(
-            // Limita el ancho del contenedor en navegadores de escritorio y tablets
             constraints: const BoxConstraints(maxWidth: 420),
             child: Card(
               elevation: 0,
@@ -66,139 +89,132 @@ class LoginScreen extends StatelessWidget {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(32.0),
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // =======================================================
-                      // 1. ISOLOGO DINÁMICO DEL TENANT
-                      // =======================================================
-                      Image.asset(
-                        'assets/tenant/logo.png',
-                        height: 70,
-                        // Fallback: Si el comercio no configuró logo local, muestra icono genérico
-                        errorBuilder: (context, error, stackTrace) => Icon(
-                          Icons.storefront_rounded,
-                          size: 70,
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Título institucional
-                      Text(
-                        'Acceso Administrativo',
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Subtítulo informativo
-                      Text(
-                        'Ingrese credenciales para gestionar el comercio',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-
-                      // =======================================================
-                      // 2. CAMPO: IDENTIFICADOR / USUARIO
-                      // =======================================================
-                      TextFormField(
-                        controller: userController,
-                        textInputAction: TextInputAction.next,
-                        decoration: InputDecoration(
-                          labelText: 'Usuario o Correo',
-                          prefixIcon: const Icon(Icons.person_outline),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                child: AutofillGroup(
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildTenantLogo(colorScheme),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Acceso Administrativo',
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
                           ),
                         ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'El usuario es obligatorio';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-
-                      // =======================================================
-                      // 3. CAMPO: CONTRASEÑA OFUSCABLE
-                      // =======================================================
-                      TextFormField(
-                        controller: passwordController,
-                        obscureText: !isPasswordVisible,
-                        textInputAction: TextInputAction.done,
-                        onFieldSubmitted: (_) => onSubmit(),
-                        decoration: InputDecoration(
-                          labelText: 'Contraseña',
-                          prefixIcon: const Icon(Icons.lock_outline),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              isPasswordVisible
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined,
-                            ),
-                            onPressed: onPasswordVisibilityToggle,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Ingrese credenciales para gestionar el comercio',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'La contraseña es obligatoria';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 28),
-
-                      // =======================================================
-                      // 4. ACCIÓN: BOTÓN DE AUTENTICACIÓN REACTIVO
-                      // =======================================================
-                      SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: FilledButton(
-                          // Inhabilita interacciones concurrentes durante la petición a FastAPI
-                          onPressed: isLoading ? null : onSubmit,
-                          style: FilledButton.styleFrom(
-                            shape: RoundedRectangleBorder(
+                        const SizedBox(height: 32),
+                        TextFormField(
+                          controller: userController,
+                          keyboardType: TextInputType.emailAddress,
+                          autofillHints: const [
+                            AutofillHints.username,
+                            AutofillHints.email,
+                          ],
+                          textInputAction: TextInputAction.next,
+                          decoration: InputDecoration(
+                            labelText: 'Usuario o Correo',
+                            prefixIcon: const Icon(Icons.person_outline),
+                            border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: isLoading
-                              ? SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    color: colorScheme.onPrimary,
-                                  ),
-                                )
-                              : const Text(
-                                  'Iniciar Sesión',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'El usuario es obligatorio';
+                            }
+                            return null;
+                          },
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: passwordController,
+                          obscureText: !isPasswordVisible,
+                          autofillHints: const [AutofillHints.password],
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => onSubmit(),
+                          decoration: InputDecoration(
+                            labelText: 'Contraseña',
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                isPasswordVisible
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                              ),
+                              onPressed: onPasswordVisibilityToggle,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'La contraseña es obligatoria';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 28),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: FilledButton(
+                            onPressed: isLoading ? null : onSubmit,
+                            style: FilledButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: isLoading
+                                ? SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: colorScheme.onPrimary,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Iniciar Sesión',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // --- Helpers Privados ---
+
+  Widget _buildTenantLogo(ColorScheme colorScheme) {
+    return Image.asset(
+      'assets/tenant/logo.png',
+      height: 70,
+      errorBuilder: (context, error, stackTrace) => Icon(
+        Icons.storefront_rounded,
+        size: 70,
+        color: colorScheme.primary,
       ),
     );
   }

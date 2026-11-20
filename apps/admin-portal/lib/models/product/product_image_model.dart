@@ -26,11 +26,15 @@ class ProductImage {
 
   /// Deserializa el JSON proveniente de FastAPI.
  
-  // <!> Mejora esto los cometarios  
+ /// Construye una instancia de [ProductImage] a partir de [json] proveniente de FastAPI.
+  ///
+  /// Aplica valores por defecto seguros si algún campo viene nulo o con tipo numérico
+  /// genérico, y limpia espacios accidentales en [url] para evitar fallos en `Image.network`.
+  //  Deserialización defensiva: tolera num/int y sanea espacios en la URL
   factory ProductImage.fromJson(Map<String, dynamic> json) {
     return ProductImage(
-      id: json['img_id'] as int? ?? 0,
-      url: json['img_url'] as String? ?? '',
+      id: (json['img_id'] as num?)?.toInt() ?? 0,
+      url: (json['img_url'] as String? ?? '').trim(),
       isFeatured: json['img_principal'] as bool? ?? false,
       type: json['img_tipo'] as String? ?? 'producto',
     );

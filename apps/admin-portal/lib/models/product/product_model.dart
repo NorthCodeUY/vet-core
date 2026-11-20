@@ -137,6 +137,7 @@ class Product {
       category: category,
       images: images,
       variants: variants,
+      subcategories: subcategories,
     );
   }
 

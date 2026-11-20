@@ -165,45 +165,117 @@ class _CatalogContentList extends StatelessWidget {
     required this.onDeleteProduct,
   });
 
+  // @override
+  // Widget build(BuildContext context) {
+  //   return ListView(
+  //     padding: const EdgeInsets.symmetric(vertical: 16.0),
+  //     children: [
+  //       // 1. Métricas superiores
+  //       MetricsHeader(
+  //         totalCount: totalCount,
+  //         showcaseCount: showcaseCount,
+  //         criticalCount: criticalCount,
+  //         hiddenCount: hiddenCount,
+  //       ),
+  //       const SizedBox(height: 16),
+
+  //       // 2. Buscador y chips 
+  //       SearchAndFilters(
+  //         selectedFilter: activeFilter,
+  //         onFilterChanged: onFilterChanged,
+  //         onSearch: onSearchChanged,
+  //       ),
+  //       const SizedBox(height: 12),
+
+  //       // 3. Renderizado de ítems o estado vacío
+  //       if (products.isEmpty)
+  //         const _CatalogEmptyState()
+  //       else
+  //         ...products.map(
+  //           (p) => ProductCardItem(
+  //             key: ValueKey(p.id),
+  //             product: p,
+  //             onToggleShowcase: (val) => onToggleShowcase(p, val),
+  //             onToggleAvailability: () => onToggleAvailability(p),
+  //             onEdit: () => onEditProduct(p),
+  //             onDelete: () => onDeleteProduct(p),
+  //           ),
+  //         ),
+  //     ],
+  //   );
+  // }
+
+
+
+
+// apps/admin-portal/lib/screens/catalog_screen.dart
+// Propósito: Optimizar el scroll con renderizado lazy (ListView.builder) y prevenir overflows en estado de error.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   @override
   Widget build(BuildContext context) {
-    return ListView(
+    final totalItems = products.isEmpty ? 2 : products.length + 1;
+
+    return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
-      children: [
-        // 1. Métricas superiores
-        MetricsHeader(
-          totalCount: totalCount,
-          showcaseCount: showcaseCount,
-          criticalCount: criticalCount,
-          hiddenCount: hiddenCount,
-        ),
-        const SizedBox(height: 16),
+      itemCount: totalItems,
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              MetricsHeader(
+                totalCount: totalCount,
+                showcaseCount: showcaseCount,
+                criticalCount: criticalCount,
+                hiddenCount: hiddenCount,
+              ),
+              const SizedBox(height: 16),
+              SearchAndFilters(
+                selectedFilter: activeFilter,
+                onFilterChanged: onFilterChanged,
+                onSearch: onSearchChanged,
+              ),
+              const SizedBox(height: 12),
+            ],
+          );
+        }
 
-        // 2. Buscador y chips 
-        SearchAndFilters(
-          selectedFilter: activeFilter,
-          onFilterChanged: onFilterChanged,
-          onSearch: onSearchChanged,
-        ),
-        const SizedBox(height: 12),
+        if (products.isEmpty) {
+          return const _CatalogEmptyState();
+        }
 
-        // 3. Renderizado de ítems o estado vacío
-        if (products.isEmpty)
-          const _CatalogEmptyState()
-        else
-          ...products.map(
-            (p) => ProductCardItem(
-              key: ValueKey(p.id),
-              product: p,
-              onToggleShowcase: (val) => onToggleShowcase(p, val),
-              onToggleAvailability: () => onToggleAvailability(p),
-              onEdit: () => onEditProduct(p),
-              onDelete: () => onDeleteProduct(p),
-            ),
-          ),
-      ],
+        final product = products[index - 1];
+        return ProductCardItem(
+          key: ValueKey(product.id),
+          product: product,
+          onToggleShowcase: (val) => onToggleShowcase(product, val),
+          onToggleAvailability: () => onToggleAvailability(product),
+          onEdit: () => onEditProduct(product),
+          onDelete: () => onDeleteProduct(product),
+        );
+      },
     );
   }
+
+
 }
 
 // =============================================================================

@@ -5,6 +5,9 @@ import 'package:admin_portal/models/product/product.dart';
 import 'package:admin_portal/repositories/product_repository.dart';
 import 'catalog_screen.dart';
 
+import 'package:flutter/foundation.dart';
+
+
 /// Controlador de Estado para la pantalla de Gestión de Catálogo y Vitrina.
 ///
 /// Coordina:
@@ -36,25 +39,55 @@ class _CatalogHandlerState extends State<CatalogHandler> {
 
   /// Carga los productos reales desde el backend FastAPI.
   Future<void> _fetchProducts() async {
+
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
+    // try {
+    //   final data = await _productRepository.getProducts();
+    //   if (!mounted) return;
+    //   setState(() {
+    //     _products = data;
+    //     _isLoading = false;
+    //   });
+    // } catch (e) {
+    //   if (!mounted) return;
+    //   setState(() {
+    //     _errorMessage = e.toString().replaceAll('Exception: ', '');
+    //     _isLoading = false;
+    //   });
+    // }
+
+
     try {
       final data = await _productRepository.getProducts();
+      // <!> Traza temporal para confirmar cuántos productos y fotos llegaron realmente al estado
+      if (kDebugMode) {
+        final withImages = data.where((p) => p.images.isNotEmpty).length;
+        debugPrint('📦 Catálogo parseado: ${data.length} productos | Con foto: $withImages');
+      }
       if (!mounted) return;
       setState(() {
         _products = data;
         _isLoading = false;
       });
-    } catch (e) {
+    } catch (e, stack) {
+      // <!> Imprime la excepción y línea exacta si algún fromJson (Product, Variant o Color) falla
+      if (kDebugMode) {
+        debugPrint('❌ ERROR en _fetchProducts: $e\n$stack');
+      }
       if (!mounted) return;
       setState(() {
         _errorMessage = e.toString().replaceAll('Exception: ', '');
         _isLoading = false;
       });
     }
+
+
+
   }
 
   /// Conmuta optimistamente el interruptor de vitrina web (`PATCH /api/productos/:id/vitrina`).

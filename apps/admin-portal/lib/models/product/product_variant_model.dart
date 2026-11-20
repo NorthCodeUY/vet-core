@@ -100,22 +100,28 @@ class ProductVariant {
       );
   }
 
-  /// Serializa la variante para operaciones de creación o actualización.
-  //<!> Esto no lo tengo calro mejroa los comentarios no se como se ase aca yo en react tenia @ y mejroes cometarios y ponele cometarios a ladoa >
+  /// Serializa esta instancia de [ProductVariant] a un `Map<String, dynamic>`
+  /// compatible con los esquemas Pydantic (`POST` / `PUT`) de FastAPI.
+  ///
+  /// Incluye los campos planos de inventario y precios; excluye [color]
+  /// (relación de solo lectura) y respeta el nombre heredado `val_sku` en BD.
+  ///
+  /// Retorna el mapa listo para ser codificado por [Dio] como JSON.
+  
   Map<String, dynamic> toJson() => {
-        'var_id': id,
-        'prod_id': productId,
-        'var_tipo': type,
-        'var_nombre': name,
-        'val_sku': sku,
-        'var_codigo_barra': barcode,
-        'var_precio_venta': salePrice,
-        'var_precio_costo': costPrice,
-        'var_stock': stock,
-        'var_stock_minimo': minStock,
-        'var_activo': isActive,
-        'var_visible': isVisibleInShowcase,
-        'var_disponible': isAvailable,
-        'var_permitir_sin_stock': allowBackorder,
+        'var_id': id, // PK autogenerada en tabla producto_variante
+        'prod_id': productId, // FK hacia producto padre
+        'var_tipo': type, // Eje de variación ('Presentación', 'Talle', 'Peso')
+        'var_nombre': name, // Etiqueta visible en chips ('500ml', 'XL')
+        'val_sku': sku, // Nota BD: en FastAPI la columna conserva el prefijo 'val_sku' (no 'var_sku')
+        'var_codigo_barra': barcode, // Código EAN/UPC específico de esta presentación
+        'var_precio_venta': salePrice, // PVP vigente; prevalece sobre el precio base del producto
+        'var_precio_costo': costPrice, // Costo confidencial para cálculo de margen en portal admin
+        'var_stock': stock, // Existencias físicas de este SKU
+        'var_stock_minimo': minStock, // Umbral de alerta crítica independiente por variante
+        'var_activo': isActive, // Control de baja lógica (soft delete)
+        'var_visible': isVisibleInShowcase, // Visibilidad individual en vitrina pública
+        'var_disponible': isAvailable, // Habilita o pausa compra de esta presentación
+        'var_permitir_sin_stock': allowBackorder, // Permite venta con stock <= 0
       };
 }

@@ -3,6 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:admin_portal/models/product/product.dart';
 
+
+import 'package:flutter/foundation.dart';
+import 'package:admin_portal/config/app_environment.dart';
+
+
 /// Componente visual atómico que renderiza una tarjeta de producto del catálogo.
 ///
 /// Refleja la estructura de Stitch:
@@ -65,7 +70,7 @@ class ProductCardItem extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Mini-carrusel atómico de fotografías con badges <!> aca no nada muestra la imagen no se si no la trae o que esta mal 
+                  // Mini-carrusel de fotografías con soporte multi-imagen y badges
                   _ProductThumbnailCarousel(
                     images: product.images,
                     variantsCount: product.variants.length,
@@ -119,18 +124,61 @@ class _ProductThumbnailCarousel extends StatefulWidget {
   @override
   State<_ProductThumbnailCarousel> createState() => _ProductThumbnailCarouselState();
 }
-// <!> cOMETAR 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// apps/admin-portal/lib/widgets/product_card_item.dart (Sub-componente _ProductThumbnailCarouselState)
+// Propósito: Renderizar el mini-carrusel de imágenes del producto con resolución de URLs y diagnóstico debug.
+
+// <!> Documentación completa, resolución de URLs relativas, seguridad de índice y traza de error en debug
+/// Controla el índice activo del mini-carrusel y resuelve URLs relativas/absolutas de galería.
 class _ProductThumbnailCarouselState extends State<_ProductThumbnailCarousel> {
+  // --- Estado y Dependencias ---
+
   int _currentIndex = 0;
 
+  // --- Ciclo de Vida / Inicialización ---
+
+  @override
+  void didUpdateWidget(covariant _ProductThumbnailCarousel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Evita RangeError si el catálogo refresca y el producto pasa a tener menos imágenes.
+    final total = _resolvedUrls.length;
+    if (total == 0 || _currentIndex >= total) {
+      _currentIndex = 0;
+    }
+  }
+
+  // --- Helpers Privados ---
+
+  /// Lista normalizada de URLs listas para consumo en [Image.network].
   List<String> get _resolvedUrls {
     if (widget.images.isNotEmpty) {
-      return widget.images.map((img) => img.url).toList();
+      final sorted = List<ProductImage>.from(widget.images)
+        ..sort((a, b) => (b.isFeatured ? 1 : 0).compareTo(a.isFeatured ? 1 : 0));
+      return sorted
+          .map((img) => AppEnvironment.resolveMediaUrl(img.url))
+          .where((url) => url.isNotEmpty)
+          .toList();
     }
-    if (widget.fallbackUrl.isNotEmpty) {
-      return [widget.fallbackUrl];
+    final fallback = AppEnvironment.resolveMediaUrl(widget.fallbackUrl);
+    if (fallback.isNotEmpty) {
+      return [fallback];
     }
-    return [];
+    return const [];
   }
 
   void _nextImage(int total) {
@@ -150,6 +198,7 @@ class _ProductThumbnailCarouselState extends State<_ProductThumbnailCarousel> {
     final colorScheme = Theme.of(context).colorScheme;
     final urls = _resolvedUrls;
     final total = urls.length;
+    final currentUrl = urls.isNotEmpty ? urls[_currentIndex] : '';
 
     return SizedBox(
       width: 76,
@@ -157,29 +206,51 @@ class _ProductThumbnailCarouselState extends State<_ProductThumbnailCarousel> {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // Imagen principal redondeada
           Positioned.fill(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: urls.isNotEmpty
+              child: currentUrl.isNotEmpty
                   ? Image.network(
-                      urls[_currentIndex],
+                      currentUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: colorScheme.surfaceContainerHighest,
-                        child: Icon(Icons.image_not_supported_outlined,
-                            size: 20, color: colorScheme.outline),
-                      ),
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          color: colorScheme.surfaceContainerHighest,
+                          child: const Center(
+                            child: SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        );
+                      },
+                      errorBuilder: (_, error, __) {
+                        // Expone en consola la URL exacta y la excepción (404, CORS o HTML devuelto).
+                        if (kDebugMode) {
+                          debugPrint('🖼️ Error cargando imagen [$currentUrl]: $error');
+                        }
+                        return Container(
+                          color: colorScheme.surfaceContainerHighest,
+                          child: Icon(
+                            Icons.image_not_supported_outlined,
+                            size: 20,
+                            color: colorScheme.outline,
+                          ),
+                        );
+                      },
                     )
                   : Container(
                       color: colorScheme.surfaceContainerHighest,
-                      child: Icon(Icons.image_outlined,
-                          size: 20, color: colorScheme.outline),
+                      child: Icon(
+                        Icons.image_outlined,
+                        size: 20,
+                        color: colorScheme.outline,
+                      ),
                     ),
             ),
           ),
-
-          // Badge superior izquierdo: Cantidad de variantes ('3 VAR')
           if (widget.variantsCount > 0)
             Positioned(
               top: 3,
@@ -200,8 +271,6 @@ class _ProductThumbnailCarouselState extends State<_ProductThumbnailCarousel> {
                 ),
               ),
             ),
-
-          // Flecha de navegación izquierda (<)
           if (total > 1)
             Positioned(
               left: 2,
@@ -222,8 +291,6 @@ class _ProductThumbnailCarouselState extends State<_ProductThumbnailCarousel> {
                 ),
               ),
             ),
-
-          // Flecha de navegación derecha (>)
           if (total > 1)
             Positioned(
               right: 2,
@@ -244,8 +311,6 @@ class _ProductThumbnailCarouselState extends State<_ProductThumbnailCarousel> {
                 ),
               ),
             ),
-
-          // Puntos indicadores inferiores (Dots)
           if (total > 1)
             Positioned(
               bottom: 3,
@@ -275,6 +340,15 @@ class _ProductThumbnailCarouselState extends State<_ProductThumbnailCarousel> {
     );
   }
 }
+
+
+
+
+
+
+
+
+
 
 // =============================================================================
 // SUB-COMPONENTE 2: INFORMACIÓN, SWITCH Y VARIANTES (WIDGET PRIVADO)

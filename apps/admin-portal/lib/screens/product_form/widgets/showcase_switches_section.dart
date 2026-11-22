@@ -1,4 +1,4 @@
-// lib/widgets/product_form/showcase_switches_section.dart
+// apps/admin-portal/lib/screens/product_form/widgets/showcase_switches_section.dart
 
 import 'package:flutter/material.dart';
 import 'form_section_card.dart';

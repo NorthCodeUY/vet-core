@@ -42,3 +42,9 @@ class SubcategoriaResponseSchema(SubcategoriaBaseSchema):
     subc_id: int = Field(..., description="ID único de la subcategoría")
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class SubcategoriaAccionResponseSchema(BaseModel):
+    """Contrato de salida para operaciones de baja o mutaciones de estado."""
+    message: str
+    subc_id: int

@@ -3,6 +3,7 @@
 =============================================================================
 ESQUEMAS PYDANTIC V2: CATEGORÍAS PRINCIPALES DEL CATÁLOGO
 =============================================================================
+Contratos DTO para la validación y serialización de categorías de primer nivel.
 """
 
 from typing import Optional
@@ -18,7 +19,17 @@ class CategoriaCreateSchema(CategoriaBaseSchema):
     pass
 
 
+class CategoriaUpdateSchema(BaseModel):
+    cat_nombre: Optional[str] = Field(default=None, min_length=2, max_length=100)
+    cat_descripcion: Optional[str] = None
+
+
 class CategoriaResponseSchema(CategoriaBaseSchema):
     cat_id: int = Field(..., description="ID único de la categoría")
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class CategoriaAccionResponseSchema(BaseModel):
+    message: str
+    cat_id: int

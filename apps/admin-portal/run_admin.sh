@@ -1,5 +1,5 @@
 # apps/admin-portal/run_admin.sh
-# Propósito: Orquestador CLI para validar rutas del tenant, compilar JSONC a JSON y ejecutar Flutter acelerado.
+# Propósito: Orquestador CLI para sincronizar assets del tenant, compilar JSONC a JSON y ejecutar Flutter (local, LAN y WireGuard).
 
 #!/bin/bash
 
@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR" || exit 1
 
 TENANT=${1:-veterinaria}
-TARGET=${2:-linux} # Opciones recomendadas: 'linux' (más rápido), 'web-server', 'chrome'
+TARGET=${2:-linux} # Opciones recomendadas: 'linux', 'web-server' (LAN/WireGuard), 'chrome'
 
 # 1. Normalización de nombres de cliente y archivo de entorno
 case $TENANT in
@@ -54,7 +54,7 @@ echo "============================================================"
 echo "🚀 [VETCORE SAAS] - INICIANDO PORTAL ADMINISTRATIVO"
 echo "🏢 Tenant Activo  : $TENANT"
 echo "📄 Config Admin   : $SOURCE_CONFIG"
-echo "🌐 Backend Target : http://localhost:$PORT"
+echo "🌐 Backend Port   : $PORT"
 echo "🖥️  Target Device  : $TARGET"
 echo "============================================================"
 
@@ -75,7 +75,6 @@ print(json.dumps(parsed, ensure_ascii=False, indent=2))
   exit 1
 fi
 
-# <!> Fija permisos 0644 aquí (después de crear $TMP_CONFIG) para evitar HTTP 403 en Nginx
 chmod 644 "$TMP_CONFIG"
 
 if ! cmp -s "$TMP_CONFIG" assets/tenant/config.json; then
@@ -91,19 +90,37 @@ if [ -f "$CLIENT_DIR/assets/logo.png" ] && ! cmp -s "$CLIENT_DIR/assets/logo.png
   echo "🔄 logo.png actualizado."
 fi
 
-# 5. Ejecución acelerada de Flutter
+# 5. Ejecución acelerada de Flutter (Modo solo-sincronización o lanzamiento)
+if [ "${3:-}" = "--sync-only" ]; then
+  echo "✅ Assets del tenant '$TENANT' sincronizados (modo --sync-only)."
+  exit 0
+fi
+
 PUB_FLAG=""
 if [ -f ".dart_tool/package_config.json" ] && [ ".dart_tool/package_config.json" -nt "pubspec.yaml" ]; then
   PUB_FLAG="--no-pub"
 fi
 
 EXTRA_FLAGS=""
-if [ "$TARGET" = "chrome" ] || [ "$TARGET" = "web-server" ]; then
+API_DEFINE="--dart-define=API_URL=http://localhost:$PORT"
+
+if [ "$TARGET" = "web-server" ]; then
+  EXTRA_FLAGS="--web-hostname=0.0.0.0 --web-port=5050"
+  # Omite API_URL fijo para que AppEnvironment use automáticamente Uri.base.host (LAN/WireGuard)
+  API_DEFINE="--dart-define=API_PORT=$PORT"
+
+  echo "  ➜  Local  : http://localhost:5050/"
+  for ip in $(hostname -I 2>/dev/null); do
+    echo "  ➜  Network: http://$ip:5050/"
+  done
+  echo "============================================================"
+elif [ "$TARGET" = "chrome" ]; then
   EXTRA_FLAGS="--web-port=5050"
+  API_DEFINE="--dart-define=API_PORT=$PORT"
 fi
 
 flutter run -d "$TARGET" \
   $PUB_FLAG \
   $EXTRA_FLAGS \
-  --dart-define=API_URL="http://localhost:$PORT" \
+  $API_DEFINE \
   --dart-define=TENANT="$TENANT"

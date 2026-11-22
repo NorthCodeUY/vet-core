@@ -1,21 +1,55 @@
-// lib/widgets/product_form/basic_info_section.dart
+// widgets/product_form/basic_info_section.dart
 
 import 'package:flutter/material.dart';
 import 'package:admin_portal/models/product/product.dart';
 import 'form_section_card.dart';
+import 'subcategories_selector.dart';
 
+/// Sección de datos troncales del formulario de alta y edición de producto.
+///
+/// Agrupa identidad comercial, categorización primaria (`cat_id`), asociación
+/// dinámica de subcategorías provenientes del backend, código EAN y
+/// descripción técnica. Opera como widget puramente presentacional delegando
+/// mutaciones y estado de negocio al handler padre.
 class BasicInfoSection extends StatelessWidget {
+  /// Controlador del nombre comercial del producto.
   final TextEditingController nameController;
+
+  /// Controlador del código de barras / EAN principal.
   final TextEditingController barcodeController;
+
+  /// Controlador de la descripción técnica o indicaciones de uso.
   final TextEditingController descriptionController;
+
+  /// Identificador de la categoría primaria seleccionada (`cat_id`).
   final int? selectedCategoryId;
+
+  /// Catálogo de categorías disponibles obtenidas desde el backend.
   final List<Category> categories;
+
+  /// Callback disparado al seleccionar o cambiar la categoría primaria.
   final ValueChanged<int?> onCategoryChanged;
-  final List<String> availableTags;
-  final List<String> selectedTags;
-  final ValueChanged<String> onTagToggled;
+
+  /// <!> Catálogo completo de subcategorías activas retornadas por el backend.
+  final List<Subcategory> availableSubcategories;
+
+  /// <!> Lista de IDs de subcategorías actualmente asignadas al producto.
+  final List<int> selectedSubcategoryIds;
+
+  /// <!> Callback invocado al asignar o remover una subcategoría por su ID.
+  final ValueChanged<int> onSubcategoryToggled;
+
+  /// <!> Acción opcional para abrir el modal/flujo de creación o gestión de subcategorías.
+  final VoidCallback? onManageSubcategories;
+
+  /// <!> Extractor opcional de URL de imagen por subcategoría (permite
+  /// desacoplar la UI del nombre exacto del campo multimedia en el modelo).
+  final String? Function(Subcategory subcategory)? subcategoryImageBuilder;
+
+  /// Callback para invocar el lector de código de barras por cámara.
   final VoidCallback onScanBarcode;
 
+  /// Crea la sección de información básica del formulario de producto.
   const BasicInfoSection({
     super.key,
     required this.nameController,
@@ -24,20 +58,24 @@ class BasicInfoSection extends StatelessWidget {
     required this.selectedCategoryId,
     required this.categories,
     required this.onCategoryChanged,
-    required this.availableTags,
-    required this.selectedTags,
-    required this.onTagToggled,
+    required this.availableSubcategories,
+    required this.selectedSubcategoryIds,
+    required this.onSubcategoryToggled,
+    this.onManageSubcategories,
+    this.subcategoryImageBuilder,
     required this.onScanBarcode,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Resuelve tokens semánticos desde el tema activo del tenant (Zero Hardcoding).
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     return FormSectionCard(
       icon: Icons.info_outline,
       title: 'Información Básica',
+      // Badge semántico que alerta obligatoriedad de los campos primarios del schema.
       trailing: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         decoration: BoxDecoration(
@@ -55,12 +93,12 @@ class BasicInfoSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Nombre comercial
+          // 1. Nombre comercial: campo obligatorio validado antes del envío al endpoint.
           TextFormField(
             controller: nameController,
             decoration: const InputDecoration(
               labelText: 'Nombre del Producto *',
-              hintText: 'Ej: Alimento Balanceado Royal Vet Renal Canino 7.5kg',
+              hintText: 'Ej: Producto de catálogo 7.5kg',
               border: OutlineInputBorder(),
             ),
             validator: (v) =>
@@ -68,7 +106,7 @@ class BasicInfoSection extends StatelessWidget {
           ),
           const SizedBox(height: 14),
 
-          // 2. Selector de Categoría (cat_id)
+          // 2. Selector de categoría principal: mapea directamente contra `cat_id` en FastAPI.
           DropdownButtonFormField<int>(
             initialValue: selectedCategoryId,
             decoration: const InputDecoration(
@@ -76,39 +114,27 @@ class BasicInfoSection extends StatelessWidget {
               border: OutlineInputBorder(),
             ),
             items: categories
-                .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name)))
+                .map((c) => DropdownMenuItem<int>(
+                      value: c.id,
+                      child: Text(c.name),
+                    ))
                 .toList(),
             onChanged: onCategoryChanged,
             validator: (v) => v == null ? 'Selecciona una categoría' : null,
           ),
           const SizedBox(height: 14),
 
-          // 3. Chips de Subcategorías y Etiquetas
-          Text(
-            'Etiquetas y Subcategorías',
-            style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 6),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: availableTags.map((tag) {
-              final isSelected = selectedTags.contains(tag);
-              return FilterChip(
-                label: Text(tag),
-                selected: isSelected,
-                onSelected: (_) => onTagToggled(tag),
-                selectedColor: colorScheme.primary,
-                labelStyle: TextStyle(
-                  color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-                  fontSize: 12,
-                ),
-              );
-            }).toList(),
+          // <!> 3. Componente desacoplado de subcategorías dinámicas (backend + imagen + filtro).
+          SubcategoriesSelector(
+            availableSubcategories: availableSubcategories,
+            selectedSubcategoryIds: selectedSubcategoryIds,
+            onSubcategoryToggled: onSubcategoryToggled,
+            onManagePressed: onManageSubcategories,
+            imageUrlBuilder: subcategoryImageBuilder,
           ),
           const SizedBox(height: 14),
 
-          // 4. Código de Barras / EAN con botón de escáner
+          // 4. Código de barras / EAN: combina entrada manual con disparador de escáner nativo.
           Row(
             children: [
               Expanded(
@@ -131,13 +157,13 @@ class BasicInfoSection extends StatelessWidget {
           ),
           const SizedBox(height: 14),
 
-          // 5. Descripción técnica
+          // 5. Descripción técnica: bloque multilínea para especificaciones o dosificación.
           TextFormField(
             controller: descriptionController,
             maxLines: 3,
             decoration: const InputDecoration(
-              labelText: 'Descripción y Dosificación Técnica',
-              hintText: 'Composición, indicaciones veterinarias...',
+              labelText: 'Descripción y Especificaciones Técnicas',
+              hintText: 'Composición, indicaciones técnicas o detalles de uso...',
               border: OutlineInputBorder(),
             ),
           ),

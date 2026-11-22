@@ -1,34 +1,30 @@
 // apps/admin-portal/lib/widgets/product_card_item.dart
 
 import 'package:flutter/material.dart';
+import 'package:admin_portal/config/app_environment.dart';
 import 'package:admin_portal/models/product/product.dart';
 
-
-import 'package:flutter/foundation.dart';
-import 'package:admin_portal/config/app_environment.dart';
-
-
-/// Componente visual atómico que renderiza una tarjeta de producto del catálogo.
+/// Componente visual atómico que representa una tarjeta de producto en el catálogo.
 ///
-/// Refleja la estructura de Stitch:
-/// - Mini carrusel interactivo de imágenes con navegación por flechas y dots.
-/// - Taxonomía segmentada (`Categoría › Subcategoría`) y switch de vitrina.
-/// - Chips de variantes con precios directos por presentación.
-/// - Barra de acciones rápidas: Pausar/Disponibilidad, Edición y Baja lógica.
+/// Implementa:
+/// 1. Mini-carrusel de imágenes con soporte multi-foto, fallback y badge de variantes.
+/// 2. Taxonomía segmentada (`Categoría`), metadatos de identificación y switch de vitrina.
+/// 3. Chips de variantes con precios directos por presentación.
+/// 4. Barra de acciones rápidas: Pausar/Disponibilidad, Editar y Eliminar (Baja lógica).
 class ProductCardItem extends StatelessWidget {
   /// Entidad inmutable del producto a representar.
   final Product product;
 
-  /// Callback ejecutado al conmutar el switch de vitrina web.
+  /// Callback ejecutado al conmutar el switch de vitrina web pública.
   final ValueChanged<bool> onToggleShowcase;
 
-  /// Callback para alternar disponibilidad operativa (Pausar compra).
+  /// Callback para alternar disponibilidad operativa (Pausar/Reanudar venta).
   final VoidCallback onToggleAvailability;
 
-  /// Callback para navegar a la pantalla de edición.
+  /// Callback para abrir el formulario de edición de este producto.
   final VoidCallback onEdit;
 
-  /// Callback para solicitar la eliminación o baja lógica del ítem.
+  /// Callback para solicitar la baja lógica del producto en FastAPI.
   final VoidCallback onDelete;
 
   const ProductCardItem({
@@ -47,7 +43,7 @@ class ProductCardItem extends StatelessWidget {
 
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 200),
-      // Atenúa la tarjeta completa al 65% cuando el producto está oculto de la vitrina
+      // Atenúa la tarjeta al 65% cuando el producto está oculto de la vitrina pública
       opacity: isInactive ? 0.65 : 1.0,
       child: Card(
         elevation: 0,
@@ -65,20 +61,21 @@ class ProductCardItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ===============================================================
-              // 1. FILA SUPERIOR: CARRUSEL MULTIMEDIA + INFORMACIÓN DESCRIPTIVA
+              // 1. FILA PRINCIPAL: CARRUSEL MULTIMEDIA + INFORMACIÓN DESCRIPTIVA
               // ===============================================================
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Mini-carrusel de fotografías con soporte multi-imagen y badges
+                  // Mini-carrusel de fotos con resolución segura de URLs
                   _ProductThumbnailCarousel(
                     images: product.images,
                     variantsCount: product.variants.length,
-                    fallbackUrl: product.primaryImageUrl,
+                    // <!> FIX SOUND NULL SAFETY: Garantiza string no nulo
+                    fallbackUrl: product.primaryImageUrl ?? '',
                   ),
                   const SizedBox(width: 12),
 
-                  // Bloque de metadatos, categoría, switch y variantes
+                  // Metadatos descriptivos, categoría, switch y variantes
                   Expanded(
                     child: _ProductMetaInfo(
                       product: product,
@@ -91,7 +88,7 @@ class ProductCardItem extends StatelessWidget {
               const SizedBox(height: 12),
 
               // ===============================================================
-              // 2. BARRA INFERIOR DE ACCIONES ADMINISTRATIVAS
+              // 2. BARRA DE ACCIONES ADMINISTRATIVAS RÁPIDAS
               // ===============================================================
               _ProductActionBar(
                 isAvailable: product.isAvailable,
@@ -113,58 +110,33 @@ class ProductCardItem extends StatelessWidget {
 class _ProductThumbnailCarousel extends StatefulWidget {
   final List<ProductImage> images;
   final int variantsCount;
-  final String fallbackUrl;
+  final String? fallbackUrl;
 
   const _ProductThumbnailCarousel({
     required this.images,
     required this.variantsCount,
-    required this.fallbackUrl,
+    this.fallbackUrl,
   });
 
   @override
-  State<_ProductThumbnailCarousel> createState() => _ProductThumbnailCarouselState();
+  State<_ProductThumbnailCarousel> createState() =>
+      _ProductThumbnailCarouselState();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// apps/admin-portal/lib/widgets/product_card_item.dart (Sub-componente _ProductThumbnailCarouselState)
-// Propósito: Renderizar el mini-carrusel de imágenes del producto con resolución de URLs y diagnóstico debug.
-
-// <!> Documentación completa, resolución de URLs relativas, seguridad de índice y traza de error en debug
-/// Controla el índice activo del mini-carrusel y resuelve URLs relativas/absolutas de galería.
 class _ProductThumbnailCarouselState extends State<_ProductThumbnailCarousel> {
-  // --- Estado y Dependencias ---
-
   int _currentIndex = 0;
-
-  // --- Ciclo de Vida / Inicialización ---
 
   @override
   void didUpdateWidget(covariant _ProductThumbnailCarousel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Evita RangeError si el catálogo refresca y el producto pasa a tener menos imágenes.
+    // Previene RangeError si la lista de imágenes cambia dinámicamente
     final total = _resolvedUrls.length;
     if (total == 0 || _currentIndex >= total) {
       _currentIndex = 0;
     }
   }
 
-  // --- Helpers Privados ---
-
-  /// Lista normalizada de URLs listas para consumo en [Image.network].
+  /// Retorna la lista de URLs normalizadas listas para Image.network.
   List<String> get _resolvedUrls {
     if (widget.images.isNotEmpty) {
       final sorted = List<ProductImage>.from(widget.images)
@@ -174,23 +146,19 @@ class _ProductThumbnailCarouselState extends State<_ProductThumbnailCarousel> {
           .where((url) => url.isNotEmpty)
           .toList();
     }
-    final fallback = AppEnvironment.resolveMediaUrl(widget.fallbackUrl);
-    if (fallback.isNotEmpty) {
-      return [fallback];
+    if (widget.fallbackUrl != null && widget.fallbackUrl!.isNotEmpty) {
+      final fallback = AppEnvironment.resolveMediaUrl(widget.fallbackUrl!);
+      if (fallback.isNotEmpty) return [fallback];
     }
     return const [];
   }
 
   void _nextImage(int total) {
-    setState(() {
-      _currentIndex = (_currentIndex + 1) % total;
-    });
+    setState(() => _currentIndex = (_currentIndex + 1) % total);
   }
 
   void _prevImage(int total) {
-    setState(() {
-      _currentIndex = (_currentIndex - 1 + total) % total;
-    });
+    setState(() => _currentIndex = (_currentIndex - 1 + total) % total);
   }
 
   @override
@@ -198,7 +166,7 @@ class _ProductThumbnailCarouselState extends State<_ProductThumbnailCarousel> {
     final colorScheme = Theme.of(context).colorScheme;
     final urls = _resolvedUrls;
     final total = urls.length;
-    final currentUrl = urls.isNotEmpty ? urls[_currentIndex] : '';
+    final bool hasValidImages = urls.isNotEmpty && urls.first.isNotEmpty;
 
     return SizedBox(
       width: 76,
@@ -206,52 +174,21 @@ class _ProductThumbnailCarouselState extends State<_ProductThumbnailCarousel> {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
+          // 1. Imagen del producto o Placeholder médico si no tiene fotos
           Positioned.fill(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: currentUrl.isNotEmpty
+              child: hasValidImages
                   ? Image.network(
-                      currentUrl,
+                      urls[_currentIndex],
                       fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Container(
-                          color: colorScheme.surfaceContainerHighest,
-                          child: const Center(
-                            child: SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          ),
-                        );
-                      },
-                      errorBuilder: (_, error, __) {
-                        // Expone en consola la URL exacta y la excepción (404, CORS o HTML devuelto).
-                        if (kDebugMode) {
-                          debugPrint('🖼️ Error cargando imagen [$currentUrl]: $error');
-                        }
-                        return Container(
-                          color: colorScheme.surfaceContainerHighest,
-                          child: Icon(
-                            Icons.image_not_supported_outlined,
-                            size: 20,
-                            color: colorScheme.outline,
-                          ),
-                        );
-                      },
+                      errorBuilder: (_, __, ___) => _buildPlaceholder(colorScheme),
                     )
-                  : Container(
-                      color: colorScheme.surfaceContainerHighest,
-                      child: Icon(
-                        Icons.image_outlined,
-                        size: 20,
-                        color: colorScheme.outline,
-                      ),
-                    ),
+                  : _buildPlaceholder(colorScheme),
             ),
           ),
-          
+
+          // 2. Badge de Variantes: '3 VAR'
           if (widget.variantsCount > 0)
             Positioned(
               top: 3,
@@ -272,7 +209,9 @@ class _ProductThumbnailCarouselState extends State<_ProductThumbnailCarousel> {
                 ),
               ),
             ),
-          if (total > 1)
+
+          // 3. Flechas de navegación (solo si hay más de una imagen)
+          if (total > 1) ...[
             Positioned(
               left: 2,
               top: 0,
@@ -292,7 +231,6 @@ class _ProductThumbnailCarouselState extends State<_ProductThumbnailCarousel> {
                 ),
               ),
             ),
-          if (total > 1)
             Positioned(
               right: 2,
               top: 0,
@@ -312,44 +250,26 @@ class _ProductThumbnailCarouselState extends State<_ProductThumbnailCarousel> {
                 ),
               ),
             ),
-          if (total > 1)
-            Positioned(
-              bottom: 3,
-              left: 0,
-              right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(total, (index) {
-                  final isSelected = index == _currentIndex;
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    margin: const EdgeInsets.symmetric(horizontal: 1),
-                    width: isSelected ? 5 : 3.5,
-                    height: isSelected ? 5 : 3.5,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isSelected
-                          ? Colors.white
-                          : Colors.white.withValues(alpha: 0.5),
-                    ),
-                  );
-                }),
-              ),
-            ),
+          ],
         ],
       ),
     );
   }
+
+  /// Placeholder neutro cuando no hay fotos cargadas en el backend
+  Widget _buildPlaceholder(ColorScheme colorScheme) {
+    return Container(
+      color: colorScheme.surfaceContainerHigh,
+      child: Center(
+        child: Icon(
+          Icons.medication_outlined,
+          size: 28,
+          color: colorScheme.outline.withValues(alpha: 0.7),
+        ),
+      ),
+    );
+  }
 }
-
-
-
-
-
-
-
-
-
 
 // =============================================================================
 // SUB-COMPONENTE 2: INFORMACIÓN, SWITCH Y VARIANTES (WIDGET PRIVADO)
@@ -425,7 +345,7 @@ class _ProductMetaInfo extends StatelessWidget {
         ),
         const SizedBox(height: 2),
 
-        // Fila 3: Código de barras / Identificador
+        // Fila 3: Código de barras o ID
         Text(
           skuText,
           style: theme.textTheme.labelSmall?.copyWith(
@@ -435,7 +355,7 @@ class _ProductMetaInfo extends StatelessWidget {
         ),
         const SizedBox(height: 6),
 
-        // Fila 4: Chips de Variantes con Precio Directo
+        // Fila 4: Chips de Variantes con Precio Directo o Precio Base
         if (product.variants.isNotEmpty)
           Wrap(
             spacing: 4,
@@ -459,7 +379,6 @@ class _ProductMetaInfo extends StatelessWidget {
             }).toList(),
           )
         else
-          // Precio base si no tiene variantes
           Text(
             '\$ ${product.salePrice.toStringAsFixed(0)}',
             style: theme.textTheme.titleSmall?.copyWith(
@@ -501,14 +420,18 @@ class _ProductActionBar extends StatelessWidget {
         // 1. Botón: Marcar No disponible / Pausar
         _ActionButton(
           label: isAvailable ? 'No disponible' : 'Disponible',
-          icon: isAvailable ? Icons.pause_circle_outline : Icons.play_circle_outline,
+          icon: isAvailable
+              ? Icons.pause_circle_outline
+              : Icons.play_circle_outline,
           backgroundColor: colorScheme.surfaceContainerHigh,
           foregroundColor: colorScheme.onSurfaceVariant,
-          tooltip: isAvailable ? 'Pausar compra del producto' : 'Reanudar disponibilidad',
+          tooltip: isAvailable
+              ? 'Pausar compra del producto'
+              : 'Reanudar disponibilidad',
           onPressed: onToggleAvailability,
         ),
 
-        // 2. Botón: Editar
+        // 2. Botón: Editar (Abre product_form_handler.dart)
         _ActionButton(
           label: 'Editar',
           icon: Icons.edit_outlined,

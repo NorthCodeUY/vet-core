@@ -26,19 +26,30 @@ abstract final class ApiEndpoints {
   // 2. MÓDULO DE CATÁLOGO, PRODUCTOS Y VITRINA (E-COMMERCE)
   // ===========================================================================
 
-  /// Listado de productos para portal administrativo (`GET /api/productos/admin_todos`). 
-  static const String adminProducts = '/api/productos/admin_todos';
 
-  /// Operaciones sobre un producto específico por ID (`GET`, `PUT`, `DELETE`).
+
+
+  // ===========================================================================
+  // 2. MÓDULO DE CATÁLOGO, PRODUCTOS Y VITRINA (E-COMMERCE)
+  // ===========================================================================
+
+  /// Listado integral de productos para el portal administrativo (`GET`).
+  static const String adminProducts = '/api/productos/admin/listado';
+
+  /// Operaciones CRUD sobre un producto específico por [id] (`GET`, `PUT`, `DELETE`).
+  ///
+  /// - `PUT`: Modificación integral de atributos, stock, imágenes y variantes.
   /// - `DELETE`: Baja lógica (`prod_activo = false`).
-  /// - `PUT`: Actualización de stock, precios y datos.
+  // <!> Única definición de productById (se eliminó el duplicado de la línea 52)
   static String productById(int id) => '/api/productos/$id';
 
-  /// Conmutador de visibilidad para publicar u ocultar en la vitrina web (`PATCH /api/productos/:id/vitrina`).
+  /// Conmutador de visibilidad para publicar u ocultar en la vitrina web (`PATCH`).
   static String toggleShowcase(int id) => '/api/productos/$id/vitrina';
 
   /// Carga y actualización de imagen principal del producto (`POST` multipart). <!> no lo uso creo
   static String uploadProductImage(int id) => '/api/productos/$id/imagen';
+
+  /// Operaciones sobre un producto específico por ID (`GET`, `PUT`, `DELETE`).
 
   // ===========================================================================
   // 3. MÓDULO DE ÓRDENES Y PEDIDOS (MONITOREO)
@@ -54,6 +65,5 @@ abstract final class ApiEndpoints {
   // ===========================================================================
   /// Metadatos operativos del tenant (horarios, teléfonos, bancos) (`GET`, `PUT`).
   static const String businessSettings = '/api/configuracion';
-
 
 }

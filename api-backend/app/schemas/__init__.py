@@ -13,7 +13,10 @@ from app.schemas.subcategoria_schema import (
 from app.schemas.producto_schema import (
     ProductoResponseSchema,
     ProductoSchema,
+    ProductoCreateSchema,
+    ProductoUpdateSchema,
     VarianteResponseSchema,
+    VarianteCreateSchema,
     ColorResponseSchema,
     ProdCatAgrupadaSchema
 )

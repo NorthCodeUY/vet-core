@@ -177,76 +177,141 @@ sequenceDiagram
 
 Estructura modular del proyecto en [apps/admin-portal/](file:///home/ary/Documentos/proyect/app/vet-core/apps/admin-portal):
 
-```text
-apps/admin-portal/
-├── assets/
-│   └── tenant/                              # 🎨 Inyección en caliente del comercio activo
-│       ├── config.json                      # JSON estricto compilado desde config_admin.json
-│       └── logo.png                         # Isotipo oficial de la marca del cliente
-│
-├── lib/
-│   ├── config/                              # ⚙️ Entorno y configuración runtime
-│   │   ├── app_colors.dart                  # Tokens de color semánticos y fallbacks seguros
-│   │   ├── app_environment.dart             # Captura de variables (--dart-define API_URL y modo Web)
-│   │   ├── app_theme.dart                   # Generador dinámico de ThemeData (Material 3)
-│   │   └── tenant_config.dart               # Parser tipado y resiliente de config.json
-│   │
-│   ├── network/                             # 🌐 Infraestructura HTTP y comunicación REST
-│   │   ├── api_client.dart                  # Cliente Dio centralizado con timeouts, base URL y loggers
-│   │   ├── api_endpoints.dart               # Catálogo centralizado de rutas del backend FastAPI
-│   │   └── interceptors/
-│   │       └── auth_interceptor.dart        # Inyector Bearer Token y captura centralizada de 401
-│   │
-│   ├── models/                              # 📦 Entidades de datos inmutables (Pydantic <-> Dart)
-│   │   ├── auth_models.dart                 # Credenciales de acceso, TokenResponse y AdminUser
-│   │   └── product/                         # 🏷️ Subdominio de catálogo (Principio SRP)
-│   │       ├── category_model.dart          # Modelo de Categoría
-│   │       ├── subcategory_model.dart       # Modelo de Subcategoría
-│   │       ├── color_model.dart             # Modelo de Color para variantes físicas
-│   │       ├── product_image_model.dart     # Galería multimedia de imágenes
-│   │       ├── product_variant_model.dart   # SKUs, talles/pesos, stock y precios específicos
-│   │       ├── product_model.dart           # Entidad maestra consolidada de producto
-│   │       └── product.dart                 # Barrel export unificado del catálogo
-│   │
-│   ├── repositories/                        # 🗄️ Capa de Datos y Casos de Uso (Patrón Repository)
-│   │   ├── auth_repository.dart             # Login OAuth2, logout y persistencia segura de sesión
-│   │   └── product_repository.dart          # CRUD de productos, toggles de vitrina y control de stock
-│   │
-│   ├── screens/                             # 🖥️ Vistas y Controladores (Patrón Screen + Handler)
-│   │   ├── login_handler.dart               # Controlador de inicio de sesión y restauración de JWT
-│   │   ├── login_screen.dart                # UI pura del formulario de autenticación con Material 3
-│   │   ├── dashboard_handler.dart           # Controlador de navegación por pestañas e IndexedStack
-│   │   ├── dashboard_screen.dart            # Layout contenedor (TopBar + Body Activo + BottomBar)
-│   │   ├── catalog_handler.dart             # Controlador del catálogo (filtros reactivos y llamadas API)
-│   │   ├── catalog_screen.dart              # Vista declarativa con Grid/List de productos y métricas
-│   │   └── product_form/                    # 📝 Módulo de Alta y Edición de Producto
-│   │       ├── product_form_handler.dart    # Estado de formulario, cálculo de margen y despacho
-│   │       ├── product_form_screen.dart     # Formulario maestro que ensambla las 6 secciones
-│   │       └── widgets/                     # 🧩 Subsecciones atómicas del formulario
-│   │           ├── basic_info_section.dart  # Sección 1: Nombre, categoría, tags y código de barras
-│   │           ├── gallery_picker_section.dart # Sección 2: Portada y selector de fotografías
-│   │           ├── pricing_finance_section.dart# Sección 3: Precio PVP, costo y margen reactivo
-│   │           ├── inventory_stock_section.dart# Sección 4: Stock actual y punto de pedido 
-│   │           ├── showcase_switches_section.dart # Sección 5: Banderas booleanas de vitrina
-│   │           ├── variants_editor_section.dart# Sección 6: Editor dinámico de SKUs y variantes
-│   │           └── form_section_card.dart   # Tarjeta estilizada contenedora reutilizable
-│   │
-│   ├── widgets/                             # 🧩 Componentes visuales transversales
-│   │   ├── dashboard_top_bar.dart           # Barra superior con imagotipo, título y menú de perfil
-│   │   ├── dashboard_bottom_bar.dart        # Barra inferior fija de navegación táctil
-│   │   ├── metrics_header.dart              # KPIs superiores (Total, En Vitrina, Críticos, Pausados)
-│   │   ├── product_card_item.dart           # Tarjeta de producto con mini-carrusel, badges y acciones
-│   │   └── search_and_filters.dart          # Buscador en tiempo real y chips de segmentación
-│   │
-│   └── main.dart                            # 🚀 Bootstrap: Carga config de tenant y monta la app
-│
-├── run_admin.sh                             # 📜 Orquestador CLI para compilación JSONC y ejecución
-├── dockerfile                               # 🐳 Multi-stage build (Flutter Web -> NGINX Alpine)
-├── docker-compose.yml                       # 🐳 Orquestación de contenedor en red compartida
-├── nginx.conf.template                      # 🌐 Plantilla NGINX con proxy dinámico y SPA routing
-├── pubspec.yaml                             # 📦 Dependencias y configuración de assets
-└── README.md                                # 📖 Esta documentación técnica centralizada
-```
+
+
+
+
+## 📂 Mapa Arquitectónico del Proyecto
+
+Haga clic en cualquier enlace para inspeccionar el archivo o módulo correspondiente:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Aquí tienes el bloque formateado exactamente bajo el estándar de **listas no ordenadas anidadas de Markdown con hipervínculos relativos y comentarios técnicos en cursiva**, perfectamente homologado con el formato de tu `web-client`:
+
+---
+
+* 📁 **[clients/](../../clients/)** *(Silos de configuración y assets por cliente)*
+  * 📁 **[veterinariabeltrameli/](../../clients/veterinariabeltrameli/)** *(Cliente Veterinaria con backend activo)*
+    * 📁 **[assets/](../../clients/veterinariabeltrameli/assets/)** *(Isotipo oficial y recursos gráficos)*
+    * 📄 [config_admin.json](../../clients/veterinariabeltrameli/config_admin.json) *(Configuración operativa del panel y temas)*
+    * 📄 [config.json](../../clients/veterinariabeltrameli/config.json) *(Configuración de la tienda pública React)*
+  * 📁 **[_template/](../../clients/_template/)** *(Plantilla agnóstica para clonar nuevos comercios)*
+    * 📁 **[assets/](../../clients/_template/assets/)** *(Placeholders de logotipos e isotipos)*
+    * 📄 [config_admin.json](../../clients/_template/config_admin.json) *(Esquema maestro de administración)*
+* 📁 **apps/admin-portal/** *(Código fuente Portal Administrativo Flutter)*
+  * 📄 [Dockerfile](Dockerfile) *(Compilación multi-stage: Flutter Web -> NGINX Alpine)*
+  * 📄 [docker-compose.yml](docker-compose.yml) *(Orquestador multi-contenedor con red northcode-net)*
+  * 📄 [nginx.conf.template](nginx.conf.template) *(Plantilla NGINX con proxy dinámico ${BACKEND_HOST} y SPA routing)*
+  * 📄 [pubspec.yaml](pubspec.yaml) *(Manifiesto de dependencias Dart 3 y assets del tenant)*
+  * 📄 [run_admin.sh](run_admin.sh) *(Orquestador CLI local para resolución de puertos y hot-reload)*
+  * 📄 [README.md](README.md) *(Documentación técnica centralizada del módulo)*
+  * 📁 **[assets/](assets/)**
+    * 📁 **[tenant/](assets/tenant/)** *(Inyección en caliente del comercio activo en runtime)*
+      * 📄 [config.json](assets/tenant/config.json) *(JSON estricto sanitizado sin comentarios //)*
+      * 🖼️ [logo.png](assets/tenant/logo.png) *(Logotipo oficial del comercio activo)*
+  * 📁 **[lib/](lib/)**
+    * 🚀 [main.dart](lib/main.dart) *(Bootstrap: Inicialización, carga de TenantConfig y Auto-Login)*
+    * 📁 **[config/](lib/config/)** *(Infraestructura runtime y personalización agnóstica)*
+      * 📄 [app_colors.dart](lib/config/app_colors.dart) *(Tokens semánticos de color y fallbacks seguros)*
+      * 📄 [app_environment.dart](lib/config/app_environment.dart) *(Captura de variables --dart-define y endpoints relativos)*
+      * 📄 [app_theme.dart](lib/config/app_theme.dart) *(Generador dinámico de ThemeData en Material 3)*
+      * 📄 [tenant_config.dart](lib/config/tenant_config.dart) *(Parser tipado con sanitizador JSONC en memoria)*
+    * 📁 **[models/](lib/models/)** *(Entidades de dominio inmutables Pydantic <-> Dart)*
+      * 📄 [auth_models.dart](lib/models/auth_models.dart) *(Credenciales de acceso, TokenResponse y sesión JWT)*
+      * 📁 **[product/](lib/models/product/)** *(Subdominio desacoplado de catálogo - Principio SRP)*
+        * 📄 [product.dart](lib/models/product/product.dart) *(Barrel export unificado de catálogo)*
+        * 📄 [product_model.dart](lib/models/product/product_model.dart) *(Entidad maestra de producto y reglas de stock)*
+        * 📄 [product_variant_model.dart](lib/models/product/product_variant_model.dart) *(SKUs, talles/pesos, stock y precios)*
+        * 📄 [product_image_model.dart](lib/models/product/product_image_model.dart) *(Galería multimedia y marcado de portada)*
+        * 📄 [category_model.dart](lib/models/product/category_model.dart) *(Clasificación primaria del producto)*
+        * 📄 [subcategory_model.dart](lib/models/product/subcategory_model.dart) *(Clasificación secundaria y etiquetas)*
+        * 📄 [color_model.dart](lib/models/product/color_model.dart) *(Modelo de color hexadecimal para variantes)*
+    * 📁 **[network/](lib/network/)** *(Infraestructura HTTP y comunicación REST)*
+      * 📄 [api_client.dart](lib/network/api_client.dart) *(Cliente Dio centralizado con timeouts, base URL y logging)*
+      * 📄 [api_endpoints.dart](lib/network/api_endpoints.dart) *(Catálogo centralizado de rutas del backend FastAPI)*
+      * 📁 **[interceptors/](lib/network/interceptors/)**
+        * 📄 [auth_interceptor.dart](lib/network/interceptors/auth_interceptor.dart) *(Inyector automático de Bearer Token y captura de 401)*
+    * 📁 **[repositories/](lib/repositories/)** *(Capa de datos y casos de uso - Patrón Repository)*
+      * 📄 [auth_repository.dart](lib/repositories/auth_repository.dart) *(Login OAuth2, logout y persistencia segura de sesión)*
+      * 📄 [product_repository.dart](lib/repositories/product_repository.dart) *(Consumo de /api/productos/admin_todos y toggles)*
+    * 📁 **[screens/](lib/screens/)** *(Vistas y controladores de estado - Patrón Screen + Handler)*
+      * 📄 [login_screen.dart](lib/screens/login_screen.dart) *(UI pura del formulario de autenticación)*
+      * 📄 [login_handler.dart](lib/screens/login_handler.dart) *(Controlador de sesión, estado de carga y JWT)*
+      * 📄 [dashboard_screen.dart](lib/screens/dashboard_screen.dart) *(Layout contenedor: TopBar + Body + BottomBar)*
+      * 📄 [dashboard_handler.dart](lib/screens/dashboard_handler.dart) *(Navegación indexada con IndexedStack persistente)*
+      * 📄 [catalog_screen.dart](lib/screens/catalog_screen.dart) *(Vista declarativa con listado de productos y filtros)*
+      * 📄 [catalog_handler.dart](lib/screens/catalog_handler.dart) *(Controlador reactivo de inventario y mutaciones)*
+
+
+
+
+
+
+<!-- <!> Bueno vamos a altera esot  -->
+      * 📁 **[product_form/](lib/screens/product_form/)** *(Módulo de Alta y Edición de Producto)*
+        * 📄 [product_form_screen.dart](lib/screens/product_form/product_form_screen.dart) *(Formulario maestro que ensambla las 6 secciones)*
+        * 📄 [product_form_handler.dart](lib/screens/product_form/product_form_handler.dart) *(Cálculo de margen, validación y despacho HTTP)*
+        * 📁 **[widgets/](lib/screens/product_form/widgets/)** *(Subsecciones atómicas del formulario)*
+  
+
+
+
+          * 📄 [form_section_card.dart](lib/screens/product_form/widgets/form_section_card.dart) *(Tarjeta estilizada contenedora reutilizable <!> croe qeu esto eria el titulo de arriba meror este cometario para saber )*
+          * 📄 [basic_info_section.dart](lib/screens/product_form/widgets/basic_info_section.dart) *(Sección 1: Nombre, categoría, tags y EAN)*
+          * 📄 [gallery_picker_section.dart](lib/screens/product_form/widgets/gallery_picker_section.dart) *(Sección 2: Portada y selector de fotografías)*
+          * 📄 [pricing_finance_section.dart](lib/screens/product_form/widgets/pricing_finance_section.dart) *(Sección 3: Precio PVP, costo y margen reactivo)*
+          * 📄 [inventory_stock_section.dart](lib/screens/product_form/widgets/inventory_stock_section.dart) *(Sección 4: Stock actual y punto de pedido)*
+          * 📄 [showcase_switches_section.dart](lib/screens/product_form/widgets/showcase_switches_section.dart) *(Sección 5: Banderas booleanas de vitrina)*
+          * 📄 [variants_editor_section.dart](lib/screens/product_form/widgets/variants_editor_section.dart) *(Sección 6: Editor dinámico de SKUs y variantes)*
+
+
+
+
+
+
+
+
+
+
+
+    * 📁 **[services/](lib/services/)** *(Servicios transversales de aplicación)*
+      * 📄 [auth_service.dart](lib/services/auth_service.dart) *(Servicio auxiliar de autenticación)*
+    * 📁 **[widgets/](lib/widgets/)** *(Componentes visuales transversales reutilizables)*
+      * 📄 [dashboard_top_bar.dart](lib/widgets/dashboard_top_bar.dart) *(Barra superior con imagotipo, título y menú de perfil)*
+      * 📄 [dashboard_bottom_bar.dart](lib/widgets/dashboard_bottom_bar.dart) *(Barra inferior fija táctil: Inventario, Alta, Cajas)*
+      * 📄 [metrics_header.dart](lib/widgets/metrics_header.dart) *(KPIs de inventario: Total, En Vitrina, Críticos, Pausados)*
+      * 📄 [product_card_item.dart](lib/widgets/product_card_item.dart) *(Tarjeta de producto con carrusel, badges y acciones)*
+      * 📄 [search_and_filters.dart](lib/widgets/search_and_filters.dart) *(Buscador en tiempo real y chips de segmentación)*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ---
 
@@ -315,6 +380,7 @@ Ejecutar en **Linux Desktop** (modo más rápido para desarrollo):
 ```bash
 ./run_admin.sh veterinaria linux
 ```
+
 
 Ejecutar en **Google Chrome** (Flutter Web):
 ```bash

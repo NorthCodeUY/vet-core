@@ -88,13 +88,13 @@ class Product {
   });
 
   /// Resuelve la URL de la imagen destacada o la primera disponible.
-  String get primaryImageUrl {
-    if (images.isEmpty) return '';
+  String? get primaryImageUrl {
+    if (images.isEmpty) return null;
     final featured = images.firstWhere(
       (img) => img.isFeatured,
       orElse: () => images.first,
     );
-    return featured.url;
+    return featured.url.isNotEmpty ? featured.url : null;
   }
 
   /// Evalúa si el producto se encuentra en condición crítica de inventario.

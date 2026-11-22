@@ -3,32 +3,43 @@
 =============================================================================
 ENTRYPOINT PRINCIPAL DE LA API (FASTAPI)
 =============================================================================
-Orquestador de ciclo de vida: configuración de CORS, montaje de estáticos,
-registro centralizado de routers e inicialización de esquemas.
+Orquestador del ciclo de vida de la aplicación: configuración de CORS,
+registro modular de routers HTTP, montaje de archivos estáticos y verificación de estado.
 """
 
-from fastapi import FastAPI
+from contextlib import asynccontextmanager
+from pathlib import Path
+from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-# Carga obligatoria de todo el grafo de modelos antes de crear tablas
+# 1. Carga explícita del grafo completo de modelos antes de inicializar DDL
 import app.models
-from app.database import engine, Base
-from app.config import settings, origins_list, allow_credentials
-from app.router import producto_router, auth_router
+from app.config import allow_credentials, origins_list, settings
+from app.database import Base, engine
+from app.router import auth_router, categoria_route, producto_router, subcategoria_route
 
-# Inicialización declarativa de tablas no existentes
-Base.metadata.create_all(bind=engine)
 
+# 2. Manejo estructurado del ciclo de vida (Startup / Shutdown)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Verificación e inicialización declarativa de tablas no existentes
+    Base.metadata.create_all(bind=engine)
+    yield
+
+
+# 3. Instancia de la aplicación
 app = FastAPI(
     title=getattr(settings, "PROJECT_NAME", "VetCore SaaS API"),
-    description="Motor central SaaS para Catálogo, Pedidos y Gestión"
+    description="Motor central SaaS para Catálogo, Pedidos e Inventario Multitenant",
+    version="1.0.0",
+    lifespan=lifespan,
 )
+
 
 # =============================================================================
 # MIDDLEWARE DE CORS (Cross-Origin Resource Sharing)
 # =============================================================================
-# Permite peticiones seguras desde las aplicaciones Frontend (React / Vite)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins_list,
@@ -37,25 +48,37 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # =============================================================================
-# REGISTRO DE ROUTERS (PREFIJO GLOBAL /api)
+# REGISTRO CENTRALIZADO DE ROUTERS (PREFIJO UNIFICADO /api)
 # =============================================================================
-# /api + /productos -> /api/productos
-app.include_router(producto_router.router, prefix="/api")
-# /api + /auth      -> /api/auth
 app.include_router(auth_router.router, prefix="/api")
+app.include_router(producto_router.router, prefix="/api")
+app.include_router(categoria_route.router, prefix="/api")
+app.include_router(subcategoria_route.router, prefix="/api")
+
 
 # =============================================================================
-# ARCHIVOS ESTÁTICOS LOCALES (Fallback para desarrollo)
+# ARCHIVOS ESTÁTICOS LOCALES (Fallback multimedia)
 # =============================================================================
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+static_dir = Path("app/static")
+static_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
 
-@app.get("/", tags=["Health Check"])
+# =============================================================================
+# HEALTH CHECK
+# =============================================================================
+@app.get(
+    "/",
+    tags=["Health Check"],
+    status_code=status.HTTP_200_OK,
+    summary="Comprobación de operatividad del nodo",
+)
 def read_root():
-    """Endpoint raíz agnóstico para comprobación de estado de la API."""
+    """Endpoint de sondeo de salud para orquestadores (Docker / Nginx / Uptime Kuma)."""
     return {
         "status": "online",
         "service": getattr(settings, "PROJECT_NAME", "VetCore SaaS API"),
-        "mode": getattr(settings, "ENV_MODE", "development")
+        "mode": getattr(settings, "ENV_MODE", "development"),
     }

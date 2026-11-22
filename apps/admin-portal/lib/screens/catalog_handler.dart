@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:admin_portal/models/product/product.dart';
 import 'package:admin_portal/repositories/product_repository.dart';
 import 'catalog_screen.dart';
+import 'package:admin_portal/screens/product_form/product_form_handler.dart';
 
 import 'package:flutter/foundation.dart';
 
@@ -21,6 +22,8 @@ class CatalogHandler extends StatefulWidget {
   State<CatalogHandler> createState() => _CatalogHandlerState();
 }
 
+
+
 class _CatalogHandlerState extends State<CatalogHandler> {
   final ProductRepository _productRepository = ProductRepository();
 
@@ -30,6 +33,19 @@ class _CatalogHandlerState extends State<CatalogHandler> {
 
   String _activeFilter = 'all';
   String _searchQuery = '';
+
+  /// Abre el formulario maestro en modo alta ([product] == null) o edición.
+  // <!> Espera el resultado booleano del formulario para refrescar el catálogo tras PUT/POST
+  Future<void> _openProductForm({Product? product}) async {
+    final saved = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => ProductFormHandler(productToEdit: product),
+      ),
+    );
+    if (saved == true && mounted) {
+      await _fetchProducts();
+    }
+  }
 
   @override
   void initState() {
@@ -321,13 +337,9 @@ class _CatalogHandlerState extends State<CatalogHandler> {
       onRefresh: _fetchProducts,
       onToggleShowcase: _handleToggleShowcase,
       onToggleAvailability: _handleToggleAvailability,
-      onEditProduct: (p) {
-        // TODO: Navegar a ProductFormScreen pasando 'p'
-      },
+      onEditProduct: (p) => _openProductForm(product: p),
+      onCreateProduct: () => _openProductForm(),
       onDeleteProduct: _handleDeleteProduct,
-      onCreateProduct: () {
-        // TODO: Navegar a ProductFormScreen vacío
-      },
     );
   }
 }

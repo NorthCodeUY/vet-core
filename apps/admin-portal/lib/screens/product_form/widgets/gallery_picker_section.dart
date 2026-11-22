@@ -3,6 +3,8 @@
 
 import 'package:flutter/material.dart';
 import 'form_section_card.dart';
+// Propósito: Renderizar imágenes remotas (R2) con Image.network y capturas locales (data:base64) con Image.memory.
+import 'dart:convert';
 
 /// Sección atómica de presentación pura para gestionar la galería de fotos de un producto.
 ///
@@ -40,6 +42,36 @@ class GalleryPickerSection extends StatelessWidget {
 
   /// Límite máximo de imágenes permitido por el tenant (`TenantConfig.productSchema.maxImagesPerProduct`).
   final int maxImages;
+
+
+
+
+
+   Widget _buildImageContent(String source, ColorScheme colorScheme) {
+    if (source.startsWith('data:image/')) {
+      final commaIndex = source.indexOf(',');
+      if (commaIndex != -1) {
+        final bytes = base64Decode(source.substring(commaIndex + 1));
+        return Image.memory(
+          bytes,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            color: colorScheme.surfaceContainerHighest,
+            child: Icon(Icons.broken_image_outlined, color: colorScheme.outline),
+          ),
+        );
+      }
+    }
+
+    return Image.network(
+      source,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Container(
+        color: colorScheme.surfaceContainerHighest,
+        child: Icon(Icons.broken_image_outlined, color: colorScheme.outline),
+      ),
+    );
+  }
 
   // --- Ciclo de Vida / Inicialización ---
 
@@ -306,6 +338,8 @@ class GalleryPickerSection extends StatelessWidget {
       showDragHandle: true,
       builder: (sheetContext) {
         return SafeArea(
+
+          // <!> es por aca repara esto la interfase no funciona bioen 
           child: Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Column(

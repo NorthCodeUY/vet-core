@@ -47,4 +47,10 @@ server {
         expires -1;
         add_header Cache-Control "no-store, no-cache, must-revalidate";
     }
+
+    # Evita caché del navegador sobre el manifiesto y Service Worker para actualizaciones inmediatas
+    location ~* ^/(index\.html|flutter_bootstrap\.js|flutter_service_worker\.js|manifest\.json|version\.json)$ {
+        expires -1;
+        add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate";
+    }
 }

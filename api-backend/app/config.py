@@ -6,14 +6,15 @@ CONFIGURACIÓN CENTRALIZADA MULTI-TENANT (PYDANTIC SETTINGS V2)
 Gestiona la carga de variables de entorno de forma dinámica por Tenant:
 - Prioriza variables del sistema operativo (Docker env_file).
 - Si existe la variable ENV_FILE, carga ese archivo específico (.env.veterinaria).
-- Ensambla la conexión a PostgreSQL y la política de CORS de manera agnóstica.
+- Ensambla la conexión a PostgreSQL, CORS y rutas de Cloudflare R2.
 """
 
 import os
 import socket
 from typing import List
-from pydantic_settings import BaseSettings, SettingsConfigDict
+
 from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 def obtener_ip_local() -> str:
@@ -28,9 +29,6 @@ def obtener_ip_local() -> str:
         return "127.0.0.1"
 
 
-# Resolución dinámica del archivo de entorno a cargar
-# 1. Si el sistema operativo define 'ENV_FILE', usa ese.
-# 2. Si no, busca '.env'.
 TARGET_ENV_FILE = os.getenv("ENV_FILE", ".env")
 
 
@@ -43,8 +41,9 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = Field(default="VetCore Engine API", description="Nombre del tenant")
     ENV_MODE: str = Field(default="development", description="development | production")
     IS_DOCKER: bool = Field(default=False, description="True si corre dentro de Docker")
-    
+
     # Feature Flags Multi-Tenant
+    TENANT_ID: str = Field(default="", description="Slug del tenant para prefijos R2 (ej: veterinaria)")
     TENANT_TYPE: str = Field(default="GENERAL", description="VET | RETAIL | SERVICES")
     ENABLE_AGENDA: bool = Field(default=False, description="Habilita módulo de turnos/citas")
 
@@ -77,6 +76,7 @@ class Settings(BaseSettings):
     R2_ACCOUNT_ID: str = ""
     R2_ACCESS_KEY_ID: str = ""
     R2_SECRET_ACCESS_KEY: str = ""
+    R2_ENDPOINT_URL: str = ""
     R2_BUCKET_NAME: str = "vetcore-media"
     R2_PUBLIC_URL: str = ""
 
@@ -86,7 +86,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=TARGET_ENV_FILE,
         extra="ignore",
-        env_file_encoding="utf-8"
+        env_file_encoding="utf-8",
     )
 
     # -------------------------------------------------------------------------
@@ -119,6 +119,15 @@ class Settings(BaseSettings):
         host = "localhost" if self.IS_DOCKER else obtener_ip_local()
         return f"http://{host}:{self.APP_PORT}"
 
+    @property
+    def RESOLVED_TENANT_ID(self) -> str:
+        """Resuelve el identificador de tenant para prefijos R2 (ej: veterinaria)."""
+        if self.TENANT_ID.strip():
+            return self.TENANT_ID.strip().lower()
+        if ".env." in TARGET_ENV_FILE:
+            return TARGET_ENV_FILE.split(".env.")[-1].strip().lower()
+        return "default"
+
     # -------------------------------------------------------------------------
     # ALIASES DE COMPATIBILIDAD HACIA ATRÁS (MINÚSCULAS)
     # -------------------------------------------------------------------------
@@ -142,9 +151,7 @@ class Settings(BaseSettings):
     def allowed_origins(self) -> str: return self.ALLOWED_ORIGINS
 
 
-# Instanciación única consumida por todo el backend
 settings = Settings()
 
-# Alias globales consumidos por main.py
 origins_list = settings.CORS_ORIGINS
 allow_credentials = settings.CORS_ALLOW_CREDENTIALS

@@ -204,6 +204,9 @@ Aquí tienes el bloque formateado exactamente bajo el estándar de **listas no o
 
 ---
 
+<!-- <!> agregar al arbol // apps/admin-portal/lib/services/pwa/pwa_service.dart -->
+
+
 * 📁 **[clients/](../../clients/)** *(Silos de configuración y assets por cliente)*
   * 📁 **[veterinariabeltrameli/](../../clients/veterinariabeltrameli/)** *(Cliente Veterinaria con backend activo)*
     * 📁 **[assets/](../../clients/veterinariabeltrameli/assets/)** *(Isotipo oficial y recursos gráficos)*

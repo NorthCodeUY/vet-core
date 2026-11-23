@@ -3,27 +3,37 @@
 =============================================================================
 CONTROLADOR HTTP: CATÁLOGO DE PRODUCTOS (ENDPOINTS PÚBLICOS Y ADMIN)
 =============================================================================
-Endpoints para la Landing Page, vitrina comercial y administración del catálogo.
+Endpoints para la Landing Page, vitrina comercial, administración del catálogo
+y carga de imágenes hacia Cloudflare R2 / storage local.
 """
 
-
-# api-backend/app/router/producto_router.py
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.database import get_db
+
+
 from app.repositories.product_repo import (
+    add_imagen_producto,
     create_producto,
     get_all_products_admin,
     get_product_by_id,
+    get_productos_admin_filtrados,
     get_productos_agrupados,
     get_productos_filtrados,
     soft_delete_producto,
     toggle_vitrina_producto,
     update_producto,
 )
+
+
+
 from app.schemas.producto_schema import (
+    ImagenResponseSchema,
+    ImagenUploadResponseSchema,
     ProdCatAgrupadaSchema,
     ProductoAccionResponseSchema,
     ProductoCreateSchema,
@@ -31,8 +41,44 @@ from app.schemas.producto_schema import (
     ProductoUpdateSchema,
     ToggleVitrinaSchema,
 )
+from app.services.storage_service import storage_service
 
 router = APIRouter(prefix="/productos", tags=["Catálogo de Productos"])
+
+
+
+
+
+@router.get(
+    "/admin/listado",
+    response_model=list[ProductoResponseSchema],
+    status_code=status.HTTP_200_OK,
+    summary="Listado completo administrativo (con filtros opcionales)",
+)
+def listar_productos_admin(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=50, ge=1, le=500),
+    cat_id: Optional[int] = Query(default=None),
+    search: Optional[str] = Query(default=None),
+    db: Session = Depends(get_db),
+):
+    return get_all_products_admin(db, cat_id=cat_id, search=search)[skip : skip + limit]
+
+
+@router.get(
+    "/admin/filtrados",
+    response_model=list[ProductoResponseSchema],
+    status_code=status.HTTP_200_OK,
+    summary="Buscador administrativo sin restricción de visibilidad ni stock",
+)
+def listar_productos_admin_filtrados(
+    cat_id: Optional[int] = Query(default=None),
+    search: Optional[str] = Query(default=None),
+    db: Session = Depends(get_db),
+):
+    return get_productos_admin_filtrados(db, cat_id=cat_id, search=search)
+
+    
 
 
 @router.get(
@@ -73,6 +119,20 @@ def listar_productos_admin(
     return get_all_products_admin(db)[skip : skip + limit]
 
 
+@router.post(
+    "/upload-imagen",
+    response_model=ImagenUploadResponseSchema,
+    status_code=status.HTTP_201_CREATED,
+    summary="Subir imagen a Cloudflare R2 / Storage",
+)
+async def subir_imagen_storage(file: UploadFile = File(...)):
+    img_url, filename = await storage_service.upload_uploadfile(
+        tenant_id=settings.RESOLVED_TENANT_ID,
+        file=file,
+    )
+    return ImagenUploadResponseSchema(img_url=img_url, filename=filename)
+
+
 @router.get(
     "/{prod_id}",
     response_model=ProductoResponseSchema,
@@ -90,6 +150,36 @@ def obtener_producto(prod_id: int, db: Session = Depends(get_db)):
 
 
 @router.post(
+    "/{prod_id}/imagenes",
+    response_model=ImagenResponseSchema,
+    status_code=status.HTTP_201_CREATED,
+    summary="Subir imagen a R2 y asociarla al producto",
+)
+async def subir_y_asociar_imagen(
+    prod_id: int,
+    file: UploadFile = File(...),
+    principal: bool = Query(default=False),
+    db: Session = Depends(get_db),
+):
+    img_url, _ = await storage_service.upload_uploadfile(
+        tenant_id=settings.RESOLVED_TENANT_ID,
+        file=file,
+    )
+    imagen = add_imagen_producto(
+        db=db,
+        prod_id=prod_id,
+        img_url=img_url,
+        img_principal=principal,
+    )
+    if not imagen:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"El producto con ID {prod_id} no existe.",
+        )
+    return imagen
+
+
+@router.post(
     "",
     response_model=ProductoResponseSchema,
     status_code=status.HTTP_201_CREATED,
@@ -99,7 +189,6 @@ def crear_nuevo_producto(
     payload: ProductoCreateSchema,
     db: Session = Depends(get_db),
 ):
-    # by_alias=True asegura que var_sku viaje mapeado como val_sku si corresponde
     datos = payload.model_dump(exclude={"subcategoria_ids"}, by_alias=True)
     return create_producto(
         db=db,
@@ -179,20 +268,3 @@ def alternar_vitrina(
         prod_id=prod_id,
         prod_visible=payload.prod_visible,
     )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

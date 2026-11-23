@@ -1,81 +1,57 @@
-// apps/admin-portal/lib/widgets/product_form/gallery_picker_section.dart
-// Propósito: Sección visual de galería multimedia con selector táctil (cámara y archivos) para Web móvil y nativo.
+// apps/admin-portal/lib/screens/product_form/widgets/gallery_picker_section.dart
+// Propósito: Sección visual de galería multimedia para gestionar portada, miniaturas
+// y selección de imágenes locales o remotas en Web, Desktop y Mobile.
 
+import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'form_section_card.dart';
-// Propósito: Renderizar imágenes remotas (R2) con Image.network y capturas locales (data:base64) con Image.memory.
-import 'dart:convert';
 
 /// Sección atómica de presentación pura para gestionar la galería de fotos de un producto.
 ///
-/// Sigue el patrón `Screen + Handler`: no invoca selectores de archivos ni sube
-/// imágenes a FastAPI directamente, sino que expone intenciones claras hacia
-/// `ProductFormHandler` (cámara, galería/archivos, eliminar y fijar portada).
+/// Sigue el patrón `Screen + Handler`: no invoca selectores de archivos ni ejecuta
+/// peticiones HTTP directamente, sino que delega todas las intenciones del usuario
+/// hacia `ProductFormHandler` (cámara, galería/archivos, eliminar y fijar portada).
 ///
-/// En dispositivos móviles (tanto nativos como Web móvil), despliega un
-/// `BottomSheet` táctil para que el usuario elija entre **Cámara** o **Archivos/Galería**
-/// cuando se proveen [onPickFromCamera] y [onPickFromGallery].
+/// Soporta de forma unificada:
+/// - **URLs remotas** provenientes de Cloudflare R2 (`https://...`).
+/// - **Data URIs locales** generados tras seleccionar una imagen (`data:image/...;base64,...`).
 class GalleryPickerSection extends StatelessWidget {
-  // --- Estado y Dependencias ---
+  // ===========================================================================
+  // 1. ESTADO Y CALLBACKS (INMUTABLES DESDE EL HANDLER)
+  // ===========================================================================
 
-  /// Lista ordenada de URLs o Data URIs (`https://...`, `blob:...`, `data:image/...`).
+  /// Lista ordenada de fuentes de imagen (`https://...` o `data:image/...;base64,...`).
   ///
-  /// El índice `0` representa la imagen principal mostrada como portada en vitrina.
+  /// Por contrato con el backend FastAPI, el índice `0` representa la imagen
+  /// principal (`img_principal = true`) mostrada como portada en vitrina.
   final List<String> imageUrls;
 
-  /// Callback de respaldo cuando el handler aún usa un único punto de entrada.
+  /// Callback de respaldo cuando el handler expone un único punto de entrada.
   ///
-  /// Se ejecuta automáticamente si [onPickFromCamera] y [onPickFromGallery] son nulos.
+  /// Se utiliza únicamente si [onPickFromCamera] y [onPickFromGallery] son nulos.
   final VoidCallback? onAddImage;
 
-  /// Callback disparado al elegir captura directa desde cámara (móvil / Web móvil).
+  /// Callback disparado al elegir captura directa desde cámara (Android / iOS).
   final VoidCallback? onPickFromCamera;
 
-  /// Callback disparado al elegir una imagen desde la galería o explorador de archivos.
+  /// Callback disparado al elegir una imagen desde galería o explorador de archivos.
   final VoidCallback? onPickFromGallery;
 
-  /// Callback disparado al presionar eliminar (`×`) pasando el índice de la miniatura.
+  /// Callback disparado al presionar el botón eliminar (`×`) de una miniatura.
   final ValueChanged<int> onRemoveImage;
 
-  /// Callback disparado al tocar una miniatura secundaria para promoverla como portada (`index`).
+  /// Callback disparado al tocar una miniatura secundaria para promoverla al índice `0`.
   final ValueChanged<int> onSetFeatured;
 
-  /// Límite máximo de imágenes permitido por el tenant (`TenantConfig.productSchema.maxImagesPerProduct`).
+  /// Cantidad máxima de imágenes permitidas por producto (`TenantConfig`).
   final int maxImages;
 
+  // ===========================================================================
+  // 2. CONSTRUCTOR
+  // ===========================================================================
 
-
-
-
-   Widget _buildImageContent(String source, ColorScheme colorScheme) {
-    if (source.startsWith('data:image/')) {
-      final commaIndex = source.indexOf(',');
-      if (commaIndex != -1) {
-        final bytes = base64Decode(source.substring(commaIndex + 1));
-        return Image.memory(
-          bytes,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Container(
-            color: colorScheme.surfaceContainerHighest,
-            child: Icon(Icons.broken_image_outlined, color: colorScheme.outline),
-          ),
-        );
-      }
-    }
-
-    return Image.network(
-      source,
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => Container(
-        color: colorScheme.surfaceContainerHighest,
-        child: Icon(Icons.broken_image_outlined, color: colorScheme.outline),
-      ),
-    );
-  }
-
-  // --- Ciclo de Vida / Inicialización ---
-
-  /// Crea la sección [GalleryPickerSection] con los callbacks del formulario padre.
+  /// Crea la sección [GalleryPickerSection] con los callbacks provistos por el handler.
   const GalleryPickerSection({
     super.key,
     required this.imageUrls,
@@ -87,7 +63,9 @@ class GalleryPickerSection extends StatelessWidget {
     this.maxImages = 5,
   });
 
-  // --- Acciones Públicas ---
+  // ===========================================================================
+  // 3. CONSTRUCCIÓN DE INTERFAZ PRINCIPAL
+  // ===========================================================================
 
   @override
   Widget build(BuildContext context) {
@@ -116,10 +94,11 @@ class GalleryPickerSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (imageUrls.isNotEmpty)
-            _buildFeaturedPreview(context, colorScheme)
+            _buildFeaturedPreview(colorScheme)
           else
             _buildEmptyDropZone(context, theme, colorScheme),
           const SizedBox(height: 10),
+          // Tira horizontal con miniaturas ordenadas y botón de carga al final.
           SizedBox(
             height: 76,
             child: ListView.separated(
@@ -130,7 +109,7 @@ class GalleryPickerSection extends StatelessWidget {
                 if (canAddMore && index == imageUrls.length) {
                   return _buildAddTile(context, colorScheme);
                 }
-                return _buildThumbnailTile(context, colorScheme, index);
+                return _buildThumbnailTile(colorScheme, index);
               },
             ),
           ),
@@ -139,28 +118,19 @@ class GalleryPickerSection extends StatelessWidget {
     );
   }
 
-  // --- Helpers Privados ---
+  // ===========================================================================
+  // 4. SUBWIDGETS DE PRESENTACIÓN
+  // ===========================================================================
 
-  /// Construye la vista previa panorámica (16:9) de la imagen de portada actual.
-  Widget _buildFeaturedPreview(BuildContext context, ColorScheme colorScheme) {
+  /// Construye la vista previa panorámica (16:9) de la imagen principal (`index == 0`).
+  Widget _buildFeaturedPreview(ColorScheme colorScheme) {
     return Stack(
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: AspectRatio(
             aspectRatio: 16 / 9,
-            // Image.network en Web soporta tanto URLs remotas (R2) como blob:/data: locales tras seleccionar archivo.
-            child: Image.network(
-              imageUrls.first,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                color: colorScheme.surfaceContainerHighest,
-                child: Icon(
-                  Icons.broken_image_outlined,
-                  color: colorScheme.outline,
-                ),
-              ),
-            ),
+            child: _buildImageContent(imageUrls.first, colorScheme),
           ),
         ),
         Positioned(
@@ -193,7 +163,7 @@ class GalleryPickerSection extends StatelessWidget {
     );
   }
 
-  /// Renderiza el área vacía inicial con acceso rápido táctil para móvil y escritorio.
+  /// Renderiza el área vacía inicial con acceso rápido táctil para cargar la primera foto.
   Widget _buildEmptyDropZone(
     BuildContext context,
     ThemeData theme,
@@ -227,7 +197,7 @@ class GalleryPickerSection extends StatelessWidget {
             ),
             const SizedBox(height: 2),
             Text(
-              'JPG, PNG o WEBP (máx. $maxImages)',
+              'JPG, PNG o WEBP · Máx. 5 MB ($maxImages fotos)',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -238,6 +208,7 @@ class GalleryPickerSection extends StatelessWidget {
     );
   }
 
+  /// Renderiza el recuadro final de la tira horizontal para añadir una imagen adicional.
   Widget _buildAddTile(BuildContext context, ColorScheme colorScheme) {
     return InkWell(
       onTap: () => _handleAddTap(context),
@@ -257,12 +228,8 @@ class GalleryPickerSection extends StatelessWidget {
     );
   }
 
-  /// Miniatura individual con acción de fijar como portada al tocar y botón de borrado.
-  Widget _buildThumbnailTile(
-    BuildContext context,
-    ColorScheme colorScheme,
-    int index,
-  ) {
+  /// Construye cada miniatura con acción de fijar como portada y botón de borrado (`×`).
+  Widget _buildThumbnailTile(ColorScheme colorScheme, int index) {
     final isFeatured = index == 0;
 
     return Stack(
@@ -275,26 +242,14 @@ class GalleryPickerSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               border: isFeatured
                   ? Border.all(color: colorScheme.primary, width: 2)
-                  : null,
+                  : Border.all(color: colorScheme.outlineVariant),
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(7),
-              child: Image.network(
-                imageUrls[index],
+              borderRadius: BorderRadius.circular(6),
+              child: SizedBox(
                 width: 74,
                 height: 74,
-                fit: BoxFit.cover,
-                // Previene excepciones sin capturar en Web/Móvil si una URL temporal o remota falla.
-                errorBuilder: (_, __, ___) => Container(
-                  width: 74,
-                  height: 74,
-                  color: colorScheme.surfaceContainerHighest,
-                  child: Icon(
-                    Icons.broken_image_outlined,
-                    size: 20,
-                    color: colorScheme.outline,
-                  ),
-                ),
+                child: _buildImageContent(imageUrls[index], colorScheme),
               ),
             ),
           ),
@@ -308,7 +263,7 @@ class GalleryPickerSection extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
-                color: colorScheme.inverseSurface.withValues(alpha: 0.8),
+                color: colorScheme.inverseSurface.withValues(alpha: 0.85),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -323,8 +278,60 @@ class GalleryPickerSection extends StatelessWidget {
     );
   }
 
-  /// Abre un selector móvil-amigable entre cámara y archivos cuando ambos callbacks están disponibles.
+  /// Renderiza de forma segura un Data URI local (`Image.memory`) o URL remota (`Image.network`).
+  Widget _buildImageContent(String source, ColorScheme colorScheme) {
+    if (source.startsWith('data:image/')) {
+      final commaIndex = source.indexOf(',');
+      if (commaIndex != -1) {
+        try {
+          final bytes = base64Decode(source.substring(commaIndex + 1));
+          return Image.memory(
+            bytes,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _buildBrokenImageFallback(colorScheme),
+          );
+        } catch (_) {
+          // Captura Data URIs corruptos evitando que caiga el árbol de widgets.
+          return _buildBrokenImageFallback(colorScheme);
+        }
+      }
+    }
+
+    return Image.network(
+      source,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => _buildBrokenImageFallback(colorScheme),
+    );
+  }
+
+  /// Placeholder visual cuando una imagen remota o local no logra decodificarse.
+  Widget _buildBrokenImageFallback(ColorScheme colorScheme) {
+    return Container(
+      color: colorScheme.surfaceContainerHighest,
+      child: Icon(
+        Icons.broken_image_outlined,
+        size: 22,
+        color: colorScheme.outline,
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // 5. INTERACCIÓN DE SELECCIÓN (WEB VS NATIVO)
+  // ===========================================================================
+
+  /// Resuelve el flujo óptimo según plataforma para seleccionar o capturar una foto.
+  ///
+  /// En **Flutter Web** (`kIsWeb`), invoca directamente el selector nativo del
+  /// navegador para preservar el *user-gesture* requerido por Chrome/Safari (que
+  /// en dispositivos móviles ya ofrece cámara y galería en el mismo diálogo).
+  /// En **Android/iOS**, despliega un `BottomSheet` explícito entre cámara y galería.
   void _handleAddTap(BuildContext context) {
+    if (kIsWeb) {
+      (onPickFromGallery ?? onAddImage)?.call();
+      return;
+    }
+
     if (onPickFromCamera == null && onPickFromGallery == null) {
       onAddImage?.call();
       return;
@@ -332,14 +339,12 @@ class GalleryPickerSection extends StatelessWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
 
-    // BottomSheet nativo con área táctil amplia, ideal para pulgares en navegador móvil.
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       showDragHandle: true,
       builder: (sheetContext) {
         return SafeArea(
-
-          // <!> es por aca repara esto la interfase no funciona bioen 
           child: Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Column(
@@ -347,21 +352,31 @@ class GalleryPickerSection extends StatelessWidget {
               children: [
                 if (onPickFromCamera != null)
                   ListTile(
-                    leading: Icon(Icons.photo_camera_outlined, color: colorScheme.primary),
+                    leading: Icon(
+                      Icons.photo_camera_outlined,
+                      color: colorScheme.primary,
+                    ),
                     title: const Text('Tomar foto con cámara'),
-                    subtitle: const Text('Ideal para fotografiar productos desde el celular'),
+                    subtitle: const Text(
+                      'Ideal para fotografiar productos desde el celular',
+                    ),
                     onTap: () {
-                      Navigator.pop(sheetContext);
+                      Navigator.of(sheetContext).pop();
                       onPickFromCamera?.call();
                     },
                   ),
                 if (onPickFromGallery != null)
                   ListTile(
-                    leading: Icon(Icons.photo_library_outlined, color: colorScheme.primary),
+                    leading: Icon(
+                      Icons.photo_library_outlined,
+                      color: colorScheme.primary,
+                    ),
                     title: const Text('Elegir de galería o archivos'),
-                    subtitle: const Text('Seleccionar imagen guardada en el dispositivo'),
+                    subtitle: const Text(
+                      'Seleccionar imagen guardada en el dispositivo',
+                    ),
                     onTap: () {
-                      Navigator.pop(sheetContext);
+                      Navigator.of(sheetContext).pop();
                       onPickFromGallery?.call();
                     },
                   ),

@@ -1,6 +1,6 @@
 // apps/admin-portal/lib/screens/catalog_screen.dart
-
-// lib/screens/catalog_screen.dart
+// Propósito: Vista declarativa pura del módulo de Catálogo y Vitrina con
+// renderizado lazy, pull-to-refresh y manejo explícito de estados (carga, error, vacío).
 
 import 'package:flutter/material.dart';
 import 'package:admin_portal/models/product/product.dart';
@@ -10,32 +10,75 @@ import 'package:admin_portal/widgets/search_and_filters.dart';
 
 /// Pantalla puramente declarativa de Catálogo y Vitrina.
 ///
-/// No contiene lógica de negocio ni peticiones HTTP. Solo renderiza la información
-/// suministrada por [CatalogHandler] a través de subcomponentes pequeños.
+/// Sigue el patrón `Screen + Handler`: no mantiene estado mutable ni ejecuta
+/// peticiones HTTP directamente. Renderiza la información y métricas provistas
+/// por `CatalogHandler` delegando todas las acciones del usuario mediante callbacks.
 class CatalogScreen extends StatelessWidget {
+  // ===========================================================================
+  // 1. ESTADO DE VISTA Y COLECCIÓN DE DATOS
+  // ===========================================================================
+
+  /// Indica si se está ejecutando la carga inicial o recarga del catálogo.
   final bool isLoading;
+
+  /// Mensaje de error normalizado cuando falla la comunicación con FastAPI.
   final String? errorMessage;
+
+  /// Lista ya filtrada de productos que deben renderizarse en el listado.
   final List<Product> products;
 
-  // Métricas
+  // ===========================================================================
+  // 2. MÉTRICAS Y SEGMENTACIÓN
+  // ===========================================================================
+
+  /// Total de productos activos registrados en el catálogo del tenant.
   final int totalCount;
+
+  /// Cantidad de productos publicados actualmente en vitrina web.
   final int showcaseCount;
+
+  /// Cantidad de productos por debajo del umbral de stock crítico.
   final int criticalCount;
+
+  /// Cantidad de productos ocultos temporalmente de la tienda pública.
   final int hiddenCount;
 
-  // Filtros
+  /// Identificador del chip de filtro activo (`all`, `showcase`, `critical`, etc.).
   final String activeFilter;
+
+  /// Callback disparado al seleccionar otro chip de filtro.
   final ValueChanged<String> onFilterChanged;
+
+  /// Callback disparado al escribir en el campo de búsqueda por nombre o EAN.
   final ValueChanged<String> onSearchChanged;
 
-  // Callbacks
+  // ===========================================================================
+  // 3. ACCIONES SOBRE EL CATÁLOGO
+  // ===========================================================================
+
+  /// Callback disparado al hacer *pull-to-refresh* o pulsar Reintentar.
   final Future<void> Function() onRefresh;
-  final void Function(Product, bool) onToggleShowcase;
-  final void Function(Product) onToggleAvailability;
-  final void Function(Product) onEditProduct;
-  final void Function(Product) onDeleteProduct;
+
+  /// Alterna la visibilidad en vitrina pública para un producto.
+  final void Function(Product product, bool isVisible) onToggleShowcase;
+
+  /// Alterna la disponibilidad operativa inmediata de un producto.
+  final void Function(Product product) onToggleAvailability;
+
+  /// Abre el formulario maestro en modo edición para el producto seleccionado.
+  final void Function(Product product) onEditProduct;
+
+  /// Solicita confirmación y ejecuta la baja lógica de un producto.
+  final void Function(Product product) onDeleteProduct;
+
+  /// Abre el formulario maestro en modo alta para crear un nuevo producto.
   final VoidCallback onCreateProduct;
 
+  // ===========================================================================
+  // 4. CONSTRUCTOR
+  // ===========================================================================
+
+  /// Crea la vista declarativa [CatalogScreen].
   const CatalogScreen({
     super.key,
     required this.isLoading,
@@ -56,6 +99,10 @@ class CatalogScreen extends StatelessWidget {
     required this.onCreateProduct,
   });
 
+  // ===========================================================================
+  // 5. CONSTRUCCIÓN DE INTERFAZ
+  // ===========================================================================
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -70,13 +117,13 @@ class CatalogScreen extends StatelessWidget {
       ),
       body: RefreshIndicator(
         onRefresh: onRefresh,
-        child: _buildBody(context),
+        child: _buildBody(),
       ),
     );
   }
 
-  /// Alterna entre estado de carga, error o contenido de catálogo.
-  Widget _buildBody(BuildContext context) {
+  /// Selecciona la subvista correspondiente al ciclo de vida actual (`loading`, `error`, `data`).
+  Widget _buildBody() {
     if (isLoading) {
       return const _CatalogLoadingState();
     }
@@ -106,8 +153,11 @@ class CatalogScreen extends StatelessWidget {
 }
 
 // =============================================================================
-// SUB-COMPONENTE 1: LISTA DE CONTENIDO, MÉTRICAS Y FILTROS (WIDGET PRIVADO)
+// SUBCOMPONENTE 1: LISTADO LAZY DE MÉTRICAS, FILTROS Y PRODUCTOS
 // =============================================================================
+
+/// Renderiza cabecera de métricas, barra de búsqueda y tarjetas de productos bajo
+/// demanda mediante `ListView.builder` para mantener fluidez en catálogos extensos.
 class _CatalogContentList extends StatelessWidget {
   final int totalCount;
   final int showcaseCount;
@@ -137,96 +187,27 @@ class _CatalogContentList extends StatelessWidget {
     required this.onDeleteProduct,
   });
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return ListView(
-  //     padding: const EdgeInsets.symmetric(vertical: 16.0),
-  //     children: [
-  //       // 1. Métricas superiores
-  //       MetricsHeader(
-  //         totalCount: totalCount,
-  //         showcaseCount: showcaseCount,
-  //         criticalCount: criticalCount,
-  //         hiddenCount: hiddenCount,
-  //       ),
-  //       const SizedBox(height: 16),
-
-  //       // 2. Buscador y chips 
-  //       SearchAndFilters(
-  //         selectedFilter: activeFilter,
-  //         onFilterChanged: onFilterChanged,
-  //         onSearch: onSearchChanged,
-  //       ),
-  //       const SizedBox(height: 12),
-
-  //       // 3. Renderizado de ítems o estado vacío
-  //       if (products.isEmpty)
-  //         const _CatalogEmptyState()
-  //       else
-  //         ...products.map(
-  //           (p) => ProductCardItem(
-  //             key: ValueKey(p.id),
-  //             product: p,
-  //             onToggleShowcase: (val) => onToggleShowcase(p, val),
-  //             onToggleAvailability: () => onToggleAvailability(p),
-  //             onEdit: () => onEditProduct(p),
-  //             onDelete: () => onDeleteProduct(p),
-  //           ),
-  //         ),
-  //     ],
-  //   );
-  // }
-
-
-
-
-// apps/admin-portal/lib/screens/catalog_screen.dart
-// Propósito: Optimizar el scroll con renderizado lazy (ListView.builder) y prevenir overflows en estado de error.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   @override
   Widget build(BuildContext context) {
+    // Índice 0 = Cabecera (métricas + búsqueda/filtros); índice 1+ = productos o estado vacío.
     final totalItems = products.isEmpty ? 2 : products.length + 1;
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      // AlwaysScrollableScrollPhysics habilita pull-to-refresh incluso con pocos ítems.
+      physics: const AlwaysScrollableScrollPhysics(),
+      // Margen inferior amplio (88 px) para que el FAB no cubra la última tarjeta.
+      padding: const EdgeInsets.fromLTRB(0, 16, 0, 88),
       itemCount: totalItems,
       itemBuilder: (context, index) {
         if (index == 0) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              MetricsHeader(
-                totalCount: totalCount,
-                showcaseCount: showcaseCount,
-                criticalCount: criticalCount,
-                hiddenCount: hiddenCount,
-              ),
-              const SizedBox(height: 16),
-              SearchAndFilters(
-                selectedFilter: activeFilter,
-                onFilterChanged: onFilterChanged,
-                onSearch: onSearchChanged,
-              ),
-              const SizedBox(height: 12),
-            ],
+          return _CatalogHeaderSection(
+            totalCount: totalCount,
+            showcaseCount: showcaseCount,
+            criticalCount: criticalCount,
+            hiddenCount: hiddenCount,
+            activeFilter: activeFilter,
+            onFilterChanged: onFilterChanged,
+            onSearchChanged: onSearchChanged,
           );
         }
 
@@ -246,15 +227,56 @@ class _CatalogContentList extends StatelessWidget {
       },
     );
   }
+}
 
+/// Agrupa métricas superiores y controles de filtrado como primer elemento del scroll.
+class _CatalogHeaderSection extends StatelessWidget {
+  final int totalCount;
+  final int showcaseCount;
+  final int criticalCount;
+  final int hiddenCount;
+  final String activeFilter;
+  final ValueChanged<String> onFilterChanged;
+  final ValueChanged<String> onSearchChanged;
 
+  const _CatalogHeaderSection({
+    required this.totalCount,
+    required this.showcaseCount,
+    required this.criticalCount,
+    required this.hiddenCount,
+    required this.activeFilter,
+    required this.onFilterChanged,
+    required this.onSearchChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        MetricsHeader(
+          totalCount: totalCount,
+          showcaseCount: showcaseCount,
+          criticalCount: criticalCount,
+          hiddenCount: hiddenCount,
+        ),
+        const SizedBox(height: 16),
+        SearchAndFilters(
+          selectedFilter: activeFilter,
+          onFilterChanged: onFilterChanged,
+          onSearch: onSearchChanged,
+        ),
+        const SizedBox(height: 12),
+      ],
+    );
+  }
 }
 
 // =============================================================================
-// SUB-COMPONENTE 2: ESTADO VACÍO (EMPTY STATE)
-// Visualiza un mensaje informativo amigable cuando la búsqueda o el filtro activo
-// no devuelven coincidencias dentro del catálogo de productos.
+// SUBCOMPONENTE 2: ESTADO VACÍO (EMPTY STATE)
 // =============================================================================
+
+/// Muestra una vista amigable cuando la búsqueda o el filtro activo no arrojan resultados.
 class _CatalogEmptyState extends StatelessWidget {
   const _CatalogEmptyState();
 
@@ -269,7 +291,11 @@ class _CatalogEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.inventory_2_outlined, size: 64, color: colorScheme.outlineVariant),
+            Icon(
+              Icons.inventory_2_outlined,
+              size: 64,
+              color: colorScheme.outlineVariant,
+            ),
             const SizedBox(height: 16),
             Text(
               'No se encontraron productos',
@@ -281,7 +307,9 @@ class _CatalogEmptyState extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               'Prueba con otros términos o crea un nuevo ítem.',
-              style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.outline),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.outline,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -292,8 +320,10 @@ class _CatalogEmptyState extends StatelessWidget {
 }
 
 // =============================================================================
-// SUB-COMPONENTE 4: ESTADOS DE CARGA Y ERROR
+// SUBCOMPONENTE 3: ESTADOS DE CARGA Y ERROR
 // =============================================================================
+
+/// Indicador centrado mostrado mientras se descarga el catálogo desde FastAPI.
 class _CatalogLoadingState extends StatelessWidget {
   const _CatalogLoadingState();
 
@@ -312,6 +342,8 @@ class _CatalogLoadingState extends StatelessWidget {
   }
 }
 
+/// Estado de error resiliente ante caídas de red o servidor, compatible con
+/// *pull-to-refresh* y protegido contra overflow en pantallas pequeñas.
 class _CatalogErrorState extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
@@ -320,33 +352,53 @@ class _CatalogErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.cloud_off_rounded, size: 64, color: colorScheme.error),
-            const SizedBox(height: 16),
-            Text(
-              'Error de Conexión',
-              style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.error),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(24.0),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight - 48),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.cloud_off_rounded,
+                    size: 64,
+                    color: colorScheme.error,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error de Conexión',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.error,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    onPressed: onRetry,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Reintentar'),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Reintentar'),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
-
-

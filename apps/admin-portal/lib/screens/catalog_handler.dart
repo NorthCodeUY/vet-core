@@ -1,30 +1,34 @@
 // apps/admin-portal/lib/screens/catalog_handler.dart
+// Propósito: Controlador de estado (`Handler`) para el módulo de Catálogo y Vitrina;
+// coordina carga de productos, filtrado local, toggles optimistas y bajas lógicas.
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:admin_portal/models/product/product.dart';
 import 'package:admin_portal/repositories/product_repository.dart';
-import 'catalog_screen.dart';
 import 'package:admin_portal/screens/product_form/product_form_handler.dart';
+import 'catalog_screen.dart';
 
-import 'package:flutter/foundation.dart';
-
-
-/// Controlador de Estado para la pantalla de Gestión de Catálogo y Vitrina.
+/// Controlador de Estado (`Handler`) para la gestión de Catálogo y Vitrina.
 ///
-/// Coordina:
-/// - La carga asíncrona de productos desde FastAPI (`GET /api/productos`).
-/// - El filtrado multicriterio en memoria (búsqueda de texto y chip de estado).
-/// - Las mutaciones directas (visibilidad en vitrina, disponibilidad y bajas).
+/// Separa completamente la lógica de negocio de la UI pura ([CatalogScreen]):
+/// - Carga el inventario desde FastAPI (`GET /api/productos/admin/listado`).
+/// - Ejecuta filtrado multicriterio en memoria (búsqueda por texto/EAN y chips).
+/// - Aplica actualizaciones optimistas con rollback automático ante fallos de red
+///   (visibilidad en vitrina, disponibilidad operativa y baja lógica).
 class CatalogHandler extends StatefulWidget {
+  /// Crea el controlador [CatalogHandler].
   const CatalogHandler({super.key});
 
   @override
   State<CatalogHandler> createState() => _CatalogHandlerState();
 }
 
-
-
 class _CatalogHandlerState extends State<CatalogHandler> {
+  // ===========================================================================
+  // 1. DEPENDENCIAS Y ESTADO REACTIVO
+  // ===========================================================================
+
   final ProductRepository _productRepository = ProductRepository();
 
   List<Product> _products = [];
@@ -34,8 +38,24 @@ class _CatalogHandlerState extends State<CatalogHandler> {
   String _activeFilter = 'all';
   String _searchQuery = '';
 
-  /// Abre el formulario maestro en modo alta ([product] == null) o edición.
-  // <!> Espera el resultado booleano del formulario para refrescar el catálogo tras PUT/POST
+  // ===========================================================================
+  // 2. CICLO DE VIDA
+  // ===========================================================================
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProducts();
+  }
+
+  // ===========================================================================
+  // 3. NAVEGACIÓN Y CARGA DE CATÁLOGO
+  // ===========================================================================
+
+  /// Abre el formulario maestro en modo alta (`product == null`) o edición.
+  ///
+  /// Recarga el catálogo desde el servidor únicamente cuando el formulario
+  /// confirma persistencia (`saved == true`).
   Future<void> _openProductForm({Product? product}) async {
     final saved = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
@@ -47,43 +67,20 @@ class _CatalogHandlerState extends State<CatalogHandler> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchProducts();
-  }
-
-  /// Carga los productos reales desde el backend FastAPI.
+  /// Descarga los productos administrativos desde FastAPI y actualiza métricas.
   Future<void> _fetchProducts() async {
-
-
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
-    // try {
-    //   final data = await _productRepository.getProducts();
-    //   if (!mounted) return;
-    //   setState(() {
-    //     _products = data;
-    //     _isLoading = false;
-    //   });
-    // } catch (e) {
-    //   if (!mounted) return;
-    //   setState(() {
-    //     _errorMessage = e.toString().replaceAll('Exception: ', '');
-    //     _isLoading = false;
-    //   });
-    // }
-
-
     try {
       final data = await _productRepository.getProducts();
-      // <!> Traza temporal para confirmar cuántos productos y fotos llegaron realmente al estado
       if (kDebugMode) {
         final withImages = data.where((p) => p.images.isNotEmpty).length;
-        debugPrint('📦 Catálogo parseado: ${data.length} productos | Con foto: $withImages');
+        debugPrint(
+          '📦 Catálogo parseado: ${data.length} productos | Con foto: $withImages',
+        );
       }
       if (!mounted) return;
       setState(() {
@@ -91,110 +88,157 @@ class _CatalogHandlerState extends State<CatalogHandler> {
         _isLoading = false;
       });
     } catch (e, stack) {
-      // <!> Imprime la excepción y línea exacta si algún fromJson (Product, Variant o Color) falla
       if (kDebugMode) {
-        debugPrint('❌ ERROR en _fetchProducts: $e\n$stack');
+        debugPrint('❌ Error en _fetchProducts: $e\n$stack');
       }
       if (!mounted) return;
       setState(() {
-        _errorMessage = e.toString().replaceAll('Exception: ', '');
+        _errorMessage = _cleanExceptionMessage(e);
         _isLoading = false;
       });
     }
-
-
-
   }
 
-  /// Conmuta optimistamente el interruptor de vitrina web (`PATCH /api/productos/:id/vitrina`).
+  // ===========================================================================
+  // 4. MUTACIONES OPTIMISTAS (VITRINA, DISPONIBILIDAD Y BAJA LÓGICA)
+  // ===========================================================================
+
+  /// Conmuta de forma optimista la visibilidad en vitrina (`PATCH /api/productos/{id}/vitrina`).
   Future<void> _handleToggleShowcase(Product product, bool isVisible) async {
-    // 1. Actualización optimista local
     final targetIndex = _products.indexWhere((p) => p.id == product.id);
     if (targetIndex == -1) return;
 
     final original = _products[targetIndex];
     setState(() {
-      _products[targetIndex] = product.copyWith(isVisibleInShowcase: isVisible);
+      _products[targetIndex] = original.copyWith(isVisibleInShowcase: isVisible);
     });
 
     try {
-      // 2. Persistencia en FastAPI
       await _productRepository.toggleShowcaseVisibility(
         productId: product.id,
         isVisible: isVisible,
       );
     } catch (e) {
-      // 3. Rollback en caso de error de red
       if (!mounted) return;
-      setState(() {
-        _products[targetIndex] = original;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al cambiar vitrina: $e'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      setState(() => _products[targetIndex] = original);
+      _showErrorSnackBar('Error al cambiar vitrina: ${_cleanExceptionMessage(e)}');
     }
   }
 
-  /// Cambia la disponibilidad operativa (Pausar producto).
+  /// Alterna la disponibilidad operativa (`prod_disponible`) preservando galería y subcategorías.
   Future<void> _handleToggleAvailability(Product product) async {
-    final newAvailability = !product.isAvailable;
     final targetIndex = _products.indexWhere((p) => p.id == product.id);
     if (targetIndex == -1) return;
 
     final original = _products[targetIndex];
-    setState(() {
-      _products[targetIndex] = Product(
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        barcode: product.barcode,
-        salePrice: product.salePrice,
-        costPrice: product.costPrice,
-        stock: product.stock,
-        minStock: product.minStock,
-        onlyVariants: product.onlyVariants,
-        isActive: product.isActive,
-        isAvailable: newAvailability,
-        isVisibleInShowcase: product.isVisibleInShowcase,
-        allowBackorder: product.allowBackorder,
-        categoryId: product.categoryId,
-        category: product.category,
-        images: product.images,
-        variants: product.variants,
-      );
-    });
+    final updated = original.copyWith(isAvailable: !original.isAvailable);
+
+    setState(() => _products[targetIndex] = updated);
 
     try {
-      await _productRepository.updateProductStockAndPrice(
+      // Usa updateProduct para persistir `prod_disponible` sin perder imágenes ni variantes.
+      final persisted = await _productRepository.updateProduct(
         productId: product.id,
-        stock: product.stock,
-        salePrice: product.salePrice,
+        product: updated,
       );
+      if (!mounted) return;
+      setState(() => _products[targetIndex] = persisted);
     } catch (e) {
       if (!mounted) return;
       setState(() => _products[targetIndex] = original);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al actualizar disponibilidad: $e')),
+      _showErrorSnackBar(
+        'Error al actualizar disponibilidad: ${_cleanExceptionMessage(e)}',
       );
     }
   }
 
-  /// Ejecuta la baja lógica del producto (`DELETE /api/productos/:id`).
-  ///
-  /// Solicita confirmación explícita mediante un diálogo destructivo Material 3.
-  /// Si el usuario confirma, despacha la petición al backend FastAPI, actualiza
-  /// optimistamente la lista en memoria y recalcula las métricas del catálogo.
+  /// Ejecuta la baja lógica del producto (`DELETE /api/productos/{id}` -> `prod_activo = False`).
   Future<void> _handleDeleteProduct(Product product) async {
+    final confirm = await _showDeleteConfirmationDialog(product);
+    if (confirm != true || !mounted) return;
+
+    final colorScheme = Theme.of(context).colorScheme;
+    final messenger = ScaffoldMessenger.of(context);
+
+    // Feedback inmediato usando tokens semánticos del tenant (Zero Hardcoding).
+    messenger.showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 2),
+        content: Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colorScheme.onInverseSurface,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Text('Dando de baja "${product.name}"...')),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      await _productRepository.softDeleteProduct(product.id);
+      if (!mounted) return;
+      setState(() => _products.removeWhere((p) => p.id == product.id));
+
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(
+          backgroundColor: colorScheme.primary,
+          content: Text('Producto "${product.name}" dado de baja correctamente.'),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      messenger.hideCurrentSnackBar();
+      _showErrorSnackBar(
+        'Error al dar de baja el producto: ${_cleanExceptionMessage(e)}',
+      );
+    }
+  }
+
+  // ===========================================================================
+  // 5. FILTRADO EN MEMORIA Y HELPERS DE UI
+  // ===========================================================================
+
+  /// Pipeline de filtrado combinado por chip de estado y texto (nombre o código EAN).
+  List<Product> _getFilteredProducts() {
+    final query = _searchQuery.trim().toLowerCase();
+
+    return _products.where((p) {
+      final matchesFilter = switch (_activeFilter) {
+        'with_photo' => p.images.isNotEmpty,
+        'showcase' => p.isVisibleInShowcase,
+        'critical' => p.isCriticalStock,
+        'hidden' => !p.isVisibleInShowcase,
+        _ => true,
+      };
+      if (!matchesFilter) return false;
+      if (query.isEmpty) return true;
+
+      return p.name.toLowerCase().contains(query) ||
+          (p.barcode?.toLowerCase().contains(query) ?? false);
+    }).toList();
+  }
+
+  /// Despliega diálogo destructivo Material 3 para confirmar la baja lógica.
+  Future<bool?> _showDeleteConfirmationDialog(Product product) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final confirm = await showDialog<bool>(
+    return showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        icon: Icon(Icons.delete_sweep_outlined, color: colorScheme.error, size: 36),
+        icon: Icon(
+          Icons.delete_sweep_outlined,
+          color: colorScheme.error,
+          size: 36,
+        ),
         title: const Text('Dar de baja producto'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -254,72 +298,25 @@ class _CatalogHandlerState extends State<CatalogHandler> {
         ],
       ),
     );
+  }
 
-    if (confirm != true || !mounted) return;
+  /// Normaliza el mensaje de excepción removiendo el prefijo técnico `Exception: `.
+  String _cleanExceptionMessage(Object error) =>
+      error.toString().replaceFirst('Exception: ', '').trim();
 
-    final messenger = ScaffoldMessenger.of(context);
-
-    // Feedback inmediato de operación en curso
-    messenger.showSnackBar(
+  /// Muestra un mensaje de error usando el token semántico `error` del tema activo.
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        duration: const Duration(seconds: 1),
-        content: Row(
-          children: [
-            const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-            ),
-            const SizedBox(width: 12),
-            Expanded(child: Text('Dando de baja "${product.name}"...')),
-          ],
-        ),
+        content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.error,
       ),
     );
-
-    try {
-      await _productRepository.softDeleteProduct(product.id);
-      if (!mounted) return;
-      setState(() {
-        _products.removeWhere((p) => p.id == product.id);
-      });
-      messenger.hideCurrentSnackBar();
-      messenger.showSnackBar(
-        SnackBar(
-          backgroundColor: colorScheme.primary,
-          content: Text('Producto "${product.name}" dado de baja correctamente'),
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      messenger.hideCurrentSnackBar();
-      messenger.showSnackBar(
-        SnackBar(
-          backgroundColor: colorScheme.error,
-          content: Text('Error al dar de baja el producto: $e'),
-        ),
-      );
-    }
   }
 
-  /// Pipeline de filtrado combinado (Texto + Chips).
-  List<Product> _getFilteredProducts() {
-    return _products.where((p) {
-      final matchesFilter = switch (_activeFilter) {
-        'with_photo' => p.images.isNotEmpty,
-        'showcase'   => p.isVisibleInShowcase,
-        'critical'   => p.isCriticalStock,
-        'hidden'     => !p.isVisibleInShowcase,
-        _            => true,
-      };
-      if (!matchesFilter) return false;
-
-      if (_searchQuery.trim().isEmpty) return true;
-      final q = _searchQuery.toLowerCase();
-      return p.name.toLowerCase().contains(q) ||
-          (p.barcode?.toLowerCase().contains(q) ?? false);
-    }).toList();
-  }
+  // ===========================================================================
+  // 6. CONSTRUCCIÓN DE VISTA DECLARATIVA
+  // ===========================================================================
 
   @override
   Widget build(BuildContext context) {

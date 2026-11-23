@@ -1,8 +1,9 @@
 // apps/admin-portal/lib/screens/product_form/product_form_handler.dart
 // Propósito: Orquestar estado del formulario maestro de producto, subcategorías,
-// multimedia y persistencia POST/PUT contra FastAPI.
+// subida de imágenes a Cloudflare R2 y persistencia POST/PUT contra FastAPI.
 
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:admin_portal/models/product/product.dart';
@@ -12,13 +13,19 @@ import 'package:admin_portal/repositories/subcategory_repository.dart';
 import 'package:admin_portal/screens/product_form/widgets/subcategory_form_dialog.dart';
 import 'product_form_screen.dart';
 
+
+
+// apps/admin-portal/lib/repositories/product_repository.dart
+
+
 /// Controlador de estado (`Handler`) para el alta y edición integral de un [Product].
 ///
 /// Separa completamente la lógica de negocio de la UI pura ([ProductFormScreen]):
 /// - Precarga campos cuando recibe [productToEdit] (`PUT`) o inicializa valores base (`POST`).
 /// - Hidrata subcategorías desde `GET /api/subcategorias` y permite crear nuevas en vivo.
 /// - Calcula el margen comercial de forma reactiva ante cambios de precio/costo.
-/// - Captura imágenes multiplataforma y coordina el guardado final en [ProductRepository].
+/// - Conserva imágenes remotas previas (R2), valida fotos nuevas locales (JPG/PNG/WEBP <= 5 MB),
+///   las sube a `POST /api/productos/upload-imagen` y envía `"imagenes": List<String>` al guardar.
 class ProductFormHandler extends StatefulWidget {
   /// Producto existente a editar; si es `null`, el formulario opera en modo creación.
   final Product? productToEdit;
@@ -30,12 +37,77 @@ class ProductFormHandler extends StatefulWidget {
   State<ProductFormHandler> createState() => _ProductFormHandlerState();
 }
 
+/// Representa un ítem dentro de la galería en edición.
+///
+/// Unifica en una sola lista ordenada:
+/// - **Entradas remotas:** URLs ya persistidas en Cloudflare R2 (`isLocal == false`).
+/// - **Entradas locales:** Bytes seleccionados en el dispositivo pendientes de subir (`isLocal == true`).
+class _PendingImageEntry {
+  /// URL remota (`https://...`) o Data URI local (`data:image/...;base64,...`) para preview.
+  final String previewSource;
+
+  /// Bytes crudos de la imagen local; es `null` cuando ya existe en Cloudflare R2.
+  final Uint8List? localBytes;
+
+  /// Nombre del archivo enviado en el campo `file` del `multipart/form-data`.
+  final String? filename;
+
+  /// Tipo MIME validado (`image/jpeg`, `image/png` o `image/webp`).
+  final String? mimeType;
+
+  const _PendingImageEntry._({
+    required this.previewSource,
+    this.localBytes,
+    this.filename,
+    this.mimeType,
+  });
+
+  /// Crea una referencia a una imagen ya almacenada en Cloudflare R2.
+  factory _PendingImageEntry.remote(String url) =>
+      _PendingImageEntry._(previewSource: url.trim());
+
+  /// Crea una referencia a una imagen local pendiente de subida.
+  factory _PendingImageEntry.local({
+    required String dataUri,
+    required Uint8List bytes,
+    required String filename,
+    required String mimeType,
+  }) =>
+      _PendingImageEntry._(
+        previewSource: dataUri,
+        localBytes: bytes,
+        filename: filename,
+        mimeType: mimeType,
+      );
+
+  /// Retorna `true` si la imagen aún debe subirse al endpoint `/api/productos/upload-imagen`.
+  bool get isLocal => localBytes != null;
+}
+
 class _ProductFormHandlerState extends State<ProductFormHandler> {
   // ===========================================================================
   // 1. DEPENDENCIAS Y CONTROLADORES DE TEXTO
   // ===========================================================================
 
   final _formKey = GlobalKey<FormState>();
+
+
+/*
+<!> ERROR 
+
+ProductRepository
+'ProductRepository' isn't a function.
+Try correcting the name to match an existing function, or define a method or function named 'ProductRepository'.
+
+
+
+
+The name 'ProductRepository' is defined in the libraries 'package:admin_portal/repositories/product_repository.dart' and 'package:admin_portal/screens/product_form/product_form_screen.dart'.
+Try using 'as prefix' for one of the import directives, or hiding the name from all but one of the imports.
+
+
+*/
+
   final _productRepository = ProductRepository();
   final _subcategoryRepository = SubcategoryRepository();
   final _imagePicker = ImagePicker();
@@ -60,14 +132,19 @@ class _ProductFormHandlerState extends State<ProductFormHandler> {
   final List<int> _selectedSubcategoryIds = [];
   bool _isLoadingSubcategories = false;
 
-  final List<String> _imageUrls = [];
-  double _marginPercentage = 0.0;
+  /// Lista mutable ordenada que respalda la galería; el índice `0` será la portada.
+  final List<_PendingImageEntry> _galleryEntries = [];
 
+  double _marginPercentage = 0.0;
   bool _isVisible = true;
   bool _isAvailable = true;
   bool _onlyVariants = false;
   bool _allowBackorder = false;
   List<ProductVariant> _variants = [];
+
+  /// Proyección de solo lectura con las fuentes visuales consumidas por `GalleryPickerSection`.
+  List<String> get _imageUrls =>
+      _galleryEntries.map((e) => e.previewSource).toList(growable: false);
 
   // ===========================================================================
   // 3. CICLO DE VIDA (INICIALIZACIÓN Y LIMPIEZA)
@@ -137,13 +214,22 @@ class _ProductFormHandlerState extends State<ProductFormHandler> {
         TextEditingController(text: product?.minStock?.toString() ?? '5');
   }
 
-  /// Precarga banderas de vitrina, galería, variantes y subcategorías al editar.
+  /// Precarga banderas de vitrina, galería (portada primero), variantes y subcategorías.
   void _hydrateProductState(Product product) {
     _isVisible = product.isVisibleInShowcase;
     _isAvailable = product.isAvailable;
     _onlyVariants = product.onlyVariants;
     _allowBackorder = product.allowBackorder;
-    _imageUrls.addAll(product.images.map((img) => img.url));
+
+    // Ubica la imagen marcada como `img_principal` al inicio (índice 0) para mantenerla al editar.
+    final sortedImages = [...product.images]
+      ..sort((a, b) => (b.isFeatured ? 1 : 0).compareTo(a.isFeatured ? 1 : 0));
+    _galleryEntries.addAll(
+      sortedImages
+          .where((img) => img.url.trim().isNotEmpty)
+          .map((img) => _PendingImageEntry.remote(img.url)),
+    );
+
     _variants = List.from(product.variants);
     _selectedSubcategoryIds.addAll(product.subcategories.map((s) => s.id));
   }
@@ -165,7 +251,13 @@ class _ProductFormHandlerState extends State<ProductFormHandler> {
   // ===========================================================================
   // 4. CONSTRUCCIÓN DE VISTA DECLARATIVA
   // ===========================================================================
+/*
 
+<!> error 
+The method 'ProductFormScreen' isn't defined for the type '_ProductFormHandlerState'.
+Try correcting the name to the name of an existing method, or defining a method named 'ProductFormScreen'.
+
+*/
   @override
   Widget build(BuildContext context) {
     return ProductFormScreen(
@@ -190,7 +282,7 @@ class _ProductFormHandlerState extends State<ProductFormHandler> {
       imageUrls: _imageUrls,
       onPickFromCamera: () => _pickImage(ImageSource.camera),
       onPickFromGallery: () => _pickImage(ImageSource.gallery),
-      onRemoveImage: (i) => setState(() => _imageUrls.removeAt(i)),
+      onRemoveImage: (i) => setState(() => _galleryEntries.removeAt(i)),
       onSetFeatured: _setFeaturedImage,
       marginPercentage: _marginPercentage,
       isVisible: _isVisible,
@@ -306,7 +398,8 @@ class _ProductFormHandlerState extends State<ProductFormHandler> {
     });
   }
 
-  /// Captura imagen desde cámara o archivos y genera un Data URI local para preview.
+  /// Selecciona imagen desde cámara o archivos, valida tamaño (`<= 5 MB`) y
+  /// formato real (`JPG`, `PNG` o `WEBP`), y genera un Data URI local para preview.
   Future<void> _pickImage(ImageSource source) async {
     try {
       final picked = await _imagePicker.pickImage(
@@ -317,40 +410,137 @@ class _ProductFormHandlerState extends State<ProductFormHandler> {
       if (picked == null || !mounted) return;
 
       final bytes = await picked.readAsBytes();
-      final mime = picked.mimeType ?? 'image/jpeg';
-      final dataUri = 'data:$mime;base64,${base64Encode(bytes)}';
+      const maxBytes = 5 * 1024 * 1024;
+      if (bytes.lengthInBytes > maxBytes) {
+        _showErrorSnackBar('La imagen supera el límite máximo de 5 MB.');
+        return;
+      }
+
+      final detected = _detectImageFormat(
+        bytes: bytes,
+        fallbackMime: picked.mimeType,
+        fallbackName: picked.name,
+      );
+      if (detected == null) {
+        _showErrorSnackBar(
+          'Formato no soportado. Selecciona una imagen JPG, PNG o WEBP.',
+        );
+        return;
+      }
+
+      final dataUri = 'data:${detected.mime};base64,${base64Encode(bytes)}';
+      final safeName = picked.name.trim().isNotEmpty
+          ? picked.name.trim()
+          : 'producto_${DateTime.now().millisecondsSinceEpoch}.${detected.ext}';
 
       if (!mounted) return;
-      setState(() => _imageUrls.add(dataUri));
+      setState(() {
+        _galleryEntries.add(
+          _PendingImageEntry.local(
+            dataUri: dataUri,
+            bytes: bytes,
+            filename: safeName,
+            mimeType: detected.mime,
+          ),
+        );
+      });
     } catch (e) {
       if (!mounted) return;
       _showErrorSnackBar('No se pudo seleccionar la imagen: $e');
     }
   }
 
-  /// Promueve la imagen en [index] al índice 0 para fijarla como portada.
+  /// Promueve la imagen en [index] al índice `0` para fijarla como portada.
   void _setFeaturedImage(int index) {
-    if (index <= 0 || index >= _imageUrls.length) return;
+    if (index <= 0 || index >= _galleryEntries.length) return;
     setState(() {
-      final selected = _imageUrls.removeAt(index);
-      _imageUrls.insert(0, selected);
+      final selected = _galleryEntries.removeAt(index);
+      _galleryEntries.insert(0, selected);
     });
   }
 
+  /// Detecta el formato real (JPEG, PNG o WEBP) mediante magic bytes con fallback a MIME/extensión.
+  ({String mime, String ext})? _detectImageFormat({
+    required Uint8List bytes,
+    String? fallbackMime,
+    String? fallbackName,
+  }) {
+    if (bytes.length >= 3 &&
+        bytes[0] == 0xFF &&
+        bytes[1] == 0xD8 &&
+        bytes[2] == 0xFF) {
+      return (mime: 'image/jpeg', ext: 'jpg');
+    }
+    if (bytes.length >= 4 &&
+        bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
+        bytes[3] == 0x47) {
+      return (mime: 'image/png', ext: 'png');
+    }
+    if (bytes.length >= 12 &&
+        bytes[0] == 0x52 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x46 &&
+        bytes[8] == 0x57 &&
+        bytes[9] == 0x45 &&
+        bytes[10] == 0x42 &&
+        bytes[11] == 0x50) {
+      return (mime: 'image/webp', ext: 'webp');
+    }
+
+    final mime = fallbackMime?.toLowerCase().trim();
+    if (mime == 'image/jpeg' || mime == 'image/jpg') {
+      return (mime: 'image/jpeg', ext: 'jpg');
+    }
+    if (mime == 'image/png') return (mime: 'image/png', ext: 'png');
+    if (mime == 'image/webp') return (mime: 'image/webp', ext: 'webp');
+
+    final lowerName = fallbackName?.toLowerCase() ?? '';
+    if (lowerName.endsWith('.jpg') || lowerName.endsWith('.jpeg')) {
+      return (mime: 'image/jpeg', ext: 'jpg');
+    }
+    if (lowerName.endsWith('.png')) return (mime: 'image/png', ext: 'png');
+    if (lowerName.endsWith('.webp')) return (mime: 'image/webp', ext: 'webp');
+
+    return null;
+  }
+
   // ===========================================================================
-  // 7. VALIDACIÓN, CONSTRUCCIÓN DE PAYLOAD Y PERSISTENCIA (POST / PUT)
+  // 7. VALIDACIÓN, SUBIDA A R2 Y PERSISTENCIA (POST / PUT)
   // ===========================================================================
 
-  /// Valida el formulario, construye el modelo [Product] y despacha `POST` o `PUT`.
+  /// Sube primero cada imagen local nueva a `/api/productos/upload-imagen`,
+  /// conserva las URLs existentes en el orden actual y despacha `POST` o `PUT`.
   Future<void> _submitProduct() async {
     if (_isSubmitting || !_formKey.currentState!.validate()) return;
 
     setState(() => _isSubmitting = true);
 
     try {
+      final resolvedUrls = <String>[];
+
+      for (var i = 0; i < _galleryEntries.length; i++) {
+        final entry = _galleryEntries[i];
+        if (!entry.isLocal) {
+          resolvedUrls.add(entry.previewSource);
+          continue;
+        }
+
+        final uploadedUrl = await _productRepository.uploadProductImage(
+          bytes: entry.localBytes!,
+          filename: entry.filename!,
+          mimeType: entry.mimeType!,
+        );
+
+        // Se reemplaza en memoria para no volver a subir la foto si falla el guardado final.
+        _galleryEntries[i] = _PendingImageEntry.remote(uploadedUrl);
+        resolvedUrls.add(uploadedUrl);
+      }
+
       final existing = widget.productToEdit;
-      final hasPendingLocalImages = _imageUrls.any((u) => u.startsWith('data:'));
-      final productPayload = _buildProductPayload(existing);
+      final productPayload = _buildProductPayload(existing, resolvedUrls);
 
       if (existing != null) {
         await _productRepository.updateProduct(
@@ -362,17 +552,6 @@ class _ProductFormHandlerState extends State<ProductFormHandler> {
       }
 
       if (!mounted) return;
-      if (hasPendingLocalImages) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              existing != null
-                  ? 'Producto actualizado. Las fotos locales nuevas requieren endpoint de subida a R2.'
-                  : 'Producto creado. Las fotos locales nuevas requieren endpoint de subida a R2.',
-            ),
-          ),
-        );
-      }
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
@@ -382,22 +561,6 @@ class _ProductFormHandlerState extends State<ProductFormHandler> {
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
-  }
-
-  /// Filtra únicamente URLs remotas persistibles; excluye Data URIs locales (`data:...`).
-  List<ProductImage> _extractRemoteImages() {
-    return _imageUrls
-        .asMap()
-        .entries
-        .where((e) => !e.value.startsWith('data:'))
-        .map(
-          (e) => ProductImage(
-            id: 0,
-            url: e.value,
-            isFeatured: e.key == 0,
-          ),
-        )
-        .toList();
   }
 
   /// Resuelve las entidades [Subcategory] correspondientes a [_selectedSubcategoryIds].
@@ -412,10 +575,22 @@ class _ProductFormHandlerState extends State<ProductFormHandler> {
         .toList();
   }
 
-  /// Ensambla la entidad [Product] inmutable a partir del estado actual del formulario.
-  Product _buildProductPayload(Product? existing) {
+  /// Ensambla la entidad [Product] inmutable incluyendo las URLs ordenadas para `"imagenes"`.
+  Product _buildProductPayload(Product? existing, List<String> imageUrls) {
     final trimmedDescription = _descriptionController.text.trim();
     final trimmedBarcode = _barcodeController.text.trim();
+
+    final images = imageUrls
+        .asMap()
+        .entries
+        .map(
+          (e) => ProductImage(
+            id: 0,
+            url: e.value,
+            isFeatured: e.key == 0,
+          ),
+        )
+        .toList();
 
     return Product(
       id: existing?.id ?? 0,
@@ -432,7 +607,7 @@ class _ProductFormHandlerState extends State<ProductFormHandler> {
       isVisibleInShowcase: _isVisible,
       allowBackorder: _allowBackorder,
       categoryId: _selectedCategoryId ?? existing?.categoryId ?? 1,
-      images: _extractRemoteImages(),
+      images: images,
       variants: _variants,
       subcategories: _resolveSelectedSubcategories(),
     );

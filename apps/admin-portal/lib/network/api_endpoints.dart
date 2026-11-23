@@ -28,7 +28,14 @@ abstract final class ApiEndpoints {
 
 
 
+// <!> Endpoint oficial para subida de imágenes a Cloudflare R2 (POST multipart/form-data).
+  /// Sube una imagen al bucket R2 y devuelve `{ "img_url": ..., "filename": ... }`.
+  static const String uploadProductImageR2 = '/api/productos/upload-imagen';
 
+  // <!> Endpoint alternativo para asociar una imagen directamente a un producto existente.
+  /// Carga y vincula una imagen a un producto existente (`POST` multipart).
+  static String uploadProductImage(int id, {bool principal = false}) =>
+      '/api/productos/$id/imagenes?principal=$principal';
 
 
 
@@ -77,9 +84,6 @@ abstract final class ApiEndpoints {
 
   /// Conmutador de visibilidad para publicar u ocultar en la vitrina web (`PATCH`).
   static String toggleShowcase(int id) => '/api/productos/$id/vitrina';
-
-  /// Carga y actualización de imagen principal del producto (`POST` multipart). <!> no lo uso creo
-  static String uploadProductImage(int id) => '/api/productos/$id/imagen';
 
   /// Operaciones sobre un producto específico por ID (`GET`, `PUT`, `DELETE`).
 

@@ -1,15 +1,22 @@
-// apps/admin-portal/lib/repositories/product_repository.dart
 
+
+// apps/admin-portal/lib/repositories/product_repository.dart
+// Propósito: Capa de acceso a datos para catálogo de productos, subida de imágenes
+// a Cloudflare R2 y normalización de errores HTTP FastAPI/Pydantic.
+
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:admin_portal/models/product/product.dart';
 import 'package:admin_portal/network/api_client.dart';
 import 'package:admin_portal/network/api_endpoints.dart';
 
-/// Repositorio y capa de acceso a datos para el ciclo de vida del catálogo en FastAPI.
+/// Repositorio para el ciclo de vida completo de productos en FastAPI.
 ///
-/// Centraliza lectura administrativa, altas (`POST`), modificaciones integrales (`PUT`),
-/// toggles rápidos de vitrina (`PATCH`) y bajas lógicas (`DELETE`), normalizando
-/// errores HTTP y validaciones Pydantic `422`.
+/// Centraliza:
+/// - Lectura administrativa (`GET /api/productos/admin/listado`).
+/// - Subida de imágenes a Cloudflare R2 (`POST /api/productos/upload-imagen`).
+/// - Altas (`POST /api/productos`) y ediciones integrales (`PUT /api/productos/{id}`).
+/// - Toggles rápidos de vitrina (`PATCH`) y bajas lógicas (`DELETE`).
 class ProductRepository {
   /// Cliente HTTP compartido configurado con base URL dinámica e interceptores JWT.
   final ApiClient _apiClient;
@@ -18,8 +25,68 @@ class ProductRepository {
   ProductRepository({ApiClient? apiClient})
       : _apiClient = apiClient ?? ApiClient();
 
+  /// Sube una imagen (`image/jpeg`, `image/png` o `image/webp`, máx. 5 MB) a Cloudflare R2
+  /// (`POST /api/productos/upload-imagen`) y devuelve la URL pública `img_url`.
+  Future<String> uploadProductImage({
+    required Uint8List bytes,
+    required String filename,
+    required String mimeType,
+  }) async {
+    const maxBytes = 5 * 1024 * 1024;
+    if (bytes.lengthInBytes > maxBytes) {
+      throw Exception('La imagen "$filename" supera el límite máximo de 5 MB.');
+    }
+
+    final normalizedMime = mimeType.toLowerCase().trim();
+    const allowedSubtypes = <String, String>{
+      'image/jpeg': 'jpeg',
+      'image/jpg': 'jpeg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+    };
+
+    final subtype = allowedSubtypes[normalizedMime];
+    if (subtype == null) {
+      throw Exception(
+        'Formato no soportado ($normalizedMime). Usa JPG, PNG o WEBP.',
+      );
+    }
+
+    try {
+      // Se fuerza DioMediaType explícito para evitar que Flutter Web envíe application/octet-stream (400).
+      final formData = FormData.fromMap({
+        'file': MultipartFile.fromBytes(
+          bytes,
+          filename: filename,
+          contentType: DioMediaType('image', subtype),
+        ),
+      });
+
+      final response = await _apiClient.post<Map<String, dynamic>>(
+        ApiEndpoints.uploadProductImageR2,
+        data: formData,
+        // Sobrescribe Content-Type JSON global de BaseOptions y amplía timeouts para binarios.
+        options: Options(
+          contentType: Headers.multipartFormDataContentType,
+          sendTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
+        ),
+      );
+
+      final imgUrl = (response.data?['img_url'] as String? ?? '').trim();
+      if (imgUrl.isEmpty) {
+        throw Exception('El servidor no devolvió la URL de la imagen subida.');
+      }
+      return imgUrl;
+    } on DioException catch (e) {
+      throw Exception(
+        _extractErrorMessage(e, 'Error al subir la imagen al servidor.'),
+      );
+    }
+  }
+
   /// Obtiene todos los productos del catálogo administrativo
-  /// (`GET /api/productos/admin_todos`).
+  /// (`GET /api/productos/admin/listado`).
   Future<List<Product>> getProducts() async {
     try {
       final response = await _apiClient.get(ApiEndpoints.adminProducts);
@@ -31,19 +98,18 @@ class ProductRepository {
           .toList();
     } on DioException catch (e) {
       throw Exception(
-        _extractErrorMessage(e, 'Error al conectar con /api/productos/admin_todos.'),
+        _extractErrorMessage(e, 'Error al obtener el listado administrativo.'),
       );
     }
   }
 
   /// Crea un nuevo producto integral en el catálogo (`POST /api/productos` -> `201`).
   ///
-  /// Incluye relación primaria (`cat_id`), galería (`imagenes`), subcategorías
-  /// N:M y variantes (`variantes`).
+  /// Incluye categoría primaria (`cat_id`), lista plana de URLs (`imagenes`),
+  /// subcategorías N:M (`subcategorias_ids`) y variantes (`variantes`).
   Future<Product> createProduct({required Product product}) async {
     try {
       final payload = _buildProductPayload(product);
-      // <!> Asegúrate de tener definido `static const String products = '/api/productos';` en `api_endpoints.dart`.
       final response = await _apiClient.post(
         ApiEndpoints.products,
         data: payload,
@@ -56,8 +122,8 @@ class ProductRepository {
 
   /// Modificación integral de producto (`PUT /api/productos/{prod_id}`).
   ///
-  /// Actualiza los atributos base y sincroniza sus colecciones de imágenes,
-  /// subcategorías y variantes según el contrato Pydantic del backend.
+  /// Reemplaza la galería completa enviando `"imagenes": List<String>` (índice `0` = principal)
+  /// y sincroniza atributos, subcategorías y variantes según contrato FastAPI.
   Future<Product> updateProduct({
     required int productId,
     required Product product,
@@ -129,8 +195,8 @@ class ProductRepository {
     }
   }
 
-  /// Construye el payload unificado para `POST` y `PUT` manteniendo simetría
-  /// exacta con los schemas Pydantic de FastAPI.
+  /// Construye el payload unificado para `POST` y `PUT` cumpliendo la asimetría del backend:
+  /// al leer devuelve `rel_imagenes`, pero al escribir espera `imagenes: List<String>`.
   Map<String, dynamic> _buildProductPayload(Product product) {
     return <String, dynamic>{
       'prod_nombre': product.name,
@@ -147,7 +213,6 @@ class ProductRepository {
       'prod_per_sin_stock': product.allowBackorder,
       'cat_id': product.categoryId,
       'imagenes': product.images.map((img) => img.url).toList(),
-      // <!> Verifica en tu schema FastAPI si la clave esperada es `subcategorias_ids`, `subc_ids` o `subcategorias`.
       'subcategorias_ids': product.subcategories.map((s) => s.id).toList(),
       'variantes': product.variants
           .map(
@@ -171,9 +236,11 @@ class ProductRepository {
     };
   }
 
-  /// Normaliza errores HTTP de FastAPI (`detail` como string o lista de validación `422`).
+  /// Normaliza errores HTTP de FastAPI (`detail` como string o lista `422`) y códigos críticos.
   String _extractErrorMessage(DioException e, String fallback) {
+    final statusCode = e.response?.statusCode;
     final data = e.response?.data;
+
     if (data is Map<String, dynamic>) {
       final detail = data['detail'];
       if (detail is String && detail.trim().isNotEmpty) {
@@ -186,6 +253,13 @@ class ProductRepository {
         }
       }
     }
-    return fallback;
+
+    return switch (statusCode) {
+      400 => 'Solicitud inválida o formato de imagen no permitido (400).',
+      413 => 'La imagen supera el tamaño máximo permitido de 5 MB (413).',
+      422 => 'Datos de producto inválidos según validación del servidor (422).',
+      502 => 'Error de comunicación con el almacenamiento de imágenes R2 (502).',
+      _ => fallback,
+    };
   }
 }

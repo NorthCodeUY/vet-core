@@ -64,12 +64,7 @@ def delete_subcategoria(db: Session, subc_id: int) -> bool:
     if not subcategoria:
         return False
 
-    # Elimina tuplas huérfanas en la tabla relacional N:M
-    db.execute(
-        delete(ProductoSubCategoriaModel).where(
-            ProductoSubCategoriaModel.sub_id == subc_id
-        )
-    )
+
     db.delete(subcategoria)
     db.commit()
     return True

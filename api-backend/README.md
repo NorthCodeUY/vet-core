@@ -85,6 +85,311 @@ api-backend/
         └── 📄 [qr_generator.py](file:///home/ary/Documentos/proyect/app/vet-core/api-backend/app/services/qr_generator.py)          # Generación en memoria de códigos QR PNG
 ```
 
+
+<!> Actualizame como el diagrama de ariba pero te paso los datos reales para que lo dejes actualizado.
+
+los comtario trata que no sean muy laros en el diagam paro si esplisitos 
+no si sepuede pero estaria beno que tuveran un menu despegale para mostra detalle no se si se puede lograr con este tipo de codigo mackdown si no me equivoco 
+
+(venv)  ary@ThinkPad-L390  ~/Documentos/proyect/app/vet-core/api-backend   main ±  ll                                 
+total 136K
+-rw-rw-r-- 1 ary  ary   345 Oct 20 12:22  Dockerfile
+-rw-rw-r-- 1 ary  ary   32K Nov 22 13:49  README.md
+drwxrwxr-x 9 ary  ary  4,0K Nov 18 21:27  app
+-rw-rw-r-- 1 ary  ary   56K Nov  5 08:19  descarte.json
+-rw-rw-r-- 1 ary  ary  3,6K Nov  5 16:53 'docker-compose copy.yml'
+-rw-rw-r-- 1 ary  ary  2,4K Nov 19 21:39  docker-compose.yml
+drwxrwxr-x 3 ary  ary  4,0K Oct 23 20:58  docs
+-rw-rw-r-- 1 ary  ary  2,4K Nov  4 16:53  requirements.txt
+-rw-rw-r-- 1 ary  ary  5,4K Oct 26 11:21  run_desarollo.py
+drwxrwxr-x 2 ary  ary  4,0K Oct 31 08:50  script-sql
+drwxrwxr-x 2 ary  ary  4,0K Nov  5 10:21  scripts
+drwxr-xr-x 4 root root 4,0K Oct 19 13:57  static
+drwxrwxr-x 5 ary  ary  4,0K Aug  6 12:07  venv
+(venv)  ary@ThinkPad-L390  ~/Documentos/proyect/app/vet-core/api-backend   main ±  tree app 
+app
+├── config.py
+├── database.py
+├── descarte.py
+├── descarte_security.py
+├── __init__.py
+├── main.py
+├── models
+│   ├── caja_item_model.py
+│   ├── caja_model.py
+│   ├── categoria_model.py
+│   ├── cliente_model.py
+│   ├── color_model.py
+│   ├── funcionario_model.py
+│   ├── imagen_url_model.py
+│   ├── __init__.py
+│   ├── pago_model.py
+│   ├── pedido_detalle_model.py
+│   ├── pedido_model.py
+│   ├── producto_model.py
+│   ├── producto_subcategoria_model.py
+│   ├── producto_variante_model.py
+│   ├── __pycache__
+│   │   ├── caja_item_model.cpython-314.pyc
+│   │   ├── caja_model.cpython-314.pyc
+│   │   ├── categoria_model.cpython-314.pyc
+│   │   ├── cliente_model.cpython-314.pyc
+│   │   ├── color_model.cpython-314.pyc
+│   │   ├── funcionario_model.cpython-314.pyc
+│   │   ├── imagen_url_model.cpython-314.pyc
+│   │   ├── __init__.cpython-314.pyc
+│   │   ├── pago_model.cpython-314.pyc
+│   │   ├── pedido_detalle_model.cpython-314.pyc
+│   │   ├── pedido_model.cpython-314.pyc
+│   │   ├── producto_model.cpython-314.pyc
+│   │   ├── producto_subcategoria_model.cpython-314.pyc
+│   │   ├── producto_variante_model.cpython-314.pyc
+│   │   ├── subcategoria_model.cpython-314.pyc
+│   │   └── user_model.cpython-314.pyc
+│   ├── subcategoria_model.py
+│   └── user_model.py
+├── __pycache__
+│   ├── config.cpython-314.pyc
+│   ├── database.cpython-314.pyc
+│   ├── __init__.cpython-314.pyc
+│   ├── main.cpython-314.pyc
+│   └── security.cpython-314.pyc
+├── repositories
+│   ├── categoria_repo.py
+│   ├── __init__.py
+│   ├── product_repo.py
+│   ├── __pycache__
+│   │   ├── categoria_repo.cpython-314.pyc
+│   │   ├── __init__.cpython-314.pyc
+│   │   ├── product_repo.cpython-314.pyc
+│   │   └── subcategoria_repo.cpython-314.pyc
+│   └── subcategoria_repo.py
+├── router
+│   ├── auth_router.py
+│   ├── caja_router.py
+│   ├── categoria_route.py
+│   ├── __init__.py
+│   ├── pedido_route.py
+│   ├── producto_router.py
+│   ├── __pycache__
+│   │   ├── auth_router.cpython-314.pyc
+│   │   ├── caja_router.cpython-314.pyc
+│   │   ├── categoria_route.cpython-314.pyc
+│   │   ├── __init__.cpython-314.pyc
+│   │   ├── pedido_route.cpython-314.pyc
+│   │   ├── producto_router.cpython-314.pyc
+│   │   └── subcategoria_route.cpython-314.pyc
+│   └── subcategoria_route.py
+├── schemas
+│   ├── caja_schema.py
+│   ├── categoria_schema.py
+│   ├── __init__.py
+│   ├── producto_schema.py
+│   ├── __pycache__
+│   │   ├── caja_schema.cpython-314.pyc
+│   │   ├── categoria_schema.cpython-314.pyc
+│   │   ├── __init__.cpython-314.pyc
+│   │   ├── producto_schema.cpython-314.pyc
+│   │   ├── subcategoria_schema.cpython-314.pyc
+│   │   └── user_schema.cpython-314.pyc
+│   ├── subcategoria_schema.py
+│   └── user_schema.py
+├── security.py
+├── services
+│   ├── descarte_storage_service.py
+│   ├── product_service.py
+│   ├── __pycache__
+│   │   ├── import_excel.cpython-314.pyc
+│   │   └── storage_service.cpython-314.pyc
+│   ├── qr_generator.py
+│   ├── storage_service.py
+│   └── whatsapp_service.py
+└── static
+    ├── productos
+    │   ├── 10.png
+    │   ├── 11.png
+    │   ├── 12.png
+    │   ├── 13.png
+    │   ├── 14.png
+    │   ├── 15.png
+    │   ├── 16.png
+    │   ├── 17.png
+    │   ├── 18.png
+    │   ├── 19.png
+    │   ├── 1.jpeg
+    │   ├── 20.png
+    │   ├── 21.png
+    │   ├── 22.png
+    │   ├── 23.png
+    │   ├── 24.png
+    │   ├── 25.png
+    │   ├── 26.png
+    │   ├── 27.png
+    │   ├── 28.png
+    │   ├── 29.png
+    │   ├── 2.png
+    │   ├── 30.png
+    │   ├── 31.png
+    │   ├── 32.png
+    │   ├── 33.png
+    │   ├── 34.png
+    │   ├── 35.png
+    │   ├── 36.png
+    │   ├── 37.png
+    │   ├── 38.png
+    │   ├── 39.png
+    │   ├── 3.png
+    │   ├── 40.png
+    │   ├── 41.png
+    │   ├── 42.png
+    │   ├── 43.png
+    │   ├── 44.png
+    │   ├── 45.png
+    │   ├── 46.png
+    │   ├── 47.png
+    │   ├── 48.png
+    │   ├── 49.png
+    │   ├── 4.png
+    │   ├── 50.png
+    │   ├── 51.png
+    │   ├── 52.png
+    │   ├── 53.png
+    │   ├── 54.png
+    │   ├── 55.png
+    │   ├── 56.png
+    │   ├── 57.png
+    │   ├── 58.png
+    │   ├── 59.png
+    │   ├── 5.png
+    │   ├── 60.png
+    │   ├── 61.png
+    │   ├── 62.png
+    │   ├── 63.png
+    │   ├── 64.png
+    │   ├── 65.png
+    │   ├── 66.png
+    │   ├── 67.png
+    │   ├── 68.png
+    │   ├── 69.png
+    │   ├── 6.png
+    │   ├── 70.png
+    │   ├── 71.png
+    │   ├── 72.png
+    │   ├── 73.png
+    │   ├── 74.png
+    │   ├── 75.png
+    │   ├── 76.png
+    │   ├── 78.png
+    │   ├── 79.png
+    │   ├── 7.png
+    │   ├── 80.png
+    │   ├── 81.png
+    │   ├── 8.png
+    │   ├── 9.png
+    │   └── imagen.py
+    └── productos.csv
+
+14 directories, 167 files
+(venv)  ary@ThinkPad-L390  ~/Documentos/proyect/app/vet-core/api-backend   main ±  
+
+
+actualiza el de arriba con la estructura real 
+
+
+
+
+
+
+
+
+
+
+api-backend/
+├── Dockerfile                     # Imagen base de producción FastAPI
+├── docker-compose.yml             # Orquestador PostgreSQL + backends por tenant
+├── docker-compose copy.yml        # [RESIDUAL] Copia de respaldo (eliminar en prod)
+├── requirements.txt               # Dependencias fijadas del entorno Python
+├── run_desarollo.py               # CLI dev: auto-crea DB, migra y lanza Uvicorn
+├── README.md                      # Documentación técnica del backend
+├── descarte.json                  # [RESIDUAL] Dump temporal de pruebas
+├── .env.example                   # Plantilla base de variables de entorno
+├── .env.veterinaria               # Config tenant: Veterinaria Beltramelli
+├── .env.flordeloto                # Config tenant: Flor de Loto
+├── static/                        # [LEGACY/ROOT] Estáticos en raíz (permisos root)
+├── venv/                          # Entorno virtual local (ignorado en Git/Docker)
+├── script-sql/
+│   └── agregar.sql                # Scripts SQL manuales / migraciones rápidas
+├── scripts/
+│   ├── crear_admin.py             # Alta de superusuario con hash Bcrypt
+│   ├── crear_caja.py              # Alta de cajas de depósito y QR
+│   ├── importar_catalogo_csv.py   # Ingesta masiva CSV con deduplicación
+│   └── seed_subcategorias.py      # Seed inicial de subcategorías + íconos
+├── docs/architecture/
+│   ├── diagrama_base_de_datos.md  # Diagrama ER completo PostgreSQL
+│   └── diagram_modalidadFutura_Auto.md # Extensión polimórfica vertical automotriz
+└── app/
+    ├── __init__.py                # Inicializador de paquete Python
+    ├── main.py                    # Entrypoint FastAPI, CORS, /static y routers
+    ├── config.py                  # Settings Pydantic v2 y carga dinámica .env
+    ├── database.py                # Motor SQLAlchemy 2.0, Pool LIFO y get_db()
+    ├── security.py                # Hashing Bcrypt y emisión/validación JWT
+    ├── descarte.py                # [RESIDUAL] Código descartado
+    ├── descarte_security.py       # [RESIDUAL] Seguridad legacy descartada
+    ├── router/                    # Controladores HTTP (Endpoints REST)
+    │   ├── __init__.py
+    │   ├── auth_router.py         # Login OAuth2/JSON y registro de clientes
+    │   ├── caja_router.py         # Lectura de cajas y generación de QR PNG
+    │   ├── categoria_route.py     # CRUD / consultas de categorías
+    │   ├── pedido_route.py        # Procesamiento y estados de pedidos
+    │   ├── producto_router.py     # Catálogo agrupado, filtros y admin
+    │   └── subcategoria_route.py  # CRUD / consultas de subcategorías
+    ├── schemas/                   # DTOs Pydantic v2 (Validación / Serialización)
+    │   ├── __init__.py
+    │   ├── caja_schema.py         # Contenedores físicos e ítems en depósito
+    │   ├── categoria_schema.py    # DTOs de categorías
+    │   ├── producto_schema.py     # Catálogo, variantes, colores e imágenes
+    │   ├── subcategoria_schema.py # DTOs de subcategorías e iconografía
+    │   └── user_schema.py         # LoginRequest, UserRegister y TokenResponse
+    ├── repositories/              # Queries SQLAlchemy 2.0 (Sin lógica de negocio)
+    │   ├── __init__.py
+    │   ├── categoria_repo.py      # Consultas de categorías
+    │   ├── product_repo.py        # Queries catálogo con joinedload/selectinload
+    │   └── subcategoria_repo.py   # Consultas de subcategorías
+    ├── models/                    # Entidades ORM declarativas PostgreSQL
+    │   ├── __init__.py
+    │   ├── caja_model.py          # Tabla 'cajas': depósitos físicos y QR
+    │   ├── caja_item_model.py     # Tabla 'caja_items': stock de SKUs por caja
+    │   ├── categoria_model.py     # Tabla 'categoria': agrupador principal
+    │   ├── cliente_model.py       # Tabla 'clientes': perfil y cuenta corriente
+    │   ├── color_model.py         # Tabla 'color': paleta comercial HEX
+    │   ├── funcionario_model.py   # Tabla 'funcionarios': cargo y matrícula
+    │   ├── imagen_url_model.py    # Tabla 'imagen_url': URLs R2 o fallback local
+    │   ├── pago_model.py          # Tabla 'pagos': comprobantes y liquidación
+    │   ├── pedido_model.py        # Tabla 'pedido': cabecera y estado comercial
+    │   ├── pedido_detalle_model.py# Tabla 'pedido_detalle': snapshot de precio
+    │   ├── producto_model.py      # Tabla 'producto': entidad base de catálogo
+    │   ├── producto_subcategoria_model.py # Pivote N:M producto <-> subcategoría
+    │   ├── producto_variante_model.py # Tabla 'producto_variante': SKU, talle, stock
+    │   ├── subcategoria_model.py  # Tabla 'subcategoria': subclasificación + ícono
+    │   └── user_model.py          # Tabla 'usuarios': credenciales y roles RBAC
+    ├── services/                  # Lógica de dominio e integraciones externas
+    │   ├── descarte_storage_service.py # [RESIDUAL] Cliente storage anterior
+    │   ├── product_service.py     # Reglas de negocio del catálogo
+    │   ├── qr_generator.py        # Generación en memoria de QR PNG
+    │   ├── storage_service.py     # Cliente Boto3/S3 para Cloudflare R2 / local
+    │   └── whatsapp_service.py    # Notificaciones vía mensajería WhatsApp
+    └── static/                    # Recursos locales de fallback / ingesta
+        ├── productos.csv          # Planilla origen para importación masiva
+        └── productos/             # 79 imágenes (1.jpeg, 2.png–81.png) + imagen.py
+
+
+
+
+
+
+
+
+
 ---
 
 ## 🏛️ Arquitectura en Capas del Backend

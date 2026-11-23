@@ -1,13 +1,64 @@
 // apps/admin-portal/lib/screens/product_form/widgets/subcategories_selector.dart
 
+
+// <!> bueno esto no muestra nada tiene que comunicarse con el bakend y traer las subcategoria a mostrar para agregar a este producto 
+
+/*
+
+
+
+
+GET
+/api/subcategorias
+Listar todas las subcategorías
+
+
+Retorna la lista completa de subcategorías con sus iconos y URLs asociadas.
+
+Parameters
+Try it out
+No parameters
+
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+[
+  {
+    "subc_nombre": "string",
+    "subc_icono": "string",
+    "subc_imagen_url": "string",
+    "subc_id": 0
+  }
+]
+
+
+
+
+
+
+
+
+
+*/
+
+
 import 'package:flutter/material.dart';
+import 'package:admin_portal/config/subcategory_icon_registry.dart';
 import 'package:admin_portal/models/product/product.dart';
 
 /// Selector dinámico e interactivo de subcategorías vinculadas al backend.
 ///
-/// Separa las subcategorías asignadas (chips sólidos removibles) de las
-/// sugerencias disponibles (carrusel horizontal compacto y filtrable),
-/// soportando miniaturas remotas del backend con fallback a icono Material.
+/// Orquesta la partición entre subcategorías asignadas y sugeridas, mantiene
+/// el estado efímero de filtrado en UI y delega el renderizado en subwidgets
+/// atómicos agnósticos al tenant.
 class SubcategoriesSelector extends StatefulWidget {
   /// Catálogo maestro de subcategorías obtenidas desde la API del tenant.
   final List<Subcategory> availableSubcategories;
@@ -18,11 +69,10 @@ class SubcategoriesSelector extends StatefulWidget {
   /// Callback ejecutado al agregar o quitar una subcategoría mediante su ID.
   final ValueChanged<int> onSubcategoryToggled;
 
-  /// Acción opcional para abrir la gestión rápida de subcategorías.
+  /// Acción opcional para abrir el modal de alta o gestión de subcategorías.
   final VoidCallback? onManagePressed;
 
-  /// Resuelve la URL de imagen de cada [Subcategory] sin acoplar el widget
-  /// a un nombre de propiedad específico si el modelo evoluciona.
+  /// Extractor opcional para sobreescribir la URL de imagen de cada [Subcategory].
   final String? Function(Subcategory subcategory)? imageUrlBuilder;
 
   /// Crea el selector dinámico de subcategorías.
@@ -40,11 +90,13 @@ class SubcategoriesSelector extends StatefulWidget {
 }
 
 class _SubcategoriesSelectorState extends State<SubcategoriesSelector> {
-  // Estado efímero estrictamente visual para filtrado local en tiempo real.
   final TextEditingController _mainSearchController = TextEditingController();
   final TextEditingController _suggestedFilterController =
       TextEditingController();
 
+  // Oculto por defecto para mantener la densidad compacta de la captura;
+  // el usuario puede desplegarlo cuando el catálogo crece.
+  bool _showMainSearch = false;
   String _mainQuery = '';
   String _suggestedQuery = '';
 
@@ -55,11 +107,19 @@ class _SubcategoriesSelectorState extends State<SubcategoriesSelector> {
     super.dispose();
   }
 
+  void _toggleMainSearch() {
+    setState(() {
+      _showMainSearch = !_showMainSearch;
+      if (!_showMainSearch) {
+        _mainSearchController.clear();
+        _mainQuery = '';
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Resuelve paleta y tipografía desde el tema activo del tenant (Zero Hardcoding).
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     // Particiona el catálogo en asignadas y disponibles en un único recorrido.
     final selectedItems = <Subcategory>[];
@@ -73,7 +133,6 @@ class _SubcategoriesSelectorState extends State<SubcategoriesSelector> {
       }
     }
 
-    // Aplica el buscador general y refina la fila de sugerencias con el mini filtro.
     final filteredSelected = selectedItems
         .where((s) => s.name.toLowerCase().contains(_mainQuery))
         .toList();
@@ -95,288 +154,291 @@ class _SubcategoriesSelectorState extends State<SubcategoriesSelector> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Cabecera: título, contador tipo píldora y botón "+ Gestionar" con sombra suave.
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 4,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(
-                      'Subcategorías y Etiquetas',
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 7,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colorScheme.secondaryContainer,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        '${selectedItems.length} asignadas',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          fontSize: 11,
-                          color: colorScheme.onSecondaryContainer,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (widget.onManagePressed != null)
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerLowest,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: colorScheme.shadow.withValues(alpha: 0.06),
-                        blurRadius: 3,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  child: InkWell(
-                    onTap: widget.onManagePressed,
-                    borderRadius: BorderRadius.circular(8),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 5,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.add,
-                            size: 14,
-                            color: colorScheme.secondary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Gestionar',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              fontSize: 11,
-                              color: colorScheme.secondary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-            ],
+          // 1. Cabecera: título, píldora de conteo, lupa opcional y botón "+ Gestionar".
+          _SelectorHeader(
+            assignedCount: selectedItems.length,
+            isSearchOpen: _showMainSearch,
+            onToggleSearch: _toggleMainSearch,
+            onManagePressed: widget.onManagePressed,
           ),
-          const SizedBox(height: 8),
 
-          // Buscador global compacto (36px) con centrado vertical exacto en Web y Mobile.
-          SizedBox(
-            height: 36,
-            child: TextField(
+          // 2. Buscador global desplegable (evita ruido visual si no se necesita).
+          if (_showMainSearch) ...[
+            const SizedBox(height: 8),
+            _MainSearchField(
               controller: _mainSearchController,
-              textAlignVertical: TextAlignVertical.center,
               onChanged: (value) =>
                   setState(() => _mainQuery = value.trim().toLowerCase()),
-              style: theme.textTheme.bodySmall?.copyWith(fontSize: 12),
-              decoration: InputDecoration(
-                hintText: 'Buscar subcategoría o etiqueta...',
-                hintStyle: theme.textTheme.bodySmall?.copyWith(
-                  fontSize: 12,
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
-                ),
-                prefixIcon: Icon(
-                  Icons.search,
-                  size: 16,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-                prefixIconConstraints: const BoxConstraints(
-                  minWidth: 34,
-                  minHeight: 34,
-                ),
-                isDense: true,
-                filled: true,
-                fillColor: colorScheme.surfaceContainerLowest,
-                contentPadding: const EdgeInsets.only(right: 10),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.6),
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.6),
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
-                ),
-              ),
-            ),
-          ),
-
-          // Chips sólidos de subcategorías asignadas (idénticos al bloque superior de la captura).
-          if (filteredSelected.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: filteredSelected.map((sub) {
-                return _SelectedSubcategoryChip(
-                  subcategory: sub,
-                  imageUrl: widget.imageUrlBuilder?.call(sub),
-                  onRemove: () => widget.onSubcategoryToggled(sub.id),
-                );
-              }).toList(),
             ),
           ],
 
-          const SizedBox(height: 10),
-
-          // Subcabecera de sugerencias + filtro tipo píldora alineado a la derecha.
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Sugeridas:',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        fontSize: 11,
-                        color: colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        '(${filteredSuggested.length} disponibles)',
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          fontSize: 11,
-                          color: colorScheme.secondary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              // Mini filtro tipo píldora (28px de alto) alineado exactamente como en la captura.
-              SizedBox(
-                width: 155,
-                height: 28,
-                child: TextField(
-                  controller: _suggestedFilterController,
-                  textAlignVertical: TextAlignVertical.center,
-                  onChanged: (value) => setState(
-                    () => _suggestedQuery = value.trim().toLowerCase(),
-                  ),
-                  style: theme.textTheme.labelSmall?.copyWith(fontSize: 11),
-                  decoration: InputDecoration(
-                    hintText: 'Filtrar sugerencias...',
-                    hintStyle: theme.textTheme.labelSmall?.copyWith(
-                      fontSize: 11,
-                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
-                    ),
-                    prefixIcon: Icon(
-                      Icons.filter_list,
-                      size: 13,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    prefixIconConstraints: const BoxConstraints(
-                      minWidth: 26,
-                      minHeight: 26,
-                    ),
-                    isDense: true,
-                    filled: true,
-                    fillColor: colorScheme.surfaceContainerLowest,
-                    contentPadding: const EdgeInsets.only(right: 8),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(999),
-                      borderSide: BorderSide(
-                        color: colorScheme.outlineVariant.withValues(alpha: 0.6),
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(999),
-                      borderSide: BorderSide(
-                        color: colorScheme.outlineVariant.withValues(alpha: 0.6),
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(999),
-                      borderSide: BorderSide(
-                        color: colorScheme.primary,
-                        width: 1.5,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-
-          // Carrusel horizontal de chips delineados compactos (+ Nombre).
-          if (filteredSuggested.isEmpty)
-            Text(
-              availableItems.isEmpty
-                  ? 'Todas las subcategorías disponibles están asignadas.'
-                  : 'Sin coincidencias para el filtro aplicado.',
-              style: theme.textTheme.bodySmall?.copyWith(
-                fontSize: 11,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            )
-          else
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: Row(
-                children: filteredSuggested.map((sub) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 5),
-                    child: _SuggestedSubcategoryChip(
-                      subcategory: sub,
-                      imageUrl: widget.imageUrlBuilder?.call(sub),
-                      onAdd: () => widget.onSubcategoryToggled(sub.id),
-                    ),
-                  );
-                }).toList(),
-              ),
+          // 3. Bloque de subcategorías asignadas (chips sólidos removibles).
+          if (filteredSelected.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            _SelectedChipsWrap(
+              items: filteredSelected,
+              imageUrlBuilder: widget.imageUrlBuilder,
+              onRemove: widget.onSubcategoryToggled,
             ),
+          ],
+
+          const SizedBox(height: 12),
+
+          // 4. Fila de sugerencias con contador y filtro rápido tipo píldora.
+          _SuggestedFilterHeader(
+            availableCount: filteredSuggested.length,
+            controller: _suggestedFilterController,
+            onChanged: (value) =>
+                setState(() => _suggestedQuery = value.trim().toLowerCase()),
+          ),
+          const SizedBox(height: 8),
+
+          // 5. Carrusel horizontal de subcategorías disponibles para asignar en 1 toque.
+          _SuggestedChipsCarousel(
+            items: filteredSuggested,
+            hasAnyAvailable: availableItems.isNotEmpty,
+            imageUrlBuilder: widget.imageUrlBuilder,
+            onAdd: widget.onSubcategoryToggled,
+          ),
         ],
       ),
     );
   }
 }
 
-/// Chip sólido de subcategoría asignada con sombra ligera, imagen del backend y cierre limpio.
+// =============================================================================
+// SUBWIDGET 1: CABECERA DEL SELECTOR
+// =============================================================================
+
+/// Renderiza el título, la píldora de cantidad asignada, el toggle de búsqueda
+/// global y el botón elevado `+ Gestionar`.
+class _SelectorHeader extends StatelessWidget {
+  final int assignedCount;
+  final bool isSearchOpen;
+  final VoidCallback onToggleSearch;
+  final VoidCallback? onManagePressed;
+
+  const _SelectorHeader({
+    required this.assignedCount,
+    required this.isSearchOpen,
+    required this.onToggleSearch,
+    required this.onManagePressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(
+                'Subcategorías y Etiquetas',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: colorScheme.secondaryContainer,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  '$assignedCount asignadas',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontSize: 10.5,
+                    color: colorScheme.onSecondaryContainer,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Botón compacto para mostrar/ocultar el buscador general sin ocupar espacio fijo.
+            IconButton(
+              onPressed: onToggleSearch,
+              tooltip: isSearchOpen ? 'Ocultar buscador' : 'Buscar subcategoría',
+              visualDensity: VisualDensity.compact,
+              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+              padding: EdgeInsets.zero,
+              icon: Icon(
+                isSearchOpen ? Icons.search_off : Icons.search,
+                size: 16,
+                color: isSearchOpen
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant,
+              ),
+            ),
+            if (onManagePressed != null) ...[
+              const SizedBox(width: 4),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colorScheme.shadow.withValues(alpha: 0.06),
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: InkWell(
+                  onTap: onManagePressed,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 9,
+                      vertical: 5,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add, size: 14, color: colorScheme.secondary),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Gestionar',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontSize: 11,
+                            color: colorScheme.secondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// =============================================================================
+// SUBWIDGET 2: BUSCADOR GLOBAL DESPLEGABLE
+// =============================================================================
+
+/// Campo de búsqueda global para filtrar simultáneamente asignadas y sugeridas.
+class _MainSearchField extends StatelessWidget {
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+
+  const _MainSearchField({
+    required this.controller,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return SizedBox(
+      height: 34,
+      child: TextField(
+        controller: controller,
+        textAlignVertical: TextAlignVertical.center,
+        onChanged: onChanged,
+        style: theme.textTheme.bodySmall?.copyWith(fontSize: 12),
+        decoration: InputDecoration(
+          hintText: 'Buscar subcategoría o etiqueta...',
+          hintStyle: theme.textTheme.bodySmall?.copyWith(
+            fontSize: 11.5,
+            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
+          ),
+          prefixIcon: Icon(
+            Icons.search,
+            size: 15,
+            color: colorScheme.onSurfaceVariant,
+          ),
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 32,
+            minHeight: 32,
+          ),
+          isDense: true,
+          filled: true,
+          fillColor: colorScheme.surfaceContainerLowest,
+          contentPadding: const EdgeInsets.only(right: 10),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// SUBWIDGET 3: LISTA DE CHIPS ASIGNADOS
+// =============================================================================
+
+/// Agrupa en flujo adaptable (`Wrap`) los chips sólidos de subcategorías activas.
+class _SelectedChipsWrap extends StatelessWidget {
+  final List<Subcategory> items;
+  final String? Function(Subcategory subcategory)? imageUrlBuilder;
+  final ValueChanged<int> onRemove;
+
+  const _SelectedChipsWrap({
+    required this.items,
+    required this.imageUrlBuilder,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: items.map((sub) {
+        return _SelectedSubcategoryChip(
+          subcategory: sub,
+          overrideImageUrl: imageUrlBuilder?.call(sub),
+          onRemove: () => onRemove(sub.id),
+        );
+      }).toList(),
+    );
+  }
+}
+
+/// Chip sólido de subcategoría asignada con icono/SVG resuelto y cierre circular.
 class _SelectedSubcategoryChip extends StatelessWidget {
   final Subcategory subcategory;
-  final String? imageUrl;
+  final String? overrideImageUrl;
   final VoidCallback onRemove;
 
   const _SelectedSubcategoryChip({
     required this.subcategory,
-    required this.imageUrl,
+    required this.overrideImageUrl,
     required this.onRemove,
   });
 
@@ -401,12 +463,12 @@ class _SelectedSubcategoryChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _SubcategoryAvatar(
-            imageUrl: imageUrl,
-            fallbackIcon: Icons.sell_outlined,
-            iconColor: colorScheme.onPrimary,
+          _SubcategoryVisualBadge(
+            subcategory: subcategory,
+            overrideImageUrl: overrideImageUrl,
+            foregroundColor: colorScheme.onPrimary,
           ),
-          const SizedBox(width: 5),
+          const SizedBox(width: 6),
           Text(
             subcategory.name,
             style: theme.textTheme.labelSmall?.copyWith(
@@ -416,7 +478,6 @@ class _SelectedSubcategoryChip extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 4),
-          // Botón circular para remover sin recuadro de hover cuadrado.
           Material(
             color: Colors.transparent,
             child: InkWell(
@@ -440,15 +501,172 @@ class _SelectedSubcategoryChip extends StatelessWidget {
   }
 }
 
-/// Chip delineado compacto para agregar una subcategoría sugerida al producto.
+// =============================================================================
+// SUBWIDGET 4: SUBCABECERA Y FILTRO DE SUGERIDAS
+// =============================================================================
+
+/// Muestra el contador de sugerencias disponibles y el mini filtro tipo píldora.
+class _SuggestedFilterHeader extends StatelessWidget {
+  final int availableCount;
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+
+  const _SuggestedFilterHeader({
+    required this.availableCount,
+    required this.controller,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Sugeridas:',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  fontSize: 11,
+                  color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  '($availableCount disponibles)',
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontSize: 11,
+                    color: colorScheme.secondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 155,
+          height: 28,
+          child: TextField(
+            controller: controller,
+            textAlignVertical: TextAlignVertical.center,
+            onChanged: onChanged,
+            style: theme.textTheme.labelSmall?.copyWith(fontSize: 11),
+            decoration: InputDecoration(
+              hintText: 'Filtrar sugerencias...',
+              hintStyle: theme.textTheme.labelSmall?.copyWith(
+                fontSize: 11,
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
+              ),
+              prefixIcon: Icon(
+                Icons.filter_list,
+                size: 13,
+                color: colorScheme.onSurfaceVariant,
+              ),
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 26,
+                minHeight: 26,
+              ),
+              isDense: true,
+              filled: true,
+              fillColor: colorScheme.surfaceContainerLowest,
+              contentPadding: const EdgeInsets.only(right: 8),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(999),
+                borderSide: BorderSide(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(999),
+                borderSide: BorderSide(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(999),
+                borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// =============================================================================
+// SUBWIDGET 5: CARRUSEL HORIZONTAL DE SUGERIDAS
+// =============================================================================
+
+/// Carrusel horizontal de subcategorías sugeridas con estado vacío amigable.
+class _SuggestedChipsCarousel extends StatelessWidget {
+  final List<Subcategory> items;
+  final bool hasAnyAvailable;
+  final String? Function(Subcategory subcategory)? imageUrlBuilder;
+  final ValueChanged<int> onAdd;
+
+  const _SuggestedChipsCarousel({
+    required this.items,
+    required this.hasAnyAvailable,
+    required this.imageUrlBuilder,
+    required this.onAdd,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    if (items.isEmpty) {
+      return Text(
+        hasAnyAvailable
+            ? 'Sin coincidencias para el filtro aplicado.'
+            : 'Todas las subcategorías disponibles están asignadas.',
+        style: theme.textTheme.bodySmall?.copyWith(
+          fontSize: 11,
+          color: colorScheme.onSurfaceVariant,
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: items.map((sub) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 5),
+            child: _SuggestedSubcategoryChip(
+              subcategory: sub,
+              overrideImageUrl: imageUrlBuilder?.call(sub),
+              onAdd: () => onAdd(sub.id),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+/// Chip delineado compacto para asignar una subcategoría sugerida con un toque.
 class _SuggestedSubcategoryChip extends StatelessWidget {
   final Subcategory subcategory;
-  final String? imageUrl;
+  final String? overrideImageUrl;
   final VoidCallback onAdd;
 
   const _SuggestedSubcategoryChip({
     required this.subcategory,
-    required this.imageUrl,
+    required this.overrideImageUrl,
     required this.onAdd,
   });
 
@@ -465,7 +683,7 @@ class _SuggestedSubcategoryChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
         splashColor: colorScheme.secondaryContainer,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
@@ -477,11 +695,13 @@ class _SuggestedSubcategoryChip extends StatelessWidget {
             children: [
               Icon(Icons.add, size: 12, color: colorScheme.secondary),
               const SizedBox(width: 4),
-              if (imageUrl != null && imageUrl!.isNotEmpty) ...[
-                _SubcategoryAvatar(
-                  imageUrl: imageUrl,
-                  fallbackIcon: Icons.label_outline,
-                  iconColor: colorScheme.secondary,
+              if (subcategory.isImageActive ||
+                  (overrideImageUrl != null &&
+                      overrideImageUrl!.isNotEmpty)) ...[
+                _SubcategoryVisualBadge(
+                  subcategory: subcategory,
+                  overrideImageUrl: overrideImageUrl,
+                  foregroundColor: colorScheme.secondary,
                 ),
                 const SizedBox(width: 4),
               ],
@@ -501,33 +721,45 @@ class _SuggestedSubcategoryChip extends StatelessWidget {
   }
 }
 
-/// Renderiza la imagen de subcategoría enviada por el backend con degradación
-/// elegante a un icono Material si la URL es nula o falla la descarga.
-class _SubcategoryAvatar extends StatelessWidget {
-  final String? imageUrl;
-  final IconData fallbackIcon;
-  final Color iconColor;
+// =============================================================================
+// SUBWIDGET 6: RESOLUTOR HÍBRIDO DE ICONO / IMAGEN
+// =============================================================================
 
-  const _SubcategoryAvatar({
-    required this.imageUrl,
-    required this.fallbackIcon,
-    required this.iconColor,
+/// Renderiza la representación visual de la [Subcategory] respetando el
+/// discriminador [SubcategoryIconType] (`IMAGEN` vs `ICONO`) con fallback seguro.
+class _SubcategoryVisualBadge extends StatelessWidget {
+  final Subcategory subcategory;
+  final String? overrideImageUrl;
+  final Color foregroundColor;
+
+  const _SubcategoryVisualBadge({
+    required this.subcategory,
+    required this.overrideImageUrl,
+    required this.foregroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (imageUrl == null || imageUrl!.isEmpty) {
-      return Icon(fallbackIcon, size: 14, color: iconColor);
+    final resolvedUrl = overrideImageUrl ?? subcategory.imageUrl;
+    final shouldShowImage =
+        subcategory.isImageActive &&
+        resolvedUrl != null &&
+        resolvedUrl.trim().isNotEmpty;
+
+    final fallbackIcon = SubcategoryIconRegistry.resolve(subcategory.iconName);
+
+    if (!shouldShowImage) {
+      return Icon(fallbackIcon, size: 14, color: foregroundColor);
     }
 
     return ClipOval(
       child: Image.network(
-        imageUrl!,
+        resolvedUrl,
         width: 15,
         height: 15,
         fit: BoxFit.cover,
         errorBuilder: (_, __, ___) =>
-            Icon(fallbackIcon, size: 14, color: iconColor),
+            Icon(fallbackIcon, size: 14, color: foregroundColor),
       ),
     );
   }

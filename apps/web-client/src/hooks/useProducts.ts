@@ -1,3 +1,5 @@
+// apps/web-client/src/hooks/useProducts.ts
+
 /**
  * @fileoverview Hook de Negocio y Fachada para Catálogo de Productos (useProducts.ts)
  * 
@@ -5,12 +7,12 @@
  * 1. Consumo asíncrono de la API REST (FastAPI) con control de clientes sin backend.
  * 2. Deep Linking / Persistencia bidireccional del carrito en la URL (?cart=id_var:cant).
  * 3. Rehidratación segura al cargar enlaces compartidos (sin errores de NaN).
- * 4. Motor de búsqueda reactivo multicampo en memoria (nombre, descripción y tags de subcategoría).
+ * 4. Buscador asíncrono universal conectado a /api/productos/filtrados?search= con Debounce.
  * 
  * @module hooks/useProducts
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 // --- Infraestructura HTTP y Mappers ---
 import { productService } from '../services/product_service';
@@ -32,6 +34,7 @@ import type { PedidoItem } from '../types/pedido_types';
  *   setSearchTerm: React.Dispatch<React.SetStateAction<string>>,
  *   categories: ApiCategory[],
  *   loading: boolean,
+ *   isSearching: boolean,
  *   filteredResults: ApiProduct[] | null
  * }}
  */
@@ -43,6 +46,10 @@ export const useProducts = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [categories, setCategories] = useState<ApiCategory[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+
+  /* <!> Estados dedicados al motor de búsqueda asíncrono del backend */
+  const [filteredResults, setFilteredResults] = useState<ApiProduct[] | null>(null);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
 
   const { pedido, loadPedidoMasivo } = usePedidoStore();
 
@@ -64,7 +71,7 @@ export const useProducts = () => {
       return;
     }
 
-    // <!> Serialización con soporte de variantes (prodId_varId:cantidad)
+    // Serialización con soporte de variantes (prodId_varId:cantidad)
     const cartParamValue = pedido
       .map((item) => {
         const varId = item.variante_seleccionada?.var_id || 'base';
@@ -116,10 +123,7 @@ export const useProducts = () => {
               ? productoEncontrado.variantes?.find((v) => v.var_id === varId)
               : undefined;
 
-            /* =================================================================
-               <!> RESOLUCIÓN DEFENSIVA DE PRECIO (ANTI-NaN):
-               Prioriza el precio absoluto de la variante, luego prod_precio_venta.
-               ================================================================= */
+            /* Resolución defensiva de precio (Anti-NaN) */
             const precioCapturado = varianteEncontrada
               ? Number(varianteEncontrada.var_precio_venta)
               : Number(productoEncontrado.prod_precio_venta ?? (productoEncontrado as any).prod_precio ?? 0);
@@ -147,7 +151,7 @@ export const useProducts = () => {
   }, [categories, isRehydrated, loadPedidoMasivo]);
 
   /* ===========================================================================
-     4. LÓGICA C: CONSUMO DE LA API REST (FastAPI)
+     4. LÓGICA C: CONSUMO DE LA API REST (FastAPI) - CATÁLOGO AGRUPADO
      Descarga y mapea el catálogo agrupado respetando los flags del tenant.
      =========================================================================== */
   useEffect(() => {
@@ -189,43 +193,60 @@ export const useProducts = () => {
   }, [config]);
 
   /* ===========================================================================
-     5. LÓGICA D: BUSCADOR REACTIVO EN MEMORIA (Faceted Search Cache)
-     Filtra en tiempo real por título, descripción y nombres de subcategoría.
+     <!> 5. LÓGICA D: BUSCADOR REACTIVO EN BACKEND CON DEBOUNCE (350ms)
+     Reemplaza el filtrado en memoria local por llamadas a /api/productos/filtrados?search=
      =========================================================================== */
-  const filteredResults = useMemo((): ApiProduct[] | null => {
-    if (!searchTerm.trim()) return null;
+  useEffect(() => {
+    const query = searchTerm.trim();
 
-    const normalizedTerm = searchTerm.toLowerCase().trim();
-    const allProducts = categories.flatMap((cat) => cat.productos);
+    // 1. Si el input está vacío, reseteamos a modo catálogo normal
+    if (!query) {
+      setFilteredResults(null);
+      setIsSearching(false);
+      return;
+    }
 
-    return allProducts.filter((p) => {
-      const matchName = p.prod_nombre.toLowerCase().includes(normalizedTerm);
-      const matchDesc = p.prod_descripcion ? p.prod_descripcion.toLowerCase().includes(normalizedTerm) : false;
+    setIsSearching(true);
 
-      // <!> Búsqueda robusta en subcategorías (soporta objetos planos o anidados)
-      const matchSub = p.subcategorias?.some((subItem: any) => {
-        const name = subItem.subcategoria?.subc_nombre || subItem.subc_nombre || '';
-        return name.toLowerCase().includes(normalizedTerm);
-      });
+    // 2. Debounce para esperar a que el usuario deje de escribir
+    const timeoutId = setTimeout(async () => {
+      try {
+        /* Solicitud HTTP al endpoint genérico de FastAPI */
+        const rawResults = await productService.fetchProductosFiltrados({ search: query });
+        
+        /* Mapeo de respuesta hacia el contrato de la UI */
+        const mappedResults = productMapper.toUIList(rawResults, 'Búsqueda', 0);
+        setFilteredResults(mappedResults);
+      } catch (error) {
+        console.error('[useProducts] Error ejecutando búsqueda en backend:', error);
+        setFilteredResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 350);
 
-      return matchName || matchDesc || matchSub;
-    });
-  }, [searchTerm, categories]);
+    // 3. Limpieza de timer en cada pulsación de tecla
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [searchTerm]);
 
   return {
     searchTerm,
     setSearchTerm,
     categories,
     loading,
+    isSearching,       /* <!> Exportado para activar spinner en el input */
     filteredResults,
   };
 };
 
 /**
  * Hook secundario para carga bajo demanda (Lazy Loading) de productos por categoría.
+ * Resuelve el botón "Ver más" solicitando la totalidad de productos a /api/productos/filtrados?cat_id=
  *
  * @param {number} catId - ID de la categoría a consultar.
- * @param {ApiProduct[]} initialData - Datos iniciales precargados.
+ * @param {ApiProduct[]} initialData - Datos iniciales precargados de la categoría.
  * @param {string} title - Nombre de la categoría padre.
  * @returns {{
  *   products: ApiProduct[],
@@ -241,6 +262,7 @@ export const useCategoryProducts = (catId: number, initialData: ApiProduct[], ti
   const toggleExpand = async (): Promise<void> => {
     if (!isExpanded && !hasLoadedFull) {
       try {
+        /* <!> Consume el endpoint /filtrados?cat_id= para traer todos los productos */
         const rawData = await productService.fetchProductosPorCategoria(catId);
         const mapped = productMapper.toUIList(rawData, title, catId);
         setProducts(mapped);

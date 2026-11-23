@@ -17,6 +17,96 @@ from app.models.producto_model import ProductoModel
 from app.models.producto_subcategoria_model import ProductoSubCategoriaModel
 from app.models.producto_variante_model import ProductoVarianteModel
 
+from app.models.color_model import ColorModel
+from app.models.subcategoria_model import SubcategoriaModel
+
+
+
+
+def create_producto(
+    db: Session,
+    datos: dict[str, Any],
+    subcategoria_ids: Optional[list[int]] = None,
+) -> ProductoModel:
+    """Persiste un nuevo producto con sus subcategorías e imágenes."""
+    imagenes = datos.pop("imagenes", None)
+    variantes = datos.pop("variantes", None)
+
+    columnas_db = {col.name for col in ProductoModel.__table__.columns}
+    datos_producto = {k: v for k, v in datos.items() if k in columnas_db}
+
+    nuevo_producto = ProductoModel(**datos_producto)
+    db.add(nuevo_producto)
+    db.flush()
+
+    _sincronizar_imagenes_y_variantes(
+        db=db,
+        prod_id=nuevo_producto.prod_id,
+        imagenes=imagenes,
+        variantes=variantes,
+        reemplazar=False,
+    )
+
+    # Inserción en tabla intermedia usando 'subc_id'
+    if subcategoria_ids:
+        for sub_id in set(subcategoria_ids):
+            db.add(
+                ProductoSubCategoriaModel(
+                    prod_id=nuevo_producto.prod_id,
+                    subc_id=sub_id,
+                )
+            )
+
+    db.commit()
+    return get_product_by_id(db, nuevo_producto.prod_id)  # type: ignore[return-value]
+
+
+def update_producto(
+    db: Session,
+    prod_id: int,
+    datos: dict[str, Any],
+    subcategoria_ids: Optional[list[int]] = None,
+) -> Optional[ProductoModel]:
+    """Actualiza atributos de un producto y re-sincroniza subcategorías e imágenes."""
+    stmt = select(ProductoModel).where(ProductoModel.prod_id == prod_id)
+    producto = db.scalar(stmt)
+    if not producto:
+        return None
+
+    imagenes = datos.pop("imagenes", None)
+    variantes = datos.pop("variantes", None)
+
+    columnas_db = {col.name for col in ProductoModel.__table__.columns}
+    for clave, valor in datos.items():
+        if clave in columnas_db:
+            setattr(producto, clave, valor)
+
+    _sincronizar_imagenes_y_variantes(
+        db=db,
+        prod_id=prod_id,
+        imagenes=imagenes,
+        variantes=variantes,
+        reemplazar=True,
+    )
+
+    # Sincronización en tabla intermedia usando 'subc_id'
+    if subcategoria_ids is not None:
+        db.execute(
+            delete(ProductoSubCategoriaModel).where(
+                ProductoSubCategoriaModel.prod_id == prod_id
+            )
+        )
+        for sub_id in set(subcategoria_ids):
+            db.add(
+                ProductoSubCategoriaModel(
+                    prod_id=prod_id,
+                    subc_id=sub_id,
+                )
+            )
+
+    db.commit()
+    return get_product_by_id(db, prod_id)
+
 
 def _opciones_carga_completa():
     return (
@@ -26,7 +116,6 @@ def _opciones_carga_completa():
             ProductoSubCategoriaModel.rel_subcategoria
         ),
     )
-
 
 def _criterios_visibilidad_publica():
     return and_(
@@ -48,7 +137,6 @@ def _criterios_visibilidad_publica():
         ),
     )
 
-
 def get_product_by_id(db: Session, prod_id: int) -> Optional[ProductoModel]:
     stmt = (
         select(ProductoModel)
@@ -56,7 +144,6 @@ def get_product_by_id(db: Session, prod_id: int) -> Optional[ProductoModel]:
         .options(*_opciones_carga_completa())
     )
     return db.scalar(stmt)
-
 
 def get_productos_agrupados(db: Session, limit_por_categoria: int = 8) -> list[dict[str, Any]]:
     stmt_cat = select(CategoriaModel).order_by(CategoriaModel.cat_id)
@@ -84,10 +171,24 @@ def get_productos_agrupados(db: Session, limit_por_categoria: int = 8) -> list[d
             })
     return resultado
 
-
 def get_productos_filtrados(
     db: Session,
-    search: Optional[str] = None,
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    search: Optional[str] = None,IOPJH
     cat_id: Optional[int] = None,
 ) -> list[ProductoModel]:
     stmt = (
@@ -109,7 +210,6 @@ def get_productos_filtrados(
         )
     return list(db.scalars(stmt).unique().all())
 
-
 def get_all_products_admin(db: Session) -> list[ProductoModel]:
     stmt = (
         select(ProductoModel)
@@ -117,7 +217,6 @@ def get_all_products_admin(db: Session) -> list[ProductoModel]:
         .order_by(ProductoModel.prod_id.desc())
     )
     return list(db.scalars(stmt).unique().all())
-
 
 def _sincronizar_imagenes_y_variantes(
     db: Session,
@@ -173,86 +272,6 @@ def _sincronizar_imagenes_y_variantes(
                 )
             )
 
-
-def create_producto(
-    db: Session,
-    datos: dict[str, Any],
-    subcategoria_ids: Optional[list[int]] = None,
-) -> ProductoModel:
-    # Extracción de relaciones antes del mapeo de columnas base
-    imagenes = datos.pop("imagenes", None)
-    variantes = datos.pop("variantes", None)
-
-    nuevo_producto = ProductoModel(**datos)
-    db.add(nuevo_producto)
-    db.flush()
-
-    _sincronizar_imagenes_y_variantes(
-        db=db,
-        prod_id=nuevo_producto.prod_id,
-        imagenes=imagenes,
-        variantes=variantes,
-        reemplazar=False,
-    )
-
-    if subcategoria_ids:
-        for sub_id in set(subcategoria_ids):
-            db.add(
-                ProductoSubCategoriaModel(
-                    prod_id=nuevo_producto.prod_id,
-                    sub_id=sub_id,
-                )
-            )
-
-    db.commit()
-    return get_product_by_id(db, nuevo_producto.prod_id)  # type: ignore[return-value]
-
-
-def update_producto(
-    db: Session,
-    prod_id: int,
-    datos: dict[str, Any],
-    subcategoria_ids: Optional[list[int]] = None,
-) -> Optional[ProductoModel]:
-    stmt = select(ProductoModel).where(ProductoModel.prod_id == prod_id)
-    producto = db.scalar(stmt)
-    if not producto:
-        return None
-
-    # Extracción de relaciones para sincronización explícita
-    imagenes = datos.pop("imagenes", None)
-    variantes = datos.pop("variantes", None)
-
-    for clave, valor in datos.items():
-        if hasattr(producto, clave):
-            setattr(producto, clave, valor)
-
-    _sincronizar_imagenes_y_variantes(
-        db=db,
-        prod_id=prod_id,
-        imagenes=imagenes,
-        variantes=variantes,
-        reemplazar=True,
-    )
-
-    if subcategoria_ids is not None:
-        db.execute(
-            delete(ProductoSubCategoriaModel).where(
-                ProductoSubCategoriaModel.prod_id == prod_id
-            )
-        )
-        for sub_id in set(subcategoria_ids):
-            db.add(
-                ProductoSubCategoriaModel(
-                    prod_id=prod_id,
-                    sub_id=sub_id,
-                )
-            )
-
-    db.commit()
-    return get_product_by_id(db, prod_id)
-
-
 def soft_delete_producto(db: Session, prod_id: int) -> bool:
     stmt = select(ProductoModel).where(ProductoModel.prod_id == prod_id)
     producto = db.scalar(stmt)
@@ -263,7 +282,6 @@ def soft_delete_producto(db: Session, prod_id: int) -> bool:
     db.commit()
     db.refresh(producto)
     return True
-
 
 def toggle_vitrina_producto(db: Session, prod_id: int, is_visible: bool) -> bool:
     stmt = select(ProductoModel).where(ProductoModel.prod_id == prod_id)

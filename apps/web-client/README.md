@@ -198,6 +198,14 @@ Queda prohibido utilizar nombres de colores estáticos de Tailwind (`bg-blue-600
 
 > 💡 **Tip:** Haz clic en cualquier archivo o carpeta para abrirlo directamente en tu editor:
 
+
+
+
+
+
+
+
+
 * 📁 **[clients/](../../clients/)** *(Silos de configuración por cliente)*
   * 📁 **[veterinariabeltrameli/](../../clients/veterinariabeltrameli/)** *(Cliente Veterinaria con backend)*
   * 📁 **[malandrobarber/](../../clients/malandrobarber/)** *(Cliente Barbería Standalone)*
@@ -209,11 +217,13 @@ Queda prohibido utilizar nombres de colores estáticos de Tailwind (`bg-blue-600
   * 📄 [dockerfile](dockerfile) *(Compilación NGINX multi-stage inmutable)*
   * 📄 [docker-compose.yml](docker-compose.yml) *(Orquestador multi-contenedor con red northcode-net)*
   * 📄 [nginx.conf.template](nginx.conf.template) *(Plantilla NGINX con proxy dinámico ${BACKEND_HOST})*
+  * 📄  [inject-seo.sh](inject-seo.sh) *(Script Bash para inyección de metatags SEO en build)*
   * 📄 [package.json](package.json) *(Scripts CLI y dependencias React 19)*
   * 📄 [vite.config.ts](vite.config.ts) *(Configuración de empaquetador y proxy local /api)*
   * 📄 [tailwind.config.js](tailwind.config.js) *(Tokens semánticos vete-* y breakpoints)*
   * 📄 [postcss.config.js](postcss.config.js) *(Pipeline PostCSS)*
   * 📄 [eslint.config.js](eslint.config.js) *(Auditoría estática ESLint)*
+  * 📄  [tsconfig.app.json](tsconfig.app.json) | [tsconfig.node.json](tsconfig.node.json) | [tsconfig.json](tsconfig.json) *(Configuraciones TypeScript)*
   * 📄 [index.html](index.html) *(Punto de entrada HTML y montaje del DOM)*
   * 📁 **[public/](public/)**
     * 📁 **[config/](public/config/)**
@@ -228,8 +238,16 @@ Queda prohibido utilizar nombres de colores estáticos de Tailwind (`bg-blue-600
       * 📄 [overview.md](docs/architecture/overview.md) *(Overview integral de arquitectura)*
   * 📁 **[src/](src/)**
     * 📄 [App.tsx](src/App.tsx) *(Enrutador principal React Router DOM v7)*
+    * 📄  [App.css](src/App.css) *(Estilos globales auxiliares)*
     * 📄 [main.tsx](src/main.tsx) *(Punto de entrada concurrente createRoot)*
-    * 📄 [index.css](src/index.css) *(Directivas base Tailwind)*
+    * 📄 [index.css](src/index.css) *(Directivas base Tailwind y variables semánticas :root)*
+    * 📄  [vite-env.d.ts](src/vite-env.d.ts) *(Tipado de cliente Vite)*
+    * 📁  **[assets/](src/assets/)** *(Recursos estáticos empaquetados en el bundle)*
+      * 📁 **animations/**
+        * 📄 `maintenance.json` *(Animación Lottie para modo mantenimiento)*
+      * 📁 **branding/**
+        * 📄 `caballo.svg` | `guella.svg` | `SeccionPrincipalFondo.svg` | `terminacionInferior.svg` | `WhatSapp_Cuadrado.svg`
+      * 📄 `producto_no_disponible.png` *(Fallback global de imágenes rotas)*
     * 📁 **[config/](src/config/)**
       * 📄 [theme_config.ts](src/config/theme_config.ts) *(Inyector Hex -> RGB en :root)*
       * 📄 [ui-config.ts](src/config/ui-config.ts) *(Parámetros visuales de UI)*
@@ -244,6 +262,7 @@ Queda prohibido utilizar nombres de colores estáticos de Tailwind (`bg-blue-600
       * 📄 [payment_types.ts](src/types/payment_types.ts) *(Contratos de formas de pago)*
       * 📄 [category_types.ts](src/types/category_types.ts) *(Contratos de subcategorías e iconos)*
       * 📄 [common_types.ts](src/types/common_types.ts) *(Contratos de imágenes y colores)*
+      * 📄  [auth.ts](src/types/auth.ts) *(Contratos de usuario y sesión)*
     * 📁 **[hooks/](src/hooks/)**
       * 📄 [useProducts.ts](src/hooks/useProducts.ts) *(Fachada de catálogo, buscador y Deep Linking)*
       * 📄 [useAddressManagement.ts](src/hooks/useAddressManagement.ts) *(Gestión de direcciones de entrega)*
@@ -255,20 +274,24 @@ Queda prohibido utilizar nombres de colores estáticos de Tailwind (`bg-blue-600
       * 📄 [product_mapper.ts](src/mapper/product_mapper.ts) *(Adaptador DTO backend -> UI models)*
     * 📁 **[components/](src/components/)**
       * 📁 **[animations/](src/components/animations/)**
-        * 📄 [AmbientScrollAnimation.tsx](src/components/animations/AmbientScrollAnimation.tsx) *(Video 3D WebM en Capa z-[45])*
+        * 📄 [AmbientScrollAnimation.tsx](src/components/animations/AmbientScrollAnimation.tsx) *(Animación ambiental de fondo)*
       * 📁 **[ProductCard/](src/components/ProductCard/)**
         * 📄 [ProductCard.tsx](src/components/ProductCard/ProductCard.tsx) *(Despachador de variante)*
         * 📄 [ProductCardV1.tsx](src/components/ProductCard/ProductCardV1.tsx) *(Variante plana)*
         * 📄 [ProductCardV2.tsx](src/components/ProductCard/ProductCardV2.tsx) *(Variante con acordeón)*
-      * 📁 **[PortfolioCard/](src/components/PortfolioCard/)**
-        * 📄 [PortfolioCard.tsx](src/components/PortfolioCard/PortfolioCard.tsx)
+        * 📄  [REDMI.md](src/components/ProductCard/REDMI.md) *(Documentación del módulo de tarjetas)*
+      * 📁  **[PortfolioCard/](src/components/PortfolioCard/)**
+        * 📄 [PortfolioCard.tsx](src/components/PortfolioCard/PortfolioCard.tsx) *(Despachador)*
+        * 📄 [PortfolioCardV1.tsx](src/components/PortfolioCard/PortfolioCardV1.tsx) *(Variante 1)*
+        * 📄 [PortfolioCardV2.tsx](src/components/PortfolioCard/PortfolioCardV2.tsx) *(Variante 2)*
       * 📁 **[studio/](src/components/studio/)**
         * 📄 [TenantStudioDrawer.tsx](src/components/studio/TenantStudioDrawer.tsx)
+      * 📄  [DynamicIcon.tsx](src/components/DynamicIcon.tsx) *(Despachador de íconos dinámicos Lucide)*
       * 📄 [FloatingBottomBar.tsx](src/components/FloatingBottomBar.tsx) *(Barra flotante inferior con auto-hide)*
       * 📄 [SectionDivider.tsx](src/components/SectionDivider.tsx) *(Ondas divisorias SVG vectoriales)*
       * 📄 [ServiceCard.tsx](src/components/ServiceCard.tsx) | [PlanCard.tsx](src/components/PlanCard.tsx)
       * 📄 [CategoryGroupCard.tsx](src/components/CategoryGroupCard.tsx) | [ConfirmationModal.tsx](src/components/ConfirmationModal.tsx)
-      * 📄 [WhatsAppDynamicButton.tsx](src/components/WhatsAppDynamicButton.tsx)
+      * 📄 [WhatsAppButtonProps.tsx](src/components/WhatsAppButtonProps.tsx) | [WhatsAppDynamicButton.tsx](src/components/WhatsAppDynamicButton.tsx)
     * 📁 **[pages/](src/pages/)**
       * 📁 **[landing/](src/pages/landing/)** *(🏠 Vista Principal)*
         * 📄 [LlandingPage.tsx](src/pages/landing/LlandingPage.tsx) *(Orquestador y máquina matricial)*
@@ -280,15 +303,72 @@ Queda prohibido utilizar nombres de colores estáticos de Tailwind (`bg-blue-600
           * 📄 [PlanSession.tsx](src/pages/landing/sessions/PlanSession.tsx) | [PortfolioSession.tsx](src/pages/landing/sessions/PortfolioSession.tsx)
           * 📄 [MapsSession.tsx](src/pages/landing/sessions/MapsSession.tsx) | [AboutSection.tsx](src/pages/landing/sessions/AboutSection.tsx)
           * 📄 [FooterSession.tsx](src/pages/landing/sessions/FooterSession.tsx)
+      * 📁  **[cliete/](src/pages/cliete/)** *(👤 Portal / Registro de Clientes)*
+        * 📄 [register_cliente.tsx](src/pages/cliete/register_cliente.tsx)
       * 📁 **[pedido/](src/pages/pedido/)** *(🛒 Checkout y Carrito)*
         * 📄 [PedidoDrawer.tsx](src/pages/pedido/PedidoDrawer.tsx)
         * 📄 [PedidoItemRow.tsx](src/pages/pedido/PedidoItemRow.tsx)
         * 📄 [PedidoFooterCollapsible.tsx](src/pages/pedido/PedidoFooterCollapsible.tsx)
         * 📄 [README.md](src/pages/pedido/README.md)
-      * 📁 **[maintenance/](src/pages/maintenance/)**
-        * 📄 [MaintenancePage.tsx](src/pages/maintenance/MaintenancePage.tsx)
+      * 📁 **[maintenance/](src/pages/maintenance/)** *(Página de mantenimiento)*
+        * 📄 [MaintenancePage.tsx](src/pages/maintenance/MaintenancePage.tsx) | [MaintenancePageV1.tsx](src/pages/maintenance/MaintenancePageV1.tsx)
+        * 📁  **MaintenancePageV2/**
+          * 📄 `MaintenanceHeader.tsx`
+          * 📄 `MaintenancePageV2.tsx`
+          * 📄 `WellnessPlans.tsx`
+    * 📁  **[utils/](src/utils/)** *(Utilidades y helpers)*
 
 ---
+
+### Modificaciones inyectadas respecto a tu filesystem real (``):
+
+1. **Configuraciones de build añadidas:** Se incorporaron `inject-seo.sh`, `App.css`, `vite-env.d.ts` y la terna de configuración TypeScript (`tsconfig.app.json`, `tsconfig.node.json`, `tsconfig.json`).
+2. **Assets internos documentados (`src/assets/`):** Se mapeó la estructura completa de `animations/`, `branding/` y la imagen de fallback `producto_no_disponible.png`.
+3. **Componentes sincrónicos agregados:**
+   - `DynamicIcon.tsx` (icono dinámico desacoplado).
+   - `PortfolioCard/` con sus variantes reales `PortfolioCardV1.tsx` y `PortfolioCardV2.tsx`.
+   - `REDMI.md` dentro de `ProductCard/`.
+4. **Módulos de vistas sincronizados:**
+   - Inclusión de `pages/cliete/register_cliente.tsx`.
+   - Estructuración real del subdirectorio `pages/maintenance/MaintenancePageV2/` (`MaintenanceHeader.tsx`, `MaintenancePageV2.tsx`, `WellnessPlans.tsx`).
+   - Mapeo del directorio `src/utils/`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## 🛠️ Guía de Operación Diaria y Comandos CLI
 

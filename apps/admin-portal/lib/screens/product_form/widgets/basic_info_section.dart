@@ -30,19 +30,19 @@ class BasicInfoSection extends StatelessWidget {
   /// Callback disparado al seleccionar o cambiar la categoría primaria.
   final ValueChanged<int?> onCategoryChanged;
 
-  /// <!> Catálogo completo de subcategorías activas retornadas por el backend.
+  ///  Catálogo completo de subcategorías activas retornadas por el backend.
   final List<Subcategory> availableSubcategories;
 
-  /// <!> Lista de IDs de subcategorías actualmente asignadas al producto.
+  ///  Lista de IDs de subcategorías actualmente asignadas al producto.
   final List<int> selectedSubcategoryIds;
 
-  /// <!> Callback invocado al asignar o remover una subcategoría por su ID.
+  ///  Callback invocado al asignar o remover una subcategoría por su ID.
   final ValueChanged<int> onSubcategoryToggled;
 
-  /// <!> Acción opcional para abrir el modal/flujo de creación o gestión de subcategorías.
+  ///  Acción opcional para abrir el modal/flujo de creación o gestión de subcategorías.
   final VoidCallback? onManageSubcategories;
 
-  /// <!> Extractor opcional de URL de imagen por subcategoría (permite
+  ///  Extractor opcional de URL de imagen por subcategoría (permite
   /// desacoplar la UI del nombre exacto del campo multimedia en el modelo).
   final String? Function(Subcategory subcategory)? subcategoryImageBuilder;
 
@@ -124,7 +124,7 @@ class BasicInfoSection extends StatelessWidget {
           ),
           const SizedBox(height: 14),
 
-          // <!> 3. Componente desacoplado de subcategorías dinámicas (backend + imagen + filtro).
+          //  3. Componente desacoplado de subcategorías dinámicas (backend + imagen + filtro).
           SubcategoriesSelector(
             availableSubcategories: availableSubcategories,
             selectedSubcategoryIds: selectedSubcategoryIds,

@@ -9,6 +9,38 @@
 /// 2. Erradicar URLs y strings quemados en repositorios y controladores.
 /// 3. Estandarizar rutas con parámetros dinámicos mediante métodos estáticos.
 abstract final class ApiEndpoints {
+
+
+
+
+
+  static const String products = '/api/productos';
+
+  static const String productos = '/api/productos';
+  static const String productosAdmin = '/api/productos/admin/listado';
+  static const String categorias = '/api/categorias';
+
+  // Subcategorías
+  static const String subcategorias = '/api/subcategorias';
+  static String subcategoriaDetalle(int id) => '/api/subcategorias/$id';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // ===========================================================================
   // 1. MÓDULO DE AUTENTICACIÓN Y SEGURIDAD (OAuth2 / JWT)
   // ===========================================================================

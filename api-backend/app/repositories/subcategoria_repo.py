@@ -67,4 +67,4 @@ def delete_subcategoria(db: Session, subc_id: int) -> bool:
 
     db.delete(subcategoria)
     db.commit()
-    return True
+    return Truec

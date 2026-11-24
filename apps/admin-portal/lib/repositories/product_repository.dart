@@ -87,9 +87,30 @@ class ProductRepository {
 
   /// Obtiene todos los productos del catálogo administrativo
   /// (`GET /api/productos/admin/listado`).
-  Future<List<Product>> getProducts() async {
+
+
+
+
+
+// <!> Listado paginado compatible hacia atrás con skip, limit, search y cat_id.
+  /// Obtiene productos del catálogo administrativo (`GET /api/productos/admin/listado`).
+  Future<List<Product>> getProducts({
+    int skip = 0,
+    int limit = 50,
+    String? search,
+    int? categoryId,
+  }) async {
     try {
-      final response = await _apiClient.get(ApiEndpoints.adminProducts);
+      final trimmedSearch = search?.trim() ?? '';
+      final response = await _apiClient.get(
+        ApiEndpoints.adminProducts,
+        queryParameters: <String, dynamic>{
+          'skip': skip,
+          'limit': limit,
+          if (trimmedSearch.isNotEmpty) 'search': trimmedSearch,
+          if (categoryId != null) 'cat_id': categoryId,
+        },
+      );
       final rawList = response.data as List<dynamic>? ?? const [];
 
       return rawList
@@ -102,6 +123,102 @@ class ProductRepository {
       );
     }
   }
+
+
+
+
+
+  // Future<List<Product>> getProducts() async {
+  //   try {
+  //     final response = await _apiClient.get(ApiEndpoints.adminProducts);
+  //     final rawList = response.data as List<dynamic>? ?? const [];
+
+  //     return rawList
+  //         .whereType<Map<String, dynamic>>()
+  //         .map(Product.fromJson)
+  //         .toList();
+  //   } on DioException catch (e) {
+  //     throw Exception(
+  //       _extractErrorMessage(e, 'Error al obtener el listado administrativo.'),
+  //     );
+  //   }
+  // }
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // <!> Buscador irrestricto contra backend (`GET /api/productos/admin/filtrados`).
+  /// Ejecuta búsqueda administrativa irrestricto por [search] y/o [categoryId].
+  ///
+  /// Devuelve coincidencias aunque el producto tenga `prod_activo = false`,
+  /// `prod_visible = false` o `prod_stock = 0`, ordenado por `prod_id DESC`.
+  Future<List<Product>> searchAdminProducts({
+    String? search,
+    int? categoryId,
+  }) async {
+    try {
+      final trimmedSearch = search?.trim() ?? '';
+      final queryParameters = <String, dynamic>{
+        if (trimmedSearch.isNotEmpty) 'search': trimmedSearch,
+        if (categoryId != null) 'cat_id': categoryId,
+      };
+
+      final response = await _apiClient.get(
+        ApiEndpoints.adminFilteredProducts,
+        queryParameters: queryParameters.isEmpty ? null : queryParameters,
+      );
+      final rawList = response.data as List<dynamic>? ?? const [];
+
+      return rawList
+          .whereType<Map<String, dynamic>>()
+          .map(Product.fromJson)
+          .toList();
+    } on DioException catch (e) {
+      throw Exception(
+        _extractErrorMessage(e, 'Error al filtrar productos en el servidor.'),
+      );
+    }
+  }
+
+  // <!> Catálogo de categorías para poblar el filtro en SearchAndFilters.
+  /// Obtiene las categorías disponibles (`GET /api/categorias`).
+  Future<List<Category>> getCategories() async {
+    try {
+      final response = await _apiClient.get(ApiEndpoints.categorias);
+      final rawList = response.data as List<dynamic>? ?? const [];
+
+      return rawList
+          .whereType<Map<String, dynamic>>()
+          .map(Category.fromJson)
+          .toList();
+    } on DioException catch (e) {
+      throw Exception(
+        _extractErrorMessage(e, 'Error al obtener las categorías.'),
+      );
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   /// Crea un nuevo producto integral en el catálogo (`POST /api/productos` -> `201`).
   ///

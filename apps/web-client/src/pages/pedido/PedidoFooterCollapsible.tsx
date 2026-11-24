@@ -3,6 +3,13 @@
 /**
  * @fileoverview Pie de Página Colapsable del Carrito y Orquestador de Checkout (PedidoFooterCollapsible)
  * 
+ * 
+ * 
+ * 
+ * <!> al ael boton de replegar esta dando error y no vuelve a contraer el menu 
+ * 
+ * 
+ * 
  * Centraliza la selección de medios de pago, la logística de entrega/retiro,
  * el cálculo de totales y la construcción del mensaje estructurado para WhatsApp.
  * Implementa un selector interactivo enriquecido con iconografía dinámica.

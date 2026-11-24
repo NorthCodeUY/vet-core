@@ -11,7 +11,8 @@
 abstract final class ApiEndpoints {
 
 
-
+  /// Búsqueda administrativa integral con soporte `search` y `cat_id` (`GET`).
+  static const String adminFilteredProducts = '/api/productos/admin/filtrados';
 
 
   static const String products = '/api/productos';
@@ -32,16 +33,10 @@ abstract final class ApiEndpoints {
   /// Sube una imagen al bucket R2 y devuelve `{ "img_url": ..., "filename": ... }`.
   static const String uploadProductImageR2 = '/api/productos/upload-imagen';
 
-  // <!> Endpoint alternativo para asociar una imagen directamente a un producto existente.
+  
   /// Carga y vincula una imagen a un producto existente (`POST` multipart).
   static String uploadProductImage(int id, {bool principal = false}) =>
       '/api/productos/$id/imagenes?principal=$principal';
-
-
-
-
-
-
 
 
 

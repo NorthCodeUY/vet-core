@@ -12,10 +12,9 @@ import 'package:admin_portal/repositories/product_repository.dart';
 import 'package:admin_portal/repositories/subcategory_repository.dart';
 import 'package:admin_portal/screens/product_form/widgets/subcategory_form_dialog.dart';
 import 'product_form_screen.dart';
+// Make sure ProductFormScreen is defined in product_form_screen.dart and exported properly.
 
 
-
-// apps/admin-portal/lib/repositories/product_repository.dart
 
 
 /// Controlador de estado (`Handler`) para el alta y edición integral de un [Product].
@@ -83,7 +82,8 @@ class _PendingImageEntry {
   /// Retorna `true` si la imagen aún debe subirse al endpoint `/api/productos/upload-imagen`.
   bool get isLocal => localBytes != null;
 }
-
+//<!>Missing concrete implementation of 'State.build'.
+// Try implementing the missing method, or make the class abstract.
 class _ProductFormHandlerState extends State<ProductFormHandler> {
   // ===========================================================================
   // 1. DEPENDENCIAS Y CONTROLADORES DE TEXTO
@@ -92,21 +92,6 @@ class _ProductFormHandlerState extends State<ProductFormHandler> {
   final _formKey = GlobalKey<FormState>();
 
 
-/*
-<!> ERROR 
-
-ProductRepository
-'ProductRepository' isn't a function.
-Try correcting the name to match an existing function, or define a method or function named 'ProductRepository'.
-
-
-
-
-The name 'ProductRepository' is defined in the libraries 'package:admin_portal/repositories/product_repository.dart' and 'package:admin_portal/screens/product_form/product_form_screen.dart'.
-Try using 'as prefix' for one of the import directives, or hiding the name from all but one of the imports.
-
-
-*/
 
   final _productRepository = ProductRepository();
   final _subcategoryRepository = SubcategoryRepository();
@@ -126,7 +111,7 @@ Try using 'as prefix' for one of the import directives, or hiding the name from 
 
   bool _isSubmitting = false;
   int? _selectedCategoryId;
-  late final List<Category> _categories;
+  late List<Category> _categories;
 
   List<Subcategory> _availableSubcategories = [];
   final List<int> _selectedSubcategoryIds = [];
@@ -141,34 +126,9 @@ Try using 'as prefix' for one of the import directives, or hiding the name from 
   bool _onlyVariants = false;
   bool _allowBackorder = false;
   List<ProductVariant> _variants = [];
-
   /// Proyección de solo lectura con las fuentes visuales consumidas por `GalleryPickerSection`.
-  List<String> get _imageUrls =>
-      _galleryEntries.map((e) => e.previewSource).toList(growable: false);
+  List<_PendingImageEntry> get galleryEntries => List.unmodifiable(_galleryEntries);
 
-  // ===========================================================================
-  // 3. CICLO DE VIDA (INICIALIZACIÓN Y LIMPIEZA)
-  // ===========================================================================
-
-  @override
-  void initState() {
-    super.initState();
-    final product = widget.productToEdit;
-
-    _initCategoryCatalog(product);
-    _initTextControllers(product);
-    if (product != null) {
-      _hydrateProductState(product);
-    }
-
-    // Calcula el margen inicial sin disparar setState() durante initState().
-    _marginPercentage = _computeMarginPercentage();
-    _salePriceController.addListener(_calculateMargin);
-    _costPriceController.addListener(_calculateMargin);
-
-    // Carga asíncrona del catálogo real de subcategorías desde FastAPI.
-    _loadSubcategories();
-  }
 
   /// Inicializa el catálogo base de categorías asegurando que el `cat_id`
   /// del producto editado siempre exista en el selector para evitar fallos de Dropdown.
@@ -192,7 +152,13 @@ Try using 'as prefix' for one of the import directives, or hiding the name from 
     }
 
     _selectedCategoryId = product?.categoryId ?? _categories.first.id;
-  }
+    _selectedCategoryId = product?.categoryId ?? (_categories.isNotEmpty ? _categories.first.id : null);
+
+  
+  }// Fin _initCategoryCatalog(Product? product)
+
+
+
 
   /// Inicializa los controladores de texto con valores existentes o por defecto.
   void _initTextControllers(Product? product) {
@@ -214,6 +180,31 @@ Try using 'as prefix' for one of the import directives, or hiding the name from 
         TextEditingController(text: product?.minStock?.toString() ?? '5');
   }
 
+
+
+
+
+
+/*
+
+<!> probar 
+
+
+3. Bug de orden en la foto de portada dentro de _hydrateProductState (~línea 177)
+Tienes esto:
+Dart
+final sortedImages = [...product.images]
+      ..sort((a, b) => (a.isFeatured ? 1 : 0).compareTo(b.isFeatured ? 1 : 0));
+Así (a contra b) pone false (0) antes que true (1), mandando la foto principal al final. Invierte b y a para que quede en el índice 0:
+Dart
+final sortedImages = [...product.images]
+      ..sort((a, b) => (b.isFeatured ? 1 : 0).compareTo(a.isFeatured ? 1 : 0));
+
+
+
+ */
+
+
   /// Precarga banderas de vitrina, galería (portada primero), variantes y subcategorías.
   void _hydrateProductState(Product product) {
     _isVisible = product.isVisibleInShowcase;
@@ -223,7 +214,12 @@ Try using 'as prefix' for one of the import directives, or hiding the name from 
 
     // Ubica la imagen marcada como `img_principal` al inicio (índice 0) para mantenerla al editar.
     final sortedImages = [...product.images]
+      
+      
+      // ..sort((a, b) => (a.isFeatured ? 1 : 0).compareTo(b.isFeatured ? 1 : 0));
       ..sort((a, b) => (b.isFeatured ? 1 : 0).compareTo(a.isFeatured ? 1 : 0));
+
+
     _galleryEntries.addAll(
       sortedImages
           .where((img) => img.url.trim().isNotEmpty)
@@ -233,6 +229,20 @@ Try using 'as prefix' for one of the import directives, or hiding the name from 
     _variants = List.from(product.variants);
     _selectedSubcategoryIds.addAll(product.subcategories.map((s) => s.id));
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   @override
   void dispose() {
@@ -248,57 +258,6 @@ Try using 'as prefix' for one of the import directives, or hiding the name from 
     super.dispose();
   }
 
-  // ===========================================================================
-  // 4. CONSTRUCCIÓN DE VISTA DECLARATIVA
-  // ===========================================================================
-/*
-
-<!> error 
-The method 'ProductFormScreen' isn't defined for the type '_ProductFormHandlerState'.
-Try correcting the name to the name of an existing method, or defining a method named 'ProductFormScreen'.
-
-*/
-  @override
-  Widget build(BuildContext context) {
-    return ProductFormScreen(
-      formKey: _formKey,
-      isSubmitting: _isSubmitting,
-      isEditing: widget.productToEdit != null,
-      nameController: _nameController,
-      barcodeController: _barcodeController,
-      descriptionController: _descriptionController,
-      salePriceController: _salePriceController,
-      costPriceController: _costPriceController,
-      stockController: _stockController,
-      minStockController: _minStockController,
-      selectedCategoryId: _selectedCategoryId,
-      categories: _categories,
-      onCategoryChanged: (id) => setState(() => _selectedCategoryId = id),
-      availableSubcategories: _availableSubcategories,
-      selectedSubcategoryIds: _selectedSubcategoryIds,
-      onSubcategoryToggled: _toggleSubcategory,
-      onManageSubcategories: _openCreateSubcategoryDialog,
-      subcategoryImageBuilder: (sub) => sub.isImageActive ? sub.imageUrl : null,
-      imageUrls: _imageUrls,
-      onPickFromCamera: () => _pickImage(ImageSource.camera),
-      onPickFromGallery: () => _pickImage(ImageSource.gallery),
-      onRemoveImage: (i) => setState(() => _galleryEntries.removeAt(i)),
-      onSetFeatured: _setFeaturedImage,
-      marginPercentage: _marginPercentage,
-      isVisible: _isVisible,
-      isAvailable: _isAvailable,
-      onlyVariants: _onlyVariants,
-      allowBackorder: _allowBackorder,
-      onVisibleChanged: (v) => setState(() => _isVisible = v),
-      onAvailableChanged: (v) => setState(() => _isAvailable = v),
-      onOnlyVariantsChanged: (v) => setState(() => _onlyVariants = v),
-      onAllowBackorderChanged: (v) => setState(() => _allowBackorder = v),
-      variants: _variants,
-      onAddVariant: _addEmptyVariant,
-      onRemoveVariant: (i) => setState(() => _variants.removeAt(i)),
-      onSubmit: _submitProduct,
-    );
-  }
 
   // ===========================================================================
   // 5. SUBCATEGORÍAS (CARGA, SELECCIÓN Y ALTA RÁPIDA)
@@ -322,6 +281,15 @@ Try correcting the name to the name of an existing method, or defining a method 
       if (mounted) setState(() => _isLoadingSubcategories = false);
     }
   }
+
+
+
+  // ===========================================================================
+  // 3. CICLO DE VIDA (INICIALIZACIÓN Y LIMPIEZA)
+  // ===========================================================================
+
+
+
 
   /// Alterna la asignación de una subcategoría por su identificador único.
   void _toggleSubcategory(int subId) {
@@ -364,10 +332,36 @@ Try correcting the name to the name of an existing method, or defining a method 
     });
   }
 
-  // ===========================================================================
-  // 6. FINANZAS, VARIANTES Y MULTIMEDIA
-  // ===========================================================================
+ 
+ 
+ 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
   /// Calcula el porcentaje de margen bruto sobre costo sin mutar el árbol UI.
   double _computeMarginPercentage() {
     final sale = double.tryParse(_salePriceController.text) ?? 0.0;
@@ -397,6 +391,7 @@ Try correcting the name to the name of an existing method, or defining a method 
       );
     });
   }
+
 
   /// Selecciona imagen desde cámara o archivos, valida tamaño (`<= 5 MB`) y
   /// formato real (`JPG`, `PNG` o `WEBP`), y genera un Data URI local para preview.
@@ -519,25 +514,24 @@ Try correcting the name to the name of an existing method, or defining a method 
     setState(() => _isSubmitting = true);
 
     try {
-      final resolvedUrls = <String>[];
-
-      for (var i = 0; i < _galleryEntries.length; i++) {
-        final entry = _galleryEntries[i];
-        if (!entry.isLocal) {
-          resolvedUrls.add(entry.previewSource);
-          continue;
+      // Parallelize image uploads while preserving order
+      final uploadFutures = _galleryEntries.asMap().entries.map((entry) async {
+        final i = entry.key;
+        final img = entry.value;
+        if (!img.isLocal) {
+          return img.previewSource;
         }
-
         final uploadedUrl = await _productRepository.uploadProductImage(
-          bytes: entry.localBytes!,
-          filename: entry.filename!,
-          mimeType: entry.mimeType!,
+          bytes: img.localBytes!,
+          filename: img.filename!,
+          mimeType: img.mimeType!,
         );
-
-        // Se reemplaza en memoria para no volver a subir la foto si falla el guardado final.
+        // Replace in memory for consistency
         _galleryEntries[i] = _PendingImageEntry.remote(uploadedUrl);
-        resolvedUrls.add(uploadedUrl);
-      }
+        return uploadedUrl;
+      }).toList();
+
+      final resolvedUrls = await Future.wait(uploadFutures);
 
       final existing = widget.productToEdit;
       final productPayload = _buildProductPayload(existing, resolvedUrls);
@@ -622,4 +616,71 @@ Try correcting the name to the name of an existing method, or defining a method 
       ),
     );
   }
+
+  @override
+  void initState() {
+    super.initState();
+    final product = widget.productToEdit;
+
+    _initCategoryCatalog(product);
+    _initTextControllers(product);
+    if (product != null) {
+      _hydrateProductState(product);
+    }
+
+    // Calcula el margen inicial sin disparar setState() durante initState().
+    _marginPercentage = _computeMarginPercentage();
+    _salePriceController.addListener(_calculateMargin);
+    _costPriceController.addListener(_calculateMargin);
+
+    // Carga asíncrona del catálogo real de subcategorías desde FastAPI.
+    _loadSubcategories();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ProductFormScreen(
+      formKey: _formKey,
+      isSubmitting: _isSubmitting,
+      isEditing: widget.productToEdit != null,
+      nameController: _nameController,
+      barcodeController: _barcodeController,
+      descriptionController: _descriptionController,
+      salePriceController: _salePriceController,
+      costPriceController: _costPriceController,
+      stockController: _stockController,
+      minStockController: _minStockController,
+      selectedCategoryId: _selectedCategoryId,
+      categories: _categories,
+      onCategoryChanged: (id) => setState(() => _selectedCategoryId = id),
+      availableSubcategories: _availableSubcategories,
+      selectedSubcategoryIds: _selectedSubcategoryIds,
+      onSubcategoryToggled: _toggleSubcategory,
+      onManageSubcategories: _openCreateSubcategoryDialog,
+
+       
+      // <!> nuevo probar  
+      subcategoryImageBuilder: (sub) => sub.isImageActive ? sub.imageUrl : null,
+
+      imageUrls: galleryEntries.map((e) => e.previewSource).toList(growable: false),
+      onPickFromCamera: () => _pickImage(ImageSource.camera),
+      onPickFromGallery: () => _pickImage(ImageSource.gallery),
+      onRemoveImage: (i) => setState(() => _galleryEntries.removeAt(i)),
+      onSetFeatured: _setFeaturedImage,
+      marginPercentage: _marginPercentage,
+      isVisible: _isVisible,
+      isAvailable: _isAvailable,
+      onlyVariants: _onlyVariants,
+      allowBackorder: _allowBackorder,
+      onVisibleChanged: (v) => setState(() => _isVisible = v),
+      onAvailableChanged: (v) => setState(() => _isAvailable = v),
+      onOnlyVariantsChanged: (v) => setState(() => _onlyVariants = v),
+      onAllowBackorderChanged: (v) => setState(() => _allowBackorder = v),
+      variants: _variants,
+      onAddVariant: _addEmptyVariant,
+      onRemoveVariant: (i) => setState(() => _variants.removeAt(i)),
+      onSubmit: _submitProduct,
+    );
+  }
+
 }

@@ -1,6 +1,6 @@
 // apps/admin-portal/lib/screens/catalog_screen.dart
 // Propósito: Vista declarativa pura del módulo de Catálogo y Vitrina con
-// renderizado lazy, pull-to-refresh y manejo explícito de estados (carga, error, vacío).
+// renderizado lazy, búsqueda irrestricta conectada al backend y pull-to-refresh.
 
 import 'package:flutter/material.dart';
 import 'package:admin_portal/models/product/product.dart';
@@ -9,88 +9,52 @@ import 'package:admin_portal/widgets/product_card_item.dart';
 import 'package:admin_portal/widgets/search_and_filters.dart';
 
 /// Pantalla puramente declarativa de Catálogo y Vitrina.
-///
-/// Sigue el patrón `Screen + Handler`: no mantiene estado mutable ni ejecuta
-/// peticiones HTTP directamente. Renderiza la información y métricas provistas
-/// por `CatalogHandler` delegando todas las acciones del usuario mediante callbacks.
 class CatalogScreen extends StatelessWidget {
-  // ===========================================================================
-  // 1. ESTADO DE VISTA Y COLECCIÓN DE DATOS
-  // ===========================================================================
-
-  /// Indica si se está ejecutando la carga inicial o recarga del catálogo.
   final bool isLoading;
-
-  /// Mensaje de error normalizado cuando falla la comunicación con FastAPI.
+  final bool isSearching;
   final String? errorMessage;
-
-  /// Lista ya filtrada de productos que deben renderizarse en el listado.
   final List<Product> products;
 
-  // ===========================================================================
-  // 2. MÉTRICAS Y SEGMENTACIÓN
-  // ===========================================================================
-
-  /// Total de productos activos registrados en el catálogo del tenant.
   final int totalCount;
-
-  /// Cantidad de productos publicados actualmente en vitrina web.
   final int showcaseCount;
-
-  /// Cantidad de productos por debajo del umbral de stock crítico.
   final int criticalCount;
-
-  /// Cantidad de productos ocultos temporalmente de la tienda pública.
   final int hiddenCount;
 
-  /// Identificador del chip de filtro activo (`all`, `showcase`, `critical`, etc.).
+  final String searchQuery;
   final String activeFilter;
+  final List<Category> categories;
+  final int? selectedCategoryId;
 
-  /// Callback disparado al seleccionar otro chip de filtro.
   final ValueChanged<String> onFilterChanged;
-
-  /// Callback disparado al escribir en el campo de búsqueda por nombre o EAN.
   final ValueChanged<String> onSearchChanged;
+  final ValueChanged<int?> onCategoryChanged;
+  final VoidCallback onClearFilters;
 
-  // ===========================================================================
-  // 3. ACCIONES SOBRE EL CATÁLOGO
-  // ===========================================================================
-
-  /// Callback disparado al hacer *pull-to-refresh* o pulsar Reintentar.
   final Future<void> Function() onRefresh;
-
-  /// Alterna la visibilidad en vitrina pública para un producto.
   final void Function(Product product, bool isVisible) onToggleShowcase;
-
-  /// Alterna la disponibilidad operativa inmediata de un producto.
   final void Function(Product product) onToggleAvailability;
-
-  /// Abre el formulario maestro en modo edición para el producto seleccionado.
   final void Function(Product product) onEditProduct;
-
-  /// Solicita confirmación y ejecuta la baja lógica de un producto.
   final void Function(Product product) onDeleteProduct;
-
-  /// Abre el formulario maestro en modo alta para crear un nuevo producto.
   final VoidCallback onCreateProduct;
 
-  // ===========================================================================
-  // 4. CONSTRUCTOR
-  // ===========================================================================
-
-  /// Crea la vista declarativa [CatalogScreen].
   const CatalogScreen({
     super.key,
     required this.isLoading,
+    this.isSearching = false,
     this.errorMessage,
     required this.products,
     required this.totalCount,
     required this.showcaseCount,
     required this.criticalCount,
     required this.hiddenCount,
+    required this.searchQuery,
     required this.activeFilter,
+    required this.categories,
+    required this.selectedCategoryId,
     required this.onFilterChanged,
     required this.onSearchChanged,
+    required this.onCategoryChanged,
+    required this.onClearFilters,
     required this.onRefresh,
     required this.onToggleShowcase,
     required this.onToggleAvailability,
@@ -98,10 +62,6 @@ class CatalogScreen extends StatelessWidget {
     required this.onDeleteProduct,
     required this.onCreateProduct,
   });
-
-  // ===========================================================================
-  // 5. CONSTRUCCIÓN DE INTERFAZ
-  // ===========================================================================
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +82,6 @@ class CatalogScreen extends StatelessWidget {
     );
   }
 
-  /// Selecciona la subvista correspondiente al ciclo de vida actual (`loading`, `error`, `data`).
   Widget _buildBody() {
     if (isLoading) {
       return const _CatalogLoadingState();
@@ -136,13 +95,19 @@ class CatalogScreen extends StatelessWidget {
     }
 
     return _CatalogContentList(
+      isSearching: isSearching,
       totalCount: totalCount,
       showcaseCount: showcaseCount,
       criticalCount: criticalCount,
       hiddenCount: hiddenCount,
+      searchQuery: searchQuery,
       activeFilter: activeFilter,
+      categories: categories,
+      selectedCategoryId: selectedCategoryId,
       onFilterChanged: onFilterChanged,
       onSearchChanged: onSearchChanged,
+      onCategoryChanged: onCategoryChanged,
+      onClearFilters: onClearFilters,
       products: products,
       onToggleShowcase: onToggleShowcase,
       onToggleAvailability: onToggleAvailability,
@@ -152,20 +117,20 @@ class CatalogScreen extends StatelessWidget {
   }
 }
 
-// =============================================================================
-// SUBCOMPONENTE 1: LISTADO LAZY DE MÉTRICAS, FILTROS Y PRODUCTOS
-// =============================================================================
-
-/// Renderiza cabecera de métricas, barra de búsqueda y tarjetas de productos bajo
-/// demanda mediante `ListView.builder` para mantener fluidez en catálogos extensos.
 class _CatalogContentList extends StatelessWidget {
+  final bool isSearching;
   final int totalCount;
   final int showcaseCount;
   final int criticalCount;
   final int hiddenCount;
+  final String searchQuery;
   final String activeFilter;
+  final List<Category> categories;
+  final int? selectedCategoryId;
   final ValueChanged<String> onFilterChanged;
   final ValueChanged<String> onSearchChanged;
+  final ValueChanged<int?> onCategoryChanged;
+  final VoidCallback onClearFilters;
   final List<Product> products;
   final void Function(Product, bool) onToggleShowcase;
   final void Function(Product) onToggleAvailability;
@@ -173,13 +138,19 @@ class _CatalogContentList extends StatelessWidget {
   final void Function(Product) onDeleteProduct;
 
   const _CatalogContentList({
+    required this.isSearching,
     required this.totalCount,
     required this.showcaseCount,
     required this.criticalCount,
     required this.hiddenCount,
+    required this.searchQuery,
     required this.activeFilter,
+    required this.categories,
+    required this.selectedCategoryId,
     required this.onFilterChanged,
     required this.onSearchChanged,
+    required this.onCategoryChanged,
+    required this.onClearFilters,
     required this.products,
     required this.onToggleShowcase,
     required this.onToggleAvailability,
@@ -189,25 +160,41 @@ class _CatalogContentList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Índice 0 = Cabecera (métricas + búsqueda/filtros); índice 1+ = productos o estado vacío.
     final totalItems = products.isEmpty ? 2 : products.length + 1;
 
     return ListView.builder(
-      // AlwaysScrollableScrollPhysics habilita pull-to-refresh incluso con pocos ítems.
       physics: const AlwaysScrollableScrollPhysics(),
-      // Margen inferior amplio (88 px) para que el FAB no cubra la última tarjeta.
       padding: const EdgeInsets.fromLTRB(0, 16, 0, 88),
       itemCount: totalItems,
       itemBuilder: (context, index) {
         if (index == 0) {
-          return _CatalogHeaderSection(
-            totalCount: totalCount,
-            showcaseCount: showcaseCount,
-            criticalCount: criticalCount,
-            hiddenCount: hiddenCount,
-            activeFilter: activeFilter,
-            onFilterChanged: onFilterChanged,
-            onSearchChanged: onSearchChanged,
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              MetricsHeader(
+                totalCount: totalCount,
+                showcaseCount: showcaseCount,
+                criticalCount: criticalCount,
+                hiddenCount: hiddenCount,
+              ),
+              const SizedBox(height: 16),
+              SearchAndFilters(
+                searchQuery: searchQuery,
+                selectedFilter: activeFilter,
+                categories: categories,
+                selectedCategoryId: selectedCategoryId,
+                onFilterChanged: onFilterChanged,
+                onSearch: onSearchChanged,
+                onCategoryChanged: onCategoryChanged,
+                onClearFilters: onClearFilters,
+              ),
+              if (isSearching)
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: LinearProgressIndicator(minHeight: 2),
+                ),
+              const SizedBox(height: 12),
+            ],
           );
         }
 
@@ -229,54 +216,6 @@ class _CatalogContentList extends StatelessWidget {
   }
 }
 
-/// Agrupa métricas superiores y controles de filtrado como primer elemento del scroll.
-class _CatalogHeaderSection extends StatelessWidget {
-  final int totalCount;
-  final int showcaseCount;
-  final int criticalCount;
-  final int hiddenCount;
-  final String activeFilter;
-  final ValueChanged<String> onFilterChanged;
-  final ValueChanged<String> onSearchChanged;
-
-  const _CatalogHeaderSection({
-    required this.totalCount,
-    required this.showcaseCount,
-    required this.criticalCount,
-    required this.hiddenCount,
-    required this.activeFilter,
-    required this.onFilterChanged,
-    required this.onSearchChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        MetricsHeader(
-          totalCount: totalCount,
-          showcaseCount: showcaseCount,
-          criticalCount: criticalCount,
-          hiddenCount: hiddenCount,
-        ),
-        const SizedBox(height: 16),
-        SearchAndFilters(
-          selectedFilter: activeFilter,
-          onFilterChanged: onFilterChanged,
-          onSearch: onSearchChanged,
-        ),
-        const SizedBox(height: 12),
-      ],
-    );
-  }
-}
-
-// =============================================================================
-// SUBCOMPONENTE 2: ESTADO VACÍO (EMPTY STATE)
-// =============================================================================
-
-/// Muestra una vista amigable cuando la búsqueda o el filtro activo no arrojan resultados.
 class _CatalogEmptyState extends StatelessWidget {
   const _CatalogEmptyState();
 
@@ -306,7 +245,7 @@ class _CatalogEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Prueba con otros términos o crea un nuevo ítem.',
+              'Prueba con otros términos, cambia de categoría o crea un nuevo ítem.',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colorScheme.outline,
               ),
@@ -319,11 +258,6 @@ class _CatalogEmptyState extends StatelessWidget {
   }
 }
 
-// =============================================================================
-// SUBCOMPONENTE 3: ESTADOS DE CARGA Y ERROR
-// =============================================================================
-
-/// Indicador centrado mostrado mientras se descarga el catálogo desde FastAPI.
 class _CatalogLoadingState extends StatelessWidget {
   const _CatalogLoadingState();
 
@@ -342,8 +276,6 @@ class _CatalogLoadingState extends StatelessWidget {
   }
 }
 
-/// Estado de error resiliente ante caídas de red o servidor, compatible con
-/// *pull-to-refresh* y protegido contra overflow en pantallas pequeñas.
 class _CatalogErrorState extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;

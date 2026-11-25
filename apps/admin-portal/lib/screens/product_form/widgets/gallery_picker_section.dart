@@ -2,6 +2,8 @@
 // Propósito: Sección visual de galería multimedia para gestionar portada, miniaturas
 // y selección de imágenes locales o remotas en Web, Desktop y Mobile.
 
+// <!> A este menú le falta que funcione con la camara cuado es celular o notebook ademas de la galerai 
+
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';

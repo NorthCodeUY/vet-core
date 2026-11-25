@@ -10,6 +10,7 @@ import 'package:admin_portal/config/tenant_config.dart';
 // Controlador de autenticación inicial
 import 'package:admin_portal/screens/login_handler.dart';
 
+import 'package:admin_portal/config/app_colors.dart';
 
 
 
@@ -62,6 +63,10 @@ class VetCoreAdminApp extends StatelessWidget {
       // MOTOR DE TEMA DINÁMICO (ZERO HARDCODING)
       // Genera un ColorScheme armónico a partir de los códigos hex del cliente
       // =======================================================================
+      
+      
+      // <!> Undefined name 'AppStatusColors'.
+// Try correcting the name to one that is defined, or defining the name.
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
@@ -71,10 +76,33 @@ class VetCoreAdminApp extends StatelessWidget {
           error: config.theme.error,
           surface: config.theme.surface,
         ),
+        
+        //<!>Undefined name 'AppStatusColors'.
+// Try correcting the name to one that is defined, or defining the name.
+// The values in a const list literal must be constants.
+// Try removing the keyword 'const' from the list literal.
+        extensions: const [
+          AppStatusColors.fallback,
+        ],
       ),
+      
+      
+      // theme: ThemeData(
+      //   useMaterial3: true,
+      //   colorScheme: ColorScheme.fromSeed(
+      //     seedColor: config.theme.primary,
+      //     primary: config.theme.primary,
+      //     secondary: config.theme.secondary,
+      //     error: config.theme.error,
+      //     surface: config.theme.surface,
+      //   ),
+      // ),
 
       // Entrada inicial del flujo operativo: Controlador de Autenticación
       home: const LoginHandler(),
     );
+
+
+
   }
 }

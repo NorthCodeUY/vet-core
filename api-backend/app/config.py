@@ -6,14 +6,15 @@ CONFIGURACIÓN CENTRALIZADA MULTI-TENANT (PYDANTIC SETTINGS V2)
 Gestiona la carga de variables de entorno de forma dinámica por Tenant:
 - Prioriza variables del sistema operativo (Docker env_file).
 - Si existe la variable ENV_FILE, carga ese archivo específico (.env.veterinaria).
-- Ensambla la conexión a PostgreSQL, CORS y rutas de Cloudflare R2.
+- Ensambla conexión PostgreSQL, CORS, rutas Cloudflare R2 y Storefront URL.
 """
 
 import os
 import socket
 from typing import List
-
+# <!>Import "pydantic" could not be resolved
 from pydantic import Field
+#<!> Import "pydantic_settings" could not be resolved
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -29,6 +30,7 @@ def obtener_ip_local() -> str:
         return "127.0.0.1"
 
 
+# Archivo .env activo (inyectado por run_desarollo.py o Docker env_file)
 TARGET_ENV_FILE = os.getenv("ENV_FILE", ".env")
 
 
@@ -43,7 +45,10 @@ class Settings(BaseSettings):
     IS_DOCKER: bool = Field(default=False, description="True si corre dentro de Docker")
 
     # Feature Flags Multi-Tenant
-    TENANT_ID: str = Field(default="", description="Slug del tenant para prefijos R2 (ej: veterinaria)")
+    TENANT_ID: str = Field(
+        default="",
+        description="Slug del tenant para prefijos R2 (ej: veterinaria)",
+    )
     TENANT_TYPE: str = Field(default="GENERAL", description="VET | RETAIL | SERVICES")
     ENABLE_AGENDA: bool = Field(default=False, description="Habilita módulo de turnos/citas")
 
@@ -57,16 +62,27 @@ class Settings(BaseSettings):
     DB_NAME: str = "default_db"
 
     # -------------------------------------------------------------------------
-    # RED Y SERVIDOR ASGI
+    # RED Y SERVIDOR ASGI (leídos automáticamente desde .env / entorno)
     # -------------------------------------------------------------------------
     APP_PORT: int = 8000
     BASE_URL: str = ""
+    STOREFRONT_URL: str = Field(
+        default="",
+        description="URL pública de la tienda React para QR (ej: https://veterinaria-beltramelli.com)",
+    )
+    FRONTEND_URL: str = Field(
+        default="",
+        description="Alias opcional de STOREFRONT_URL leído desde .env",
+    )
     ALLOWED_ORIGINS: str = ""
 
     # -------------------------------------------------------------------------
     # SEGURIDAD Y TOKENS JWT
     # -------------------------------------------------------------------------
-    SECRET_KEY: str = Field(default="insecure_secret_key_change_me_in_production_32b", min_length=16)
+    SECRET_KEY: str = Field(
+        default="insecure_secret_key_change_me_in_production_32b",
+        min_length=16,
+    )
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480
 
@@ -95,7 +111,10 @@ class Settings(BaseSettings):
     @property
     def DATABASE_URL(self) -> str:
         """Construye dinámicamente la URL de conexión para SQLAlchemy."""
-        return f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        return (
+            f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}"
+            f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        )
 
     @property
     def CORS_ORIGINS(self) -> List[str]:
@@ -103,7 +122,11 @@ class Settings(BaseSettings):
         if self.ENV_MODE == "development":
             return ["*"]
         if self.ALLOWED_ORIGINS:
-            return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",") if origin.strip()]
+            return [
+                origin.strip()
+                for origin in self.ALLOWED_ORIGINS.split(",")
+                if origin.strip()
+            ]
         return []
 
     @property
@@ -113,7 +136,7 @@ class Settings(BaseSettings):
 
     @property
     def RESOLVED_BASE_URL(self) -> str:
-        """Determina la URL pública para construir enlaces a recursos."""
+        """Determina la URL pública del backend para construir enlaces a recursos."""
         if self.BASE_URL:
             return self.BASE_URL
         host = "localhost" if self.IS_DOCKER else obtener_ip_local()
@@ -127,6 +150,38 @@ class Settings(BaseSettings):
         if ".env." in TARGET_ENV_FILE:
             return TARGET_ENV_FILE.split(".env.")[-1].strip().lower()
         return "default"
+
+    @property
+    def RESOLVED_STOREFRONT_URL(self) -> str:
+        """
+        Resuelve la URL pública de la tienda React para generar QR de carrito.
+        Prioridad:
+        1) STOREFRONT_URL (desde .env)
+        2) FRONTEND_URL (desde .env)
+        3) ALLOWED_ORIGINS (https:// en producción; localhost en desarrollo)
+        4) Fallback http://localhost:5173
+        """
+        explicit = (self.STOREFRONT_URL or self.FRONTEND_URL).strip().rstrip("/")
+        if explicit:
+            return explicit
+
+        origins = [
+            o.strip().rstrip("/")
+            for o in self.ALLOWED_ORIGINS.split(",")
+            if o.strip()
+        ]
+        if self.ENV_MODE == "production":
+            https_origins = [o for o in origins if o.startswith("https://")]
+            if https_origins:
+                return https_origins[0]
+        else:
+            local_origins = [
+                o for o in origins if "localhost" in o or "127.0.0.1" in o
+            ]
+            if local_origins:
+                return local_origins[0]
+
+        return origins[0] if origins else "http://localhost:5173"
 
     # -------------------------------------------------------------------------
     # ALIASES DE COMPATIBILIDAD HACIA ATRÁS (MINÚSCULAS)

@@ -1,71 +1,63 @@
-// lib/screens/dashboard_handler.dart
+// apps/admin-portal/lib/screens/dashboard_handler.dart
+// Propósito: Controlador maestro de navegación del Dashboard administrativo;
+// coordina pestañas persistentes (IndexedStack), ajustes del comercio y cierre de sesión JWT.
 
 import 'package:flutter/material.dart';
-
-// Repositorios de infraestructura
 import 'package:admin_portal/repositories/auth_repository.dart';
-
-// Controladores de módulos secundarios
 import 'package:admin_portal/screens/catalog_handler.dart';
-import 'package:admin_portal/screens/product_form/product_form_handler.dart';
-
-// IMPORT VERIFICADO: Resuelve la pantalla de destino para el cierre de sesión
 import 'package:admin_portal/screens/login_handler.dart';
-
-// Vista de presentación pura (Shell UI)
+import 'package:admin_portal/screens/product_form/product_form_handler.dart';
 import 'dashboard_screen.dart';
 
-
-
-
-
-/// Controlador maestro de navegación y estado para el Dashboard administrativo.
+/// Controlador maestro de navegación y sesión para el Dashboard administrativo.
 ///
-/// Implementa el patrón **Screen + Handler**:
-/// 1. Coordina el índice de navegación inferior (`IndexedStack`) preservando
-///    el estado de los formularios y listados en memoria sin reconstruirlos.
-/// 2. Administra la revocación segura de credenciales JWT mediante [AuthRepository].
-/// 3. Redirige al flujo de autenticación destruyendo la pila previa de navegación.
+/// Sigue el patrón `Screen + Handler`:
+/// - Coordina el índice de navegación inferior (`IndexedStack`) preservando en
+///   memoria el estado de cada pestaña sin reconstruir listados ni formularios.
+/// - Administra el cierre de sesión seguro revocando el JWT en [AuthRepository].
+/// - Delega el renderizado puro de la interfaz shell hacia [DashboardScreen].
 class DashboardHandler extends StatefulWidget {
-  /// Constructor constante para optimización de árbol de widgets.
+  /// Crea el controlador maestro [DashboardHandler].
   const DashboardHandler({super.key});
 
   @override
   State<DashboardHandler> createState() => _DashboardHandlerState();
 }
 
-/// Estado asociado a [DashboardHandler].
 class _DashboardHandlerState extends State<DashboardHandler> {
-  /// Instancia de acceso a almacenamiento seguro y revocación de sesión.
+  // ===========================================================================
+  // 1. DEPENDENCIAS Y ESTADO DE NAVEGACIÓN
+  // ===========================================================================
+
+  /// Repositorio encargado de la persistencia y revocación de tokens JWT.
   final AuthRepository _authRepository = AuthRepository();
 
-  /// Índice actual de la barra de navegación inferior.
-  /// 0: Inventario/Vitrina | 1: Alta de Producto | 2: Cajas/Depósito
+  /// Índice activo de la barra inferior (`0`: Catálogo, `1`: Alta, `2`: Cajas).
   int _currentIndex = 0;
 
-  /// Cambia de pestaña activa sin destruir las vistas subyacentes.
+  /// Páginas persistentes del `IndexedStack`, declaradas como constantes para evitar recreaciones.
+  static const List<Widget> _pages = [
+    CatalogHandler(),
+    ProductFormHandler(),
+    Center(
+      child: Text(
+        'Módulo de Cajas y Depósito (Próximamente)',
+        style: TextStyle(fontWeight: FontWeight.w500),
+      ),
+    ),
+  ];
+
+  // ===========================================================================
+  // 2. ACCIONES DE NAVEGACIÓN Y SESIÓN
+  // ===========================================================================
+
+  /// Cambia la pestaña activa manteniendo vivo el estado de las demás vistas.
   void _onTabSelected(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+    if (index == _currentIndex) return;
+    setState(() => _currentIndex = index);
   }
 
-  /// Cierra la sesión activa en el silo FastAPI y limpia el árbol de rutas.
-  Future<void> _handleLogout() async {
-    // 1. Elimina el token JWT almacenado en FlutterSecureStorage
-    await _authRepository.logout();
-
-    // 2. Verificación de resiliencia ante desmontaje del widget durante el await
-    if (!mounted) return;
-
-    // 3. Destrucción total de la pila: impide que el botón 'Atrás' regrese al dashboard
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const LoginHandler()),
-      (Route<dynamic> route) => false,
-    );
-  }
-
-  /// Despliega opciones de parametrización del comercio (En desarrollo).
+  /// Despliega opciones operativas del comercio (en desarrollo).
   void _handleSettings() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -75,26 +67,29 @@ class _DashboardHandlerState extends State<DashboardHandler> {
     );
   }
 
+  /// Revoca la sesión activa en almacenamiento seguro y limpia la pila de rutas.
+  Future<void> _handleLogout() async {
+    await _authRepository.logout();
+    if (!mounted) return;
+
+    // Elimina todo el historial previo para impedir volver al panel con "Atrás".
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginHandler()),
+      (Route<dynamic> route) => false,
+    );
+  }
+
+  // ===========================================================================
+  // 3. CONSTRUCCIÓN DE VISTA DECLARATIVA
+  // ===========================================================================
+
   @override
   Widget build(BuildContext context) {
-    // Definición de las 3 páginas hijas persistentes
-    final List<Widget> pages = [
-      const CatalogHandler(),          // Índice 0: Catálogo y control de vitrina
-      const ProductFormHandler(),       // Índice 1: Alta / edición rápida
-      const Center(                     // Índice 2: Logística y trazabilidad física
-        child: Text(
-          'Módulo de Cajas y Depósito (Próximamente)',
-          style: TextStyle(fontWeight: FontWeight.w500),
-        ),
-      ),
-    ];
-
-    // Delegación limpia a la pantalla puramente declarativa
     return DashboardScreen(
       activeIndex: _currentIndex,
       activeBody: IndexedStack(
         index: _currentIndex,
-        children: pages,
+        children: _pages,
       ),
       onTabSelected: _onTabSelected,
       onSettings: _handleSettings,

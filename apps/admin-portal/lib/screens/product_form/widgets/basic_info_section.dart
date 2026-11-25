@@ -106,6 +106,34 @@ class BasicInfoSection extends StatelessWidget {
           ),
           const SizedBox(height: 14),
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+          // <!> abria que agreegar algo para modifiacar la categoria algo para config 
           // 2. Selector de categoría principal: mapea directamente contra `cat_id` en FastAPI.
           DropdownButtonFormField<int>(
             initialValue: selectedCategoryId,

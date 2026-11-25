@@ -15,9 +15,60 @@ from app.schemas.categoria_schema import CategoriaResponseSchema
 from app.schemas.subcategoria_schema import SubcategoriaResponseSchema
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+# api-backend/app/schemas/producto_schema.py
+# (Agregar al final del archivo)
+class ProductoQrResponseSchema(BaseModel):
+    """Metadatos del código QR para vitrina web (carrito) o uso interno/góndola."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    prod_id: int
+    var_id: Optional[int] = None
+    prod_nombre: str
+    precio_venta: float
+    tipo: str
+    qr_payload: str
+    internal_code: str
+    qr_image_url: str
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # =============================================================================
 # 1. ESQUEMAS DE RECURSOS MULTIMEDIA (IMÁGENES)
 # =============================================================================
+
 
 class ImagenResponseSchema(BaseModel):
     """Contrato de salida para imágenes asociadas a productos."""

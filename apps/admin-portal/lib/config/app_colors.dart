@@ -2,6 +2,88 @@
 
 import 'package:flutter/material.dart';
 
+
+
+
+
+
+
+// <!> Extensión tipada ThemeExtension para tokens de estado (verde éxito/disponible/WhatsApp).
+/// Extensión de tema para resolver colores de estado semánticos desde `BuildContext`. <!> mejora el comentario 
+class AppStatusColors extends ThemeExtension<AppStatusColors> {
+  // <!> comenta mejor esto no se tien ni dea para que es 
+  final Color success;
+  final Color onSuccess;
+  final Color successContainer;
+  final Color onSuccessContainer;
+  final Color whatsapp;
+
+//<!> constructro  
+  const AppStatusColors({
+    required this.success,
+    required this.onSuccess,
+    required this.successContainer,
+    required this.onSuccessContainer,
+    required this.whatsapp,
+  });
+
+  /// Instancia por defecto alineada con la paleta base VetCore.
+  static const AppStatusColors fallback = AppStatusColors(
+    success: AppColors.success,
+    onSuccess: Color(0xFFFFFFFF),
+    successContainer: Color(0xFFD1FAE5),
+    onSuccessContainer: Color(0xFF065F46),
+    whatsapp: AppColors.tertiary,
+  );
+
+  /// Resuelve los tokens de estado desde el tema activo con respaldo seguro.
+  static AppStatusColors of(BuildContext context) =>
+      Theme.of(context).extension<AppStatusColors>() ?? fallback;
+
+  @override
+  AppStatusColors copyWith({
+    Color? success,
+    Color? onSuccess,
+    Color? successContainer,
+    Color? onSuccessContainer,
+    Color? whatsapp,
+  }) {
+    return AppStatusColors(
+      success: success ?? this.success,
+      onSuccess: onSuccess ?? this.onSuccess,
+      successContainer: successContainer ?? this.successContainer,
+      onSuccessContainer: onSuccessContainer ?? this.onSuccessContainer,
+      whatsapp: whatsapp ?? this.whatsapp,
+    );
+  }
+
+//<!> mejora el comentario 
+  @override
+  AppStatusColors lerp(ThemeExtension<AppStatusColors>? other, double t) {
+    if (other is! AppStatusColors) return this;
+    return AppStatusColors(
+      success: Color.lerp(success, other.success, t) ?? success,
+      onSuccess: Color.lerp(onSuccess, other.onSuccess, t) ?? onSuccess,
+      successContainer:
+          Color.lerp(successContainer, other.successContainer, t) ??
+              successContainer,
+      onSuccessContainer:
+          Color.lerp(onSuccessContainer, other.onSuccessContainer, t) ??
+              onSuccessContainer,
+      whatsapp: Color.lerp(whatsapp, other.whatsapp, t) ?? whatsapp,
+    );
+  }
+}
+
+
+
+
+
+
+
+
+
+
 /// Paleta de colores base y tokens semánticos del sistema VetCore.
 ///
 /// Sirve como referencia estática para valores por defecto (fallback)

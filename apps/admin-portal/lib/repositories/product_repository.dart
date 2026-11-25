@@ -92,6 +92,48 @@ class ProductRepository {
 
 
 
+
+
+
+// <!> Consulta el QR en FastAPI (`/api/productos/{id}/qr`) con respaldo local si aún no existe en backend.
+  /// Obtiene metadatos y payload QR de [product] desde FastAPI.
+  ///
+  /// Si el endpoint aún no está desplegado o falla la red, genera un respaldo
+  /// local usando el código de barras EAN o `PROD-{id}` para no bloquear la UI.
+  Future<({String payload, String internalCode, String? imageUrl})>
+      getProductQrData(Product product) async {
+    final fallbackCode =
+        (product.barcode != null && product.barcode!.trim().isNotEmpty)
+            ? product.barcode!.trim()
+            : 'PROD-${product.id}';
+
+    try {
+      final response = await _apiClient.get<Map<String, dynamic>>(
+        ApiEndpoints.productQr(product.id),
+      );
+      final data = response.data ?? const {};
+      final payload = (data['qr_payload'] as String? ?? '').trim();
+      final internal =
+          (data['internal_code'] as String? ?? fallbackCode).trim();
+      final imageUrl = (data['qr_image_url'] as String?)?.trim();
+
+      return (
+        payload: payload.isNotEmpty ? payload : fallbackCode,
+        internalCode: internal,
+        imageUrl: (imageUrl != null && imageUrl.isNotEmpty) ? imageUrl : null,
+      );
+    } on DioException {
+      return (
+        payload: fallbackCode,
+        internalCode: fallbackCode,
+        imageUrl: null,
+      );
+    }
+  }
+
+
+
+
 // <!> Listado paginado compatible hacia atrás con skip, limit, search y cat_id.
   /// Obtiene productos del catálogo administrativo (`GET /api/productos/admin/listado`).
   Future<List<Product>> getProducts({

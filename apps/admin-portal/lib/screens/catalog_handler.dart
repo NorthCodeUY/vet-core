@@ -3,12 +3,19 @@
 // irrestricta en backend (`/api/productos/admin/filtrados`), debounce y mutaciones optimistas.
 
 import 'dart:async';
+
+import 'dart:typed_data';// Provee Uint8List para validar los bytes y firma mágica de la foto rápida.
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:admin_portal/models/product/product.dart';
 import 'package:admin_portal/repositories/product_repository.dart';
 import 'package:admin_portal/screens/product_form/product_form_handler.dart';
 import 'catalog_screen.dart';
+
+// <!> Dependencias para captura rápida de foto, vista previa de tienda y modal QR.
+import 'package:image_picker/image_picker.dart';
+import 'package:admin_portal/widgets/product_qr_dialog.dart';
+import 'package:admin_portal/widgets/product_store_preview_dialog.dart';
 
 /// Controlador de Estado (`Handler`) para la gestión de Catálogo y Vitrina.
 ///
@@ -32,11 +39,18 @@ class _CatalogHandlerState extends State<CatalogHandler> {
 
   final ProductRepository _productRepository = ProductRepository();
 
+  final ImagePicker _quickImagePicker = ImagePicker(); // <!> no tengo bien claro donde va 
+
+
+
   List<Product> _products = [];
   List<Category> _categories = [];
-  bool _isLoading = true;
-
-  bool _isSearching = false; //<!> ESTO NO SE VIEN QUE HACE 
+  bool _isLoading = true; /// Indica la carga inicial a pantalla completa (oculta todo y muestra spinner central).
+ 
+  // cuando ya hay productos visibles, mostrando solo la barra delgada superior
+  // (`LinearProgressIndicator`) sin borrar ni hacer parpadear las tarjetas actuales.
+  bool _isSearching = false;
+ 
   String? _errorMessage;
 
   String _activeFilter = 'all';
@@ -160,6 +174,255 @@ class _CatalogHandlerState extends State<CatalogHandler> {
       });
     }
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// <!> Alterna el permiso de venta por encargo (`prod_per_sin_stock`) con rollback ante fallos.
+  /// Activa o desactiva la venta sin stock / por encargo de [product].
+  ///
+  /// Aplica actualización optimista en memoria, persiste en `PUT /api/productos/{id}`
+  /// preservando galería, variantes y subcategorías, y revierte el estado si falla la red.
+  Future<void> _handleToggleBackorder(Product product, bool allowBackorder) async {
+    final targetIndex = _products.indexWhere((p) => p.id == product.id);
+    if (targetIndex == -1) return;
+
+    final original = _products[targetIndex];
+    final updated = original.copyWith(allowBackorder: allowBackorder);
+    setState(() => _products[targetIndex] = updated);
+
+    try {
+      final persisted = await _productRepository.updateProduct(
+        productId: product.id,
+        product: updated,
+      );
+      if (!mounted) return;
+      setState(() => _products[targetIndex] = persisted);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _products[targetIndex] = original);
+      _showErrorSnackBar(
+        'Error al actualizar encargo: ${_cleanExceptionMessage(e)}',
+      );
+    }
+  }
+
+  // <!> Flujo exprés para reemplazar/agregar la foto principal sin abrir el formulario completo.
+  /// Captura o selecciona una foto para [product], la sube a Cloudflare R2 y la
+  /// fija como imagen principal (`index 0`) conservando el resto de la galería.
+  ///
+  /// Pasos ejecutados:
+  /// 1. Abre cámara o galería según [source] redimensionando a máx. 1600 px.
+  /// 2. Valida tamaño (`<= 5 MB`) y formato real (`JPG`, `PNG` o `WEBP`) por magic bytes.
+  /// 3. Sube el binario a `POST /api/productos/upload-imagen`.
+  /// 4. Persiste la galería actualizada mediante `PUT /api/productos/{id}`.
+  Future<void> _handleQuickPickImage(Product product, ImageSource source) async {
+    try {
+      final picked = await _quickImagePicker.pickImage(
+        source: source,
+        imageQuality: 85,
+        maxWidth: 1600,
+      );
+      if (picked == null || !mounted) return;
+
+      final bytes = await picked.readAsBytes();
+      const maxBytes = 5 * 1024 * 1024;
+      if (bytes.lengthInBytes > maxBytes) {
+        _showErrorSnackBar('La imagen supera el máximo permitido de 5 MB.');
+        return;
+      }
+
+      // Valida firma binaria real para evitar rechazos HTTP 400 en Flutter Web/Mobile.
+      final detected = _detectQuickImageFormat(
+        bytes: bytes,
+        fallbackMime: picked.mimeType,
+        fallbackName: picked.name,
+      );
+      if (detected == null) {
+        _showErrorSnackBar(
+          'Formato no soportado. Selecciona una imagen JPG, PNG o WEBP.',
+        );
+        return;
+      }
+
+      final filename = picked.name.trim().isNotEmpty
+          ? picked.name.trim()
+          : 'producto_${product.id}.${detected.ext}';
+
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.showSnackBar(
+        const SnackBar(
+          duration: Duration(seconds: 2),
+          content: Text('Subiendo nueva foto a Cloudflare R2...'),
+        ),
+      );
+
+      final uploadedUrl = await _productRepository.uploadProductImage(
+        bytes: bytes,
+        filename: filename,
+        mimeType: detected.mime,
+      );
+
+      // Conserva las fotos previas colocando la nueva en índice 0 como portada principal.
+      final nextImages = <ProductImage>[
+        ProductImage(id: 0, url: uploadedUrl, isFeatured: true),
+        ...product.images.map(
+          (img) => ProductImage(id: img.id, url: img.url, isFeatured: false),
+        ),
+      ];
+
+      final persisted = await _productRepository.updateProduct(
+        productId: product.id,
+        product: product.copyWith(images: nextImages),
+      );
+
+      if (!mounted) return;
+      final targetIndex = _products.indexWhere((p) => p.id == product.id);
+      if (targetIndex != -1) {
+        setState(() => _products[targetIndex] = persisted);
+      }
+
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Foto principal actualizada.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      _showErrorSnackBar(
+        'No se pudo actualizar la foto: ${_cleanExceptionMessage(e)}',
+      );
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//<!>Undefined class 'Uint8List'.
+// Try changing the name to the name of an existing class, or creating a class with the name 'Uint8List'.
+
+
+  //  Detector de formato real por magic bytes para evitar envíos octet-stream al backend.
+  /// Identifica el tipo MIME real (`image/jpeg`, `image/png`, `image/webp`) desde [bytes],
+  /// usando [fallbackMime] y [fallbackName] únicamente si la cabecera es ambigua.
+  ({String mime, String ext})? _detectQuickImageFormat({
+    required Uint8List bytes,
+    String? fallbackMime,
+    String? fallbackName,
+  }) {
+    if (bytes.length >= 3 &&
+        bytes[0] == 0xFF &&
+        bytes[1] == 0xD8 &&
+        bytes[2] == 0xFF) {
+      return (mime: 'image/jpeg', ext: 'jpg');
+    }
+    if (bytes.length >= 4 &&
+        bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
+        bytes[3] == 0x47) {
+      return (mime: 'image/png', ext: 'png');
+    }
+    if (bytes.length >= 12 &&
+        bytes[0] == 0x52 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x46 &&
+        bytes[8] == 0x57 &&
+        bytes[9] == 0x45 &&
+        bytes[10] == 0x42 &&
+        bytes[11] == 0x50) {
+      return (mime: 'image/webp', ext: 'webp');
+    }
+
+    final mime = fallbackMime?.toLowerCase().trim();
+    if (mime == 'image/jpeg' || mime == 'image/jpg') {
+      return (mime: 'image/jpeg', ext: 'jpg');
+    }
+    if (mime == 'image/png') return (mime: 'image/png', ext: 'png');
+    if (mime == 'image/webp') return (mime: 'image/webp', ext: 'webp');
+
+    final lowerName = fallbackName?.toLowerCase() ?? '';
+    if (lowerName.endsWith('.jpg') || lowerName.endsWith('.jpeg')) {
+      return (mime: 'image/jpeg', ext: 'jpg');
+    }
+    if (lowerName.endsWith('.png')) return (mime: 'image/png', ext: 'png');
+    if (lowerName.endsWith('.webp')) return (mime: 'image/webp', ext: 'webp');
+
+    return null;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   /// Dispara búsqueda en backend con debounce de 380 ms para evitar ráfagas HTTP.
   void _onSearchChanged(String query) {
@@ -405,20 +668,36 @@ class _CatalogHandlerState extends State<CatalogHandler> {
   // 6. CONSTRUCCIÓN DE VISTA DECLARATIVA
   // ===========================================================================
 
-// <!> The named parameter 'isSearching' isn't defined.
-// Try correcting the name to an existing named parameter's name, or defining a named parameter with the name 'isSearching'.
 
+
+
+
+
+
+
+
+
+
+
+// <!> creame los metodos qeu me alan 
   @override
   Widget build(BuildContext context) {
     return CatalogScreen(
+
+      
+      // 1. Estado de carga y datos
       isLoading: _isLoading,
       isSearching: _isSearching,
       errorMessage: _errorMessage,
       products: _getFilteredProducts(),
+
+      // 2. Métricas superiores
       totalCount: _products.length,
       showcaseCount: _products.where((p) => p.isVisibleInShowcase).length,
       criticalCount: _products.where((p) => p.isCriticalStock).length,
       hiddenCount: _products.where((p) => !p.isVisibleInShowcase).length,
+
+      // 3. Búsqueda y filtros
       searchQuery: _searchQuery,
       activeFilter: _activeFilter,
       categories: _categories,
@@ -427,12 +706,41 @@ class _CatalogHandlerState extends State<CatalogHandler> {
       onSearchChanged: _onSearchChanged,
       onCategoryChanged: _onCategoryChanged,
       onClearFilters: _onClearFilters,
+
+      // 4. Acciones del catálogo y de cada tarjeta
       onRefresh: () => _fetchProducts(isBackgroundSearch: _hasServerFilters),
       onToggleShowcase: _handleToggleShowcase,
       onToggleAvailability: _handleToggleAvailability,
+
+/* <!> Undefined name '_handleToggleBackorder'.
+ Try correcting the name to one that is defined, or defining the name.ç
+
+Undefined name '_handleQuickPickImage'.
+Try correcting the name to one that is defined, or defining the name.
+
+Undefined name 'ProductStorePreviewDialog'.
+Try correcting the name to one that is defined, or defining the name.
+
+
+Undefined name 'ProductQrDialog'.
+Try correcting the name to one that is defined, or defining the name.
+*/
+      onToggleBackorder: _handleToggleBackorder,
+      onQuickPickImage: _handleQuickPickImage,
+      onPreviewProduct: (p) => ProductStorePreviewDialog.show(context, product: p),
+      onGenerateQr: (p) => ProductQrDialog.show(
+        context,
+        product: p,
+        repository: _productRepository,
+      ),
       onEditProduct: (p) => _openProductForm(product: p),
-      onCreateProduct: () => _openProductForm(),
       onDeleteProduct: _handleDeleteProduct,
+      onCreateProduct: () => _openProductForm(),
     );
   }
+
+
+
+
+
 }

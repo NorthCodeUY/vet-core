@@ -6,8 +6,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+
+
 import 'package:admin_portal/models/product/product.dart';
-import 'package:admin_portal/models/product/subcategory_model.dart';
 import 'package:admin_portal/repositories/product_repository.dart';
 import 'package:admin_portal/repositories/subcategory_repository.dart';
 import 'package:admin_portal/screens/product_form/widgets/subcategory_form_dialog.dart';
@@ -185,24 +186,6 @@ class _ProductFormHandlerState extends State<ProductFormHandler> {
 
 
 
-/*
-
-<!> probar 
-
-
-3. Bug de orden en la foto de portada dentro de _hydrateProductState (~línea 177)
-Tienes esto:
-Dart
-final sortedImages = [...product.images]
-      ..sort((a, b) => (a.isFeatured ? 1 : 0).compareTo(b.isFeatured ? 1 : 0));
-Así (a contra b) pone false (0) antes que true (1), mandando la foto principal al final. Invierte b y a para que quede en el índice 0:
-Dart
-final sortedImages = [...product.images]
-      ..sort((a, b) => (b.isFeatured ? 1 : 0).compareTo(a.isFeatured ? 1 : 0));
-
-
-
- */
 
 
   /// Precarga banderas de vitrina, galería (portada primero), variantes y subcategorías.

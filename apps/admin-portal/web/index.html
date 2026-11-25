@@ -1,46 +1,330 @@
+<!-- apps/admin-portal/web/index.html -->
+ 
+
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="Portal Administrativo Multi-Tenant">
 
-  <!-- iOS meta tags & icons -->
+  <!-- iOS PWA meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="admin_portal">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Portal Admin">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>admin_portal</title>
+  <title>Portal Admin</title>
   <link rel="manifest" href="manifest.json">
+
+  <style>
+    /* Splash HTML nativo: pinta en 0 ms mientras Flutter descarga wasm/js */
+    :root {
+      --splash-primary: #275D9E;
+      --splash-bg: #F8FAFC;
+      --splash-text: #0B1C30;
+      --splash-muted: #64748B;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      background-color: var(--splash-bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    #vetcore-splash {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--splash-bg);
+      padding: 24px;
+      transition: opacity 0.28s ease-out;
+    }
+
+    #vetcore-splash.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .splash-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 320px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .splash-logo {
+      width: 84px;
+      height: 84px;
+      object-fit: contain;
+      border-radius: 18px;
+      margin-bottom: 16px;
+      background: #FFFFFF;
+      padding: 8px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    .splash-title {
+      margin: 0 0 6px 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--splash-text);
+    }
+
+    .splash-subtitle {
+      margin: 0 0 18px 0;
+      font-size: 13px;
+      color: var(--splash-muted);
+    }
+
+    .splash-progress-track {
+      width: 220px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(100, 116, 139, 0.2);
+      overflow: hidden;
+    }
+
+    .splash-progress-bar {
+      width: 45%;
+      height: 100%;
+      border-radius: 999px;
+      background-color: var(--splash-primary);
+      animation: vetcore-indeterminate 1.2s ease-in-out infinite;
+    }
+
+    .splash-retry {
+      display: none;
+      margin-top: 18px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--splash-primary);
+      background: transparent;
+      color: var(--splash-primary);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    @keyframes vetcore-indeterminate {
+      0% { transform: translateX(-110%); }
+      50% { transform: translateX(70%); }
+      100% { transform: translateX(230%); }
+    }
+  </style>
+
+  <script>
+    // Puente PWA + hidratación inmediata de marca del tenant en el splash.
+    (function () {
+      var deferredPrompt = null;
+      var updateAvailable = false;
+      var swRegistration = null;
+
+      function notifyFlutter() {
+        if (typeof window.__vetcoreOnPwaChange === 'function') {
+          window.__vetcoreOnPwaChange();
+        }
+      }
+
+      // Hidrata título, colores y texto del splash desde manifest.json del tenant.
+      fetch('manifest.json', { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (m) {
+          if (!m) return;
+          if (m.name) {
+            document.title = m.name;
+            var titleEl = document.getElementById('splash-title');
+            if (titleEl) titleEl.textContent = m.name;
+          }
+          var appleMeta = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+          if (appleMeta && (m.short_name || m.name)) {
+            appleMeta.setAttribute('content', m.short_name || m.name);
+          }
+          if (m.theme_color) {
+            document.documentElement.style.setProperty('--splash-primary', m.theme_color);
+            var themeMeta = document.querySelector('meta[name="theme-color"]');
+            if (!themeMeta) {
+              themeMeta = document.createElement('meta');
+              themeMeta.name = 'theme-color';
+              document.head.appendChild(themeMeta);
+            }
+            themeMeta.setAttribute('content', m.theme_color);
+          }
+        })
+        .catch(function () {});
+
+      // Captura anticipada del prompt de instalación PWA.
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        notifyFlutter();
+      });
+
+      window.addEventListener('appinstalled', function () {
+        deferredPrompt = null;
+        notifyFlutter();
+      });
+
+      // Oculta el splash exactamente cuando Flutter Web pinta su primer frame.
+      window.addEventListener('flutter-first-frame', function () {
+        var splash = document.getElementById('vetcore-splash');
+        if (!splash) return;
+        splash.classList.add('hide');
+        setTimeout(function () {
+          if (splash.parentNode) splash.parentNode.removeChild(splash);
+        }, 300);
+      });
+
+      // Si tarda más de 12s (p.ej. red lenta o debug), ofrece botón de recarga limpia.
+      setTimeout(function () {
+        var retryBtn = document.getElementById('splash-retry');
+        var subEl = document.getElementById('splash-subtitle');
+        if (retryBtn && document.getElementById('vetcore-splash')) {
+          retryBtn.style.display = 'inline-block';
+          if (subEl) subEl.textContent = 'Está tardando más de lo habitual...';
+        }
+      }, 12000);
+
+      // Monitoreo de actualizaciones del Service Worker.
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(function (reg) {
+          swRegistration = reg;
+          if (reg.waiting) {
+            updateAvailable = true;
+            notifyFlutter();
+          }
+          reg.addEventListener('updatefound', function () {
+            var newWorker = reg.installing;
+            if (!newWorker) return;
+            newWorker.addEventListener('statechange', function () {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                updateAvailable = true;
+                notifyFlutter();
+              }
+            });
+          });
+          document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible' && swRegistration) {
+              swRegistration.update().catch(function () {});
+            }
+          });
+        }).catch(function () {});
+
+        var refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+          if (refreshing) return;
+          refreshing = true;
+          window.location.reload();
+        });
+      }
+
+      window.__vetcorePwa = {
+        getInstallState: function () {
+          var isStandalone =
+            (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+            window.navigator.standalone === true;
+          if (isStandalone) return 'installed';
+          if (deferredPrompt) return 'prompt_ready';
+          var ua = (navigator.userAgent || '').toLowerCase();
+          var isIos = /iphone|ipad|ipod/.test(ua) ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+          if (isIos) return 'ios_safari';
+          if (/android/.test(ua)) return 'android_manual';
+          return 'unsupported';
+        },
+        hasUpdate: function () {
+          return updateAvailable === true;
+        },
+        triggerInstall: async function () {
+          if (!deferredPrompt) return 'unavailable';
+          try {
+            deferredPrompt.prompt();
+            var result = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            notifyFlutter();
+            return result && result.outcome ? result.outcome : 'dismissed';
+          } catch (_) {
+            return 'error';
+          }
+        },
+        checkForUpdate: async function () {
+          if ('serviceWorker' in navigator) {
+            try {
+              var reg = swRegistration || await navigator.serviceWorker.getRegistration();
+              if (reg) {
+                swRegistration = reg;
+                await reg.update();
+                if (reg.waiting) {
+                  updateAvailable = true;
+                  notifyFlutter();
+                  return true;
+                }
+              }
+            } catch (_) {}
+          }
+          return false;
+        },
+        applyUpdateAndReload: async function () {
+          try {
+            if ('serviceWorker' in navigator) {
+              var reg = swRegistration || await navigator.serviceWorker.getRegistration();
+              if (reg && reg.waiting) {
+                reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+              }
+            }
+            if ('caches' in window) {
+              var keys = await caches.keys();
+              await Promise.all(keys.map(function (k) { return caches.delete(k); }));
+            }
+          } catch (_) {}
+          window.location.reload();
+        }
+      };
+    })();
+  </script>
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
+  <!-- Cartel inicial instantáneo con logo del comercio y barra de progreso -->
+  <div id="vetcore-splash">
+    <div class="splash-card">
+      <img
+        src="assets/assets/tenant/logo.png"
+        onerror="this.onerror=null;this.src='icons/Icon-192.png';"
+        alt="Logo"
+        class="splash-logo"
+      />
+      <h1 id="splash-title" class="splash-title">Portal Administrativo</h1>
+      <p id="splash-subtitle" class="splash-subtitle">Cargando módulo operativo...</p>
+      <div class="splash-progress-track">
+        <div class="splash-progress-bar"></div>
+      </div>
+      <button
+        id="splash-retry"
+        type="button"
+        class="splash-retry"
+        onclick="window.location.reload()"
+      >
+        Recargar aplicación
+      </button>
+    </div>
+  </div>
 
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
